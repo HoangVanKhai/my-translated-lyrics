@@ -1,0 +1,13 @@
+language: en
+words:
+  - Feng
+  - Tianyi
+  - Touhou
+  - Yuezheng
+overrides:
+  - filename: "**/*.vi.srt"
+    language: vi-VN
+  - filename: "**/*.zh.srt"
+    language: zh-CN
+  - filename: "**/*.en.srt"
+    language: en
