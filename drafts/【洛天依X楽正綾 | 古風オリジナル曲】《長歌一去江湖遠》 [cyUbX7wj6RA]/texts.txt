@@ -49,7 +49,7 @@
 
 林间春景晚
 
-# Checkpoint: 00-00-49-160.png
+# Checkpoint: 00-00-55-160.png
 燃却繁星野火
 
 # NOTE: the ~~ might not be correct
@@ -62,7 +62,7 @@
 ~~西风此去天涯~~
 片叶皆不沾
 
-# Checkpoint: 00-00-55-560.png
+# Checkpoint: 00-01-08-040.png
 有道是  此间相逢
 
 ~~有道是  此间相逢~~
