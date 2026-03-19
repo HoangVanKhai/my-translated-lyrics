@@ -11,7 +11,7 @@ PV: AnSekinen
 
 2
 00:00:10,080 --> 00:00:18,000
-Vân biên mộng thoại
+VÂN BIÊN MỘNG THOẠI
 Điều phối sản xuất âm nhạc: WOVOP
 
 3
@@ -191,7 +191,7 @@ PV: AnSekinen
 
 45
 00:02:22,247 --> 00:02:29,368
-Vân biên mộng thoại
+VÂN BIÊN MỘNG THOẠI
 Điều phối sản xuất âm nhạc: WOVOP
 
 46
@@ -339,5 +339,5 @@ PV: AnSekinen
 
 80
 00:04:24,001 --> 00:04:31,794
-Vân biên mộng thoại
+VÂN BIÊN MỘNG THOẠI
 Điều phối sản xuất âm nhạc: WOVOP
