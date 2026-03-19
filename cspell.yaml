@@ -9,6 +9,7 @@ ignorePaths:
   # disabling cspell entirely for all subtitles
   # is the only way
   - 'data/**'
+  - 'trash/**'
 # overrides:
 #   - filename: "**/*.vi.srt"
 #     language: vi-VN
