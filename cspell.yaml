@@ -4,10 +4,15 @@ words:
   - Tianyi
   - Touhou
   - Yuezheng
-overrides:
-  - filename: "**/*.vi.srt"
-    language: vi-VN
-  - filename: "**/*.zh.srt"
-    language: zh-CN
-  - filename: "**/*.en.srt"
-    language: en
+ignorePaths:
+  # because of a bug in overrides.filename,
+  # disabling cspell entirely for all subtitles
+  # is the only way
+  - 'data/**'
+# overrides:
+#   - filename: "**/*.vi.srt"
+#     language: vi-VN
+#   - filename: "**/*.zh.srt"
+#     language: zh-CN
+#   - filename: "**/*.en.srt"
+#     language: en
