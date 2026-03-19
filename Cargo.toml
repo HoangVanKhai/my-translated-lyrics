@@ -1,0 +1,9 @@
+[package]
+name = "install-local-lyrics"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "*", features = ["derive"] }
+pipe-trait = "0.4.0"
+reflink = "0.1.3"
