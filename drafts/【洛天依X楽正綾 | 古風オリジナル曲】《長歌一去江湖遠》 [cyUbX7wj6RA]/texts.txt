@@ -117,6 +117,7 @@
 [Title]
 《長歌一去江湖遠》
 
+# Checkpoint: 00-02-03-840.png
 何处是江湖
 
 凡心自了然
@@ -126,6 +127,7 @@
 ~~一夕秋来暮雨  对孤帆~~
 枕梦到灵山
 
+# Checkpoint: 00-02-11-240.png
 飘摇风雪回眸处
 
 # NOTE: the ~~ was inserted manually by the transciptor
@@ -137,6 +139,7 @@
 ~~冷刃有时钝~~
 而天光无穷宽
 
+# Checkpoint: 00-02-22-520.png
 弱水有须饮
 
 ~~弱水有须饮~~
