@@ -64,7 +64,9 @@ fn is_subtitle_file(entry: &DirEntry) -> bool {
         Ok(file_type) => debug_assert!(file_type.is_file()),
     }
 
-    entry.file_name().as_bytes().ends_with(b".srt")
+    let file_name = entry.file_name();
+    let file_name = file_name.as_bytes();
+    file_name.ends_with(b".srt") || file_name.ends_with(b".vtt")
 }
 
 fn main() {
