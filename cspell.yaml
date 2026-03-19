@@ -3,6 +3,7 @@ words:
   - Feng
   - Tianyi
   - Touhou
+  - transciptor
   - Yuezheng
 ignorePaths:
   # because of a bug in overrides.filename,
