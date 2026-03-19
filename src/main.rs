@@ -1,8 +1,8 @@
 use clap::Parser;
 use pipe_trait::Pipe;
 use reflink::reflink_or_copy;
-use std::fs::{read_dir, remove_file, DirEntry};
-use std::io::ErrorKind;
+use std::fs::{hard_link, read_dir, remove_file, DirEntry};
+use std::io::{self, ErrorKind};
 use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
@@ -29,6 +29,17 @@ struct Args {
     target: PathBuf,
 }
 
+/// Try hardlink, then try reflink, and finally copy.
+fn link_or_copy(source: &Path, target: &Path) -> io::Result<()> {
+    if hard_link(source, target).is_ok() {
+        return Ok(());
+    }
+
+    reflink_or_copy(source, target)?;
+
+    Ok(())
+}
+
 fn uninstall(execute: bool, target: &Path) {
     eprintln!("remove {target:?}");
     if execute {
@@ -39,7 +50,10 @@ fn uninstall(execute: bool, target: &Path) {
 fn install(execute: bool, source: &Path, target: &Path) {
     eprintln!("copy {source:?} → {target:?}");
     if execute {
-        reflink_or_copy(source, target).unwrap();
+        // Q: Why try hardlink before reflink?
+        // A: It'd be convenient not having to re-run the script
+        //    just to update the subtitles.
+        link_or_copy(source, target).unwrap();
     }
 }
 
