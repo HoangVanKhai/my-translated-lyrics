@@ -84,7 +84,7 @@ fn main() {
     for suffix in SEPARATED_COLLECTIONS {
         let source_dir = source.join(suffix);
         let separated_target_dir = target.join(suffix);
-        let unified_target_dir = Path::new(UNIFIED_COLLECTION);
+        let unified_target_dir = target.join(UNIFIED_COLLECTION);
 
         let source_entries = match read_dir(&source_dir) {
             Ok(source_entries) => source_entries,
