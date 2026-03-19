@@ -52,13 +52,13 @@
 # Checkpoint: 00-00-55-160.png
 燃却繁星野火
 
-# NOTE: the ~~ might not be correct
+# NOTE: the ~~ was inserted manually by the transciptor
 ~~燃却繁星野火~~
 何惧生死比肩
 
 西风此去天涯
 
-# NOTE: the ~~ might not be correct
+# NOTE: the ~~ was inserted manually by the transciptor
 ~~西风此去天涯~~
 片叶皆不沾
 
