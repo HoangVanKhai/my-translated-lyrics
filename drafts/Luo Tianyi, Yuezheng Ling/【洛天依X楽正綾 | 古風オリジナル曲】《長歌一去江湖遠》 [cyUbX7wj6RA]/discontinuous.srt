@@ -1,23 +1,23 @@
 1
 00:00:02,960 --> 00:00:08,360
-<font color="#AAAA22">演唱  洛天依  乐正绫
-作曲  雨观
-作词  雨观
-编曲  雨观</font>
+<font color="#AAAA22">演唱  洛天依  乐正绫</font>
+<font color="#AAAA22">作曲  雨观</font>
+<font color="#AAAA22">作词  雨观</font>
+<font color="#AAAA22">编曲  雨观</font>
 
 2
 00:00:08,360 --> 00:00:14,160
-<font color="#AAAA22">企划  三世
-制作人  雨观
-调校  鬼面Ｐ
-和声编写  雨观</font>
+<font color="#AAAA22">企划  三世</font>
+<font color="#AAAA22">制作人  雨观</font>
+<font color="#AAAA22">调校  鬼面Ｐ</font>
+<font color="#AAAA22">和声编写  雨观</font>
 
 3
 00:00:14,160 --> 00:00:22,120
-<font color="#AAAA22">混音  雨观
-美术  一勺酸橙汁
-视频   Ａ影羌【璇玑坊Ｓｔｕｄｉｏ】
-素材鸣谢  【废画】良月十八 【无声诗】山晚樵渔 【今日晴】九镜</font>
+<font color="#AAAA22">混音  雨观</font>
+<font color="#AAAA22">美术  一勺酸橙汁</font>
+<font color="#AAAA22">视频   Ａ影羌【璇玑坊Studio】</font>
+<font color="#AAAA22">素材鸣谢  【废画】良月十八 【无声诗】山晚樵渔 【今日晴】九镜</font>
 
 4
 00:00:22,120 --> 00:00:30,600
@@ -142,24 +142,24 @@
 
 33
 00:01:36,000 --> 00:01:41,520
-<font color="#AAAA22">演唱  洛天依  乐正绫
-作曲  雨观
-作词  雨观
-编曲  雨观</font>
+<font color="#AAAA22">演唱  洛天依  乐正绫</font>
+<font color="#AAAA22">作曲  雨观</font>
+<font color="#AAAA22">作词  雨观</font>
+<font color="#AAAA22">编曲  雨观</font>
 
 34
 00:01:41,520 --> 00:01:47,560
-<font color="#AAAA22">企划  三世
-制作人  雨观
-调校  鬼面Ｐ
-和声编写  雨观</font>
+<font color="#AAAA22">企划  三世</font>
+<font color="#AAAA22">制作人  雨观</font>
+<font color="#AAAA22">调校  鬼面Ｐ</font>
+<font color="#AAAA22">和声编写  雨观</font>
 
 35
 00:01:47,560 --> 00:01:55,120
-<font color="#AAAA22">混音  雨观
-美术  一勺酸橙汁
-视频   Ａ影羌【璇玑坊Studio】
-素材鸣谢  【废画】良月十八 【无声诗】山晚樵渔 【今日晴】九镜</font>
+<font color="#AAAA22">混音  雨观</font>
+<font color="#AAAA22">美术  一勺酸橙汁</font>
+<font color="#AAAA22">视频   Ａ影羌【璇玑坊Studio】</font>
+<font color="#AAAA22">素材鸣谢  【废画】良月十八 【无声诗】山晚樵渔 【今日晴】九镜</font>
 
 36
 00:01:55,120 --> 00:02:03,160
@@ -330,5 +330,5 @@
 
 77
 00:03:34,760 --> 00:03:48,000
-<b><font color="#FFD966">《長歌一去江湖遠》
-</font></b>
+<b><font color="#FFD966">《長歌一去江湖遠》</font></b>
+<b><font color="#FFD966"></font></b>
