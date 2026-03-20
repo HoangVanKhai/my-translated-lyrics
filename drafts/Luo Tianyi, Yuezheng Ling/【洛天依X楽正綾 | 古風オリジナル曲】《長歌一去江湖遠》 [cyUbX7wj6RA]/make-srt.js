@@ -16,12 +16,23 @@ if (segments.length !== starts.length || segments.length !== durations.length) {
   process.exit(1)
 }
 
-// Convert [h,m,s,ms] to milliseconds
+/**
+ * Convert time tuple `[hour, minute, second, millisecond]` to milliseconds.
+ * @param {string} h - hours
+ * @param {string} m - minutes
+ * @param {string} s - seconds
+ * @param {string} ms - milliseconds
+ * @returns {number} total milliseconds
+ */
 function toMs(h, m, s, ms) {
   return (parseInt(h) * 3600 + parseInt(m) * 60 + parseInt(s)) * 1000 + parseInt(ms)
 }
 
-// Format time as HH:MM:SS,mmm
+/**
+ * Format milliseconds into SRT timestamp (`HH:MM:SS,mmm`).
+ * @param {number} ms - milliseconds
+ * @returns {string} formatted timestamp
+ */
 function formatTime(ms) {
   const hours = Math.floor(ms / 3600000)
   const minutes = Math.floor((ms % 3600000) / 60000)
@@ -32,7 +43,11 @@ function formatTime(ms) {
   },${millis.toString().padStart(3, '0')}`
 }
 
-// Clean a segment: remove comment lines and struck‑through lines
+/**
+ * Remove comment lines (starting with `#`) and struck‑through lines (containing `~~...~~`) from a segment.
+ * @param {string} segmentText - raw segment text
+ * @returns {string} cleaned text
+ */
 function cleanSegment(segmentText) {
   const lines = segmentText.split('\n')
   const cleaned = lines.filter(line => {
