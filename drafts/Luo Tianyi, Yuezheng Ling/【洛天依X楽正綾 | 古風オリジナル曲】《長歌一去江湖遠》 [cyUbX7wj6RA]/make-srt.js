@@ -13,7 +13,7 @@ const { starts, durations } = timeInfo
 
 if (segments.length !== starts.length || segments.length !== durations.length) {
   console.error(`Mismatch: segments=${segments.length}, starts=${starts.length}, durations=${durations.length}`)
-  process.exit(1)
+  throw process.exit(1)
 }
 
 /**
