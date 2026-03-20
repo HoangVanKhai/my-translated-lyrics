@@ -5,10 +5,7 @@ const timeInfo = require('./time-info.json')
 
 const scriptDir = __dirname
 
-// Read files
 const text = fs.readFileSync(path.join(scriptDir, 'texts.txt'), 'utf8')
-
-// Split text into segments (same method used in the REPL)
 const segments = text.split(/\n{2,}/).filter(Boolean)
 
 const { starts, durations } = timeInfo
@@ -56,7 +53,6 @@ const cleanSegment = segmentText => segmentText
   .filter(line => !/^~~.*~~$/.test(line.trim()))
   .join('\n')
 
-// Build SRT content
 let srt = ''
 for (let i = 0; i < segments.length; i++) {
   const startMs = toMs(...starts[i])
@@ -70,6 +66,5 @@ for (let i = 0; i < segments.length; i++) {
 }
 srt = srt.trimEnd()
 
-// Write output
 fs.writeFileSync(path.join(scriptDir, 'output.srt'), srt)
 console.log('SRT file generated: output.srt')
