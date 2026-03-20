@@ -70,13 +70,31 @@ const stripHeaderAndClean = segmentText => {
 }
 
 /**
+ * Apply HTML style to a line of credits.
+ * @param {string} unstyledLine - the unstyled line of credits.
+ * @returns {string} styled credits line.
+ */
+function styleCreditsLine (unstyledLine) {
+  const [unstyledRole, ...rest] = unstyledLine.split('  ')
+  const unstyledRest = rest.join('  ')
+  const styledRole = `<font color="#AAAA22">${unstyledRole}</font>`
+  const styledRestInner = unstyledRest.replaceAll(
+    /【[^【】]*】/g,
+    text => `<font color="#55ABCD">${text}</font>`,
+  )
+  const styledRest = `<font color="#AAAAAA">${styledRestInner}</font>`
+  const styledLine = `${styledRole}  ${styledRest}`
+  return styledLine
+}
+
+/**
  * Apply HTML styling to credits text.
  * @param {string} text - plain text
  * @returns {string} styled HTML
  */
 const styleCredits = text => text
   .split('\n')
-  .map(line => `<font color="#AAAA22">${line}</font>`)
+  .map(styleCreditsLine)
   .join('\n')
 
 /**
