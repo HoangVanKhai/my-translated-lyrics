@@ -1,6 +1,6 @@
 1
 00:00:02,960 --> 00:00:08,360
-<font color="#AAAA22">Trình bày</font>  <font color="#AAAAAA">洛天依  乐正绫</font>
+<font color="#AAAA22">Trình bày</font>  <font color="#AAAAAA">Luo Tianyi  Yuezheng Ying</font>
 <font color="#AAAA22">Soạn nhạc</font>  <font color="#AAAAAA">雨观</font>
 <font color="#AAAA22">Viết lời</font>  <font color="#AAAAAA">雨观</font>
 <font color="#AAAA22">Phối khí</font>  <font color="#AAAAAA">雨观</font>
@@ -113,7 +113,7 @@ Cười trở về chốn sơn thủy hồng trần.
 
 27
 00:01:36,000 --> 00:01:41,520
-<font color="#AAAA22">Trình bày</font>  <font color="#AAAAAA">洛天依  乐正绫</font>
+<font color="#AAAA22">Trình bày</font>  <font color="#AAAAAA">Luo Tianyi  Yuezheng Ying</font>
 <font color="#AAAA22">Soạn nhạc</font>  <font color="#AAAAAA">雨观</font>
 <font color="#AAAA22">Viết lời</font>  <font color="#AAAAAA">雨观</font>
 <font color="#AAAA22">Phối khí</font>  <font color="#AAAAAA">雨观</font>
