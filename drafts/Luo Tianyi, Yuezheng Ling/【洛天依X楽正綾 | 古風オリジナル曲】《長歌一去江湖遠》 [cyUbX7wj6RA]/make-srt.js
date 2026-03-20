@@ -1,18 +1,17 @@
 #! /usr/bin/env node
 const fs = require('fs')
 const path = require('path')
+const timeInfo = require('./time-info.json')
 
 const scriptDir = __dirname
 
 // Read files
 const text = fs.readFileSync(path.join(scriptDir, 'texts.txt'), 'utf8')
-const timeInfo = JSON.parse(fs.readFileSync(path.join(scriptDir, 'time-info.json'), 'utf8'))
 
 // Split text into segments (same method used in the REPL)
 const segments = text.split(/\n{2,}/).filter(Boolean)
 
-const starts = timeInfo.starts
-const durations = timeInfo.durations
+const { starts, durations } = timeInfo
 
 if (segments.length !== starts.length || segments.length !== durations.length) {
   console.error(`Mismatch: segments=${segments.length}, starts=${starts.length}, durations=${durations.length}`)
