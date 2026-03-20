@@ -71,12 +71,11 @@ function normalize(s) {
   return s.trim().replace(/\s+/g, ' ')
 }
 
-// ----- Build a flat list of all cleaned lyric lines with their associated timestamps -----
+// ----- Build cleaned lines (with their timestamps) from lyric segments only -----
 const cleanedLines = [] // each element: { text: string, startMs: number, endMs: number }
 
 for (let i = 0; i < segments.length; i++) {
   const rawSegment = segments[i]
-  // Skip credits and title segments – they are not part of the lyrics
   if (rawSegment.startsWith('[Credits]') || rawSegment.startsWith('[Title]')) continue
 
   const [hr, min, sec, ms] = starts[i]
@@ -108,6 +107,7 @@ for (const actualRaw of actualLines) {
   let accumulated = ''
   let blockStart = null
   let blockEnd = null
+  let matched = false
 
   while (cleanedIndex < cleanedLines.length) {
     const lineObj = cleanedLines[cleanedIndex]
@@ -118,22 +118,41 @@ for (const actualRaw of actualLines) {
       blockStart = blockStart === null ? lineObj.startMs : blockStart
       blockEnd = lineObj.endMs
       actualWithTimes.push({
-        text: actualRaw, // keep original formatting
+        text: actualRaw,
         startMs: blockStart,
         endMs: blockEnd,
       })
       cleanedIndex++
+      matched = true
       break
-    } else {
-      // Still building the block
-      if (blockStart === null) blockStart = lineObj.startMs
-      accumulated = candidate
-      blockEnd = lineObj.endMs
-      cleanedIndex++
     }
+    // Try without spaces (remove all spaces from candidateNorm and actualNorm)
+    const candidateNoSpace = candidateNorm.replace(/\s/g, '')
+    const actualNoSpace = actualNorm.replace(/\s/g, '')
+    if (candidateNoSpace === actualNoSpace && candidateNoSpace !== '') {
+      // We'll consider it a match, but we need to keep the original candidate spacing?
+      // However, the actual line may have spaces that are not in the candidate, but we still treat as match.
+      // For now, just match.
+      blockStart = blockStart === null ? lineObj.startMs : blockStart
+      blockEnd = lineObj.endMs
+      actualWithTimes.push({
+        text: actualRaw,
+        startMs: blockStart,
+        endMs: blockEnd,
+      })
+      cleanedIndex++
+      matched = true
+      break
+    }
+
+    // Not a match yet, continue accumulating
+    if (blockStart === null) blockStart = lineObj.startMs
+    accumulated = candidate
+    blockEnd = lineObj.endMs
+    cleanedIndex++
   }
 
-  if (cleanedIndex >= cleanedLines.length && (accumulated === '' || normalize(accumulated) !== actualNorm)) {
+  if (!matched) {
     console.error(`Failed to match actual line: "${actualNorm}"`)
     process.exit(1)
   }
