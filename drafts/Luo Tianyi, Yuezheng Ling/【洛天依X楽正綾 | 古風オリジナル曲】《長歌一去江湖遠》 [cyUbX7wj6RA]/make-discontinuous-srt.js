@@ -76,7 +76,7 @@ const stripHeaderAndClean = segmentText => {
  */
 const styleCredits = text => {
   // Use italic and a light gray color (common for credits)
-  return `<i><font color="#AAAAAA">${text}</font></i>`
+  return `<font color="#AAAA22">${text}</font>`
 }
 
 /**
