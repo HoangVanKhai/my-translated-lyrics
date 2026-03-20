@@ -44,7 +44,9 @@ fn install(execute: bool, source: &Path, target: &Path) {
     eprintln!("copy {source:?} → {target:?}");
     if execute {
         if let Err(error) = remove_file(target) {
-            eprintln!("warning: Cannot remove file {target:?}: {error}");
+            if error.kind() != ErrorKind::NotFound {
+                eprintln!("warning: Cannot remove file {target:?}: {error}");
+            }
         }
 
         // Q: Why try hardlink before reflink?
