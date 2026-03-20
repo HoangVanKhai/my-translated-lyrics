@@ -57,12 +57,62 @@ const cleanSegment = segmentText => segmentText
   .filter(line => !/^~~.*~~$/.test(line.trim()))
   .join('\n')
 
+/**
+ * Remove the first line (which contains `[Credits]` or `[Title]`) and clean the rest.
+ * @param {string} segmentText - raw segment text
+ * @returns {string} cleaned text without the header
+ */
+const stripHeaderAndClean = segmentText => {
+  const lines = segmentText.split('\n')
+  // Remove the first line (the marker)
+  const remaining = lines.slice(1).join('\n')
+  return cleanSegment(remaining)
+}
+
+/**
+ * Apply HTML styling to credits text.
+ * @param {string} text - plain text
+ * @returns {string} styled HTML
+ */
+const styleCredits = text => {
+  // Use italic and a light gray color (common for credits)
+  return `<i><font color="#AAAAAA">${text}</font></i>`
+}
+
+/**
+ * Apply HTML styling to title text.
+ * @param {string} text - plain text
+ * @returns {string} styled HTML
+ */
+const styleTitle = text => {
+  // Bold and slightly larger, with a gold-ish tone
+  return `<b><font color="#FFD966">${text}</font></b>`
+}
+
 let srt = ''
 for (let index = 0; index < segments.length; index++) {
+  const rawSegment = segments[index]
   const [hr, min, sec, millis] = starts[index]
   const startMs = toMs(hr, min, sec, millis)
   const endMs = startMs + durations[index]
-  const content = cleanSegment(segments[index])
+
+  let content = ''
+
+  if (rawSegment.startsWith('[Credits]')) {
+    const cleaned = stripHeaderAndClean(rawSegment)
+    if (cleaned) {
+      content = styleCredits(cleaned)
+    }
+  } else if (rawSegment.startsWith('[Title]')) {
+    const cleaned = stripHeaderAndClean(rawSegment)
+    if (cleaned) {
+      content = styleTitle(cleaned)
+    }
+  } else {
+    // Normal lyric segment
+    content = cleanSegment(rawSegment)
+  }
+
   if (!content.trim()) continue
 
   srt += `${index + 1}\n`
