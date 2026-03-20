@@ -1,9 +1,12 @@
 #! /usr/bin/env node
 const fs = require('fs')
+const path = require('path')
+
+const scriptDir = __dirname
 
 // Read files
-const text = fs.readFileSync('texts.txt', 'utf8')
-const timeInfo = JSON.parse(fs.readFileSync('time-info.json', 'utf8'))
+const text = fs.readFileSync(path.join(scriptDir, 'texts.txt'), 'utf8')
+const timeInfo = JSON.parse(fs.readFileSync(path.join(scriptDir, 'time-info.json'), 'utf8'))
 
 // Split text into segments (same method used in the REPL)
 const segments = text.split(/\n{2,}/).filter(Boolean)
@@ -76,5 +79,5 @@ for (let i = 0; i < segments.length; i++) {
 }
 
 // Write output
-fs.writeFileSync('output.srt', srt)
+fs.writeFileSync(path.join(scriptDir, 'output.srt'), srt)
 console.log('SRT file generated: output.srt')
