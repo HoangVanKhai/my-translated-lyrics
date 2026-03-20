@@ -1,4 +1,5 @@
 #! /usr/bin/env node
+//@ts-check
 const fs = require('fs')
 const path = require('path')
 const timeInfo = require('./time-info.json')
@@ -55,7 +56,8 @@ const cleanSegment = segmentText => segmentText
 
 let srt = ''
 for (let index = 0; index < segments.length; index++) {
-  const startMs = toMs(...starts[index])
+  const [hr, min, sec, millis] = starts[index]
+  const startMs = toMs(hr, min, sec, millis)
   const endMs = startMs + durations[index]
   const content = cleanSegment(segments[index])
   if (content === '') continue // skip empty segments after cleaning
