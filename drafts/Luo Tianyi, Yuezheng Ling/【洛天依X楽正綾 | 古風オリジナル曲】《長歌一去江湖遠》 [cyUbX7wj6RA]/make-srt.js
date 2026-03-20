@@ -50,19 +50,11 @@ function formatTime(ms) {
  * @param {string} segmentText - raw segment text
  * @returns {string} cleaned text
  */
-function cleanSegment(segmentText) {
-  const lines = segmentText.split('\n')
-  const cleaned = lines.filter(line => {
-    const trimmed = line.trim()
-    // Remove comment lines (starting with #)
-    if (trimmed.startsWith('#')) return false
-    // Remove struck‑through lines (contain ~~...~~)
-    if (trimmed.includes('~~')) return false
-    return true
-  })
-  // Join with newline and trim extra whitespace
-  return cleaned.join('\n').trim()
-}
+const cleanSegment = segmentText => segmentText
+  .split('\n')
+  .filter(line => !line.trimStart().startsWith('#'))
+  .filter(line => !/^~~.*~~$/.test(line.trim()))
+  .join('\n')
 
 // Build SRT content
 let srt = ''
@@ -76,6 +68,7 @@ for (let i = 0; i < segments.length; i++) {
   srt += `${formatTime(startMs)} --> ${formatTime(endMs)}\n`
   srt += `${content}\n\n`
 }
+srt = srt.trimEnd()
 
 // Write output
 fs.writeFileSync(path.join(scriptDir, 'output.srt'), srt)
