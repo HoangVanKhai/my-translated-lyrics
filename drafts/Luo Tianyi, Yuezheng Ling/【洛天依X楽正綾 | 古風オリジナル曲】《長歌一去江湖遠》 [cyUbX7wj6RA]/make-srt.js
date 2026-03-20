@@ -24,9 +24,8 @@ if (segments.length !== starts.length || segments.length !== durations.length) {
  * @param {string} ms - milliseconds
  * @returns {number} total milliseconds
  */
-function toMs(h, m, s, ms) {
-  return (parseInt(h) * 3600 + parseInt(m) * 60 + parseInt(s)) * 1000 + parseInt(ms)
-}
+const toMs = (h, m, s, ms) =>
+  (parseInt(h) * 3600 + parseInt(m) * 60 + parseInt(s)) * 1000 + parseInt(ms)
 
 /**
  * Format milliseconds into SRT timestamp (`HH:MM:SS,mmm`).
