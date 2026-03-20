@@ -275,8 +275,10 @@ for (let segIdx = 0; segIdx < segments.length; segIdx++) {
     const cleaned = cleanSegment(rawSegment.slice(7)) // remove "[Title]" line
     if (cleaned) {
       // Translate the title
-      const titleKey = cleaned.trim()
-      const translatedTitle = creditsDict[titleKey] || titleKey
+      let translatedTitle = cleaned
+      for (const key in creditsDict) {
+        translatedTitle = translatedTitle.replaceAll(key, creditsDict[key])
+      }
       const styled = styleTitle(translatedTitle)
       outputEntries.push({ startMs, endMs, text: styled, isStyled: true })
     }

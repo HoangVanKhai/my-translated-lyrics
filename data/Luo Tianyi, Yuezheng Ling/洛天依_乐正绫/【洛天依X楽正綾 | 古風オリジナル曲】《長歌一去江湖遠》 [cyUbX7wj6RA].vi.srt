@@ -21,7 +21,7 @@
 
 4
 00:00:22,120 --> 00:00:30,600
-<b><font color="#FFD966">《長歌一去江湖遠》</font></b>
+<b><font color="#FFD966">《Trường Ca Nhất Khứ Giang Hồ Viễn》</font></b>
 
 5
 00:00:30,600 --> 00:00:33,320
@@ -134,7 +134,7 @@ Cười trở về chốn sơn thủy hồng trần.
 
 30
 00:01:55,120 --> 00:02:03,160
-<b><font color="#FFD966">《長歌一去江湖遠》</font></b>
+<b><font color="#FFD966">《Trường Ca Nhất Khứ Giang Hồ Viễn》</font></b>
 
 31
 00:02:03,160 --> 00:02:06,280
@@ -258,4 +258,4 @@ Cười vang khi trở về giữa sơn thủy hồng trần.
 
 61
 00:03:34,760 --> 00:03:48,000
-<b><font color="#FFD966">《長歌一去江湖遠》</font></b>
+<b><font color="#FFD966">《Trường Ca Nhất Khứ Giang Hồ Viễn》</font></b>
