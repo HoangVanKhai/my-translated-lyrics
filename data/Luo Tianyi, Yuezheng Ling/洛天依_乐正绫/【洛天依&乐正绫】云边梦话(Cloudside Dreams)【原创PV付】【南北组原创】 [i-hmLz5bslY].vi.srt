@@ -1,5 +1,6 @@
 1
 00:00:02,240 --> 00:00:10,080
+<font color="#AAAA22">
 Sáng tác/Chỉ đạo: 拾叁枝鸢尾
 Soạn nhạc: WOVOP
 Phối khí/Phối track: 阿落-itHH【千小莺】
@@ -8,11 +9,12 @@ Phối nhạc/Xử lý hậu kỳ: 月华P
 Chỉnh giọng: 落泠P
 Minh họa: 予忆Connect
 PV: AnSekinen
+</font>
 
 2
 00:00:10,080 --> 00:00:18,000
-Vân Biên Mộng Thoại
-Điều phối sản xuất âm nhạc: WOVOP
+<b><font color="#FFD966">Vân Biên Mộng Thoại</font></b>
+<font color="#AAAA22">Điều phối sản xuất âm nhạc: WOVOP</font>
 
 3
 00:00:18,000 --> 00:00:22,260
@@ -180,6 +182,7 @@ Thương thay trúc đình trong viện,
 
 44
 00:02:14,947 --> 00:02:22,247
+<font color="#AAAA22">
 Sáng tác/Chỉ đạo: 拾叁枝鸢尾
 Soạn nhạc: WOVOP
 Phối khí/Phối track: 阿落-itHH【千小莺】
@@ -188,11 +191,12 @@ Phối nhạc/Xử lý hậu kỳ: 月华P
 Chỉnh giọng: 落泠P
 Minh họa: 予忆Connect
 PV: AnSekinen
+</font>
 
 45
 00:02:22,247 --> 00:02:29,368
-Vân Biên Mộng Thoại
-Điều phối sản xuất âm nhạc: WOVOP
+<b><font color="#FFD966">Vân Biên Mộng Thoại</font></b>
+<font color="#AAAA22">Điều phối sản xuất âm nhạc: WOVOP</font>
 
 46
 00:02:29,368 --> 00:02:33,510
@@ -328,6 +332,7 @@ Lại cùng nhau dạo khắp đất trời.
 
 79
 00:04:14,498 --> 00:04:24,001
+<font color="#AAAA22">
 Sáng tác/Chỉ đạo: 拾叁枝鸢尾
 Soạn nhạc: WOVOP
 Phối khí/Phối track: 阿落-itHH【千小莺】
@@ -336,8 +341,9 @@ Phối nhạc/Xử lý hậu kỳ: 月华P
 Chỉnh giọng: 落泠P
 Minh họa: 予忆Connect
 PV: AnSekinen
+</font>
 
 80
 00:04:24,001 --> 00:04:31,794
-Vân Biên Mộng Thoại
-Điều phối sản xuất âm nhạc: WOVOP
+<b><font color="#FFD966">Vân Biên Mộng Thoại</font></b>
+<font color="#AAAA22">Điều phối sản xuất âm nhạc: WOVOP</font>
