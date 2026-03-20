@@ -74,20 +74,16 @@ const stripHeaderAndClean = segmentText => {
  * @param {string} text - plain text
  * @returns {string} styled HTML
  */
-const styleCredits = text => {
-  // Use italic and a light gray color (common for credits)
-  return `<font color="#AAAA22">${text}</font>`
-}
+const styleCredits = text =>
+  `<font color="#AAAA22">${text}</font>`
 
 /**
  * Apply HTML styling to title text.
  * @param {string} text - plain text
  * @returns {string} styled HTML
  */
-const styleTitle = text => {
-  // Bold and slightly larger, with a gold-ish tone
-  return `<b><font color="#FFD966">${text}</font></b>`
-}
+const styleTitle = text =>
+  `<b><font color="#FFD966">${text}</font></b>`
 
 let srt = ''
 for (let index = 0; index < segments.length; index++) {
