@@ -37,9 +37,13 @@ function formatTime(ms) {
   const minutes = Math.floor((ms % 3600000) / 60000)
   const seconds = Math.floor((ms % 60000) / 1000)
   const millis = ms % 1000
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${
-    seconds.toString().padStart(2, '0')
-  },${millis.toString().padStart(3, '0')}`
+
+  const hoursStr = hours.toString().padStart(2, '0')
+  const minutesStr = minutes.toString().padStart(2, '0')
+  const secondsStr = seconds.toString().padStart(2, '0')
+  const millisStr = millis.toString().padStart(3, '0')
+
+  return `${hoursStr}:${minutesStr}:${secondsStr},${millisStr}`
 }
 
 /**
