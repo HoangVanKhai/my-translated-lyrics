@@ -82,19 +82,19 @@ function normalize(s) {
 }
 
 /**
- * Translate a credits line using the dictionary.
- * The line format is "role   value". The role is looked up in creditsDict.
- * If no translation found, keep the original.
- * @param {string} line - e.g. "演唱  洛天依  乐正绫"
- * @returns {string} translated line
+ * Translate a text using the dictionary.
+ * @param {string} text The untranslated text.
+ * @returns {string} The translated text.
  */
-function translateCreditsLine(line) {
-  const parts = line.split('  ') // two spaces separator
-  if (parts.length === 0) return line
-  const role = parts[0]
-  const translatedRole = creditsDict[role] || role
-  const rest = parts.slice(1).join('  ')
-  return `${translatedRole}  ${rest}`
+function translate (text) {
+  const entries = Object.entries(creditsDict)
+    .sort(([_ak, av], [_bk, bv]) => bv.length - av.length) // sort from longest to shortest
+
+  for (const [key, value] of entries) {
+    text = text.replaceAll(key, value)
+  }
+
+  return text
 }
 
 /**
@@ -264,22 +264,13 @@ for (let segIdx = 0; segIdx < segments.length; segIdx++) {
     // Clean the segment (remove marker, comments, struck-through lines)
     const cleaned = cleanSegment(rawSegment.slice(10)) // remove "[Credits]" line
     if (cleaned) {
-      // Translate each line
-      const translatedLines = cleaned.split('\n')
-        .map(line => translateCreditsLine(line))
-        .join('\n')
-      const styled = styleCredits(translatedLines)
+      const styled = styleCredits(translate(cleaned))
       outputEntries.push({ startMs, endMs, text: styled, isStyled: true })
     }
   } else if (rawSegment.startsWith('[Title]')) {
     const cleaned = cleanSegment(rawSegment.slice(7)) // remove "[Title]" line
     if (cleaned) {
-      // Translate the title
-      let translatedTitle = cleaned
-      for (const key in creditsDict) {
-        translatedTitle = translatedTitle.replaceAll(key, creditsDict[key])
-      }
-      const styled = styleTitle(translatedTitle)
+      const styled = styleTitle(translate(cleaned))
       outputEntries.push({ startMs, endMs, text: styled, isStyled: true })
     }
   } else {
