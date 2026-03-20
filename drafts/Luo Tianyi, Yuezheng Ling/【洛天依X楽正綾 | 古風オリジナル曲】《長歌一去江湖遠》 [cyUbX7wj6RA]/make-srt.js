@@ -54,13 +54,13 @@ const cleanSegment = segmentText => segmentText
   .join('\n')
 
 let srt = ''
-for (let i = 0; i < segments.length; i++) {
-  const startMs = toMs(...starts[i])
-  const endMs = startMs + durations[i]
-  const content = cleanSegment(segments[i])
+for (let index = 0; index < segments.length; index++) {
+  const startMs = toMs(...starts[index])
+  const endMs = startMs + durations[index]
+  const content = cleanSegment(segments[index])
   if (content === '') continue // skip empty segments after cleaning
 
-  srt += `${i + 1}\n`
+  srt += `${index + 1}\n`
   srt += `${formatTime(startMs)} --> ${formatTime(endMs)}\n`
   srt += `${content}\n\n`
 }
