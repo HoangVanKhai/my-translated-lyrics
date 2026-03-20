@@ -71,5 +71,5 @@ for (let index = 0; index < segments.length; index++) {
 }
 srt = srt.trimEnd()
 
-fs.writeFileSync(path.join(scriptDir, 'output.srt'), srt)
-console.log('SRT file generated: output.srt')
+fs.writeFileSync(path.join(scriptDir, 'discontinuous.srt'), srt)
+console.log('SRT file generated: discontinuous.srt')
