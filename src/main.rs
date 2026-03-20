@@ -1,15 +1,17 @@
+mod args;
+mod file_descriptor;
+
+use args::Args;
 use clap::Parser;
-use core::fmt;
+use file_descriptor::FileDescriptor;
 use itertools::Itertools;
 use pipe_trait::Pipe;
 use reflink::reflink_or_copy;
-use std::cell::OnceCell;
 use std::collections::{HashMap, HashSet};
-use std::fs::{hard_link, read_dir, read_to_string, remove_file, symlink_metadata, DirEntry};
+use std::fs::{hard_link, read_dir, remove_file, DirEntry};
 use std::io::{self, ErrorKind};
 use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
-use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
 
 const SEPARATED_COLLECTIONS: &[&str] = &[
@@ -19,82 +21,6 @@ const SEPARATED_COLLECTIONS: &[&str] = &[
 ];
 
 const UNIFIED_COLLECTION: &str = "Short Relaxing Playlist 2025";
-
-#[derive(Debug, Clone, Parser)]
-#[clap(about = "Synchronize the lyrics")]
-struct Args {
-    /// For safety reasons, this programs list actions by default, this flag makes the program take those actions.
-    #[clap(long, short = 'x')]
-    execute: bool,
-
-    /// Source directory of the subtitles.
-    source: PathBuf,
-
-    /// Container of the target directories of the subtitles.
-    target: PathBuf,
-}
-
-#[derive(Clone)]
-struct FileDescriptor {
-    path: PathBuf,
-    dev: u64,
-    inode: u64,
-    size: u64,
-    content: OnceCell<String>,
-}
-
-/// Debug implementation that omits [`FileDescriptor::content`].
-impl fmt::Debug for FileDescriptor {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("FileDescriptor")
-            .field("path", &self.path)
-            .field("dev", &self.dev)
-            .field("inode", &self.inode)
-            .field("size", &self.size)
-            .finish()
-    }
-}
-
-impl FileDescriptor {
-    fn new(path: PathBuf) -> io::Result<Self> {
-        let stats = symlink_metadata(&path)?;
-        Ok(FileDescriptor {
-            path,
-            dev: stats.dev(),
-            inode: stats.ino(),
-            size: stats.len(),
-            content: OnceCell::new(),
-        })
-    }
-
-    fn load(&self) -> io::Result<&str> {
-        if let Some(content) = self.content.get() {
-            return Ok(content);
-        }
-        let content = read_to_string(&self.path)?;
-        self.content.get_or_init(|| content).as_str().pipe(Ok)
-    }
-
-    fn content_eq(&self, other: &Self) -> bool {
-        if self.inode == other.inode && self.dev == other.dev {
-            return true;
-        }
-
-        if self.size != other.size {
-            return false;
-        }
-
-        match (self.load(), other.load()) {
-            (Ok(a), Ok(b)) => a == b,
-            (Err(error), Ok(_)) => panic!("error: Cannot load file {:?}: {error}", &self.path),
-            (Ok(_), Err(error)) => panic!("error: Cannot load file {:?}: {error}", &other.path),
-            (Err(error_a), Err(error_b)) => panic!(
-                "error: Cannot load file {:?} ({error_a}) and {:?} ({error_b})",
-                &self.path, &other.path,
-            ),
-        }
-    }
-}
 
 /// Try hardlink, then try reflink, and finally copy.
 fn link_or_copy(source: &Path, target: &Path) -> io::Result<()> {
