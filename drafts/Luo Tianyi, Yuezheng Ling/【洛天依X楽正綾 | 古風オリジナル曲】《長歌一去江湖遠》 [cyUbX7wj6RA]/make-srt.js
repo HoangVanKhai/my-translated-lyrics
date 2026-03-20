@@ -60,7 +60,7 @@ for (let index = 0; index < segments.length; index++) {
   const startMs = toMs(hr, min, sec, millis)
   const endMs = startMs + durations[index]
   const content = cleanSegment(segments[index])
-  if (content === '') continue // skip empty segments after cleaning
+  if (content === '') continue
 
   srt += `${index + 1}\n`
   srt += `${formatTime(startMs)} --> ${formatTime(endMs)}\n`
