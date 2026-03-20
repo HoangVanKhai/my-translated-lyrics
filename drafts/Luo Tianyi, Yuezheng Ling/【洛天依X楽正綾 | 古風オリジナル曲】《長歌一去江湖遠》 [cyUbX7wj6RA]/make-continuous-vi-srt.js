@@ -307,7 +307,7 @@ for (const entry of outputEntries) {
   srt += `${entry.text}\n\n`
 }
 
-srt = srt.trimEnd()
+srt = srt.trimEnd() + '\n'
 
 fs.writeFileSync(path.join(scriptDir, 'continuous.vi.srt'), srt)
 console.log('SRT file generated: continuous.vi.srt')

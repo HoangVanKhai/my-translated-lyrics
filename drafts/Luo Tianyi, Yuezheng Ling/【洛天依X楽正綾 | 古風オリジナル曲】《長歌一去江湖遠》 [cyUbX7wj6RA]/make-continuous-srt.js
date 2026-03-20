@@ -259,7 +259,7 @@ for (const entry of outputEntries) {
   srt += `${entry.text}\n\n`
 }
 
-srt = srt.trimEnd()
+srt = srt.trimEnd() + '\n'
 
 // ----- Write output -----
 fs.writeFileSync(path.join(scriptDir, 'continuous.srt'), srt)

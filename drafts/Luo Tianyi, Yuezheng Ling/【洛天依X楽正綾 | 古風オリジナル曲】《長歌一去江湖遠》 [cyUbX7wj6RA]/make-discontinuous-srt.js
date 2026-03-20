@@ -137,7 +137,7 @@ for (let index = 0; index < segments.length; index++) {
   srt += `${formatTime(startMs)} --> ${formatTime(endMs)}\n`
   srt += `${content}\n\n`
 }
-srt = srt.trimEnd()
+srt = srt.trimEnd() + '\n'
 
 fs.writeFileSync(path.join(scriptDir, 'discontinuous.srt'), srt)
 console.log('SRT file generated: discontinuous.srt')
