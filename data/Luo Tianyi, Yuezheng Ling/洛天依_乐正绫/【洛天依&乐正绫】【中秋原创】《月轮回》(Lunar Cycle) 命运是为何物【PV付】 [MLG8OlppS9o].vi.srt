@@ -1,0 +1,243 @@
+1
+00:00:05,433 --> 00:00:06,000
+<font color="#AAAA22">Biên khúc: 清风最梦</font>
+
+2
+00:00:06,000 --> 00:00:06,500
+<font color="#AAAA22">Soạn nhạc: 清风最梦</font>
+
+3
+00:00:06,500 --> 00:00:07,000
+<font color="#AAAA22">Tác từ: 清风最梦</font>
+
+4
+00:00:07,000 --> 00:00:07,612
+<font color="#AAAA22">Hòa âm: 清风最梦/Dinstakovich</font>
+
+5
+00:00:07,612 --> 00:00:08,132
+<font color="#AAAA22">Trình bày: Yuezheng Ling/Luo Tianyi</font>
+
+6
+00:00:08,132 --> 00:00:08,887
+<font color="#AAAA22">Điều giáo: 清风最梦</font>
+
+7
+00:00:08,887 --> 00:00:09,631
+<font color="#AAAA22">Mixing: 清风最梦</font>
+
+8
+00:00:09,631 --> 00:00:10,324
+<font color="#AAAA22">Minh họa: 梦夏</font>
+
+9
+00:00:10,324 --> 00:00:10,999
+<font color="#AAAA22">Thiết kế trang phục: 狐狸爱画画</font>
+
+10
+00:00:10,999 --> 00:00:11,736
+<font color="#AAAA22">Video: 睡不醒的纤某人_AXIDI</font>
+
+11
+00:00:19,871 --> 00:00:22,991
+<b><font color="#FFD966">Nguyệt Luân Hồi</font></b>
+
+12
+00:00:22,991 --> 00:00:26,320
+Dưới chân từng bước chân nhảy múa
+
+13
+00:00:26,320 --> 00:00:28,790
+(Khẽ múa một điệu tựa chim hồng)
+
+14
+00:00:28,790 --> 00:00:31,610
+Sắc đêm như mực loang vào gió
+
+15
+00:00:31,610 --> 00:00:34,640
+(Khúc dạo của trăng hòa cùng chén trà)
+
+16
+00:00:34,640 --> 00:00:37,120
+Bóng dáng ai đã biến mất không dấu vết
+
+17
+00:00:37,120 --> 00:00:39,800
+(Theo làn hương trà tan vào chốn thiên cung)
+
+18
+00:00:39,800 --> 00:00:42,590
+Ánh đèn soi rọi vạn nhà rực đỏ
+
+19
+00:00:42,590 --> 00:00:44,600
+(Xuyên qua song cửa chiếu vào giấc mơ)
+
+20
+00:00:44,600 --> 00:00:48,240
+Thời gian chẳng ngừng khắc họa nhân quả
+
+21
+00:00:48,240 --> 00:00:50,110
+(Cứ lặp đi lặp lại những nét họa vần xoay)
+
+22
+00:00:50,110 --> 00:00:53,640
+Hơi thở tựa như manh mối của định mệnh
+
+23
+00:00:53,640 --> 00:00:59,010
+(Chẳng thể phân định, chẳng thể thấu triệt)
+
+24
+00:00:59,010 --> 00:01:01,690
+Điều ta hằng truy vấn là ai, là ai?
+
+25
+00:01:01,690 --> 00:01:04,270
+(Tư niệm hóa thành tinh hỏa phiêu tán khắp trời)
+
+26
+00:01:04,270 --> 00:01:07,090
+Nhịp điệu này tựa như nhịp tim đuổi theo
+
+27
+00:01:07,090 --> 00:01:10,020
+(Hòa cùng thu thủy hát về những thị phi phù hoa)
+
+28
+00:01:10,020 --> 00:01:14,500
+Quỹ đạo vầng trăng không ngừng luân hồi
+
+29
+00:01:14,500 --> 00:01:18,070
+Ai đã để lại dư vị trên lối cũ?
+
+30
+00:01:18,070 --> 00:01:20,651
+(Cành quế vàng lại vừa đâm chồi mới)
+
+31
+00:01:31,383 --> 00:01:32,016
+<font color="#AAAA22">Biên khúc: 清风最梦</font>
+
+32
+00:01:32,016 --> 00:01:32,546
+<font color="#AAAA22">Soạn nhạc: 清风最梦</font>
+
+33
+00:01:32,546 --> 00:01:33,083
+<font color="#AAAA22">Tác từ: 清风最梦</font>
+
+34
+00:01:33,083 --> 00:01:33,583
+<font color="#AAAA22">Hòa âm: 清风最梦/Dinstakovich</font>
+
+35
+00:01:33,583 --> 00:01:34,119
+<font color="#AAAA22">Trình bày: Yuezheng Ling/Luo Tianyi</font>
+
+36
+00:01:34,119 --> 00:01:34,861
+<font color="#AAAA22">Điều giáo: 清风最梦</font>
+
+37
+00:01:34,861 --> 00:01:35,614
+<font color="#AAAA22">Mixing: 清风最梦</font>
+
+38
+00:01:35,614 --> 00:01:36,311
+<font color="#AAAA22">Minh họa: 梦夏</font>
+
+39
+00:01:36,311 --> 00:01:36,998
+<font color="#AAAA22">Thiết kế trang phục: 狐狸爱画画</font>
+
+40
+00:01:36,998 --> 00:01:37,748
+<font color="#AAAA22">Video: 睡不醒的纤某人_AXIDI</font>
+
+41
+00:01:39,448 --> 00:01:42,710
+<b><font color="#FFD966">Nguyệt Luân Hồi</font></b>
+
+42
+00:01:42,710 --> 00:01:45,266
+Gió đêm bên tai khẽ lời tụng niệm
+
+43
+00:01:45,266 --> 00:01:48,130
+(Nâng chén vọng nguyệt nơi thủy tạ đình đài)
+
+44
+00:01:48,130 --> 00:01:50,740
+Chuyện hợp tan, buồn vui trong cõi u minh
+
+45
+00:01:50,740 --> 00:01:53,640
+(Trăng khuyết trăng tròn đều do thiên ý xoay vần)
+
+46
+00:01:53,640 --> 00:01:56,150
+Sao băng vạch ngang trời đêm thăm thẳm
+
+47
+00:01:56,150 --> 00:01:59,154
+(Viết lên câu đố giữa vạn cổ thương khung)
+
+48
+00:02:01,740 --> 00:02:01,740
+Thế gian tụ tán quá vội vàng
+
+49
+00:02:01,740 --> 00:02:03,654
+(Chỉ còn sót lại chút mơ hồ dưới ánh trăng)
+
+50
+00:02:03,654 --> 00:02:07,110
+Tương lai dừng bước chờ đợi trong màn đêm
+
+51
+00:02:07,110 --> 00:02:09,150
+(Lặng nhìn thế gian dâu bể, sông dài cuộn chảy)
+
+52
+00:02:09,150 --> 00:02:12,620
+Lời giải đáp ẩn giấu sau ánh trăng
+
+53
+00:02:12,620 --> 00:02:18,038
+(Đáp án định mệnh làm sao thấu hiểu được đây?)
+
+54
+00:02:18,038 --> 00:02:20,730
+Điều ta hằng truy vấn là ai, là ai?
+
+55
+00:02:20,730 --> 00:02:23,286
+(Tư niệm hóa thành tinh hỏa phiêu tán khắp trời)
+
+56
+00:02:23,286 --> 00:02:26,200
+Nhịp điệu này tựa như nhịp tim đuổi theo
+
+57
+00:02:26,200 --> 00:02:28,910
+(Hòa cùng thu thủy hát về những thị phi phù hoa)
+
+58
+00:02:28,910 --> 00:02:33,540
+Quỹ đạo vầng trăng không ngừng luân hồi
+
+59
+00:02:33,540 --> 00:02:37,030
+Ai đã để lại dư vị trên lối cũ?
+
+60
+00:02:37,030 --> 00:02:39,669
+(Cành quế vàng lại vừa đâm chồi mới)
+
+61
+00:03:01,532 --> 00:03:14,367
+<b><font color="#FFD966">Nguyệt Luân Hồi</font></b>
