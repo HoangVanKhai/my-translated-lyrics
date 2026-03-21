@@ -1,0 +1,189 @@
+1
+00:00:01,434 --> 00:00:06,333
+<font color="#AAAA22">Lời</font>  <font color="#AAAAAA">北山薇</font>
+<font color="#AAAA22">Nhạc/Phối khí</font>  <font color="#AAAAAA">砖厂浪人</font>
+<font color="#AAAA22">Điều giáo</font>  <font color="#AAAAAA">潜水荷叶/鬼面P</font>
+
+2
+00:00:07,666 --> 00:00:11,865
+<font color="#AAAA22">Mix</font>  <font color="#AAAAAA">拙木</font>
+<font color="#AAAA22">Họa</font>  <font color="#AAAAAA">巫烨</font>
+<font color="#AAAA22">Video</font>  <font color="#AAAAAA">梦游</font>
+
+3
+00:00:13,365 --> 00:00:17,830
+<font color="#AAAA22">Kế hoạch</font>  <font color="#AAAAAA">花间有鹿来</font>
+<font color="#AAAA22">Giám chế</font>  <font color="#AAAAAA">莫羡</font>
+<font color="#AAAA22">Sản xuất</font>  <font color="#AAAAAA">幻月音乐团 <font color="#55ABCD">(Âm nhạc)</font>/芜筝社 <font color="#55ABCD">(Thị giác)</font></font>
+
+4
+00:00:18,530 --> 00:00:22,029
+<b><font color="#FFD966">Lai Nhật Khởi Song</font></b>
+
+5
+00:00:22,330 --> 00:00:27,540
+Lúc trời trong, núi xa loang lổ như dải lụa trắng
+
+6
+00:00:27,540 --> 00:00:32,950
+Thu vén sắc trúc, lên đường phó thác hẹn ước người xưa
+
+7
+00:00:32,950 --> 00:00:38,350
+Vì thèm cá giếc xanh nên chậm bước ven sông
+
+8
+00:00:38,350 --> 00:00:44,020
+Bên sông chợt nghe tiếng cá chép quẫy đuôi nhảy vọt
+
+9
+00:00:44,020 --> 00:00:49,300
+Gõ cửa ba tiếng, giả vờ như không thấy
+
+10
+00:00:49,300 --> 00:00:54,730
+Trộm nghe tiếng cười nói, ngỡ như hiện rõ lúm đồng tiền
+
+11
+00:00:54,730 --> 00:01:00,000
+Nói rằng lũ chim nhỏ đang quấy rầy làn khói bếp
+
+12
+00:01:00,000 --> 00:01:04,960
+Rượu cũ chuyện mới, chưa viết xuống đã tựa thành chương
+
+13
+00:01:04,960 --> 00:01:10,350
+Quét tuyết đẩy cửa, đón ánh trăng trước song
+
+14
+00:01:10,350 --> 00:01:15,670
+Một cây mai trắng tựa đàn bướm ngọc
+
+15
+00:01:15,670 --> 00:01:21,040
+Tiếng sáo Giang Thành gửi ý đến Trường An xa xôi
+
+16
+00:01:21,040 --> 00:01:26,260
+Một dải bụi trần vương trên phố tiên
+
+17
+00:01:26,260 --> 00:01:31,630
+Nhà sư si dại, lữ khách sầu bi tìm kiếm giữa nhân gian
+
+18
+00:01:31,630 --> 00:01:36,960
+Sương thanh bóng lẻ, mỗi người tự xót thương
+
+19
+00:01:36,960 --> 00:01:42,340
+Bẻ một nhành quỳnh, rơi rụng vài cánh hoa
+
+20
+00:01:42,340 --> 00:01:47,546
+Lão say chấm tuyết, lấy núi cao làm nghiên mực
+
+21
+00:01:49,512 --> 00:01:52,278
+<font color="#AAAA22">Lời</font>  <font color="#AAAAAA">北山薇</font>
+<font color="#AAAA22">Nhạc/Phối khí</font>  <font color="#AAAAAA">砖厂浪人</font>
+<font color="#AAAA22">Điều giáo</font>  <font color="#AAAAAA">潜水荷叶/鬼面P</font>
+
+22
+00:01:54,878 --> 00:01:58,110
+<font color="#AAAA22">Mix</font>  <font color="#AAAAAA">拙木</font>
+<font color="#AAAA22">Họa</font>  <font color="#AAAAAA">巫烨</font>
+<font color="#AAAA22">Video</font>  <font color="#AAAAAA">梦游</font>
+
+23
+00:01:59,510 --> 00:02:04,443
+<font color="#AAAA22">Kế hoạch</font>  <font color="#AAAAAA">花间有鹿来</font>
+<font color="#AAAA22">Giám chế</font>  <font color="#AAAAAA">莫羡</font>
+<font color="#AAAA22">Sản xuất</font>  <font color="#AAAAAA">幻月音乐团 <font color="#55ABCD">(Âm nhạc)</font>/芜筝社 <font color="#55ABCD">(Thị giác)</font></font>
+
+24
+00:02:04,709 --> 00:02:08,442
+<b><font color="#FFD966">Lai Nhật Khởi Song</font></b>
+
+25
+00:02:09,000 --> 00:02:14,310
+Gối chăn mượn tạm, thổi tắt ngọn đèn cô độc
+
+26
+00:02:14,310 --> 00:02:19,650
+Cùng hoa mai say ngủ, tiếng gió ngâm vịnh vào đêm
+
+27
+00:02:19,650 --> 00:02:24,990
+Trong mộng thấy bờ sông, dời thuyền về lại vườn xưa
+
+28
+00:02:24,990 --> 00:02:30,610
+Tuyết trên sông đầm đìa, vương vãi khắp bầu trời
+
+29
+00:02:30,610 --> 00:02:36,000
+Tiếng vó ngựa xa xăm thúc giục lời từ biệt
+
+30
+00:02:36,000 --> 00:02:41,280
+Lại rót đầy phong tuyết, lệ sầu che sau ống tay áo
+
+31
+00:02:41,280 --> 00:02:46,590
+Ghé gối tựa nghiêng, đôi má đều ửng hồng
+
+32
+00:02:46,590 --> 00:02:51,730
+Chưa say, chưa say, ngày khác lại uống cạn ba ngàn chén
+
+33
+00:02:51,730 --> 00:02:56,980
+Ngâm vịnh quá canh ba, mái hiên đã đóng băng
+
+34
+00:02:56,980 --> 00:03:02,340
+Trang điểm mái đầu bạc, chờ đợi vị tiên mai
+
+35
+00:03:02,340 --> 00:03:07,560
+Đun trà, tỉ mỉ sắc từng bọt tuyết trắng
+
+36
+00:03:07,560 --> 00:03:12,990
+Nhị lạnh hồn băng, hương thơm xộc vào mắt
+
+37
+00:03:12,990 --> 00:03:18,310
+Tờ giấy xa xăm quăng vào giữa làn mây
+
+38
+00:03:18,310 --> 00:03:23,650
+Khách phương xa mang đến phong thư của năm cũ
+
+39
+00:03:23,650 --> 00:03:28,960
+Gió xuân cỏ xuân nằm phủ trên bậc ngọc
+
+40
+00:03:28,960 --> 00:03:34,091
+Lại hỏi rằng ngày sau trước cửa sổ chạm trổ ấy
+
+41
+00:03:36,291 --> 00:03:39,724
+<font color="#AAAA22">Lời</font>  <font color="#AAAAAA">北山薇</font>
+<font color="#AAAA22">Nhạc/Phối khí</font>  <font color="#AAAAAA">砖厂浪人</font>
+<font color="#AAAA22">Điều giáo</font>  <font color="#AAAAAA">潜水荷叶/鬼面P</font>
+
+42
+00:03:41,461 --> 00:03:44,857
+<font color="#AAAA22">Mix</font>  <font color="#AAAAAA">拙木</font>
+<font color="#AAAA22">Họa</font>  <font color="#AAAAAA">巫烨</font>
+<font color="#AAAA22">Video</font>  <font color="#AAAAAA">梦游</font>
+
+43
+00:03:46,189 --> 00:03:51,188
+<font color="#AAAA22">Kế hoạch</font>  <font color="#AAAAAA">花间有鹿来</font>
+<font color="#AAAA22">Giám chế</font>  <font color="#AAAAAA">莫羡</font>
+<font color="#AAAA22">Sản xuất</font>  <font color="#AAAAAA">幻月音乐团 <font color="#55ABCD">(Âm nhạc)</font>/芜筝社 <font color="#55ABCD">(Thị giác)</font></font>
