@@ -16,26 +16,26 @@ Chí thiếu niên giữa nhân gian, tựa ánh thanh huy sáng soi
 
 5
 00:00:18,283 --> 00:00:22,612
-Soạn nhạc/Biên khúc: 砖厂浪人
-Lời: 萧暮雨
-Trình bày: Luo Tianyi; Yuezheng Ying
+<font color="#AAAA22">Soạn nhạc/Biên khúc:</font> <font color="#AAAAAA">砖厂浪人</font>
+<font color="#AAAA22">Lời:</font> <font color="#AAAAAA">萧暮雨</font>
+<font color="#AAAA22">Trình bày:</font> <font color="#AAAAAA">Luo Tianyi; Yuezheng Ying</font>
 
 6
 00:00:22,612 --> 00:00:26,885
-Điều giáo: 折v; 跨海星尘
-Mixing: 虎皮猫
-Minh họa: 浮空茜
-Video: 阿妍
+<font color="#AAAA22">Điều giáo:</font> <font color="#AAAAAA">折v; 跨海星尘</font>
+<font color="#AAAA22">Mixing:</font> <font color="#AAAAAA">虎皮猫</font>
+<font color="#AAAA22">Minh họa:</font> <font color="#AAAAAA">浮空茜</font>
+<font color="#AAAA22">Video:</font> <font color="#AAAAAA">阿妍</font>
 
 7
 00:00:26,885 --> 00:00:29,714
-Điều phối: 花间, 北山
-Hỗ trợ kế hoạch: 星际
-Giám chế âm thanh: 磷元素
+<font color="#AAAA22">Điều phối:</font> <font color="#AAAAAA">花间, 北山</font>
+<font color="#AAAA22">Hỗ trợ kế hoạch:</font> <font color="#AAAAAA">星际</font>
+<font color="#AAAA22">Giám chế âm thanh:</font> <font color="#AAAAAA">磷元素</font>
 
 8
 00:00:29,714 --> 00:00:31,939
-Hoàng Lâu Nguyệt
+<b><font color="#FFD966">Hoàng Lâu Nguyệt</font></b>
 
 9
 00:00:31,939 --> 00:00:34,658
@@ -111,20 +111,23 @@ Nhớ quay về thực hiện lời hẹn đối giường nghe mưa
 
 27
 00:01:45,213 --> 00:01:48,835
-Soạn nhạc/Biên khúc: 砖厂浪人
-Lời: 萧暮雨
-Trình bày: Luo Tianyi; Yuezheng Ying
+<font color="#AAAA22">Soạn nhạc/Biên khúc:</font> <font color="#AAAAAA">砖厂浪人</font>
+<font color="#AAAA22">Lời:</font> <font color="#AAAAAA">萧暮雨</font>
+<font color="#AAAA22">Trình bày:</font> <font color="#AAAAAA">Luo Tianyi; Yuezheng Ying</font>
 
 28
 00:01:48,835 --> 00:01:52,488
-Điều giáo: 折v; 跨海星尘
-Mixing: 虎皮猫 / Minh họa: 浮空茜
-Video: 阿妍 / Điều phối: 花间, 北山
-Hỗ trợ: 星际 / Giám chế: 磷元素
+<font color="#AAAA22">Điều giáo:</font> <font color="#AAAAAA">折v; 跨海星尘</font>
+<font color="#AAAA22">Mixing:</font> <font color="#AAAAAA">虎皮猫</font>
+<font color="#AAAA22">Minh họa:</font> <font color="#AAAAAA">浮空茜</font>
+<font color="#AAAA22">Video:</font> <font color="#AAAAAA">阿妍</font>
+<font color="#AAAA22">Điều phối:</font> <font color="#AAAAAA">花间, 北山</font>
+<font color="#AAAA22">Hỗ trợ kế hoạch:</font> <font color="#AAAAAA">星际</font>
+<font color="#AAAA22">Giám chế âm thanh:</font> <font color="#AAAAAA">磷元素</font>
 
 29
 00:01:52,488 --> 00:01:56,445
-Hoàng Lâu Nguyệt
+<b><font color="#FFD966">Hoàng Lâu Nguyệt</font></b>
 
 30
 00:01:57,140 --> 00:01:59,880
