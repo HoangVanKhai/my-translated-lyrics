@@ -1,20 +1,18 @@
 1
 00:00:02,240 --> 00:00:10,080
-<font color="#AAAA22">
-Sáng tác/Chỉ đạo: 拾叁枝鸢尾
-Soạn nhạc: WOVOP
-Phối khí/Phối track: 阿落-itHH【千小莺】
-Thể hiện: Luo Tianyi, Yuezheng Ling
-Phối nhạc/Xử lý hậu kỳ: 月华P
-Chỉnh giọng: 落泠P
-Minh họa: 予忆Connect
-PV: AnSekinen
-</font>
+<font color="#AAAA22">Sáng tác/Chỉ đạo:</font> <font color="#AAAAAA">拾叁枝鸢尾</font>
+<font color="#AAAA22">Soạn nhạc:</font> <font color="#AAAAAA">WOVOP</font>
+<font color="#AAAA22">Phối khí/Phối track:</font> <font color="#AAAAAA">阿落-itHH【千小莺】</font>
+<font color="#AAAA22">Thể hiện:</font> <font color="#AAAAAA">Luo Tianyi, Yuezheng Ling</font>
+<font color="#AAAA22">Phối nhạc/Xử lý hậu kỳ:</font> <font color="#AAAAAA">月华P</font>
+<font color="#AAAA22">Chỉnh giọng:</font> <font color="#AAAAAA">落泠P</font>
+<font color="#AAAA22">Minh họa:</font> <font color="#AAAAAA">予忆Connect</font>
+<font color="#AAAA22">PV:</font> <font color="#AAAAAA">AnSekinen</font>
 
 2
 00:00:10,080 --> 00:00:18,000
 <b><font color="#FFD966">Vân Biên Mộng Thoại</font></b>
-<font color="#AAAA22">Điều phối sản xuất âm nhạc: WOVOP</font>
+<font color="#AAAA22">Điều phối sản xuất âm nhạc:</font> <font color="#AAAAAA">WOVOP</font>
 
 3
 00:00:18,000 --> 00:00:22,260
@@ -182,21 +180,19 @@ Thương thay trúc đình trong viện,
 
 44
 00:02:14,947 --> 00:02:22,247
-<font color="#AAAA22">
-Sáng tác/Chỉ đạo: 拾叁枝鸢尾
-Soạn nhạc: WOVOP
-Phối khí/Phối track: 阿落-itHH【千小莺】
-Thể hiện: Luo Tianyi, Yuezheng Ling
-Phối nhạc/Xử lý hậu kỳ: 月华P
-Chỉnh giọng: 落泠P
-Minh họa: 予忆Connect
-PV: AnSekinen
-</font>
+<font color="#AAAA22">Sáng tác/Chỉ đạo:</font> <font color="#AAAAAA">拾叁枝鸢尾</font>
+<font color="#AAAA22">Soạn nhạc:</font> <font color="#AAAAAA">WOVOP</font>
+<font color="#AAAA22">Phối khí/Phối track:</font> <font color="#AAAAAA">阿落-itHH【千小莺】</font>
+<font color="#AAAA22">Thể hiện:</font> <font color="#AAAAAA">Luo Tianyi, Yuezheng Ling</font>
+<font color="#AAAA22">Phối nhạc/Xử lý hậu kỳ:</font> <font color="#AAAAAA">月华P</font>
+<font color="#AAAA22">Chỉnh giọng:</font> <font color="#AAAAAA">落泠P</font>
+<font color="#AAAA22">Minh họa:</font> <font color="#AAAAAA">予忆Connect</font>
+<font color="#AAAA22">PV:</font> <font color="#AAAAAA">AnSekinen</font>
 
 45
 00:02:22,247 --> 00:02:29,368
 <b><font color="#FFD966">Vân Biên Mộng Thoại</font></b>
-<font color="#AAAA22">Điều phối sản xuất âm nhạc: WOVOP</font>
+<font color="#AAAA22">Điều phối sản xuất âm nhạc:</font> <font color="#AAAAAA">WOVOP</font>
 
 46
 00:02:29,368 --> 00:02:33,510
@@ -332,18 +328,16 @@ Lại cùng nhau dạo khắp đất trời.
 
 79
 00:04:14,498 --> 00:04:24,001
-<font color="#AAAA22">
-Sáng tác/Chỉ đạo: 拾叁枝鸢尾
-Soạn nhạc: WOVOP
-Phối khí/Phối track: 阿落-itHH【千小莺】
-Thể hiện: Luo Tianyi, Yuezheng Ling
-Phối nhạc/Xử lý hậu kỳ: 月华P
-Chỉnh giọng: 落泠P
-Minh họa: 予忆Connect
-PV: AnSekinen
-</font>
+<font color="#AAAA22">Sáng tác/Chỉ đạo:</font> <font color="#AAAAAA">拾叁枝鸢尾</font>
+<font color="#AAAA22">Soạn nhạc:</font> <font color="#AAAAAA">WOVOP</font>
+<font color="#AAAA22">Phối khí/Phối track:</font> <font color="#AAAAAA">阿落-itHH【千小莺】</font>
+<font color="#AAAA22">Thể hiện:</font> <font color="#AAAAAA">Luo Tianyi, Yuezheng Ling</font>
+<font color="#AAAA22">Phối nhạc/Xử lý hậu kỳ:</font> <font color="#AAAAAA">月华P</font>
+<font color="#AAAA22">Chỉnh giọng:</font> <font color="#AAAAAA">落泠P</font>
+<font color="#AAAA22">Minh họa:</font> <font color="#AAAAAA">予忆Connect</font>
+<font color="#AAAA22">PV:</font> <font color="#AAAAAA">AnSekinen</font>
 
 80
 00:04:24,001 --> 00:04:31,794
 <b><font color="#FFD966">Vân Biên Mộng Thoại</font></b>
-<font color="#AAAA22">Điều phối sản xuất âm nhạc: WOVOP</font>
+<font color="#AAAA22">Điều phối sản xuất âm nhạc:</font> <font color="#AAAAAA">WOVOP</font>
