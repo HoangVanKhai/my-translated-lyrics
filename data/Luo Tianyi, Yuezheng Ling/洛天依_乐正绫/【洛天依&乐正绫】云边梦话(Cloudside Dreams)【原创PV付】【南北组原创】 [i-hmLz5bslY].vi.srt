@@ -2,7 +2,7 @@
 00:00:02,240 --> 00:00:10,080
 <font color="#AAAA22">Sáng tác/Chỉ đạo:</font> <font color="#AAAAAA">拾叁枝鸢尾</font>
 <font color="#AAAA22">Soạn nhạc:</font> <font color="#AAAAAA">WOVOP</font>
-<font color="#AAAA22">Phối khí/Phối track:</font> <font color="#AAAAAA">阿落-itHH【千小莺】</font>
+<font color="#AAAA22">Phối khí/Phối track:</font> <font color="#AAAAAA">阿落-itHH<font color="#55ABCD">【千小莺】</font></font>
 <font color="#AAAA22">Thể hiện:</font> <font color="#AAAAAA">Luo Tianyi, Yuezheng Ling</font>
 <font color="#AAAA22">Phối nhạc/Xử lý hậu kỳ:</font> <font color="#AAAAAA">月华P</font>
 <font color="#AAAA22">Chỉnh giọng:</font> <font color="#AAAAAA">落泠P</font>
@@ -182,7 +182,7 @@ Thương thay trúc đình trong viện,
 00:02:14,947 --> 00:02:22,247
 <font color="#AAAA22">Sáng tác/Chỉ đạo:</font> <font color="#AAAAAA">拾叁枝鸢尾</font>
 <font color="#AAAA22">Soạn nhạc:</font> <font color="#AAAAAA">WOVOP</font>
-<font color="#AAAA22">Phối khí/Phối track:</font> <font color="#AAAAAA">阿落-itHH【千小莺】</font>
+<font color="#AAAA22">Phối khí/Phối track:</font> <font color="#AAAAAA">阿落-itHH<font color="#55ABCD">【千小莺】</font></font>
 <font color="#AAAA22">Thể hiện:</font> <font color="#AAAAAA">Luo Tianyi, Yuezheng Ling</font>
 <font color="#AAAA22">Phối nhạc/Xử lý hậu kỳ:</font> <font color="#AAAAAA">月华P</font>
 <font color="#AAAA22">Chỉnh giọng:</font> <font color="#AAAAAA">落泠P</font>
@@ -330,7 +330,7 @@ Lại cùng nhau dạo khắp đất trời.
 00:04:14,498 --> 00:04:24,001
 <font color="#AAAA22">Sáng tác/Chỉ đạo:</font> <font color="#AAAAAA">拾叁枝鸢尾</font>
 <font color="#AAAA22">Soạn nhạc:</font> <font color="#AAAAAA">WOVOP</font>
-<font color="#AAAA22">Phối khí/Phối track:</font> <font color="#AAAAAA">阿落-itHH【千小莺】</font>
+<font color="#AAAA22">Phối khí/Phối track:</font> <font color="#AAAAAA">阿落-itHH<font color="#55ABCD">【千小莺】</font></font>
 <font color="#AAAA22">Thể hiện:</font> <font color="#AAAAAA">Luo Tianyi, Yuezheng Ling</font>
 <font color="#AAAA22">Phối nhạc/Xử lý hậu kỳ:</font> <font color="#AAAAAA">月华P</font>
 <font color="#AAAA22">Chỉnh giọng:</font> <font color="#AAAAAA">落泠P</font>

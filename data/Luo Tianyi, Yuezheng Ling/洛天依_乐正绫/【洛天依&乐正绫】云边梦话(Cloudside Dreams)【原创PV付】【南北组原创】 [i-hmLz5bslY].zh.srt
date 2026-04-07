@@ -2,7 +2,7 @@
 00:00:02,240 --> 00:00:10,080
 <font color="#AAAA22">作词/策划:</font><font color="#AAAAAA">拾叁枝鸢尾</font>
 <font color="#AAAA22">作曲:</font><font color="#AAAAAA">WOVOP</font>
-<font color="#AAAA22">编曲/分轨混音:</font><font color="#AAAAAA">阿落- itHH【千小莺】</font>
+<font color="#AAAA22">编曲/分轨混音:</font><font color="#AAAAAA">阿落- itHH<font color="#55ABCD">【千小莺】</font></font>
 <font color="#AAAA22">演唱:</font><font color="#AAAAAA">洛天依，乐正绫</font>
 <font color="#AAAA22">贴唱混音/母带:</font><font color="#AAAAAA">月华 P</font>
 <font color="#AAAA22">调:</font><font color="#AAAAAA">落泠 P</font>
@@ -182,7 +182,7 @@
 00:02:14,947 --> 00:02:22,247
 <font color="#AAAA22">作词/策划:</font><font color="#AAAAAA">拾叁枝鸢尾</font>
 <font color="#AAAA22">作曲:</font><font color="#AAAAAA">WOVOP</font>
-<font color="#AAAA22">编曲/分轨混音:</font><font color="#AAAAAA">阿落- itHH【千小莺】</font>
+<font color="#AAAA22">编曲/分轨混音:</font><font color="#AAAAAA">阿落- itHH<font color="#55ABCD">【千小莺】</font></font>
 <font color="#AAAA22">演唱:</font><font color="#AAAAAA">洛天依，乐正绫</font>
 <font color="#AAAA22">贴唱混音/母带:</font><font color="#AAAAAA">月华 P</font>
 <font color="#AAAA22">调:</font><font color="#AAAAAA">落泠 P</font>
@@ -330,7 +330,7 @@
 00:04:14,498 --> 00:04:24,001
 <font color="#AAAA22">作词/策划:</font><font color="#AAAAAA">拾叁枝鸢尾</font>
 <font color="#AAAA22">作曲:</font><font color="#AAAAAA">WOVOP</font>
-<font color="#AAAA22">编曲/分轨混音:</font><font color="#AAAAAA">阿落- itHH【千小莺】</font>
+<font color="#AAAA22">编曲/分轨混音:</font><font color="#AAAAAA">阿落- itHH<font color="#55ABCD">【千小莺】</font></font>
 <font color="#AAAA22">演唱:</font><font color="#AAAAAA">洛天依，乐正绫</font>
 <font color="#AAAA22">贴唱混音/母带:</font><font color="#AAAAAA">月华 P</font>
 <font color="#AAAA22">调:</font><font color="#AAAAAA">落泠 P</font>
