@@ -149,8 +149,12 @@ function parseLyrics(content) {
     }
   }
 
-  // Sort events by start time (they should already be ordered, but ensure)
-  events.sort((a, b) => a.startMs - b.startMs)
+  // Verify events are already ordered by start time
+  for (let i = 1; i < events.length; i++) {
+    if (events[i].startMs < events[i - 1].startMs) {
+      throw new Error(`Events out of order at index ${i}: ${events[i].startMs} < ${events[i - 1].startMs}`)
+    }
+  }
 
   /** @type {SubtitleCue[]} */
   const cues = []
