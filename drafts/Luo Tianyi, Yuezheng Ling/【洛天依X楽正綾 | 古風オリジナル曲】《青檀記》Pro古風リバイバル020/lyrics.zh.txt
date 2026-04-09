@@ -1,6 +1,6 @@
 # LTY: Luo Tianyi
 # YZL: Yuezheng Ling
-# YZL(speak): Yuezheng Ling's spoken word break
+# yzl: Yuezheng Ling's spoken word break
 # Y+L: Both
 
 LTY: 晚风已别夕照 吹向敬亭山
@@ -23,10 +23,10 @@ YZL: 总向天涯去 何时月下逢
 YZL: 书剑分飞客 各执一半冬
 YZL: 我意融山雪 几曾赴北风
 
-YZL(speak): 此去朔方 不知何日是归期
-YZL(speak): 我走了
-YZL(speak): 要是听见青檀树下的剑鸣
-YZL(speak): 就不必等我
+yzl: 此去朔方 不知何日是归期
+yzl: 我走了
+yzl: 要是听见青檀树下的剑鸣
+yzl: 就不必等我
 
 YZL: 当时挑灯看剑 万里赴阳关
 YZL: 一朝别君在青檀 烟波横断
