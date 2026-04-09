@@ -184,8 +184,10 @@ function parseLyrics(content) {
       if (nextEventIndex < events.length && events[nextEventIndex].type === 'cue') {
         cue.endMs = events[nextEventIndex].startMs
       } else {
-        // This is the last cue and no trailing clr – default 3 seconds
-        cue.endMs = cue.startMs + 3000
+        throw new Error(
+          `Unable to determine end time for cue at ${msToVttTime(cue.startMs)}. ` +
+          `Expected a following cue or 'clr' marker.`
+        )
       }
     }
 
