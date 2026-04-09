@@ -237,21 +237,33 @@ function formatCreditLine(line, languageCode) {
  * @returns {string} Formatted text with <c> tags if applicable
  */
 function formatVttText(marker, text, languageCode) {
-  if (marker === 'ttl') {
-    return `<c.title>${text}</c.title>`
+  switch (marker) {
+    case 'ttl':
+      return `<c.title>${text}</c.title>`
+    case 'txt':
+      return `<c.expo>${text}</c.expo>`
+    case 'cre':
+      const lines = text.split('\n')
+      const formattedLines = lines.map(line => formatCreditLine(line, languageCode))
+      return formattedLines.join('\n')
+    case 'LTY':
+    case 'YZL':
+    case 'lty':
+    case 'yzl':
+    case 'Y+L':
+    case undefined:
+      return text
+    case 'clr':
+    case 'eov':
+      if (text.trim()) {
+        throw new Error(`Unexpected text: ${marker} ${text}`)
+      }
+      return text
+    default:
+      /** @type {never} */
+      const _unreachable = marker
+      throw new Error(`Marker ${JSON.stringify(_unreachable)} is unaccounted for`)
   }
-
-  if (marker === 'txt') {
-    return `<c.expo>${text}</c.expo>`
-  }
-
-  if (marker === 'cre') {
-    const lines = text.split('\n')
-    const formattedLines = lines.map(line => formatCreditLine(line, languageCode))
-    return formattedLines.join('\n')
-  }
-
-  return text
 }
 
 /**
