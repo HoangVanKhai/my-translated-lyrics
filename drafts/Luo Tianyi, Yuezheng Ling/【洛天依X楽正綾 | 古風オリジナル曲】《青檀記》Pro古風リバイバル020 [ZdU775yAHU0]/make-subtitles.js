@@ -5,11 +5,15 @@ const fs = require('fs')
 const path = require('path')
 
 /**
+ * @typedef {'LTY' | 'lty' | 'YZL' | 'yzl' | 'Y+L' | 'txt' | 'ttl' | 'cre' | 'clr' | 'eov'} Marker
+ */
+
+/**
  * @typedef {Object} SubtitleCue
  * @property {number} startMs - Start time in milliseconds
  * @property {number} endMs - End time in milliseconds
  * @property {string} text - Subtitle text
- * @property {string} [marker] - Optional marker (e.g., 'LTY', 'txt')
+ * @property {Marker} [marker] - Optional marker
  */
 
 /**
@@ -17,7 +21,7 @@ const path = require('path')
  * @property {'cue'} type
  * @property {number} startMs
  * @property {string} text
- * @property {string} [marker]
+ * @property {Marker} [marker]
  */
 
 /**
@@ -111,11 +115,12 @@ function parseLyrics(content) {
       }
 
       // Extract marker and text
-      let marker = ''
+      /** @type {Marker | undefined} */
+      let marker
       let text = ''
       const colonIndex = rest.indexOf(':')
       if (colonIndex !== -1) {
-        marker = rest.substring(0, colonIndex).trim()
+        marker = /** @type {Marker} */ (rest.substring(0, colonIndex).trim())
         text = rest.substring(colonIndex + 1).trim()
       } else {
         text = rest
@@ -208,7 +213,7 @@ function formatCreditLine(line, languageCode) {
 /**
  * Format text for VTT output with special handling for credits and titles.
  * Preserves newlines by processing each line individually.
- * @param {string | undefined} marker - The marker (e.g., 'cre', 'ttl')
+ * @param {Marker | undefined} marker - The marker
  * @param {string} text - Raw text (may contain newlines)
  * @param {string} languageCode - 'zh' or 'vi'
  * @returns {string} Formatted text with <c> tags if applicable
@@ -245,9 +250,9 @@ function generateSrt(cues) {
 /**
  * Generate VTT content with voice tags, styling, and language header.
  * @param {SubtitleCue[]} cues - Array of subtitle cues
- * @param {Record<string, string>} speakerMap - Mapping from marker to speaker name
+ * @param {Partial<Record<Marker, string>>} speakerMap - Mapping from marker to speaker name
  * @param {string} languageCode - e.g., 'zh', 'vi'
- * @param {Record<string, string>} colorMap - Mapping from marker to CSS color
+ * @param {Partial<Record<Marker, string>>} colorMap - Mapping from marker to CSS color
  * @returns {string} VTT formatted string
  */
 function generateVtt(cues, speakerMap, languageCode, colorMap) {
@@ -267,7 +272,7 @@ function generateVtt(cues, speakerMap, languageCode, colorMap) {
 
   // Generate rules for each marker that has both a speaker name and a color
   for (const [marker, color] of Object.entries(colorMap)) {
-    const speakerName = speakerMap[marker]
+    const speakerName = speakerMap[/** @type {Marker} */ (marker)]
     if (speakerName) {
       vtt += `::cue(v[voice="${speakerName}"]) {\n`
       vtt += `  color: ${color};\n`
@@ -326,6 +331,7 @@ function main() {
   const zhCues = parseLyrics(zhContent)
   const viCues = parseLyrics(viContent)
 
+  /** @type {Partial<Record<Marker, string>>} */
   const zhSpeakerMap = {
     'LTY': '洛天依',
     'lty': '洛天依',
@@ -334,6 +340,7 @@ function main() {
     'Y+L': '洛天依 & 乐正绫',
   }
 
+  /** @type {Partial<Record<Marker, string>>} */
   const viSpeakerMap = {
     'LTY': 'Lạc Thiên Y',
     'lty': 'Lạc Thiên Y',
@@ -342,6 +349,7 @@ function main() {
     'Y+L': 'Lạc Thiên Y & Nhạc Chính Lăng',
   }
 
+  /** @type {Partial<Record<Marker, string>>} */
   const colorMap = {
     'LTY': '#66CCFF',
     'lty': '#66CCFF',
