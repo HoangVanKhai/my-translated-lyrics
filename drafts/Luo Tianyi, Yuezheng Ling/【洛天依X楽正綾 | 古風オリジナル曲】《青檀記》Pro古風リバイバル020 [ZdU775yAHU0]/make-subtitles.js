@@ -198,13 +198,33 @@ function generateSrt(cues) {
 }
 
 /**
- * Generate VTT content from cues, with optional voice tags.
+ * Generate VTT content with voice tags, styling, and language header.
  * @param {SubtitleCue[]} cues - Array of subtitle cues
  * @param {Record<string, string>} speakerMap - Mapping from marker to speaker name
+ * @param {string} languageCode - e.g., 'zh', 'vi'
+ * @param {Record<string, string>} colorMap - Mapping from marker to CSS color
  * @returns {string} VTT formatted string
  */
-function generateVtt(cues, speakerMap) {
-  let vtt = 'WEBVTT\n\n'
+function generateVtt(cues, speakerMap, languageCode, colorMap) {
+  let vtt = `WEBVTT\nLanguage: ${languageCode}\n\n`
+
+  vtt += 'STYLE\n'
+
+  vtt += '::cue {\n'
+  vtt += '  background-color: transparent;\n'
+  vtt += '  text-shadow: 2px 2px 2px black;\n'
+  vtt += '}\n'
+
+  // Generate rules for each marker that has both a speaker name and a color
+  for (const [marker, color] of Object.entries(colorMap)) {
+    const speakerName = speakerMap[marker]
+    if (speakerName) {
+      vtt += `::cue(v[voice="${speakerName}"]) {\n  color: ${color};\n}\n`
+    }
+  }
+  vtt += '\n'
+
+  // Write cues
   cues.forEach(cue => {
     vtt += `${msToVttTime(cue.startMs)} --> ${msToVttTime(cue.endMs)}\n`
     const speaker = cue.marker ? speakerMap[cue.marker] : undefined
@@ -253,13 +273,21 @@ function main() {
     'Y+L': 'Lạc Thiên Y & Nhạc Chính Lăng',
   }
 
+  const colorMap = {
+    'LTY': '#66CCFF',
+    'lty': '#66CCFF',
+    'YZL': '#EE0000',
+    'yzl': '#EE0000',
+    'Y+L': '#9966CC',
+  }
+
   // Write Chinese SRT and VTT
   fs.writeFileSync(path.join(baseDir, 'lyrics.zh.srt'), generateSrt(zhCues), 'utf8')
-  fs.writeFileSync(path.join(baseDir, 'lyrics.zh.vtt'), generateVtt(zhCues, zhSpeakerMap), 'utf8')
+  fs.writeFileSync(path.join(baseDir, 'lyrics.zh.vtt'), generateVtt(zhCues, zhSpeakerMap, 'zh', colorMap), 'utf8')
 
   // Write Vietnamese SRT and VTT
   fs.writeFileSync(path.join(baseDir, 'lyrics.vi.mtl.srt'), generateSrt(viCues), 'utf8')
-  fs.writeFileSync(path.join(baseDir, 'lyrics.vi.mtl.vtt'), generateVtt(viCues, viSpeakerMap), 'utf8')
+  fs.writeFileSync(path.join(baseDir, 'lyrics.vi.mtl.vtt'), generateVtt(viCues, viSpeakerMap, 'vi', colorMap), 'utf8')
 
   console.log('Subtitle files generated successfully.')
 }

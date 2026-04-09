@@ -1,4 +1,26 @@
 WEBVTT
+Language: zh
+
+STYLE
+::cue {
+  background-color: transparent;
+  text-shadow: 2px 2px 2px black;
+}
+::cue(v[voice="洛天依"]) {
+  color: #66CCFF;
+}
+::cue(v[voice="洛天依"]) {
+  color: #66CCFF;
+}
+::cue(v[voice="乐正绫"]) {
+  color: #EE0000;
+}
+::cue(v[voice="乐正绫"]) {
+  color: #EE0000;
+}
+::cue(v[voice="洛天依 & 乐正绫"]) {
+  color: #9966CC;
+}
 
 00:00:03.120 --> 00:00:05.600
 昔有仙人乘剑 御剑生鸣

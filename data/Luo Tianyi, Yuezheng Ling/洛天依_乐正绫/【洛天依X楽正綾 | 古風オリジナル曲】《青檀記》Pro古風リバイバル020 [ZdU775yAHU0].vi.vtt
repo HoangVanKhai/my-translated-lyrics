@@ -1,4 +1,26 @@
 WEBVTT
+Language: vi
+
+STYLE
+::cue {
+  background-color: transparent;
+  text-shadow: 2px 2px 2px black;
+}
+::cue(v[voice="Lạc Thiên Y"]) {
+  color: #66CCFF;
+}
+::cue(v[voice="Lạc Thiên Y"]) {
+  color: #66CCFF;
+}
+::cue(v[voice="Nhạc Chính Lăng"]) {
+  color: #EE0000;
+}
+::cue(v[voice="Nhạc Chính Lăng"]) {
+  color: #EE0000;
+}
+::cue(v[voice="Lạc Thiên Y & Nhạc Chính Lăng"]) {
+  color: #9966CC;
+}
 
 00:00:03.120 --> 00:00:05.600
 Xưa có tiên nhân cưỡi kiếm, tiếng kiếm reo vang
