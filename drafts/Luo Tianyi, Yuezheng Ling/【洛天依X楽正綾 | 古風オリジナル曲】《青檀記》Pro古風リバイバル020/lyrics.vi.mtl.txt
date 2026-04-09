@@ -1,0 +1,75 @@
+# txt: Văn dẫn nội dung
+# LTY: Lạc Thiên Y
+# YZL: Nhạc Chính Lăng
+# yzl: Lời thoại của Nhạc Chính Lăng
+# Y+L: Lạc Thiên Y và Nhạc Chính Lăng
+# ttl: Tiêu đề ca khúc
+
+txt: Xưa có tiên nhân cưỡi kiếm, tiếng kiếm reo vang
+txt: Sống thì cùng kiếm tỏa sáng, trượng nghĩa hành hiệp
+txt: Thác thì tan vào chốn hoang dã, chỉ có kiếm quay về núi xanh
+txt: Năm An Hòa thứ ba mươi sáu, trên núi Kính Đình
+txt: Có thanh kiếm từ phương Bắc trở về
+txt: Tiếng ngân dài dưới gốc Thanh Đàn, được ghi vào trong sổ sách
+
+ttl: 《Thanh Đàn Ký》
+
+LTY: Gió chiều đã tiễn bóng tà, thổi về núi Kính Đình
+LTY: Chẳng thổi tan ráng chiều dệt gấm, sương mù phủ giăng
+LTY: Nhành thông chưa rũ lớp áo tuyết mỏng
+LTY: Vẫn đang đợi người ra đi mang theo kiếm trở về
+
+YZL: Thuở ấy áo tuyết bầu bạn, mấy lượt nâng chén quan tâm
+YZL: Rõ ràng là gợn sóng trong lòng, là Thanh Đàn trong tay
+YZL: Ngăn cách bởi khói mây huyền ảo, ánh đom đóm le lói khi chiều tà
+YZL: Đôi mắt trong veo ánh lên hoa đăng, thắp sáng cả đêm trường
+
+LTY: Chợt nghe tiếng kiếm ngân dài, đêm dậy khêu đèn nến
+LTY: Trong sân nào có chi đâu, chỉ thấy ngàn dặm tiếng hoa rơi
+LTY: Tình hiệp sĩ nên soi cùng nguyệt, mộng hồn đồng hành khắp cửu châu
+LTY: Ngày sau nếu được về quê cũ, nguyện cùng làm đôi lão đầu bạc
+
+YZL: Nhân sinh gửi gắm một đời, không rảnh than thân phiêu bạt
+YZL: Luôn hướng về phía chân trời, biết khi nào gặp nhau dưới trăng
+YZL: Khách phân ly kẻ thư người kiếm, mỗi người giữ một nửa mùa đông
+YZL: Ý chí ta tan vào tuyết núi, mấy bận xông pha giữa gió bấc
+
+yzl: Chuyến đi Sóc Phương này, chẳng rõ ngày nào là ngày về
+yzl: Ta đi đây
+yzl: Nếu như nghe thấy tiếng kiếm minh dưới gốc cây Thanh Đàn
+yzl: Thì đừng đợi ta nữa
+
+YZL: Thuở ấy khêu đèn ngắm kiếm, vạn dặm thẳng tiến Dương Quan
+YZL: Một sớm biệt quân tại Thanh Đàn, khói sóng chắn ngang dòng
+YZL: Mai lạnh đã rụng rơi từ sớm, bên cạnh một con thuyền nhỏ
+YZL: Liệu có thể nấu trà đun tuyết, mời bóng ta cùng ngắm hay chăng
+
+LTY: Thường khiến vầng trăng lạnh đa tình, soi sáng vạn dặm sơn hà
+LTY: Lại chẳng soi thấy nỗi lòng người xa xứ, ánh mắt nhìn nhau giữa đôi mày
+LTY: Mượn chút sắc xuân mờ ảo, lắng nghe giấc mộng cũng róc rách tuôn trào
+LTY: Sau khi biệt ly nếu nghe tiếng kiếm ngân, xin đừng mong ngóng ngày về nữa
+
+Y+L: Một điệu múa kiếm khí lay động, đêm dài tìm kiếm giữa khoảng không xuân
+Y+L: Người ở đâu giữa chốn đình viện, trong ánh thanh quang vạn dặm
+Y+L: Đốt đàn rồi khó mà tấu tiếp, bẻ kiếm đi sợ lo lắng nảy sinh
+Y+L: Băng qua sông chạm vào luồng hàn triều, ngồi lặng yên càng thêm bận lòng
+Y+L: Những điều ấy đều khó thực hiện, lấy gì để đi hết quãng đời còn lại
+Y+L: Thường thấy trong nỗi tương tư, chẳng có ai thưởng thức thanh âm mùa xuân
+Y+L: Ngày về biệt vô âm tín, để lại cho ta một thanh kiếm sắc
+Y+L: Thân này hòa vào tuyết núi, lòng này vẫn vẹn nguyên lòng thành
+
+LTY: Rượu Tết Hàn Thực đã tan, chớ để tiệp báo chậm trễ
+LTY: Nhấc bút cũng phải đắn đo, hạ bút lại càng chẳng đành
+YZL: Mùa xuân năm thứ ba mươi sáu, gặp lúc thiên hạ loạn lạc
+YZL: Người giữ kiếm núi Kính Đình, chuyến đi này mãi chẳng thấy về
+
+Y+L: Chợt nghe tiếng kiếm ngân dài, đêm dậy khêu đèn nến
+Y+L: Trong sân nào có chi đâu, chỉ thấy ngàn dặm tiếng hoa rơi
+Y+L: Tình hiệp sĩ nên soi cùng nguyệt, mộng hồn đồng hành khắp cửu châu
+Y+L: Ngày sau nếu được về quê cũ, nguyện cùng làm đôi lão đầu bạc
+Y+L: Nhân sinh gửi gắm một đời, không rảnh than thân phiêu bạt
+Y+L: Luôn hướng về phía chân trời, biết khi nào gặp nhau dưới trăng
+Y+L: Khách phân ly kẻ thư người kiếm, mỗi người giữ một nửa mùa đông
+Y+L: Ý chí ta tan vào tuyết núi, mấy bận xông pha giữa gió bấc
+
+ttl: 《Thanh Đàn Ký》
