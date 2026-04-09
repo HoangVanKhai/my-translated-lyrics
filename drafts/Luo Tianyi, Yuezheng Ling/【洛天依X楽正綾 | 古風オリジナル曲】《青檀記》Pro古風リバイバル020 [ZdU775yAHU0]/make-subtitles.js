@@ -50,6 +50,18 @@ function timestampToMs(timestamp) {
 }
 
 /**
+ * Format milliseconds as input timestamp "MM:SS.mmm"
+ * @param {number} ms - Milliseconds
+ * @returns {string} Formatted timestamp
+ */
+function msToInputTime(ms) {
+  const minutes = Math.floor(ms / 60000)
+  const seconds = Math.floor((ms % 60000) / 1000)
+  const milliseconds = ms % 1000
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(milliseconds).padStart(3, '0')}`
+}
+
+/**
  * Format milliseconds as SRT timestamp "HH:MM:SS,mmm"
  * @param {number} ms - Milliseconds
  * @returns {string} SRT formatted timestamp
@@ -152,7 +164,7 @@ function parseLyrics(content) {
   // Verify events are already ordered by start time
   for (let i = 1; i < events.length; i++) {
     if (events[i].startMs < events[i - 1].startMs) {
-      throw new Error(`Events out of order at index ${i}: ${events[i].startMs} < ${events[i - 1].startMs}`)
+      throw new Error(`Events out of order at index ${i}: ${msToInputTime(events[i].startMs)} < ${msToInputTime(events[i - 1].startMs)}`)
     }
   }
 
@@ -185,7 +197,7 @@ function parseLyrics(content) {
         cue.endMs = events[nextEventIndex].startMs
       } else {
         throw new Error(
-          `Unable to determine end time for cue at ${msToVttTime(cue.startMs)}. ` +
+          `Unable to determine end time for cue at ${msToInputTime(cue.startMs)}. ` +
           `Expected a following cue or 'clr' marker.`
         )
       }
