@@ -9,6 +9,7 @@ const path = require('path')
  * @property {number} startMs - Start time in milliseconds
  * @property {number} endMs - End time in milliseconds
  * @property {string} text - Subtitle text
+ * @property {string} [marker] - Optional marker (e.g., 'LTY', 'txt')
  */
 
 /**
@@ -16,6 +17,7 @@ const path = require('path')
  * @property {'cue'} type
  * @property {number} startMs
  * @property {string} text
+ * @property {string} [marker]
  */
 
 /**
@@ -108,10 +110,12 @@ function parseLyrics(content) {
         continue
       }
 
-      // Extract text after the marker colon, if any
+      // Extract marker and text
+      let marker = ''
       let text = ''
       const colonIndex = rest.indexOf(':')
       if (colonIndex !== -1) {
+        marker = rest.substring(0, colonIndex).trim()
         text = rest.substring(colonIndex + 1).trim()
       } else {
         text = rest
@@ -124,7 +128,7 @@ function parseLyrics(content) {
       }
 
       /** @type {CueEvent} */
-      const cueEvent = { type: 'cue', startMs, text }
+      const cueEvent = { type: 'cue', startMs, text, marker }
       events.push(cueEvent)
       currentCue = cueEvent
     } else {
@@ -146,7 +150,12 @@ function parseLyrics(content) {
     const event = events[i]
     if (event.type !== 'cue') continue
 
-    const cue = { startMs: event.startMs, text: event.text, endMs: 0 }
+    const cue = {
+      startMs: event.startMs,
+      text: event.text,
+      endMs: 0,
+      marker: event.marker,
+    }
 
     // Find the next event (cue or clr) to determine end time
     let nextEventIndex = i + 1
@@ -189,15 +198,21 @@ function generateSrt(cues) {
 }
 
 /**
- * Generate VTT content from cues
+ * Generate VTT content from cues, with optional voice tags.
  * @param {SubtitleCue[]} cues - Array of subtitle cues
+ * @param {Record<string, string>} speakerMap - Mapping from marker to speaker name
  * @returns {string} VTT formatted string
  */
-function generateVtt(cues) {
+function generateVtt(cues, speakerMap) {
   let vtt = 'WEBVTT\n\n'
   cues.forEach(cue => {
     vtt += `${msToVttTime(cue.startMs)} --> ${msToVttTime(cue.endMs)}\n`
-    vtt += `${cue.text}\n\n`
+    const speaker = cue.marker ? speakerMap[cue.marker] : undefined
+    if (speaker) {
+      vtt += `<v ${speaker}>${cue.text}</v>\n\n`
+    } else {
+      vtt += `${cue.text}\n\n`
+    }
   })
   return vtt.trim() + '\n'
 }
@@ -222,13 +237,29 @@ function main() {
   const zhCues = parseLyrics(zhContent)
   const viCues = parseLyrics(viContent)
 
+  const zhSpeakerMap = {
+    'LTY': '洛天依',
+    'lty': '洛天依',
+    'YZL': '乐正绫',
+    'yzl': '乐正绫',
+    'Y+L': '洛天依 & 乐正绫',
+  }
+
+  const viSpeakerMap = {
+    'LTY': 'Lạc Thiên Y',
+    'lty': 'Lạc Thiên Y',
+    'YZL': 'Nhạc Chính Lăng',
+    'yzl': 'Nhạc Chính Lăng',
+    'Y+L': 'Lạc Thiên Y & Nhạc Chính Lăng',
+  }
+
   // Write Chinese SRT and VTT
   fs.writeFileSync(path.join(baseDir, 'lyrics.zh.srt'), generateSrt(zhCues), 'utf8')
-  fs.writeFileSync(path.join(baseDir, 'lyrics.zh.vtt'), generateVtt(zhCues), 'utf8')
+  fs.writeFileSync(path.join(baseDir, 'lyrics.zh.vtt'), generateVtt(zhCues, zhSpeakerMap), 'utf8')
 
   // Write Vietnamese SRT and VTT
   fs.writeFileSync(path.join(baseDir, 'lyrics.vi.mtl.srt'), generateSrt(viCues), 'utf8')
-  fs.writeFileSync(path.join(baseDir, 'lyrics.vi.mtl.vtt'), generateVtt(viCues), 'utf8')
+  fs.writeFileSync(path.join(baseDir, 'lyrics.vi.mtl.vtt'), generateVtt(viCues, viSpeakerMap), 'utf8')
 
   console.log('Subtitle files generated successfully.')
 }
