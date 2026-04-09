@@ -3,6 +3,7 @@
 # YZL: Yuezheng Ling
 # yzl: Yuezheng Ling's spoken word break
 # Y+L: Luo Tianyi and Yuezheng Ling
+# ttl: Song's Title
 
 txt: 昔有仙人乘剑 御剑生鸣
 txt: 生则与剑同光 仗义行侠
@@ -10,6 +11,8 @@ txt: 亡则消散于野 唯有剑回山中
 txt: 安和三十六年 敬亭山上
 txt: 有剑自朔方归来
 txt: 长鸣青檀之下 录于簿冊之中
+
+ttl:《青檀記》
 
 LTY: 晚风已别夕照 吹向敬亭山
 LTY: 吹不去晚霞如织 薄雾弥漫
@@ -68,3 +71,5 @@ Y+L: 人生寄一世 无暇叹飘蓬
 Y+L: 总向天涯去 何时月下逢
 Y+L: 书剑分飞客 各执一半冬
 Y+L: 我意融山雪 几曾赴北风
+
+ttl:《青檀記》
