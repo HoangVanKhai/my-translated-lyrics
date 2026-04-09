@@ -4,6 +4,8 @@
 # yzl: Yuezheng Ling's spoken word break
 # Y+L: Luo Tianyi and Yuezheng Ling
 # ttl: Song's Title
+# cre: Credits
+# eov: End of Video
 
 txt: 昔有仙人乘剑 御剑生鸣
 txt: 生则与剑同光 仗义行侠
@@ -39,6 +41,10 @@ yzl: 我走了
 yzl: 要是听见青檀树下的剑鸣
 yzl: 就不必等我
 
+cre: 作词：雨観　编曲：雨观　VSINGER：洛天依X楽正绫　笛子：再也不上课
+     作曲：雨観　演唱：雨観X溪里　调校：鬼面P
+cre: 制作人：雨观　V家曲绘：Vsinger团队　美术：碎夊　PV：超级水水　鸣谢素材：山晚樵渔
+
 YZL: 当时挑灯看剑 万里赴阳关
 YZL: 一朝别君在青檀 烟波横断
 YZL: 寒梅早已摇落 在小舟一畔
@@ -73,3 +79,4 @@ Y+L: 书剑分飞客 各执一半冬
 Y+L: 我意融山雪 几曾赴北风
 
 ttl:《青檀記》
+eov
