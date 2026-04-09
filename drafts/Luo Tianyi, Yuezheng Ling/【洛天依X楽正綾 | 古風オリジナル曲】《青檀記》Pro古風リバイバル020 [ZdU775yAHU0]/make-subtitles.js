@@ -55,10 +55,10 @@ function timestampToMs(timestamp) {
  * @returns {string} Formatted timestamp
  */
 function msToInputTime(ms) {
-  const minutes = Math.floor(ms / 60000)
-  const seconds = Math.floor((ms % 60000) / 1000)
-  const milliseconds = ms % 1000
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(milliseconds).padStart(3, '0')}`
+  const minutes = Math.floor(ms / 60000).toString().padStart(2, '0')
+  const seconds = Math.floor((ms % 60000) / 1000).toString().padStart(2, '0')
+  const milliseconds = (ms % 1000).toString().padStart(3, '0')
+  return `${minutes}:${seconds}.${milliseconds}`
 }
 
 /**
@@ -67,13 +67,11 @@ function msToInputTime(ms) {
  * @returns {string} SRT formatted timestamp
  */
 function msToSrtTime(ms) {
-  const hours = Math.floor(ms / 3600000)
-  const minutes = Math.floor((ms % 3600000) / 60000)
-  const seconds = Math.floor((ms % 60000) / 1000)
-  const milliseconds = ms % 1000
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')},${
-    String(milliseconds).padStart(3, '0')
-  }`
+  const hours = Math.floor(ms / 3600000).toString().padStart(2, '0')
+  const minutes = Math.floor((ms % 3600000) / 60000).toString().padStart(2, '0')
+  const seconds = Math.floor((ms % 60000) / 1000).toString().padStart(2, '0')
+  const milliseconds = (ms % 1000).toString().padStart(3, '0')
+  return `${hours}:${minutes}:${seconds},${milliseconds}`
 }
 
 /**
@@ -82,13 +80,11 @@ function msToSrtTime(ms) {
  * @returns {string} VTT formatted timestamp
  */
 function msToVttTime(ms) {
-  const hours = Math.floor(ms / 3600000)
-  const minutes = Math.floor((ms % 3600000) / 60000)
-  const seconds = Math.floor((ms % 60000) / 1000)
-  const milliseconds = ms % 1000
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${
-    String(milliseconds).padStart(3, '0')
-  }`
+  const hours = Math.floor(ms / 3600000).toString().padStart(2, '0')
+  const minutes = Math.floor((ms % 3600000) / 60000).toString().padStart(2, '0')
+  const seconds = Math.floor((ms % 60000) / 1000).toString().padStart(2, '0')
+  const milliseconds = (ms % 1000).toString().padStart(3, '0')
+  return `${hours}:${minutes}:${seconds}.${milliseconds}`
 }
 
 /**
