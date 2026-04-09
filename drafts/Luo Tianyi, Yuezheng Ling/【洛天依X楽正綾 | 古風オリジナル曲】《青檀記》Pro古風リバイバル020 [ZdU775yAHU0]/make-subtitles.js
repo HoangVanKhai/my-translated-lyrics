@@ -267,16 +267,91 @@ function formatVttText(marker, text, languageCode) {
 }
 
 /**
- * Generate SRT content from cues
+ * Format a single line of credit text into SRT-compatible HTML tags.
+ * @param {string} line - A single line from the credit block
+ * @param {LanguageCode} languageCode - Language code (unused for styling but kept for consistency)
+ * @returns {string} Formatted line with <font> tags
+ */
+function formatCreditLineSrt(line, languageCode) {
+  const separator = languageCode === 'zh' ? /\u3000+/ : / {2,}/
+  const parts = line.split(separator).filter(p => p.trim() !== '')
+
+  const formattedParts = parts.map(part => {
+    const colonMatch = part.match(/^([^:：]+)[:：](.+)$/)
+    if (colonMatch) {
+      const role = colonMatch[1].trim()
+      const name = colonMatch[2].trim()
+      return `<font color="#AAAA22">${role}</font> <font color="#AAAAAA">${name}</font>`
+    }
+    return part
+  })
+
+  return formattedParts.join(' ')
+}
+
+/**
+ * Format text for SRT output using HTML tags for styling.
+ * @param {Marker | undefined} marker - The marker
+ * @param {string} text - Raw text (may contain newlines)
+ * @param {LanguageCode} languageCode - Language code
+ * @param {Partial<Record<Marker, string>>} colorMap - Singer colors
+ * @returns {string} Formatted text with HTML tags
+ */
+function formatSrtText(marker, text, languageCode, colorMap) {
+  // Helper to wrap text in color tag if a color exists for the marker
+  const wrapColor = (content, m) => {
+    const color = colorMap[m]
+    return color ? `<font color="${color}">${content}</font>` : content
+  }
+
+  switch (marker) {
+    case 'ttl':
+      return `<b><font color="#FFD966">${text}</font></b>`
+    case 'txt':
+      return `<i><font color="#CCCCCC">${text}</font></i>`
+    case 'cre': {
+      const lines = text.split('\n')
+      const formattedLines = lines.map(line => formatCreditLineSrt(line, languageCode))
+      return formattedLines.join('\n')
+    }
+    case 'LTY':
+    case 'YZL':
+    case 'Y+L':
+      return wrapColor(text, marker)
+    case 'lty':
+    case 'yzl':
+      // Spoken lines: italic + singer color
+      return `<i>${wrapColor(text, marker)}</i>`
+    case undefined:
+      return text
+    case 'clr':
+    case 'eov':
+      if (text.trim()) {
+        throw new Error(`Unexpected text: ${marker} ${text}`)
+      }
+      return text
+    default: {
+      /** @type {never} */
+      const _unreachable = marker
+      throw new Error(`Marker ${JSON.stringify(_unreachable)} is unaccounted for`)
+    }
+  }
+}
+
+/**
+ * Generate SRT content from cues with styling
  * @param {SubtitleCue[]} cues - Array of subtitle cues
+ * @param {LanguageCode} languageCode - Language code for credit separator
+ * @param {Partial<Record<Marker, string>>} colorMap - Singer colors
  * @returns {string} SRT formatted string
  */
-function generateSrt(cues) {
+function generateSrt(cues, languageCode, colorMap) {
   let srt = ''
   cues.forEach((cue, index) => {
     srt += `${index + 1}\n`
     srt += `${msToSrtTime(cue.startMs)} --> ${msToSrtTime(cue.endMs)}\n`
-    srt += `${cue.text}\n\n`
+    const styledText = formatSrtText(cue.marker, cue.text, languageCode, colorMap)
+    srt += `${styledText}\n\n`
   })
   return srt.trim() + '\n'
 }
@@ -399,9 +474,9 @@ function main() {
     'Y+L': '#9966CC',
   }
 
-  fs.writeFileSync(path.join(baseDir, 'lyrics.zh.srt'), generateSrt(zhCues), 'utf8')
+  fs.writeFileSync(path.join(baseDir, 'lyrics.zh.srt'), generateSrt(zhCues, 'zh', colorMap), 'utf8')
   fs.writeFileSync(path.join(baseDir, 'lyrics.zh.vtt'), generateVtt(zhCues, zhSpeakerMap, 'zh', colorMap), 'utf8')
-  fs.writeFileSync(path.join(baseDir, 'lyrics.vi.mtl.srt'), generateSrt(viCues), 'utf8')
+  fs.writeFileSync(path.join(baseDir, 'lyrics.vi.mtl.srt'), generateSrt(viCues, 'vi', colorMap), 'utf8')
   fs.writeFileSync(path.join(baseDir, 'lyrics.vi.mtl.vtt'), generateVtt(viCues, viSpeakerMap, 'vi', colorMap), 'utf8')
 
   console.log('Subtitle files generated successfully.')
