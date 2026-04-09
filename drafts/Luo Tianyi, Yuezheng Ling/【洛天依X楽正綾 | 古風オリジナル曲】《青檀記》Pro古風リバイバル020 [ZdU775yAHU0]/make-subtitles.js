@@ -72,6 +72,7 @@ function msToVttTime(ms) {
 /**
  * Parse lyrics file content into an array of subtitle cues,
  * respecting `clr` markers to end the previous cue at the clear time.
+ * Handles multi‑line cues where continuation lines lack timestamps.
  * @param {string} content - Raw file content
  * @returns {SubtitleCue[]} Array of parsed cues with correct start/end times
  */
@@ -80,41 +81,59 @@ function parseLyrics(content) {
   /** @type {ParsedEvent[]} */
   const events = []
 
+  /** @type {CueEvent | null} */
+  let currentCue = null
+
   for (const line of lines) {
     const trimmed = line.trim()
     if (!trimmed || trimmed.startsWith('#')) continue
 
     // Match timestamp at beginning: MM:SS.mmm
     const match = trimmed.match(/^(\d{2}:\d{2}\.\d{3})\s+(.+)$/)
-    if (!match) continue
+    if (match) {
+      const timestamp = match[1]
+      const rest = match[2].trim()
+      const startMs = timestampToMs(timestamp)
 
-    const timestamp = match[1]
-    const rest = match[2].trim()
-    const startMs = timestampToMs(timestamp)
+      // Ignore end-of-video markers (no subtitle content)
+      if (rest.startsWith('eov')) {
+        currentCue = null
+        continue
+      }
 
-    // Ignore end-of-video markers (no subtitle content)
-    if (rest.startsWith('eov')) continue
+      // Clear screen event
+      if (rest.startsWith('clr')) {
+        events.push({ type: 'clr', startMs })
+        currentCue = null
+        continue
+      }
 
-    // Clear screen event
-    if (rest.startsWith('clr')) {
-      events.push({ type: 'clr', startMs })
-      continue
-    }
+      // Extract text after the marker colon, if any
+      let text = ''
+      const colonIndex = rest.indexOf(':')
+      if (colonIndex !== -1) {
+        text = rest.substring(colonIndex + 1).trim()
+      } else {
+        text = rest
+      }
 
-    // Extract text after the marker colon, if any
-    let text = ''
-    const colonIndex = rest.indexOf(':')
-    if (colonIndex !== -1) {
-      text = rest.substring(colonIndex + 1).trim()
+      // Skip if text is empty
+      if (!text) {
+        currentCue = null
+        continue
+      }
+
+      /** @type {CueEvent} */
+      const cueEvent = { type: 'cue', startMs, text }
+      events.push(cueEvent)
+      currentCue = cueEvent
     } else {
-      // Some lines might just be a marker without colon? Not present in sample.
-      text = rest
+      // No timestamp → continuation line for the current cue
+      if (currentCue) {
+        currentCue.text += '\n' + trimmed
+      }
+      // If no currentCue, ignore (e.g., stray text before any cue)
     }
-
-    // Skip if text is empty (e.g., "clr" alone)
-    if (!text) continue
-
-    events.push({ type: 'cue', startMs, text })
   }
 
   // Sort events by start time (they should already be ordered, but ensure)
