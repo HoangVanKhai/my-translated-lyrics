@@ -21,6 +21,16 @@ STYLE
 ::cue(v[voice="洛天依 & 乐正绫"]) {
   color: #9966CC;
 }
+::cue(c.creditRole) {
+  color: #AAAA22;
+}
+::cue(c.creditName) {
+  color: #AAAAAA;
+}
+::cue(c.title) {
+  color: #FFD966;
+  font-weight: bold;
+}
 
 00:00:03.120 --> 00:00:05.600
 昔有仙人乘剑 御剑生鸣
@@ -41,7 +51,7 @@ STYLE
 长鸣青檀之下 录于簿冊之中
 
 00:00:31.670 --> 00:00:35.720
-《青檀記》
+<c.title>《青檀記》</c.title>
 
 00:00:36.000 --> 00:00:39.670
 <v 洛天依>晚风已别夕照 吹向敬亭山</v>
@@ -104,11 +114,11 @@ STYLE
 <v 乐正绫>就不必等我</v>
 
 00:01:59.715 --> 00:02:07.075
-作词：雨観　编曲：雨观　VSINGER：洛天依X楽正绫　笛子：再也不上课
-作曲：雨観　演唱：雨観X溪里　调校：鬼面P
+<c.creditRole>作词</c> <c.creditName>雨観</c> <c.creditRole>编曲</c> <c.creditName>雨观</c> <c.creditRole>VSINGER</c> <c.creditName>洛天依X楽正绫</c> <c.creditRole>笛子</c> <c.creditName>再也不上课</c>
+<c.creditRole>作曲</c> <c.creditName>雨観</c> <c.creditRole>演唱</c> <c.creditName>雨観X溪里</c> <c.creditRole>调校</c> <c.creditName>鬼面P</c>
 
 00:02:07.075 --> 00:02:10.720
-制作人：雨观　Ｖ家曲绘：Vsinger团队　美术：碎夊　PV：超级水水　鸣谢素材：山晚樵渔
+<c.creditRole>制作人</c> <c.creditName>雨观</c> <c.creditRole>Ｖ家曲绘</c> <c.creditName>Vsinger团队</c> <c.creditRole>美术</c> <c.creditName>碎夊</c> <c.creditRole>PV</c> <c.creditName>超级水水</c> <c.creditRole>鸣谢素材</c> <c.creditName>山晚樵渔</c>
 
 00:02:15.000 --> 00:02:18.475
 <v 乐正绫>当时挑灯看剑 万里赴阳关</v>
@@ -195,4 +205,4 @@ STYLE
 <v 洛天依 & 乐正绫>我意融山雪 几曾赴北风</v>
 
 00:04:32.355 --> 00:04:41.432
-《青檀記》
+<c.title>《青檀記》</c.title>

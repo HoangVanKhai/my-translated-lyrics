@@ -21,6 +21,16 @@ STYLE
 ::cue(v[voice="Lạc Thiên Y & Nhạc Chính Lăng"]) {
   color: #9966CC;
 }
+::cue(c.creditRole) {
+  color: #AAAA22;
+}
+::cue(c.creditName) {
+  color: #AAAAAA;
+}
+::cue(c.title) {
+  color: #FFD966;
+  font-weight: bold;
+}
 
 00:00:03.120 --> 00:00:05.600
 Xưa có tiên nhân cưỡi kiếm, tiếng kiếm reo vang
@@ -41,7 +51,7 @@ Có thanh kiếm từ phương Bắc trở về
 Tiếng ngân dài dưới gốc Thanh Đàn, được ghi vào trong sổ sách
 
 00:00:31.670 --> 00:00:35.720
-《Thanh Đàn Ký》
+<c.title>《Thanh Đàn Ký》</c.title>
 
 00:00:36.000 --> 00:00:39.670
 <v Lạc Thiên Y>Gió chiều đã tiễn bóng tà, thổi về núi Kính Đình</v>
@@ -104,11 +114,11 @@ Tiếng ngân dài dưới gốc Thanh Đàn, được ghi vào trong sổ sách
 <v Nhạc Chính Lăng>Thì đừng đợi ta nữa</v>
 
 00:01:59.715 --> 00:02:07.075
-Tác từ: 雨観    Biên khúc: 雨観    VSINGER: Luo Tianyi X Yuezheng Ling    Sáo: 再也不上课
-Tác khúc: 雨観    Trình bày: 雨観X溪里    Điều giáo: 鬼面P
+<c.creditRole>Tác từ</c> <c.creditName>雨観</c> <c.creditRole>Biên khúc</c> <c.creditName>雨観</c> <c.creditRole>VSINGER</c> <c.creditName>Luo Tianyi X Yuezheng Ling</c> <c.creditRole>Sáo</c> <c.creditName>再也不上课</c>
+<c.creditRole>Tác khúc</c> <c.creditName>雨観</c> <c.creditRole>Trình bày</c> <c.creditName>雨観X溪里</c> <c.creditRole>Điều giáo</c> <c.creditName>鬼面P</c>
 
 00:02:07.075 --> 00:02:10.720
-Sản xuất: 雨観    Hình ảnh: Vsinger团队    Mỹ thuật: 碎夊    PV: 超级水水    Cảm ơn: 山晚樵渔
+<c.creditRole>Sản xuất</c> <c.creditName>雨観</c> <c.creditRole>Hình ảnh</c> <c.creditName>Vsinger团队</c> <c.creditRole>Mỹ thuật</c> <c.creditName>碎夊</c> <c.creditRole>PV</c> <c.creditName>超级水水</c> <c.creditRole>Cảm ơn</c> <c.creditName>山晚樵渔</c>
 
 00:02:15.000 --> 00:02:18.475
 <v Nhạc Chính Lăng>Thuở ấy khêu đèn ngắm kiếm, vạn dặm thẳng tiến Dương Quan</v>
@@ -195,4 +205,4 @@ Sản xuất: 雨観    Hình ảnh: Vsinger团队    Mỹ thuật: 碎夊    PV
 <v Lạc Thiên Y & Nhạc Chính Lăng>Ý chí ta tan vào tuyết núi, mấy bận xông pha giữa gió bấc</v>
 
 00:04:32.355 --> 00:04:41.432
-《Thanh Đàn Ký》
+<c.title>《Thanh Đàn Ký》</c.title>

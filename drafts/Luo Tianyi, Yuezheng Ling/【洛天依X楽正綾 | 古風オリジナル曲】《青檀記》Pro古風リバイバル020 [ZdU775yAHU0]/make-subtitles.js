@@ -183,6 +183,51 @@ function parseLyrics(content) {
 }
 
 /**
+ * Format a single line of credit text into <c.creditRole> and <c.creditName>.
+ * @param {string} line - A single line from the credit block
+ * @param {string} languageCode - 'zh' or 'vi'
+ * @returns {string} Formatted line
+ */
+function formatCreditLine(line, languageCode) {
+  const separator = languageCode === 'zh' ? /\u3000+/ : / {2,}/
+  const parts = line.split(separator).filter(p => p.trim() !== '')
+
+  const formattedParts = parts.map(part => {
+    const colonMatch = part.match(/^([^:：]+)[:：](.+)$/)
+    if (colonMatch) {
+      const role = colonMatch[1].trim()
+      const name = colonMatch[2].trim()
+      return `<c.creditRole>${role}</c> <c.creditName>${name}</c>`
+    }
+    return part
+  })
+
+  return formattedParts.join(' ')
+}
+
+/**
+ * Format text for VTT output with special handling for credits and titles.
+ * Preserves newlines by processing each line individually.
+ * @param {string | undefined} marker - The marker (e.g., 'cre', 'ttl')
+ * @param {string} text - Raw text (may contain newlines)
+ * @param {string} languageCode - 'zh' or 'vi'
+ * @returns {string} Formatted text with <c> tags if applicable
+ */
+function formatVttText(marker, text, languageCode) {
+  if (marker === 'ttl') {
+    return `<c.title>${text}</c.title>`
+  }
+
+  if (marker === 'cre') {
+    const lines = text.split('\n')
+    const formattedLines = lines.map(line => formatCreditLine(line, languageCode))
+    return formattedLines.join('\n')
+  }
+
+  return text
+}
+
+/**
  * Generate SRT content from cues
  * @param {SubtitleCue[]} cues - Array of subtitle cues
  * @returns {string} SRT formatted string
@@ -222,16 +267,33 @@ function generateVtt(cues, speakerMap, languageCode, colorMap) {
       vtt += `::cue(v[voice="${speakerName}"]) {\n  color: ${color};\n}\n`
     }
   }
+
+  vtt += '::cue(c.creditRole) {\n'
+  vtt += '  color: #AAAA22;\n'
+  vtt += '}\n'
+
+  vtt += '::cue(c.creditName) {\n'
+  vtt += '  color: #AAAAAA;\n'
+  vtt += '}\n'
+
+  vtt += '::cue(c.title) {\n'
+  vtt += '  color: #FFD966;\n'
+  vtt += '  font-weight: bold;\n'
+  vtt += '}\n'
+
   vtt += '\n'
 
   // Write cues
   cues.forEach(cue => {
     vtt += `${msToVttTime(cue.startMs)} --> ${msToVttTime(cue.endMs)}\n`
+
+    const formattedText = formatVttText(cue.marker, cue.text, languageCode)
+
     const speaker = cue.marker ? speakerMap[cue.marker] : undefined
     if (speaker) {
-      vtt += `<v ${speaker}>${cue.text}</v>\n\n`
+      vtt += `<v ${speaker}>${formattedText}</v>\n\n`
     } else {
-      vtt += `${cue.text}\n\n`
+      vtt += `${formattedText}\n\n`
     }
   })
   return vtt.trim() + '\n'
