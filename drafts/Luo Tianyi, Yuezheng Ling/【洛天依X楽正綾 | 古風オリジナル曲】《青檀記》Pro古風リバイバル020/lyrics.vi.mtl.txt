@@ -1,4 +1,5 @@
 # txt: Văn dẫn nội dung
+# clr: Xóa chữ trên màn hình
 # LTY: Lạc Thiên Y
 # YZL: Nhạc Chính Lăng
 # yzl: Lời thoại của Nhạc Chính Lăng
@@ -7,76 +8,92 @@
 # cre: Thông tin sản xuất
 # eov: Kết thúc MV
 
-txt: Xưa có tiên nhân cưỡi kiếm, tiếng kiếm reo vang
-txt: Sống thì cùng kiếm tỏa sáng, trượng nghĩa hành hiệp
-txt: Thác thì tan vào chốn hoang dã, chỉ có kiếm quay về núi xanh
-txt: Năm An Hòa thứ ba mươi sáu, trên núi Kính Đình
-txt: Có thanh kiếm từ phương Bắc trở về
-txt: Tiếng ngân dài dưới gốc Thanh Đàn, được ghi vào trong sổ sách
+00:03.120 txt: Xưa có tiên nhân cưỡi kiếm, tiếng kiếm reo vang
+00:05.600 txt: Sống thì cùng kiếm tỏa sáng, trượng nghĩa hành hiệp
+00:08.200 txt: Thác thì tan vào chốn hoang dã, chỉ có kiếm quay về núi xanh
+00:10.900 txt: Năm An Hòa thứ ba mươi sáu, trên núi Kính Đình
+00:13.270 txt: Có thanh kiếm từ phương Bắc trở về
+00:15.480 txt: Tiếng ngân dài dưới gốc Thanh Đàn, được ghi vào trong sổ sách
+00:18.880 clr
 
-ttl: 《Thanh Đàn Ký》
+00:31.670 ttl: 《Thanh Đàn Ký》
+00:35.720 clr
 
-LTY: Gió chiều đã tiễn bóng tà, thổi về núi Kính Đình
-LTY: Chẳng thổi tan ráng chiều dệt gấm, sương mù phủ giăng
-LTY: Nhành thông chưa rũ lớp áo tuyết mỏng
-LTY: Vẫn đang đợi người ra đi mang theo kiếm trở về
+00:36.000 LTY: Gió chiều đã tiễn bóng tà, thổi về núi Kính Đình
+00:39.670 LTY: Chẳng thổi tan ráng chiều dệt gấm, sương mù phủ giăng
+00:43.510 LTY: Nhành thông chưa rũ lớp áo tuyết mỏng
+00:46.680 LTY: Vẫn đang đợi người ra đi mang theo kiếm trở về
+00:50.400 clr
 
-YZL: Thuở ấy áo tuyết bầu bạn, mấy lượt nâng chén quan tâm
-YZL: Rõ ràng là gợn sóng trong lòng, là Thanh Đàn trong tay
-YZL: Ngăn cách bởi khói mây huyền ảo, ánh đom đóm le lói khi chiều tà
-YZL: Đôi mắt trong veo ánh lên hoa đăng, thắp sáng cả đêm trường
+00:57.680 YZL: Thuở ấy áo tuyết bầu bạn, mấy lượt nâng chén quan tâm
+01:00.600 YZL: Rõ ràng là gợn sóng trong lòng, là Thanh Đàn trong tay
+01:04.830 YZL: Ngăn cách bởi khói mây huyền ảo, ánh đom đóm le lói khi chiều tà
+01:07.800 YZL: Đôi mắt trong veo ánh lên hoa đăng, thắp sáng cả đêm trường
+01:11.920 clr
 
-LTY: Chợt nghe tiếng kiếm ngân dài, đêm dậy khêu đèn nến
-LTY: Trong sân nào có chi đâu, chỉ thấy ngàn dặm tiếng hoa rơi
-LTY: Tình hiệp sĩ nên soi cùng nguyệt, mộng hồn đồng hành khắp cửu châu
-LTY: Ngày sau nếu được về quê cũ, nguyện cùng làm đôi lão đầu bạc
+01:14.170 LTY: Chợt nghe tiếng kiếm ngân dài, đêm dậy khêu đèn nến
+01:16.200 LTY: Trong sân nào có chi đâu, chỉ thấy ngàn dặm tiếng hoa rơi
+01:17.840 LTY: Tình hiệp sĩ nên soi cùng nguyệt, mộng hồn đồng hành khắp cửu châu
+01:25.040 LTY: Ngày sau nếu được về quê cũ, nguyện cùng làm đôi lão đầu bạc
+01:28.240 clr
 
-YZL: Nhân sinh gửi gắm một đời, không rảnh than thân phiêu bạt
-YZL: Luôn hướng về phía chân trời, biết khi nào gặp nhau dưới trăng
-YZL: Khách phân ly kẻ thư người kiếm, mỗi người giữ một nửa mùa đông
-YZL: Ý chí ta tan vào tuyết núi, mấy bận xông pha giữa gió bấc
+01:28.520 YZL: Nhân sinh gửi gắm một đời, không rảnh than thân phiêu bạt
+01:32.100 YZL: Luôn hướng về phía chân trời, biết khi nào gặp nhau dưới trăng
+01:35.520 YZL: Khách phân ly kẻ thư người kiếm, mỗi người giữ một nửa mùa đông
+01:39.160 YZL: Ý chí ta tan vào tuyết núi, mấy bận xông pha giữa gió bấc
+01:44.840 clr
 
-yzl: Chuyến đi Sóc Phương này, chẳng rõ ngày nào là ngày về
-yzl: Ta đi đây
-yzl: Nếu như nghe thấy tiếng kiếm minh dưới gốc cây Thanh Đàn
-yzl: Thì đừng đợi ta nữa
+01:47.040 yzl: Chuyến đi Sóc Phương này, chẳng rõ ngày nào là ngày về
+01:51.400 yzl: Ta đi đây
+01:53.200 yzl: Nếu như nghe thấy tiếng kiếm minh dưới gốc cây Thanh Đàn
+01:55.760 yzl: Thì đừng đợi ta nữa
+01:59.360 clr
 
-cre: Tác từ: 雨観    Biên khúc: 雨観    VSINGER: Luo Tianyi X Yuezheng Ling    Sáo: 再也不上课
-     Tác khúc: 雨観    Trình bày: 雨観X溪里    Điều giáo: 鬼面P
-cre: Sản xuất: 雨観    Hình ảnh: Vsinger团队    Mỹ thuật: 碎夊    PV: 超级水水    Cảm ơn: 山晚樵渔
 
-YZL: Thuở ấy khêu đèn ngắm kiếm, vạn dặm thẳng tiến Dương Quan
-YZL: Một sớm biệt quân tại Thanh Đàn, khói sóng chắn ngang dòng
-YZL: Mai lạnh đã rụng rơi từ sớm, bên cạnh một con thuyền nhỏ
-YZL: Liệu có thể nấu trà đun tuyết, mời bóng ta cùng ngắm hay chăng
+01:59.715 cre: Tác từ: 雨観    Biên khúc: 雨観    VSINGER: Luo Tianyi X Yuezheng Ling    Sáo: 再也不上课
+               Tác khúc: 雨観    Trình bày: 雨観X溪里    Điều giáo: 鬼面P
+02:07.075 cre: Sản xuất: 雨観    Hình ảnh: Vsinger团队    Mỹ thuật: 碎夊    PV: 超级水水    Cảm ơn: 山晚樵渔
+02:10.720 clr
 
-LTY: Thường khiến vầng trăng lạnh đa tình, soi sáng vạn dặm sơn hà
-LTY: Lại chẳng soi thấy nỗi lòng người xa xứ, ánh mắt nhìn nhau giữa đôi mày
-LTY: Mượn chút sắc xuân mờ ảo, lắng nghe giấc mộng cũng róc rách tuôn trào
-LTY: Sau khi biệt ly nếu nghe tiếng kiếm ngân, xin đừng mong ngóng ngày về nữa
+02:15.000 YZL: Thuở ấy khêu đèn ngắm kiếm, vạn dặm thẳng tiến Dương Quan
+02:18.475 YZL: Một sớm biệt quân tại Thanh Đàn, khói sóng chắn ngang dòng
+02:22.475 YZL: Mai lạnh đã rụng rơi từ sớm, bên cạnh một con thuyền nhỏ
+02:25.520 YZL: Liệu có thể nấu trà đun tuyết, mời bóng ta cùng ngắm hay chăng
+02:29.450 clr
 
-Y+L: Một điệu múa kiếm khí lay động, đêm dài tìm kiếm giữa khoảng không xuân
-Y+L: Người ở đâu giữa chốn đình viện, trong ánh thanh quang vạn dặm
-Y+L: Đốt đàn rồi khó mà tấu tiếp, bẻ kiếm đi sợ lo lắng nảy sinh
-Y+L: Băng qua sông chạm vào luồng hàn triều, ngồi lặng yên càng thêm bận lòng
-Y+L: Những điều ấy đều khó thực hiện, lấy gì để đi hết quãng đời còn lại
-Y+L: Thường thấy trong nỗi tương tư, chẳng có ai thưởng thức thanh âm mùa xuân
-Y+L: Ngày về biệt vô âm tín, để lại cho ta một thanh kiếm sắc
-Y+L: Thân này hòa vào tuyết núi, lòng này vẫn vẹn nguyên lòng thành
+02:31.125 LTY: Thường khiến vầng trăng lạnh đa tình, soi sáng vạn dặm sơn hà
+02:34.275 LTY: Lại chẳng soi thấy nỗi lòng người xa xứ, ánh mắt nhìn nhau giữa đôi mày
+02:38.125 LTY: Mượn chút sắc xuân mờ ảo, lắng nghe giấc mộng cũng róc rách tuôn trào
+02:41.280 LTY: Sau khi biệt ly nếu nghe tiếng kiếm ngân, xin đừng mong ngóng ngày về nữa
+02:45.200 clr
 
-LTY: Rượu Tết Hàn Thực đã tan, chớ để tiệp báo chậm trễ
-LTY: Nhấc bút cũng phải đắn đo, hạ bút lại càng chẳng đành
-YZL: Mùa xuân năm thứ ba mươi sáu, gặp lúc thiên hạ loạn lạc
-YZL: Người giữ kiếm núi Kính Đình, chuyến đi này mãi chẳng thấy về
+02:47.920 Y+L: Một điệu múa kiếm khí lay động, đêm dài tìm kiếm giữa khoảng không xuân
+02:51.440 Y+L: Người ở đâu giữa chốn đình viện, trong ánh thanh quang vạn dặm
+02:54.960 Y+L: Đốt đàn rồi khó mà tấu tiếp, bẻ kiếm đi sợ lo lắng nảy sinh
+02:58.600 Y+L: Băng qua sông chạm vào luồng hàn triều, ngồi lặng yên càng thêm bận lòng
+03:02.000 Y+L: Những điều ấy đều khó thực hiện, lấy gì để đi hết quãng đời còn lại
+03:05.520 Y+L: Thường thấy trong nỗi tương tư, chẳng có ai thưởng thức thanh âm mùa xuân
+03:09.200 Y+L: Ngày về biệt vô âm tín, để lại cho ta một thanh kiếm sắc
+03:12.675 Y+L: Thân này hòa vào tuyết núi, lòng này vẫn vẹn nguyên lòng thành
+03:17.880 clr
 
-Y+L: Chợt nghe tiếng kiếm ngân dài, đêm dậy khêu đèn nến
-Y+L: Trong sân nào có chi đâu, chỉ thấy ngàn dặm tiếng hoa rơi
-Y+L: Tình hiệp sĩ nên soi cùng nguyệt, mộng hồn đồng hành khắp cửu châu
-Y+L: Ngày sau nếu được về quê cũ, nguyện cùng làm đôi lão đầu bạc
-Y+L: Nhân sinh gửi gắm một đời, không rảnh than thân phiêu bạt
-Y+L: Luôn hướng về phía chân trời, biết khi nào gặp nhau dưới trăng
-Y+L: Khách phân ly kẻ thư người kiếm, mỗi người giữ một nửa mùa đông
-Y+L: Ý chí ta tan vào tuyết núi, mấy bận xông pha giữa gió bấc
+03:35.750 LTY: Rượu Tết Hàn Thực đã tan, chớ để tiệp báo chậm trễ
+03:39.155 LTY: Nhấc bút cũng phải đắn đo, hạ bút lại càng chẳng đành
+03:42.640 YZL: Mùa xuân năm thứ ba mươi sáu, gặp lúc thiên hạ loạn lạc
+03:46.160 YZL: Người giữ kiếm núi Kính Đình, chuyến đi này mãi chẳng thấy về
+03:51.320 clr
 
-ttl: 《Thanh Đàn Ký》
-eov
+03:51.520 Y+L: Chợt nghe tiếng kiếm ngân dài, đêm dậy khêu đèn nến
+03:55.155 Y+L: Trong sân nào có chi đâu, chỉ thấy ngàn dặm tiếng hoa rơi
+03:58.475 Y+L: Tình hiệp sĩ nên soi cùng nguyệt, mộng hồn đồng hành khắp cửu châu
+04:02.080 Y+L: Ngày sau nếu được về quê cũ, nguyện cùng làm đôi lão đầu bạc
+04:05.680 Y+L: Nhân sinh gửi gắm một đời, không rảnh than thân phiêu bạt
+04:09.240 Y+L: Luôn hướng về phía chân trời, biết khi nào gặp nhau dưới trăng
+04:12.640 Y+L: Khách phân ly kẻ thư người kiếm, mỗi người giữ một nửa mùa đông
+04:16.200 Y+L: Ý chí ta tan vào tuyết núi, mấy bận xông pha giữa gió bấc
+04:22.200 clr
+
+04:32.355 ttl: 《Thanh Đàn Ký》
+04:41.432 clr
+
+04:46.000 eov
