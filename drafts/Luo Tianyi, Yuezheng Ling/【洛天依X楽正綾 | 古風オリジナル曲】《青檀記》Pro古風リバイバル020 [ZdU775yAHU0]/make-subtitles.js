@@ -12,10 +12,20 @@ const path = require('path')
  */
 
 /**
- * @typedef {Object} ParsedEvent
- * @property {'cue' | 'clr'} type
+ * @typedef {Object} CueEvent
+ * @property {'cue'} type
  * @property {number} startMs
- * @property {string} [text] - Only for type 'cue'
+ * @property {string} text
+ */
+
+/**
+ * @typedef {Object} ClearEvent
+ * @property {'clr'} type
+ * @property {number} startMs
+ */
+
+/**
+ * @typedef {CueEvent | ClearEvent} ParsedEvent
  */
 
 /**
