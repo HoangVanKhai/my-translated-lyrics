@@ -9,6 +9,10 @@ const path = require('path')
  */
 
 /**
+ * @typedef {'zh' | 'vi'} LanguageCode
+ */
+
+/**
  * @typedef {Object} SubtitleCue
  * @property {number} startMs - Start time in milliseconds
  * @property {number} endMs - End time in milliseconds
@@ -190,7 +194,7 @@ function parseLyrics(content) {
 /**
  * Format a single line of credit text into <c.creditRole> and <c.creditName>.
  * @param {string} line - A single line from the credit block
- * @param {string} languageCode - 'zh' or 'vi'
+ * @param {LanguageCode} languageCode - Language code
  * @returns {string} Formatted line
  */
 function formatCreditLine(line, languageCode) {
@@ -215,7 +219,7 @@ function formatCreditLine(line, languageCode) {
  * Preserves newlines by processing each line individually.
  * @param {Marker | undefined} marker - The marker
  * @param {string} text - Raw text (may contain newlines)
- * @param {string} languageCode - 'zh' or 'vi'
+ * @param {LanguageCode} languageCode - Language code
  * @returns {string} Formatted text with <c> tags if applicable
  */
 function formatVttText(marker, text, languageCode) {
@@ -251,7 +255,7 @@ function generateSrt(cues) {
  * Generate VTT content with voice tags, styling, and language header.
  * @param {SubtitleCue[]} cues - Array of subtitle cues
  * @param {Partial<Record<Marker, string>>} speakerMap - Mapping from marker to speaker name
- * @param {string} languageCode - e.g., 'zh', 'vi'
+ * @param {LanguageCode} languageCode - Language code
  * @param {Partial<Record<Marker, string>>} colorMap - Mapping from marker to CSS color
  * @returns {string} VTT formatted string
  */
