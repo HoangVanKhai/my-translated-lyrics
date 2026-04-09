@@ -1,4 +1,4 @@
-# txt: Text
+# txt: Expository Text
 # LTY: Luo Tianyi
 # YZL: Yuezheng Ling
 # yzl: Yuezheng Ling's spoken word break
