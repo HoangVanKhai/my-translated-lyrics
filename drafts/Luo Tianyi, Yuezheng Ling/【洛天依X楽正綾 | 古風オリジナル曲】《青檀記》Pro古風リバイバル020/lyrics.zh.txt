@@ -1,7 +1,15 @@
+# txt: Text
 # LTY: Luo Tianyi
 # YZL: Yuezheng Ling
 # yzl: Yuezheng Ling's spoken word break
-# Y+L: Both
+# Y+L: Luo Tianyi and Yuezheng Ling
+
+txt: 昔有仙人乘剑 御剑生鸣
+txt: 生则与剑同光 仗义行侠
+txt: 亡则消散于野 唯有剑回山中
+txt: 安和三十六年 敬亭山上
+txt: 有剑自朔方归来
+txt: 长鸣青檀之下 录于簿冊之中
 
 LTY: 晚风已别夕照 吹向敬亭山
 LTY: 吹不去晚霞如织 薄雾弥漫
