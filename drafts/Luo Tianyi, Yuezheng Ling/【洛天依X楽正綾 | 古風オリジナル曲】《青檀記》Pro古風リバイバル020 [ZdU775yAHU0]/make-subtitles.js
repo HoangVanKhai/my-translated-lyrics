@@ -300,7 +300,7 @@ function generateVtt(cues, speakerMap, languageCode, colorMap) {
   vtt += '\n'
 
   // Write cues
-  cues.forEach(cue => {
+  for (const cue of cues) {
     vtt += `${msToVttTime(cue.startMs)} --> ${msToVttTime(cue.endMs)}\n`
 
     const formattedText = formatVttText(cue.marker, cue.text, languageCode)
@@ -311,7 +311,8 @@ function generateVtt(cues, speakerMap, languageCode, colorMap) {
     } else {
       vtt += `${formattedText}\n\n`
     }
-  })
+  }
+
   return vtt.trim() + '\n'
 }
 
