@@ -274,7 +274,6 @@ function generateVtt(cues, speakerMap, languageCode, colorMap) {
   vtt += '  text-shadow: 2px 2px 2px black;\n'
   vtt += '}\n'
 
-  // Generate rules for each marker that has both a speaker name and a color
   for (const [marker, color] of Object.entries(colorMap)) {
     const speakerName = speakerMap[/** @type {Marker} */ (marker)]
     if (speakerName) {
@@ -299,7 +298,6 @@ function generateVtt(cues, speakerMap, languageCode, colorMap) {
 
   vtt += '\n'
 
-  // Write cues
   for (const cue of cues) {
     vtt += `${msToVttTime(cue.startMs)} --> ${msToVttTime(cue.endMs)}\n`
 
@@ -363,11 +361,8 @@ function main() {
     'Y+L': '#9966CC',
   }
 
-  // Write Chinese SRT and VTT
   fs.writeFileSync(path.join(baseDir, 'lyrics.zh.srt'), generateSrt(zhCues), 'utf8')
   fs.writeFileSync(path.join(baseDir, 'lyrics.zh.vtt'), generateVtt(zhCues, zhSpeakerMap, 'zh', colorMap), 'utf8')
-
-  // Write Vietnamese SRT and VTT
   fs.writeFileSync(path.join(baseDir, 'lyrics.vi.mtl.srt'), generateSrt(viCues), 'utf8')
   fs.writeFileSync(path.join(baseDir, 'lyrics.vi.mtl.vtt'), generateVtt(viCues, viSpeakerMap, 'vi', colorMap), 'utf8')
 
