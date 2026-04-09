@@ -251,7 +251,12 @@ function generateSrt(cues) {
  * @returns {string} VTT formatted string
  */
 function generateVtt(cues, speakerMap, languageCode, colorMap) {
-  let vtt = `WEBVTT\nLanguage: ${languageCode}\n\n`
+  let vtt = ''
+
+  vtt = 'WEBVTT\n'
+  vtt += `Language: ${languageCode}\n`
+
+  vtt += '\n'
 
   vtt += 'STYLE\n'
 
@@ -265,8 +270,8 @@ function generateVtt(cues, speakerMap, languageCode, colorMap) {
     const speakerName = speakerMap[marker]
     if (speakerName) {
       vtt += `::cue(v[voice="${speakerName}"]) {\n`
-      vtt += `  color: ${color};\n}`
-      vtt += '\n'
+      vtt += `  color: ${color};\n`
+      vtt += '}\n'
     }
   }
 
