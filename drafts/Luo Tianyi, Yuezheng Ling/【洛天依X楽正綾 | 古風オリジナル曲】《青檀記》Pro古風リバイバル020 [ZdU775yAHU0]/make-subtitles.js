@@ -12,6 +12,13 @@ const path = require('path')
  */
 
 /**
+ * @typedef {Object} ParsedEvent
+ * @property {'cue' | 'clr'} type
+ * @property {number} startMs
+ * @property {string} [text] - Only for type 'cue'
+ */
+
+/**
  * Convert a timestamp string "MM:SS.mmm" to milliseconds
  * @param {string} timestamp - Timestamp in format MM:SS.mmm
  * @returns {number} Milliseconds
@@ -53,14 +60,15 @@ function msToVttTime(ms) {
 }
 
 /**
- * Parse lyrics file content into an array of subtitle cues
+ * Parse lyrics file content into an array of subtitle cues,
+ * respecting `clr` markers to end the previous cue at the clear time.
  * @param {string} content - Raw file content
- * @returns {SubtitleCue[]} Array of parsed cues with start/end times and text
+ * @returns {SubtitleCue[]} Array of parsed cues with correct start/end times
  */
 function parseLyrics(content) {
   const lines = content.split('\n')
-  /** @type {SubtitleCue[]} */
-  const cues = []
+  /** @type {ParsedEvent[]} */
+  const events = []
 
   for (const line of lines) {
     const trimmed = line.trim()
@@ -72,9 +80,16 @@ function parseLyrics(content) {
 
     const timestamp = match[1]
     const rest = match[2].trim()
+    const startMs = timestampToMs(timestamp)
 
-    // Ignore clear-screen and end-of-video markers (no subtitle content)
-    if (rest.startsWith('clr') || rest.startsWith('eov')) continue
+    // Ignore end-of-video markers (no subtitle content)
+    if (rest.startsWith('eov')) continue
+
+    // Clear screen event
+    if (rest.startsWith('clr')) {
+      events.push({ type: 'clr', startMs })
+      continue
+    }
 
     // Extract text after the marker colon, if any
     let text = ''
@@ -89,23 +104,41 @@ function parseLyrics(content) {
     // Skip if text is empty (e.g., "clr" alone)
     if (!text) continue
 
-    cues.push({
-      startMs: timestampToMs(timestamp),
-      text: text,
-      endMs: 0, // placeholder, will be set later
-    })
+    events.push({ type: 'cue', startMs, text })
   }
 
-  // Sort cues by start time (they should be in order already, but ensure)
-  cues.sort((a, b) => a.startMs - b.startMs)
+  // Sort events by start time (they should already be ordered, but ensure)
+  events.sort((a, b) => a.startMs - b.startMs)
 
-  // Assign end times: use next cue's start time, or +3 seconds for the last one
-  for (let i = 0; i < cues.length; i++) {
-    if (i < cues.length - 1) {
-      cues[i].endMs = cues[i + 1].startMs
-    } else {
-      cues[i].endMs = cues[i].startMs + 3000 // default 3 seconds
+  /** @type {SubtitleCue[]} */
+  const cues = []
+
+  for (let i = 0; i < events.length; i++) {
+    const event = events[i]
+    if (event.type !== 'cue') continue
+
+    const cue = { startMs: event.startMs, text: event.text, endMs: 0 }
+
+    // Find the next event (cue or clr) to determine end time
+    let nextEventIndex = i + 1
+    while (nextEventIndex < events.length && events[nextEventIndex].type === 'clr') {
+      // If the next event is a clr, that's where this cue should end
+      cue.endMs = events[nextEventIndex].startMs
+      nextEventIndex++
+      break // stop at the first clr after this cue
     }
+
+    if (cue.endMs === 0) {
+      // No clr found before the next cue – use the next cue's start time
+      if (nextEventIndex < events.length && events[nextEventIndex].type === 'cue') {
+        cue.endMs = events[nextEventIndex].startMs
+      } else {
+        // This is the last cue and no trailing clr – default 3 seconds
+        cue.endMs = cue.startMs + 3000
+      }
+    }
+
+    cues.push(cue)
   }
 
   return cues
