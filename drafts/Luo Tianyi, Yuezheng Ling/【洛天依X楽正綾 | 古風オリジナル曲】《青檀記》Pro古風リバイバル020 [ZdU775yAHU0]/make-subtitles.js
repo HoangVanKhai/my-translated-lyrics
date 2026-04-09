@@ -264,7 +264,9 @@ function generateVtt(cues, speakerMap, languageCode, colorMap) {
   for (const [marker, color] of Object.entries(colorMap)) {
     const speakerName = speakerMap[marker]
     if (speakerName) {
-      vtt += `::cue(v[voice="${speakerName}"]) {\n  color: ${color};\n}\n`
+      vtt += `::cue(v[voice="${speakerName}"]) {\n`
+      vtt += `  color: ${color};\n}`
+      vtt += '\n'
     }
   }
 
