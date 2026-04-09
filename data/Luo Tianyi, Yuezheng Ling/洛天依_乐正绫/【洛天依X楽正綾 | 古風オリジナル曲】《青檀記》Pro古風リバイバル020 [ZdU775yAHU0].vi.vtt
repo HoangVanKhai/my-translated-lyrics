@@ -9,14 +9,16 @@ STYLE
 ::cue(v[voice="Lạc Thiên Y"]) {
   color: #66CCFF;
 }
-::cue(v[voice="Lạc Thiên Y"]) {
+::cue(v[voice="Lạc Thiên Y (thoại)"]) {
   color: #66CCFF;
+  font-style: italic;
 }
 ::cue(v[voice="Nhạc Chính Lăng"]) {
   color: #EE0000;
 }
-::cue(v[voice="Nhạc Chính Lăng"]) {
+::cue(v[voice="Nhạc Chính Lăng (thoại)"]) {
   color: #EE0000;
+  font-style: italic;
 }
 ::cue(v[voice="Lạc Thiên Y & Nhạc Chính Lăng"]) {
   color: #9966CC;
@@ -31,24 +33,28 @@ STYLE
   color: #FFD966;
   font-weight: bold;
 }
+::cue(c.expo) {
+  font-style: italic;
+  color: #CCCCCC;
+}
 
 00:00:03.120 --> 00:00:05.600
-Xưa có tiên nhân cưỡi kiếm, tiếng kiếm reo vang
+<c.expo>Xưa có tiên nhân cưỡi kiếm, tiếng kiếm reo vang</c.expo>
 
 00:00:05.600 --> 00:00:08.200
-Sống thì cùng kiếm tỏa sáng, trượng nghĩa hành hiệp
+<c.expo>Sống thì cùng kiếm tỏa sáng, trượng nghĩa hành hiệp</c.expo>
 
 00:00:08.200 --> 00:00:10.900
-Thác thì tan vào chốn hoang dã, chỉ có kiếm quay về núi xanh
+<c.expo>Thác thì tan vào chốn hoang dã, chỉ có kiếm quay về núi xanh</c.expo>
 
 00:00:10.900 --> 00:00:13.270
-Năm An Hòa thứ ba mươi sáu, trên núi Kính Đình
+<c.expo>Năm An Hòa thứ ba mươi sáu, trên núi Kính Đình</c.expo>
 
 00:00:13.270 --> 00:00:15.480
-Có thanh kiếm từ phương Bắc trở về
+<c.expo>Có thanh kiếm từ phương Bắc trở về</c.expo>
 
 00:00:15.480 --> 00:00:18.880
-Tiếng ngân dài dưới gốc Thanh Đàn, được ghi vào trong sổ sách
+<c.expo>Tiếng ngân dài dưới gốc Thanh Đàn, được ghi vào trong sổ sách</c.expo>
 
 00:00:31.670 --> 00:00:35.720
 <c.title>《Thanh Đàn Ký》</c.title>
@@ -102,16 +108,16 @@ Tiếng ngân dài dưới gốc Thanh Đàn, được ghi vào trong sổ sách
 <v Nhạc Chính Lăng>Ý chí ta tan vào tuyết núi, mấy bận xông pha giữa gió bấc</v>
 
 00:01:47.040 --> 00:01:51.400
-<v Nhạc Chính Lăng>Chuyến đi Sóc Phương này, chẳng rõ ngày nào là ngày về</v>
+<v Nhạc Chính Lăng (thoại)>Chuyến đi Sóc Phương này, chẳng rõ ngày nào là ngày về</v>
 
 00:01:51.400 --> 00:01:53.200
-<v Nhạc Chính Lăng>Ta đi đây</v>
+<v Nhạc Chính Lăng (thoại)>Ta đi đây</v>
 
 00:01:53.200 --> 00:01:55.760
-<v Nhạc Chính Lăng>Nếu như nghe thấy tiếng kiếm minh dưới gốc cây Thanh Đàn</v>
+<v Nhạc Chính Lăng (thoại)>Nếu như nghe thấy tiếng kiếm minh dưới gốc cây Thanh Đàn</v>
 
 00:01:55.760 --> 00:01:59.360
-<v Nhạc Chính Lăng>Thì đừng đợi ta nữa</v>
+<v Nhạc Chính Lăng (thoại)>Thì đừng đợi ta nữa</v>
 
 00:01:59.715 --> 00:02:07.075
 <c.creditRole>Tác từ</c> <c.creditName>雨観</c> <c.creditRole>Biên khúc</c> <c.creditName>雨観</c> <c.creditRole>VSINGER</c> <c.creditName>Luo Tianyi X Yuezheng Ling</c> <c.creditRole>Sáo</c> <c.creditName>再也不上课</c>

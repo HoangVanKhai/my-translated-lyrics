@@ -241,6 +241,10 @@ function formatVttText(marker, text, languageCode) {
     return `<c.title>${text}</c.title>`
   }
 
+  if (marker === 'txt') {
+    return `<c.expo>${text}</c.expo>`
+  }
+
   if (marker === 'cre') {
     const lines = text.split('\n')
     const formattedLines = lines.map(line => formatCreditLine(line, languageCode))
@@ -293,6 +297,9 @@ function generateVtt(cues, speakerMap, languageCode, colorMap) {
     if (speakerName) {
       vtt += `::cue(v[voice="${speakerName}"]) {\n`
       vtt += `  color: ${color};\n`
+      if (marker === 'lty' || marker === 'yzl') {
+        vtt += '  font-style: italic;\n'
+      }
       vtt += '}\n'
     }
   }
@@ -308,6 +315,11 @@ function generateVtt(cues, speakerMap, languageCode, colorMap) {
   vtt += '::cue(c.title) {\n'
   vtt += '  color: #FFD966;\n'
   vtt += '  font-weight: bold;\n'
+  vtt += '}\n'
+
+  vtt += '::cue(c.expo) {\n'
+  vtt += '  font-style: italic;\n'
+  vtt += '  color: #CCCCCC;\n'
   vtt += '}\n'
 
   vtt += '\n'
@@ -351,18 +363,18 @@ function main() {
   /** @type {Partial<Record<Marker, string>>} */
   const zhSpeakerMap = {
     'LTY': '洛天依',
-    'lty': '洛天依',
+    'lty': '洛天依（念白）',
     'YZL': '乐正绫',
-    'yzl': '乐正绫',
+    'yzl': '乐正绫（念白）',
     'Y+L': '洛天依 & 乐正绫',
   }
 
   /** @type {Partial<Record<Marker, string>>} */
   const viSpeakerMap = {
     'LTY': 'Lạc Thiên Y',
-    'lty': 'Lạc Thiên Y',
+    'lty': 'Lạc Thiên Y (thoại)',
     'YZL': 'Nhạc Chính Lăng',
-    'yzl': 'Nhạc Chính Lăng',
+    'yzl': 'Nhạc Chính Lăng (thoại)',
     'Y+L': 'Lạc Thiên Y & Nhạc Chính Lăng',
   }
 
