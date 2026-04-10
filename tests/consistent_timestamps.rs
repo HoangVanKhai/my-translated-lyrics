@@ -88,8 +88,8 @@ fn file_timestamps_match() {
             .collect();
 
         let (first_content, remaining_contents) = contents.split_first().unwrap();
-        let (first_name, first_timestamps) = first_content;
-        let first_timestamps = extract_timestamps(first_timestamps);
+        let (first_name, first_content) = first_content;
+        let first_timestamps = extract_timestamps(first_content);
 
         for (name, content) in remaining_contents {
             let timestamps = extract_timestamps(content);
