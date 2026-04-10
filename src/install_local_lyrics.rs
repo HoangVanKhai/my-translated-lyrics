@@ -1,9 +1,6 @@
-mod args;
-mod file_descriptor;
-
-use args::Args;
+use crate::args::Args;
+use crate::file_descriptor::FileDescriptor;
 use clap::Parser;
-use file_descriptor::FileDescriptor;
 use itertools::Itertools;
 use pipe_trait::Pipe;
 use reflink::reflink_or_copy;
@@ -68,7 +65,7 @@ fn is_subtitle_file(entry: &DirEntry) -> bool {
     file_name.ends_with(b".srt") || file_name.ends_with(b".vtt")
 }
 
-fn main() {
+pub fn main() {
     let Args {
         execute,
         source,

@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use pipe_trait::Pipe;
 
 #[derive(Clone)]
-pub struct FileDescriptor {
+pub(crate) struct FileDescriptor {
     path: PathBuf,
     dev: u64,
     inode: u64,
