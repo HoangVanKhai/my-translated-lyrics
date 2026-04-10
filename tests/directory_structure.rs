@@ -1,3 +1,4 @@
+use pipe_trait::Pipe;
 use std::fs;
 use std::path::Path;
 
@@ -10,7 +11,7 @@ use std::path::Path;
 /// │   ├── lyrics.vi.srt
 /// │   └── lyrics.zh.srt
 /// └── AnotherSong/
-///     └── …
+///     └── ...
 /// ```
 ///
 /// Rejects files placed directly under the top-level directory (too shallow)
@@ -25,7 +26,8 @@ fn data_and_drafts_have_flat_structure() {
             continue;
         }
 
-        let mut entries: Vec<_> = fs::read_dir(&top_dir)
+        let mut entries: Vec<_> = top_dir
+            .pipe_ref(fs::read_dir)
             .unwrap()
             .map(|entry| entry.unwrap())
             .collect();

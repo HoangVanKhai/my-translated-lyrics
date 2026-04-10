@@ -99,14 +99,12 @@ pub fn main() {
         .iter()
         .map(|collection| target.join(collection))
         .chain(once(target.join(UNIFIED_COLLECTION)))
-        .flat_map(|ref path| match read_dir(path) {
-            Ok(entries) => entries
+        .flat_map(|ref path| {
+            path.pipe(read_dir)
+                .unwrap_or_else(|error| panic!("error: Cannot read directory {path:?}: {error}"))
                 .flatten()
                 .filter(is_subtitle_file)
                 .map(|entry| entry.path())
-                .collect::<Vec<_>>(),
-            Err(error) if error.kind() == ErrorKind::NotFound => Vec::new(),
-            Err(error) => panic!("error: Cannot read directory {path:?}: {error}"),
         })
         .map(|path| {
             let desc = path
@@ -131,7 +129,8 @@ pub fn main() {
         let separated_target_dir = target.join(&config.collection);
         let unified_target_dir = target.join(UNIFIED_COLLECTION);
 
-        let source_entries = read_dir(song_dir)
+        let source_entries = song_dir
+            .pipe(read_dir)
             .unwrap_or_else(|error| panic!("error: Cannot read directory {song_dir:?}: {error}"));
 
         for source_entry in source_entries {
