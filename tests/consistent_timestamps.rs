@@ -23,7 +23,7 @@ fn collect_subtitle_files(files: &mut Vec<PathBuf>, dir: &Path) {
 /// subtitle file (e.g. `.../{video_title}.{lang}.srt`). The language component
 /// is stripped so that different translations map to the same key.
 fn subtitle_group_key(path: &Path) -> Option<String> {
-    let full_path = path.to_string_lossy();
+    let full_path = path.to_str().expect("path isn't valid UTF-8");
     for format in ["srt", "vtt"] {
         let suffix = format!(".{format}");
         let without_format = full_path.strip_suffix(&suffix)?;
