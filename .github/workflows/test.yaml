@@ -46,7 +46,8 @@ jobs:
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > $installer
           bash $installer --default-toolchain $(cat rust-toolchain) --component clippy -y
 
-      - run: cargo clippy -- -D warnings
+      - name: Clippy
+        run: cargo clippy -- -D warnings
 
       - name: Clean workspace artifacts before cache
         if: always()
@@ -80,7 +81,8 @@ jobs:
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > $installer
           bash $installer --default-toolchain $(cat rust-toolchain) -y
 
-      - run: cargo test
+      - name: Test
+        run: cargo test
 
       - name: Clean workspace artifacts before cache
         if: always()
