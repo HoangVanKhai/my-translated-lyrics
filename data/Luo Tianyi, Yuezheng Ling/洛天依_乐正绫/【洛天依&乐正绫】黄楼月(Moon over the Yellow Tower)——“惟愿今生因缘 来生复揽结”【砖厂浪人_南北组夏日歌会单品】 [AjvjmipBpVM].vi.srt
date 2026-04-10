@@ -170,7 +170,7 @@ Giấc mộng Nam Kha bao giờ tỉnh, bao buồn vui đều thoảng qua
 Chỉ sợ nước sông Thanh Hà, vẫn cứ chở nỗi biệt ly
 
 40
-00:02:44,030 --> 00:02:44,030
+00:02:40,359 --> 00:02:44,030
 Tỉnh cùng ngắm trăng, say cùng chung gối
 
 41
