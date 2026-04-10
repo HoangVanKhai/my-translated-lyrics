@@ -5,7 +5,7 @@ use itertools::Itertools;
 use pipe_trait::Pipe;
 use reflink::reflink_or_copy;
 use std::collections::{HashMap, HashSet};
-use std::fs::{hard_link, read_dir, remove_file, DirEntry};
+use std::fs::{DirEntry, hard_link, read_dir, remove_file};
 use std::io::{self, ErrorKind};
 use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
@@ -40,10 +40,10 @@ fn uninstall(execute: bool, target: &Path) {
 fn install(execute: bool, source: &Path, target: &Path) {
     eprintln!("copy {source:?} → {target:?}");
     if execute {
-        if let Err(error) = remove_file(target) {
-            if error.kind() != ErrorKind::NotFound {
-                eprintln!("warning: Cannot remove file {target:?}: {error}");
-            }
+        if let Err(error) = remove_file(target)
+            && error.kind() != ErrorKind::NotFound
+        {
+            eprintln!("warning: Cannot remove file {target:?}: {error}");
         }
 
         // Q: Why try hardlink before reflink?
