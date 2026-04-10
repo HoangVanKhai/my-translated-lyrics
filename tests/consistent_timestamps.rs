@@ -62,8 +62,8 @@ fn file_timestamps_match() {
     }
 
     assert!(
-        !groups.is_empty(),
-        "no subtitle file groups found in {}",
+        groups.values().any(|paths| paths.len() >= 2),
+        "no subtitle file pairs found to compare in {}",
         data_dir.display(),
     );
 
@@ -87,12 +87,7 @@ fn file_timestamps_match() {
             })
             .collect();
 
-        let (first_content, remaining_contents) = contents.split_first().unwrap_or_else(|| {
-            panic!(
-                "no subtitle file pairs found to compare in {}",
-                data_dir.display(),
-            )
-        });
+        let (first_content, remaining_contents) = contents.split_first().unwrap();
         let (first_name, first_timestamps) = first_content;
         let first_timestamps = extract_timestamps(first_timestamps);
 
