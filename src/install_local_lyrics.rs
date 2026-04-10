@@ -62,17 +62,10 @@ fn install(execute: bool, source: &Path, target: &Path) {
 }
 
 fn validate_song_config(config: &SongConfig, config_path: &Path) {
-    // collection must be a non-empty relative path with only normal components
-    let mut collection_components = config
-        .collection
-        .pipe_ref(Path::new)
-        .components()
-        .peekable();
-    if collection_components.peek().is_none()
-        || !collection_components.all(|c| matches!(c, Component::Normal(_)))
-    {
+    // collection must be one of the known managed collections
+    if !SEPARATED_COLLECTIONS.contains(&config.collection.as_str()) {
         panic!(
-            "error: invalid collection in {config_path:?}: {:?}",
+            "error: unknown collection in {config_path:?}: {:?}",
             config.collection
         );
     }
