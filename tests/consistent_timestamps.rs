@@ -26,12 +26,16 @@ fn subtitle_group_key(path: &Path) -> Option<String> {
     let path = path.to_str().expect("path isn't valid UTF-8");
     for format in ["srt", "vtt"] {
         let suffix = format!(".{format}");
-        let without_format = path.strip_suffix(&suffix)?;
-        if let Some(dot_pos) = without_format.rfind('.') {
-            let lang = &without_format[dot_pos + 1..];
-            if !lang.is_empty() && lang.len() <= 5 && lang.chars().all(|c| c.is_ascii_lowercase()) {
-                let stem = &without_format[..dot_pos];
-                return Some(format!("{stem}::{format}"));
+        if let Some(without_format) = path.strip_suffix(&suffix) {
+            if let Some(dot_pos) = without_format.rfind('.') {
+                let lang = &without_format[dot_pos + 1..];
+                if !lang.is_empty()
+                    && lang.len() <= 5
+                    && lang.chars().all(|c| c.is_ascii_lowercase())
+                {
+                    let stem = &without_format[..dot_pos];
+                    return Some(format!("{stem}::{format}"));
+                }
             }
         }
     }
@@ -90,6 +94,10 @@ fn file_timestamps_match() {
         let (first_content, remaining_contents) = contents.split_first().unwrap();
         let (first_name, first_content) = first_content;
         let first_timestamps = extract_timestamps(first_content);
+        assert!(
+            !first_timestamps.is_empty(),
+            "no timestamps found in {first_name}",
+        );
 
         for (name, content) in remaining_contents {
             let timestamps = extract_timestamps(content);
