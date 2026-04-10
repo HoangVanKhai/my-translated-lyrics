@@ -2,7 +2,7 @@ use clap::Parser;
 use pipe_trait::Pipe;
 use std::{
     fmt,
-    fs::{read_to_string, File},
+    fs::{File, read_to_string},
     io::{self, Write},
     path::{Path, PathBuf},
     process::ExitCode,
