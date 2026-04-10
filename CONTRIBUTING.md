@@ -20,7 +20,7 @@ type(scope): lowercase description
 
 ## Code Style
 
-Automated tools enforce formatting (`cargo fmt`) and linting (`cargo clippy`). The following conventions are **not** enforced by those tools and must be followed manually.
+Automated tools enforce formatting (`cargo fmt`) and linting (`cargo clippy --all-targets`). The following conventions are **not** enforced by those tools and must be followed manually.
 
 ### Variable and Closure Parameter Naming
 
@@ -181,13 +181,13 @@ rustup component add --toolchain "$(< rust-toolchain)" rustfmt clippy
 Before submitting, ensure:
 
 - `cargo fmt -- --check` passes
-- `cargo clippy` passes
+- `cargo clippy --all-targets` passes
 - `cargo test` passes
 
 You can run all of these with:
 
 ```sh
-cargo fmt -- --check && cargo clippy && cargo test
+cargo fmt -- --check && cargo clippy --all-targets && cargo test
 ```
 
 > [!IMPORTANT]
