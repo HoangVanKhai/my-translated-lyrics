@@ -78,7 +78,7 @@ impl RuntimeError {
         match self {
             RuntimeError::ReadFile { .. } | RuntimeError::WriteFile { .. } => None,
             RuntimeError::Outdated => Some(format!(
-                "Run `cargo run --features ai-instructions --bin lyrics-ai-instructions -- --generate {}` to update.",
+                "Run `cargo run --bin lyrics-ai-instructions -- --generate {}` to update.",
                 args.repository.display(),
             )),
         }

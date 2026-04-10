@@ -1,5 +1,3 @@
-#![cfg(feature = "ai-instructions")]
-
 use std::process::Command;
 
 const LYRICS_AI_INSTRUCTIONS: &str = env!("CARGO_BIN_EXE_lyrics-ai-instructions");
@@ -22,6 +20,6 @@ fn ai_instructions_up_to_date() {
     }
     assert!(
         output.status.success(),
-        "AI instruction files are outdated. Run `cargo run --features ai-instructions --bin lyrics-ai-instructions -- --generate .` to update.",
+        "AI instruction files are outdated. Run `cargo run --bin lyrics-ai-instructions -- --generate .` to update.",
     );
 }

@@ -10,10 +10,6 @@ path = "cli/install_local_lyrics.rs"
 [[bin]]
 name = "lyrics-ai-instructions"
 path = "cli/ai_instructions.rs"
-required-features = ["ai-instructions"]
-
-[features]
-ai-instructions = []
 
 [dependencies]
 clap = { version = "4.6.0", features = ["derive"] }
