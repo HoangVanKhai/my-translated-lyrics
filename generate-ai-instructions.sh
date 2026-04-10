@@ -2,4 +2,4 @@
 set -o errexit -o pipefail -o nounset
 cd "$(dirname "$0")"
 
-exec cargo run --features='ai-instructions' --bin='lyrics-ai-instructions' -- --generate .
+exec cargo run --bin='lyrics-ai-instructions' -- --generate .
