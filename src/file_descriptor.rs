@@ -29,7 +29,7 @@ impl fmt::Debug for FileDescriptor {
 }
 
 impl FileDescriptor {
-    pub(crate) fn new(path: PathBuf) -> io::Result<Self> {
+    pub fn new(path: PathBuf) -> io::Result<Self> {
         let stats = symlink_metadata(&path)?;
         Ok(FileDescriptor {
             path,
@@ -40,7 +40,7 @@ impl FileDescriptor {
         })
     }
 
-    pub(crate) fn load(&self) -> io::Result<&str> {
+    pub fn load(&self) -> io::Result<&str> {
         if let Some(content) = self.content.get() {
             return Ok(content);
         }
@@ -48,7 +48,7 @@ impl FileDescriptor {
         self.content.get_or_init(|| content).as_str().pipe(Ok)
     }
 
-    pub(crate) fn content_eq(&self, other: &Self) -> bool {
+    pub fn content_eq(&self, other: &Self) -> bool {
         if self.inode == other.inode && self.dev == other.dev {
             return true;
         }
