@@ -47,7 +47,7 @@ jobs:
           bash $installer --default-toolchain $(cat rust-toolchain) --component clippy -y
 
       - name: Clippy
-        run: cargo clippy -- -D warnings
+        run: cargo clippy --all-targets -- -D warnings
 
       - name: Clean workspace artifacts before cache
         if: always()
