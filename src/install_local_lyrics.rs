@@ -57,7 +57,11 @@ fn install(execute: bool, source: &Path, target: &Path) {
 
 fn validate_song_config(config: &SongConfig, config_path: &Path) {
     // collection must be a non-empty relative path with only normal components
-    let mut collection_components = Path::new(&config.collection).components().peekable();
+    let mut collection_components = config
+        .collection
+        .pipe_ref(Path::new)
+        .components()
+        .peekable();
     if collection_components.peek().is_none()
         || !collection_components.all(|c| matches!(c, Component::Normal(_)))
     {
@@ -68,7 +72,7 @@ fn validate_song_config(config: &SongConfig, config_path: &Path) {
     }
 
     // filename must be a single normal path component (no separators)
-    let mut filename_components = Path::new(&config.filename).components();
+    let mut filename_components = config.filename.pipe_ref(Path::new).components();
     if !matches!(
         (filename_components.next(), filename_components.next()),
         (Some(Component::Normal(_)), None)
