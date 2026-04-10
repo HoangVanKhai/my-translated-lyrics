@@ -10,7 +10,7 @@ use std::fs::{DirEntry, hard_link, read_dir, read_to_string, remove_file};
 use std::io::{self, ErrorKind};
 use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 
 const UNIFIED_COLLECTION: &str = "Short Relaxing Playlist 2025";
 const SONG_CONFIG_FILENAME: &str = "song.toml";
@@ -55,6 +55,31 @@ fn install(execute: bool, source: &Path, target: &Path) {
     }
 }
 
+fn validate_song_config(config: &SongConfig, config_path: &Path) {
+    // collection must be a non-empty relative path with only normal components
+    let mut collection_components = Path::new(&config.collection).components().peekable();
+    if collection_components.peek().is_none()
+        || !collection_components.all(|c| matches!(c, Component::Normal(_)))
+    {
+        panic!(
+            "error: invalid collection in {config_path:?}: {:?}",
+            config.collection
+        );
+    }
+
+    // filename must be a single normal path component (no separators)
+    let mut filename_components = Path::new(&config.filename).components();
+    if !matches!(
+        (filename_components.next(), filename_components.next()),
+        (Some(Component::Normal(_)), None)
+    ) {
+        panic!(
+            "error: invalid filename in {config_path:?}: {:?}",
+            config.filename
+        );
+    }
+}
+
 fn is_subtitle_file(entry: &DirEntry) -> bool {
     match entry.file_type() {
         Err(_) => return false,
@@ -85,6 +110,7 @@ pub fn main() {
             let content = read_to_string(&config_path).ok()?;
             let config: SongConfig = toml::from_str(&content)
                 .unwrap_or_else(|error| panic!("error: Cannot parse {config_path:?}: {error}"));
+            validate_song_config(&config, &config_path);
             Some((song_dir, config))
         })
         .collect();
