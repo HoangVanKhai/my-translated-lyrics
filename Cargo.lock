@@ -111,16 +111,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
-name = "install-local-lyrics"
-version = "0.0.0"
-dependencies = [
- "clap",
- "itertools",
- "pipe-trait",
- "reflink",
-]
-
-[[package]]
 name = "is_terminal_polyfill"
 version = "1.70.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -140,6 +130,16 @@ name = "libc"
 version = "0.2.183"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5b646652bf6661599e1da8901b3b9522896f01e736bad5f723fe7a3a27f899d"
+
+[[package]]
+name = "my-translated-lyrics"
+version = "0.0.0"
+dependencies = [
+ "clap",
+ "itertools",
+ "pipe-trait",
+ "reflink",
+]
 
 [[package]]
 name = "once_cell_polyfill"
