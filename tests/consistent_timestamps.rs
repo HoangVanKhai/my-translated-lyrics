@@ -26,16 +26,13 @@ fn subtitle_group_key(path: &Path) -> Option<String> {
     let path = path.to_str().expect("path isn't valid UTF-8");
     for format in ["srt", "vtt"] {
         let suffix = format!(".{format}");
-        if let Some(without_format) = path.strip_suffix(&suffix) {
-            if let Some(dot_pos) = without_format.rfind('.') {
-                let lang = &without_format[dot_pos + 1..];
-                if !lang.is_empty()
-                    && lang.len() <= 5
-                    && lang.chars().all(|c| c.is_ascii_lowercase())
-                {
-                    let stem = &without_format[..dot_pos];
-                    return Some(format!("{stem}::{format}"));
-                }
+        if let Some(without_format) = path.strip_suffix(&suffix)
+            && let Some(dot_pos) = without_format.rfind('.')
+        {
+            let lang = &without_format[dot_pos + 1..];
+            if !lang.is_empty() && lang.len() <= 5 && lang.chars().all(|c| c.is_ascii_lowercase()) {
+                let stem = &without_format[..dot_pos];
+                return Some(format!("{stem}::{format}"));
             }
         }
     }
