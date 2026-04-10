@@ -28,14 +28,13 @@ fn data_and_drafts_have_flat_structure() {
             continue;
         }
 
-        let entries: Vec<_> = top_dir
+        let entries = top_dir
             .pipe(fs::read_dir)
             .unwrap()
             .map(Result::unwrap)
-            .sorted_by_key(DirEntry::file_name)
-            .collect();
+            .sorted_by_key(DirEntry::file_name);
 
-        for entry in &entries {
+        for entry in entries {
             let path = entry.path();
             let name = entry.file_name();
             let name = name.to_str().expect("path isn't valid UTF-8");
@@ -45,14 +44,13 @@ fn data_and_drafts_have_flat_structure() {
                 "{top_dir_name}/{name} should be a directory, not a file",
             );
 
-            let inner_entries: Vec<_> = path
+            let inner_entries = path
                 .pipe(fs::read_dir)
                 .unwrap()
                 .map(Result::unwrap)
-                .sorted_by_key(DirEntry::file_name)
-                .collect();
+                .sorted_by_key(DirEntry::file_name);
 
-            for inner_entry in &inner_entries {
+            for inner_entry in inner_entries {
                 let inner_path = inner_entry.path();
                 let inner_name = inner_entry.file_name();
                 let inner_name = inner_name.to_str().expect("path isn't valid UTF-8");
