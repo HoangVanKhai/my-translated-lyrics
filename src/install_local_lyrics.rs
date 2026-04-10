@@ -4,20 +4,22 @@ use clap::Parser;
 use itertools::Itertools;
 use pipe_trait::Pipe;
 use reflink::reflink_or_copy;
+use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
-use std::fs::{DirEntry, hard_link, read_dir, remove_file};
+use std::fs::{DirEntry, hard_link, read_dir, read_to_string, remove_file};
 use std::io::{self, ErrorKind};
 use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 
-const SEPARATED_COLLECTIONS: &[&str] = &[
-    "Feng Ling Yu Xiu",
-    "Luo Tianyi, Yuezheng Ling/洛天依_乐正绫",
-    "Touhou Hero of Ice Fairy",
-];
-
 const UNIFIED_COLLECTION: &str = "Short Relaxing Playlist 2025";
+const SONG_CONFIG_FILENAME: &str = "song.toml";
+
+#[derive(Deserialize)]
+struct SongConfig {
+    collection: String,
+    filename: String,
+}
 
 /// Try hardlink, then try reflink, and finally copy.
 fn link_or_copy(source: &Path, target: &Path) -> io::Result<()> {
@@ -72,17 +74,39 @@ pub fn main() {
         target,
     } = Args::parse();
 
-    let existing_target_files: HashMap<PathBuf, FileDescriptor> = SEPARATED_COLLECTIONS
+    // Read all song configurations from source directories
+    let songs: Vec<(PathBuf, SongConfig)> = read_dir(&source)
+        .unwrap_or_else(|error| panic!("error: Cannot read source directory {source:?}: {error}"))
+        .flatten()
+        .filter(|entry| entry.file_type().is_ok_and(|file_type| file_type.is_dir()))
+        .filter_map(|entry| {
+            let song_dir = entry.path();
+            let config_path = song_dir.join(SONG_CONFIG_FILENAME);
+            let content = read_to_string(&config_path).ok()?;
+            let config: SongConfig = toml::from_str(&content)
+                .unwrap_or_else(|error| panic!("error: Cannot parse {config_path:?}: {error}"));
+            Some((song_dir, config))
+        })
+        .collect();
+
+    // Derive target collection directories from song configurations
+    let target_collections: HashSet<&str> = songs
         .iter()
-        .copied()
-        .chain(once(UNIFIED_COLLECTION))
-        .map(|suffix| target.join(suffix))
-        .flat_map(|ref path| {
-            path.pipe(read_dir)
-                .unwrap_or_else(|error| panic!("error: Cannot read directory {path:?}: {error}"))
+        .map(|(_, config)| config.collection.as_str())
+        .collect();
+
+    let existing_target_files: HashMap<PathBuf, FileDescriptor> = target_collections
+        .iter()
+        .map(|collection| target.join(collection))
+        .chain(once(target.join(UNIFIED_COLLECTION)))
+        .flat_map(|ref path| match read_dir(path) {
+            Ok(entries) => entries
                 .flatten()
                 .filter(is_subtitle_file)
                 .map(|entry| entry.path())
+                .collect::<Vec<_>>(),
+            Err(error) if error.kind() == ErrorKind::NotFound => Vec::new(),
+            Err(error) => panic!("error: Cannot read directory {path:?}: {error}"),
         })
         .map(|path| {
             let desc = path
@@ -103,16 +127,12 @@ pub fn main() {
     let mut files_need_install: Vec<(PathBuf, PathBuf)> =
         Vec::with_capacity(existing_target_files.len());
 
-    for suffix in SEPARATED_COLLECTIONS {
-        let source_dir = source.join(suffix);
-        let separated_target_dir = target.join(suffix);
+    for (song_dir, config) in &songs {
+        let separated_target_dir = target.join(&config.collection);
         let unified_target_dir = target.join(UNIFIED_COLLECTION);
 
-        let source_entries = match read_dir(&source_dir) {
-            Ok(source_entries) => source_entries,
-            Err(error) if error.kind() == ErrorKind::NotFound => continue,
-            Err(error) => panic!("error: Cannot read directory {source_dir:?}: {error}"),
-        };
+        let source_entries = read_dir(song_dir)
+            .unwrap_or_else(|error| panic!("error: Cannot read directory {song_dir:?}: {error}"));
 
         for source_entry in source_entries {
             let Ok(source_entry) = source_entry else {
@@ -121,10 +141,21 @@ pub fn main() {
             if !is_subtitle_file(&source_entry) {
                 continue;
             }
-            let file_name = source_entry.file_name();
-            let source_file = source_dir.join(&file_name);
-            let separated_target_file = separated_target_dir.join(&file_name);
-            let unified_target_file = unified_target_dir.join(&file_name);
+
+            let local_name = source_entry.file_name();
+            let local_name_str = local_name
+                .to_str()
+                .unwrap_or_else(|| panic!("error: Non-UTF-8 filename in {song_dir:?}"));
+
+            // Map lyrics.{lang}.{ext} → {config.filename}.{lang}.{ext}
+            let target_name = local_name_str
+                .strip_prefix("lyrics")
+                .map(|suffix| format!("{}{suffix}", config.filename))
+                .unwrap_or_else(|| local_name_str.to_owned());
+
+            let source_file = song_dir.join(&local_name);
+            let separated_target_file = separated_target_dir.join(&target_name);
+            let unified_target_file = unified_target_dir.join(&target_name);
 
             let source_file_desc = source_file.clone().pipe(FileDescriptor::new);
             for target_file in [separated_target_file, unified_target_file] {
