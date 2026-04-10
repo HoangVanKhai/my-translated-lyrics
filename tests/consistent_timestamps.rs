@@ -12,7 +12,7 @@ fn collect_subtitle_files(files: &mut Vec<PathBuf>, dir: &Path) {
             continue;
         }
 
-        let name = path.to_string_lossy();
+        let name = path.to_str().expect("path isn't valid UTF-8");
         if name.ends_with(".srt") || name.ends_with(".vtt") {
             files.push(path);
         }
@@ -77,7 +77,11 @@ fn file_timestamps_match() {
         let contents: Vec<_> = paths
             .iter()
             .map(|path| {
-                let name = path.file_name().unwrap().to_string_lossy().into_owned();
+                let name = path
+                    .file_name()
+                    .unwrap()
+                    .to_str()
+                    .expect("path isn't valid UTF-8");
                 let content = fs::read_to_string(path)
                     .unwrap_or_else(|err| panic!("failed to read {}: {err}", path.display()));
                 (name, content)
