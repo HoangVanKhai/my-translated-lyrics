@@ -18,9 +18,8 @@ fn collect_subtitle_files(dir: &Path, files: &mut Vec<PathBuf>) {
 }
 
 /// Returns a grouping key that is shared by all language variants of the same
-/// subtitle file (e.g. `…/video_title::srt`). The language component (the
-/// segment between the last two dots, like `vi` or `zh`) is stripped so that
-/// different translations map to the same key.
+/// subtitle file (e.g. `.../{video_title}.{lang}.srt`). The language component
+/// is stripped so that different translations map to the same key.
 fn subtitle_group_key(path: &Path) -> Option<String> {
     let full_path = path.to_string_lossy();
     for format in ["srt", "vtt"] {
