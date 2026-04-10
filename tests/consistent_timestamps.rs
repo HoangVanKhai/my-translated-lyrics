@@ -12,8 +12,8 @@ fn collect_subtitle_files(files: &mut Vec<PathBuf>, dir: &Path) {
             continue;
         }
 
-        let name = path.to_str().expect("path isn't valid UTF-8");
-        if name.ends_with(".srt") || name.ends_with(".vtt") {
+        let path_str = path.to_str().expect("path isn't valid UTF-8");
+        if path_str.ends_with(".srt") || path_str.ends_with(".vtt") {
             files.push(path);
         }
     }
