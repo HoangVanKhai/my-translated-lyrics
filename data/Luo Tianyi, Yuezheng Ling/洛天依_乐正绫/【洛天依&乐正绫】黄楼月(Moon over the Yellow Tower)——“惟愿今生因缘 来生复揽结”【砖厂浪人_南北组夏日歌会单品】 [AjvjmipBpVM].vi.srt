@@ -18,7 +18,7 @@ Chí thiếu niên giữa nhân gian, tựa ánh thanh huy sáng soi
 00:00:18,283 --> 00:00:22,612
 <font color="#AAAA22">Soạn nhạc/Biên khúc:</font> <font color="#AAAAAA">砖厂浪人</font>
 <font color="#AAAA22">Lời:</font> <font color="#AAAAAA">萧暮雨</font>
-<font color="#AAAA22">Trình bày:</font> <font color="#AAAAAA">Luo Tianyi; Yuezheng Ying</font>
+<font color="#AAAA22">Trình bày:</font> <font color="#AAAAAA">Luo Tianyi; Yuezheng Ling</font>
 
 6
 00:00:22,612 --> 00:00:26,885
@@ -113,7 +113,7 @@ Nhớ quay về thực hiện lời hẹn đối giường nghe mưa
 00:01:45,213 --> 00:01:48,835
 <font color="#AAAA22">Soạn nhạc/Biên khúc:</font> <font color="#AAAAAA">砖厂浪人</font>
 <font color="#AAAA22">Lời:</font> <font color="#AAAAAA">萧暮雨</font>
-<font color="#AAAA22">Trình bày:</font> <font color="#AAAAAA">Luo Tianyi; Yuezheng Ying</font>
+<font color="#AAAA22">Trình bày:</font> <font color="#AAAAAA">Luo Tianyi; Yuezheng Ling</font>
 
 28
 00:01:48,835 --> 00:01:52,488
