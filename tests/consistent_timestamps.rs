@@ -3,11 +3,11 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-fn collect_subtitle_files(dir: &Path, files: &mut Vec<PathBuf>) {
+fn collect_subtitle_files(files: &mut Vec<PathBuf>, dir: &Path) {
     for entry in fs::read_dir(dir).unwrap() {
         let path = entry.unwrap().path();
         if path.is_dir() {
-            collect_subtitle_files(&path, files);
+            collect_subtitle_files(files, &path);
             continue;
         }
 
@@ -49,7 +49,7 @@ fn file_timestamps_match() {
     let data_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("data");
 
     let mut files = Vec::new();
-    collect_subtitle_files(&data_dir, &mut files);
+    collect_subtitle_files(&mut files, &data_dir);
     files.sort();
 
     // Group files by (stem, format) so that language variants share a key.
