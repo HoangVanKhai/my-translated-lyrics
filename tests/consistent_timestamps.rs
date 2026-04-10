@@ -8,11 +8,12 @@ fn collect_subtitle_files(dir: &Path, files: &mut Vec<PathBuf>) {
         let path = entry.unwrap().path();
         if path.is_dir() {
             collect_subtitle_files(&path, files);
-        } else {
-            let name = path.to_string_lossy();
-            if name.ends_with(".srt") || name.ends_with(".vtt") {
-                files.push(path);
-            }
+            continue;
+        }
+
+        let name = path.to_string_lossy();
+        if name.ends_with(".srt") || name.ends_with(".vtt") {
+            files.push(path);
         }
     }
 }
