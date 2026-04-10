@@ -1,5 +1,7 @@
+use itertools::Itertools;
 use pipe_trait::Pipe;
 use std::fs;
+use std::fs::DirEntry;
 use std::path::Path;
 
 /// Verify that `data/` and `drafts/` have a flat two-level structure:
@@ -26,12 +28,12 @@ fn data_and_drafts_have_flat_structure() {
             continue;
         }
 
-        let mut entries: Vec<_> = top_dir
+        let entries: Vec<_> = top_dir
             .pipe_ref(fs::read_dir)
             .unwrap()
             .map(|entry| entry.unwrap())
+            .sorted_by_key(DirEntry::file_name)
             .collect();
-        entries.sort_by_key(|entry| entry.file_name());
 
         for entry in &entries {
             let path = entry.path();
@@ -43,11 +45,11 @@ fn data_and_drafts_have_flat_structure() {
                 "{top_dir_name}/{name} should be a directory, not a file",
             );
 
-            let mut inner_entries: Vec<_> = fs::read_dir(&path)
+            let inner_entries: Vec<_> = fs::read_dir(&path)
                 .unwrap()
                 .map(|inner| inner.unwrap())
+                .sorted_by_key(DirEntry::file_name)
                 .collect();
-            inner_entries.sort_by_key(|entry| entry.file_name());
 
             for inner_entry in &inner_entries {
                 let inner_path = inner_entry.path();
