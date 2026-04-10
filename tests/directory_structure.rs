@@ -45,7 +45,8 @@ fn data_and_drafts_have_flat_structure() {
                 "{top_dir_name}/{name} should be a directory, not a file",
             );
 
-            let inner_entries: Vec<_> = fs::read_dir(&path)
+            let inner_entries: Vec<_> = path
+                .pipe(fs::read_dir)
                 .unwrap()
                 .map(Result::unwrap)
                 .sorted_by_key(DirEntry::file_name)
