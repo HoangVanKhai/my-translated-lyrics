@@ -103,7 +103,8 @@ pub fn main() {
     } = Args::parse();
 
     // Read all song configurations from source directories
-    let songs: Vec<(PathBuf, SongConfig)> = read_dir(&source)
+    let songs: Vec<(PathBuf, SongConfig)> = source
+        .pipe_ref(read_dir)
         .unwrap_or_else(|error| panic!("error: Cannot read source directory {source:?}: {error}"))
         .flatten()
         .filter(|entry| entry.file_type().is_ok_and(|file_type| file_type.is_dir()))
