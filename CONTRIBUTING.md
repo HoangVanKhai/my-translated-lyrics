@@ -22,23 +22,6 @@ type(scope): lowercase description
 
 Automated tools enforce formatting (`cargo fmt`) and linting (`cargo clippy`). The following conventions are **not** enforced by those tools and must be followed manually.
 
-### Import Organization
-
-Prefer **merged imports** — combine multiple items from the same crate or module into a single `use` statement with braces rather than separate `use` lines. Import ordering is enforced by `cargo fmt`. Platform-specific imports (`#[cfg(unix)]`) go in a separate block after the main imports.
-
-```rust
-use std::{
-    fs::{read_dir, remove_file, DirEntry},
-    io::{self, ErrorKind},
-    path::{Path, PathBuf},
-};
-use clap::Parser;
-use pipe_trait::Pipe;
-
-#[cfg(unix)]
-use std::os::unix::ffi::OsStrExt;
-```
-
 ### Variable and Closure Parameter Naming
 
 Use **descriptive names** for variables and closure parameters by default. Single-letter names are permitted only in the specific cases listed below.
