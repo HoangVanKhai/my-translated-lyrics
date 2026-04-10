@@ -1,3 +1,4 @@
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::collections::BTreeMap;
 use std::fs;
@@ -46,7 +47,7 @@ fn extract_timestamps(content: &str) -> Vec<&str> {
 
 #[test]
 fn file_timestamps_match() {
-    let data_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("data");
+    let data_dir = env!("CARGO_MANIFEST_DIR").pipe(Path::new).join("data");
 
     let mut files = Vec::new();
     collect_subtitle_files(&mut files, &data_dir);
