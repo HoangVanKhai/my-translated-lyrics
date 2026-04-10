@@ -29,7 +29,7 @@ fn data_and_drafts_have_flat_structure() {
         }
 
         let entries: Vec<_> = top_dir
-            .pipe_ref(fs::read_dir)
+            .pipe(fs::read_dir)
             .unwrap()
             .map(Result::unwrap)
             .sorted_by_key(DirEntry::file_name)
