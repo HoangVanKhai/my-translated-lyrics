@@ -12,6 +12,12 @@ use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Component, Path, PathBuf};
 
+const SEPARATED_COLLECTIONS: &[&str] = &[
+    "Feng Ling Yu Xiu",
+    "Luo Tianyi, Yuezheng Ling/洛天依_乐正绫",
+    "Touhou Hero of Ice Fairy",
+];
+
 const UNIFIED_COLLECTION: &str = "Short Relaxing Playlist 2025";
 const SONG_CONFIG_FILENAME: &str = "song.toml";
 
@@ -108,27 +114,23 @@ pub fn main() {
         .unwrap_or_else(|error| panic!("error: Cannot read source directory {source:?}: {error}"))
         .flatten()
         .filter(|entry| entry.file_type().is_ok_and(|file_type| file_type.is_dir()))
-        .filter_map(|entry| {
+        .map(|entry| {
             let song_dir = entry.path();
             let config_path = song_dir.join(SONG_CONFIG_FILENAME);
-            let content = read_to_string(&config_path).ok()?;
+            let content = read_to_string(&config_path)
+                .unwrap_or_else(|error| panic!("error: Cannot read {config_path:?}: {error}"));
             let config: SongConfig = toml::from_str(&content)
                 .unwrap_or_else(|error| panic!("error: Cannot parse {config_path:?}: {error}"));
             validate_song_config(&config, &config_path);
-            Some((song_dir, config))
+            (song_dir, config)
         })
         .collect();
 
-    // Derive target collection directories from song configurations
-    let target_collections: HashSet<&str> = songs
+    let existing_target_files: HashMap<PathBuf, FileDescriptor> = SEPARATED_COLLECTIONS
         .iter()
-        .map(|(_, config)| config.collection.as_str())
-        .collect();
-
-    let existing_target_files: HashMap<PathBuf, FileDescriptor> = target_collections
-        .iter()
-        .map(|collection| target.join(collection))
-        .chain(once(target.join(UNIFIED_COLLECTION)))
+        .copied()
+        .chain(once(UNIFIED_COLLECTION))
+        .map(|suffix| target.join(suffix))
         .flat_map(|ref path| {
             path.pipe(read_dir)
                 .unwrap_or_else(|error| panic!("error: Cannot read directory {path:?}: {error}"))
@@ -178,8 +180,8 @@ pub fn main() {
 
             // Map lyrics.{lang}.{ext} → {config.filename}.{lang}.{ext}
             let target_name = local_name
-                .strip_prefix("lyrics")
-                .map(|suffix| format!("{}{suffix}", config.filename))
+                .strip_prefix("lyrics.")
+                .map(|suffix| format!("{}.{suffix}", config.filename))
                 .unwrap_or_else(|| local_name.to_owned());
 
             let source_file = song_dir.join(local_name);
