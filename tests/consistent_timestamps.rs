@@ -67,8 +67,6 @@ fn file_timestamps_match() {
         data_dir.display(),
     );
 
-    let mut pairs_checked = 0u32;
-
     for paths in groups.values() {
         if paths.len() < 2 {
             continue;
@@ -89,22 +87,21 @@ fn file_timestamps_match() {
             })
             .collect();
 
-        let (first_name, first_timestamps) = &contents[0];
+        let (first_content, remaining_contents) = contents.split_first().unwrap_or_else(|| {
+            panic!(
+                "no subtitle file pairs found to compare in {}",
+                data_dir.display(),
+            )
+        });
+        let (first_name, first_timestamps) = first_content;
         let first_timestamps = extract_timestamps(first_timestamps);
 
-        for (name, content) in &contents[1..] {
+        for (name, content) in remaining_contents {
             let timestamps = extract_timestamps(content);
             assert_eq!(
                 first_timestamps, timestamps,
                 "timestamp mismatch: {first_name} vs {name}",
             );
-            pairs_checked += 1;
         }
     }
-
-    assert!(
-        pairs_checked > 0,
-        "no subtitle file pairs found to compare in {}",
-        data_dir.display(),
-    );
 }
