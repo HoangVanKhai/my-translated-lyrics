@@ -168,17 +168,17 @@ pub fn main() {
             }
 
             let local_name = source_entry.file_name();
-            let local_name_str = local_name
+            let local_name = local_name
                 .to_str()
                 .unwrap_or_else(|| panic!("error: Non-UTF-8 filename in {song_dir:?}"));
 
             // Map lyrics.{lang}.{ext} → {config.filename}.{lang}.{ext}
-            let target_name = local_name_str
+            let target_name = local_name
                 .strip_prefix("lyrics")
                 .map(|suffix| format!("{}{suffix}", config.filename))
-                .unwrap_or_else(|| local_name_str.to_owned());
+                .unwrap_or_else(|| local_name.to_owned());
 
-            let source_file = song_dir.join(&local_name);
+            let source_file = song_dir.join(local_name);
             let separated_target_file = separated_target_dir.join(&target_name);
             let unified_target_file = unified_target_dir.join(&target_name);
 
