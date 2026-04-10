@@ -82,7 +82,8 @@ fn file_timestamps_match() {
                     .unwrap()
                     .to_str()
                     .expect("path isn't valid UTF-8");
-                let content = fs::read_to_string(path)
+                let content = path
+                    .pipe(fs::read_to_string)
                     .unwrap_or_else(|err| panic!("failed to read {}: {err}", path.display()));
                 (name, content)
             })
