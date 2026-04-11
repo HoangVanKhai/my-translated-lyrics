@@ -115,9 +115,11 @@ pub fn main() {
         .map(|entry| {
             let song_dir = entry.path();
             let config_path = song_dir.join(SONG_CONFIG_FILENAME);
-            let content = read_to_string(&config_path)
+            let content = config_path
+                .pipe_ref(read_to_string)
                 .unwrap_or_else(|error| panic!("error: Cannot read {config_path:?}: {error}"));
-            let config: SongConfig = toml::from_str(&content)
+            let config: SongConfig = content
+                .pipe_as_ref(toml::from_str)
                 .unwrap_or_else(|error| panic!("error: Cannot parse {config_path:?}: {error}"));
             validate_song_config(&config, &config_path);
             (song_dir, config)
