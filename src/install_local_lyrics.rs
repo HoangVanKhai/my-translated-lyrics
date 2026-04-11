@@ -41,7 +41,7 @@ enum Visibility {
     /// the existence of the source.
     #[serde(rename = "hidden")]
     Hidden,
-    /// The existence of target subtitle files are ignored.
+    /// The existence of target subtitle files is ignored.
     /// It shall neither be deleted nor created nor synchronized.
     #[serde(rename = "untracked")]
     Untracked,
@@ -196,9 +196,9 @@ pub fn main() {
             .unwrap_or_else(|error| panic!("error: Cannot read directory {video_dir:?}: {error}"));
 
         for source_entry in source_entries {
-            let Ok(source_entry) = source_entry else {
-                continue;
-            };
+            let source_entry = source_entry.unwrap_or_else(|error| {
+                panic!("error: Cannot read an entry of directory {video_dir:?}: {error}")
+            });
             if !is_subtitle_file(&source_entry) {
                 continue;
             }
