@@ -30,7 +30,7 @@ struct VideoConfig {
     visibility: Visibility,
 }
 
-#[derive(Default, Deserialize)]
+#[derive(Default, Deserialize, PartialEq, Eq)]
 enum Visibility {
     /// The target subtitle files should be created and
     /// synchronized with the source.
@@ -184,7 +184,7 @@ pub fn main() {
     for (video_dir, config) in &videos {
         // Hidden: do nothing. Any existing target files stay in
         // `files_need_uninstall` and will be removed.
-        if matches!(config.visibility, Visibility::Hidden) {
+        if config.visibility == Visibility::Hidden {
             continue;
         }
 
@@ -220,7 +220,7 @@ pub fn main() {
 
             // Untracked: protect target files from being uninstalled, but
             // don't install or update them either.
-            if matches!(config.visibility, Visibility::Untracked) {
+            if config.visibility == Visibility::Untracked {
                 files_need_uninstall.remove(&separated_target_file);
                 files_need_uninstall.remove(&unified_target_file);
                 continue;
