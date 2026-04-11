@@ -26,6 +26,25 @@ const SONG_CONFIG_FILENAME: &str = "song.toml";
 struct SongConfig {
     collection: String,
     filename: String,
+    #[serde(default)]
+    visibility: Visibility,
+}
+
+#[derive(Default, Deserialize)]
+enum Visibility {
+    /// The target subtitle files should be created and
+    /// synchronized with the source.
+    #[default]
+    #[serde(rename = "visible")]
+    Visible,
+    /// The target subtitle files should not be there despite
+    /// the existence of the source.
+    #[serde(rename = "hidden")]
+    Hidden,
+    /// The existence of target subtitle files are ignored.
+    /// It shall neither be deleted nor created nor synchronized.
+    #[serde(rename = "untracked")]
+    Untracked,
 }
 
 /// Try hardlink, then try reflink, and finally copy.
@@ -71,12 +90,16 @@ fn validate_song_config(config: &SongConfig, config_path: &Path) {
         );
     }
 
-    // filename must be a single normal path component (no separators)
+    // filename must be a single normal path component with no separators.
+    // Backslashes are rejected explicitly so configs behave consistently
+    // regardless of platform (on Unix, `Path::components` treats `\` as a
+    // normal character).
     let mut filename_components = config.filename.pipe_ref(Path::new).components();
-    if !matches!(
+    let has_valid_shape = matches!(
         (filename_components.next(), filename_components.next()),
         (Some(Component::Normal(_)), None)
-    ) {
+    ) && !config.filename.contains('\\');
+    if !has_valid_shape {
         panic!(
             "error: invalid filename in {config_path:?}: {:?}",
             config.filename
@@ -159,6 +182,12 @@ pub fn main() {
         Vec::with_capacity(existing_target_files.len());
 
     for (song_dir, config) in &songs {
+        // Hidden: do nothing. Any existing target files stay in
+        // `files_need_uninstall` and will be removed.
+        if matches!(config.visibility, Visibility::Hidden) {
+            continue;
+        }
+
         let separated_target_dir = target.join(&config.collection);
         let unified_target_dir = target.join(UNIFIED_COLLECTION);
 
@@ -188,6 +217,14 @@ pub fn main() {
             let source_file = song_dir.join(local_name);
             let separated_target_file = separated_target_dir.join(&target_name);
             let unified_target_file = unified_target_dir.join(&target_name);
+
+            // Untracked: protect target files from being uninstalled, but
+            // don't install or update them either.
+            if matches!(config.visibility, Visibility::Untracked) {
+                files_need_uninstall.remove(&separated_target_file);
+                files_need_uninstall.remove(&unified_target_file);
+                continue;
+            }
 
             let source_file_desc = source_file.clone().pipe(FileDescriptor::new);
             for target_file in [separated_target_file, unified_target_file] {
