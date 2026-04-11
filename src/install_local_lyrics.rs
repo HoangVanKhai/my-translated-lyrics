@@ -28,18 +28,20 @@ struct VideoDesc {
     /// Title of the YouTube video this subtitle set translates. Used as
     /// the stem of target subtitle filenames: the final file is
     /// `{video_title}.{lang}.{ext}` (e.g. `{video_title}.vi.srt`).
-    ///
-    /// Not to be confused with the *song's title*. For example, the video
-    /// `【洛天依&乐正绫】【中秋原创】《月轮回》(Lunar Cycle) 命运是为何物【PV付】 [MLG8OlppS9o]`
-    /// has `月轮回` as the song's title and `Lunar Cycle` as the song's
-    /// translated title.
     video_title: String,
+    /// Titles of the song in each supported language.
+    ///
+    /// `en` and `zh` are typically extracted from the video's title
+    /// when present; `vi` is the translated title. All entries are
+    /// optional — omit languages that don't apply.
     #[serde(rename = "song-titles")]
     #[expect(
         dead_code,
         reason = "parsed for documentation, not consumed by the tool"
     )]
     song_titles: HashMap<Language, String>,
+    /// Controls how the tool treats this video's target subtitle files.
+    /// See [`Visibility`] for details.
     #[serde(default)]
     visibility: Visibility,
 }
