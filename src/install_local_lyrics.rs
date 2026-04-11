@@ -35,10 +35,7 @@ struct VideoDesc {
     /// when present; `vi` is the translated title. All entries are
     /// optional — omit languages that don't apply.
     #[serde(rename = "song-titles")]
-    #[expect(
-        dead_code,
-        reason = "parsed for documentation, not consumed by the tool"
-    )]
+    #[expect(dead_code, reason = "not used for now, may be used in the future")]
     song_titles: HashMap<Language, String>,
     /// Controls how the tool treats this video's target subtitle files.
     /// See [`Visibility`] for details.
