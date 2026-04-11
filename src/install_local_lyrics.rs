@@ -26,14 +26,9 @@ const VIDEO_CONFIG_FILENAME: &str = "video.toml";
 struct VideoDesc {
     collection: String,
     /// Title of the YouTube video this subtitle set translates. Used as
-    /// the stem of target subtitle filenames: the final file is
-    /// `{video_title}.{lang}.{ext}` (e.g. `{video_title}.vi.srt`).
+    /// the stem of target subtitle filenames.
     video_title: String,
     /// Titles of the song in each supported language.
-    ///
-    /// `en` and `zh` are typically extracted from the video's title
-    /// when present; `vi` is the translated title. All entries are
-    /// optional — omit languages that don't apply.
     #[serde(rename = "song-titles")]
     #[expect(dead_code, reason = "not used for now, may be used in the future")]
     song_titles: HashMap<Language, String>,
