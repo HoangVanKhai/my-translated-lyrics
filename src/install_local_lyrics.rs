@@ -1,11 +1,13 @@
 use crate::args::Args;
 use crate::file_descriptor::FileDescriptor;
 use clap::Parser;
+use derive_more::{AsRef, Deref, Display, Into};
 use itertools::Itertools;
 use pipe_trait::Pipe;
 use reflink::reflink_or_copy;
 use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
+use std::fmt;
 use std::fs::{DirEntry, hard_link, read_dir, read_to_string, remove_file};
 use std::io::{self, ErrorKind};
 use std::iter::once;
@@ -24,10 +26,10 @@ const VIDEO_CONFIG_FILENAME: &str = "video.toml";
 
 #[derive(Deserialize)]
 struct VideoDesc {
-    collection: String,
+    collection: Collection,
     /// Title of the YouTube video this subtitle set translates. Used as
     /// the stem of target subtitle filenames.
-    video_title: String,
+    video_title: VideoTitle,
     /// Titles of the song in each supported language.
     #[serde(rename = "song-titles")]
     #[expect(dead_code, reason = "not used for now, may be used in the future")]
@@ -36,6 +38,81 @@ struct VideoDesc {
     /// See [`Visibility`] for details.
     #[serde(default)]
     visibility: Visibility,
+}
+
+/// Target collection path. Only values listed in [`SEPARATED_COLLECTIONS`]
+/// can construct this type.
+#[derive(Deserialize, AsRef, Deref, Display, Into)]
+#[as_ref(forward)]
+#[deref(forward)]
+#[display("{_0}")]
+#[serde(try_from = "String")]
+struct Collection(String);
+
+impl TryFrom<String> for Collection {
+    type Error = UnknownCollection;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        if SEPARATED_COLLECTIONS.contains(&value.as_str()) {
+            Ok(Self(value))
+        } else {
+            Err(UnknownCollection(value))
+        }
+    }
+}
+
+#[derive(Debug)]
+struct UnknownCollection(String);
+
+impl fmt::Display for UnknownCollection {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "unknown collection: {:?}", self.0)
+    }
+}
+
+/// Title of a YouTube video. The constructor enforces that the value is a
+/// single normal path component with no backslashes, so it can be used
+/// directly as the stem of an output filename.
+#[derive(Deserialize, AsRef, Deref, Display, Into)]
+#[as_ref(forward)]
+#[deref(forward)]
+#[display("{_0}")]
+#[serde(try_from = "String")]
+struct VideoTitle(String);
+
+impl TryFrom<String> for VideoTitle {
+    type Error = VideoTitleError;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        // Backslashes are rejected explicitly so configs behave consistently
+        // regardless of platform (on Unix, `Path::components` treats `\` as
+        // a normal character).
+        if value.contains('\\') {
+            return Err(VideoTitleError::ContainsBackslash);
+        }
+        let mut components = value.pipe_ref(Path::new).components();
+        match (components.next(), components.next()) {
+            (Some(Component::Normal(_)), None) => Ok(Self(value)),
+            _ => Err(VideoTitleError::NotSingleComponent),
+        }
+    }
+}
+
+#[derive(Debug)]
+enum VideoTitleError {
+    ContainsBackslash,
+    NotSingleComponent,
+}
+
+impl fmt::Display for VideoTitleError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::ContainsBackslash => f.write_str("video_title must not contain backslashes"),
+            Self::NotSingleComponent => {
+                f.write_str("video_title must be a single normal path component")
+            }
+        }
+    }
 }
 
 #[derive(Deserialize, Eq, PartialEq, Hash)]
@@ -99,29 +176,6 @@ fn install(execute: bool, source: &Path, target: &Path) {
     }
 }
 
-fn validate_video_desc(desc: &VideoDesc, desc_path: &Path) {
-    // collection must be one of the known managed collections
-    if !SEPARATED_COLLECTIONS.contains(&desc.collection.as_str()) {
-        panic!(
-            "error: unknown collection in {desc_path:?}: {:?}",
-            desc.collection
-        );
-    }
-
-    // video_title must be a single normal path component with no separators.
-    // Backslashes are rejected explicitly so configs behave consistently
-    // regardless of platform (on Unix, `Path::components` treats `\` as a
-    // normal character).
-    let mut title_components = desc.video_title.pipe_ref(Path::new).components();
-    match (title_components.next(), title_components.next()) {
-        (Some(Component::Normal(_)), None) if !desc.video_title.contains('\\') => {}
-        _ => panic!(
-            "error: invalid video_title in {desc_path:?}: {:?}",
-            desc.video_title
-        ),
-    }
-}
-
 fn is_subtitle_file(entry: &DirEntry) -> bool {
     match entry.file_type() {
         Err(_) => return false,
@@ -170,7 +224,6 @@ pub fn main() {
             let desc: VideoDesc = content
                 .pipe_as_ref(toml::from_str)
                 .unwrap_or_else(|error| panic!("error: Cannot parse {desc_path:?}: {error}"));
-            validate_video_desc(&desc, &desc_path);
             (video_dir, desc)
         })
         .collect();
