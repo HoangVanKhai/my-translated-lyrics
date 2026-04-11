@@ -23,11 +23,33 @@ const UNIFIED_COLLECTION: &str = "Short Relaxing Playlist 2025";
 const VIDEO_CONFIG_FILENAME: &str = "video.toml";
 
 #[derive(Deserialize)]
-struct VideoConfig {
+struct VideoDesc {
     collection: String,
-    filename: String,
+    /// Title of the YouTube video this subtitle set translates. Used as
+    /// the stem of target subtitle filenames: the final file is
+    /// `{video_title}.{lang}.{ext}` (e.g. `{video_title}.vi.srt`).
+    ///
+    /// Not to be confused with the *song's title*. For example, the video
+    /// `【洛天依&乐正绫】【中秋原创】《月轮回》(Lunar Cycle) 命运是为何物【PV付】 [MLG8OlppS9o]`
+    /// has `月轮回` as the song's title and `Lunar Cycle` as the song's
+    /// translated title.
+    video_title: String,
+    #[serde(rename = "song-titles")]
+    #[expect(
+        dead_code,
+        reason = "parsed for documentation, not consumed by the tool"
+    )]
+    song_titles: HashMap<Language, String>,
     #[serde(default)]
     visibility: Visibility,
+}
+
+#[derive(Deserialize, Eq, PartialEq, Hash)]
+#[serde(rename_all = "lowercase")]
+enum Language {
+    En,
+    Vi,
+    Zh,
 }
 
 #[derive(Default, Deserialize, PartialEq, Eq)]
@@ -41,10 +63,10 @@ enum Visibility {
     /// the existence of the source.
     #[serde(rename = "hidden")]
     Hidden,
-    /// The existence of target subtitle files is ignored.
-    /// It shall neither be deleted nor created nor synchronized.
-    #[serde(rename = "untracked")]
-    Untracked,
+    /// The target subtitle files are managed externally; they shall
+    /// neither be deleted nor created nor synchronized.
+    #[serde(rename = "manual")]
+    Manual,
 }
 
 /// Try hardlink, then try reflink, and finally copy.
@@ -81,28 +103,28 @@ fn install(execute: bool, source: &Path, target: &Path) {
     }
 }
 
-fn validate_video_config(config: &VideoConfig, config_path: &Path) {
+fn validate_video_desc(desc: &VideoDesc, desc_path: &Path) {
     // collection must be one of the known managed collections
-    if !SEPARATED_COLLECTIONS.contains(&config.collection.as_str()) {
+    if !SEPARATED_COLLECTIONS.contains(&desc.collection.as_str()) {
         panic!(
-            "error: unknown collection in {config_path:?}: {:?}",
-            config.collection
+            "error: unknown collection in {desc_path:?}: {:?}",
+            desc.collection
         );
     }
 
-    // filename must be a single normal path component with no separators.
+    // video_title must be a single normal path component with no separators.
     // Backslashes are rejected explicitly so configs behave consistently
     // regardless of platform (on Unix, `Path::components` treats `\` as a
     // normal character).
-    let mut filename_components = config.filename.pipe_ref(Path::new).components();
+    let mut title_components = desc.video_title.pipe_ref(Path::new).components();
     let has_valid_shape = matches!(
-        (filename_components.next(), filename_components.next()),
+        (title_components.next(), title_components.next()),
         (Some(Component::Normal(_)), None)
-    ) && !config.filename.contains('\\');
+    ) && !desc.video_title.contains('\\');
     if !has_valid_shape {
         panic!(
-            "error: invalid filename in {config_path:?}: {:?}",
-            config.filename
+            "error: invalid video_title in {desc_path:?}: {:?}",
+            desc.video_title
         );
     }
 }
@@ -126,8 +148,8 @@ pub fn main() {
         target,
     } = Args::parse();
 
-    // Read all video configurations from source directories
-    let videos: Vec<(PathBuf, VideoConfig)> = source
+    // Read all video descriptors from source directories
+    let video_descs: Vec<(PathBuf, VideoDesc)> = source
         .pipe_ref(read_dir)
         .unwrap_or_else(|error| panic!("error: Cannot read source directory {source:?}: {error}"))
         .map(|entry| {
@@ -138,15 +160,15 @@ pub fn main() {
         .filter(|entry| entry.file_type().is_ok_and(|file_type| file_type.is_dir()))
         .map(|entry| {
             let video_dir = entry.path();
-            let config_path = video_dir.join(VIDEO_CONFIG_FILENAME);
-            let content = config_path
+            let desc_path = video_dir.join(VIDEO_CONFIG_FILENAME);
+            let content = desc_path
                 .pipe_ref(read_to_string)
-                .unwrap_or_else(|error| panic!("error: Cannot read {config_path:?}: {error}"));
-            let config: VideoConfig = content
+                .unwrap_or_else(|error| panic!("error: Cannot read {desc_path:?}: {error}"));
+            let desc: VideoDesc = content
                 .pipe_as_ref(toml::from_str)
-                .unwrap_or_else(|error| panic!("error: Cannot parse {config_path:?}: {error}"));
-            validate_video_config(&config, &config_path);
-            (video_dir, config)
+                .unwrap_or_else(|error| panic!("error: Cannot parse {desc_path:?}: {error}"));
+            validate_video_desc(&desc, &desc_path);
+            (video_dir, desc)
         })
         .collect();
 
@@ -181,15 +203,37 @@ pub fn main() {
     let mut files_need_install: Vec<(PathBuf, PathBuf)> =
         Vec::with_capacity(existing_target_files.len());
 
-    for (video_dir, config) in &videos {
+    for (video_dir, desc) in &video_descs {
         // Hidden: do nothing. Any existing target files stay in
         // `files_need_uninstall` and will be removed.
-        if config.visibility == Visibility::Hidden {
+        if desc.visibility == Visibility::Hidden {
             continue;
         }
 
-        let separated_target_dir = target.join(&config.collection);
+        let separated_target_dir = target.join(&desc.collection);
         let unified_target_dir = target.join(UNIFIED_COLLECTION);
+
+        // Manual: target files are managed externally. Protect every target
+        // file that matches this video's title prefix under either target
+        // directory from being uninstalled, and do not install anything.
+        if desc.visibility == Visibility::Manual {
+            let prefix = format!("{}.", desc.video_title);
+            let separated = separated_target_dir.as_path();
+            let unified = unified_target_dir.as_path();
+            files_need_uninstall.retain(|target_path| {
+                let Some(parent) = target_path.parent() else {
+                    return true;
+                };
+                if parent != separated && parent != unified {
+                    return true;
+                }
+                let Some(name) = target_path.file_name().and_then(|n| n.to_str()) else {
+                    return true;
+                };
+                !name.starts_with(&prefix)
+            });
+            continue;
+        }
 
         let source_entries = video_dir
             .pipe(read_dir)
@@ -208,23 +252,15 @@ pub fn main() {
                 .to_str()
                 .unwrap_or_else(|| panic!("error: Non-UTF-8 filename in {video_dir:?}"));
 
-            // Map lyrics.{lang}.{ext} → {config.filename}.{lang}.{ext}
+            // Map lyrics.{lang}.{ext} → {desc.video_title}.{lang}.{ext}
             let target_name = local_name
                 .strip_prefix("lyrics.")
-                .map(|suffix| format!("{}.{suffix}", config.filename))
+                .map(|suffix| format!("{}.{suffix}", desc.video_title))
                 .unwrap_or_else(|| local_name.to_owned());
 
             let source_file = video_dir.join(local_name);
             let separated_target_file = separated_target_dir.join(&target_name);
             let unified_target_file = unified_target_dir.join(&target_name);
-
-            // Untracked: protect target files from being uninstalled, but
-            // don't install or update them either.
-            if config.visibility == Visibility::Untracked {
-                files_need_uninstall.remove(&separated_target_file);
-                files_need_uninstall.remove(&unified_target_file);
-                continue;
-            }
 
             let source_file_desc = source_file.clone().pipe(FileDescriptor::new);
             for target_file in [separated_target_file, unified_target_file] {
