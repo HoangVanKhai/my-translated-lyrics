@@ -45,11 +45,13 @@ struct VideoDesc {
 }
 
 #[derive(Deserialize, Eq, PartialEq, Hash)]
-#[serde(rename_all = "lowercase")]
 enum Language {
-    En,
-    Vi,
-    Zh,
+    #[serde(rename = "en")]
+    English,
+    #[serde(rename = "vi")]
+    Vietnamese,
+    #[serde(rename = "zh")]
+    Chinese,
 }
 
 #[derive(Default, Deserialize, PartialEq, Eq)]
