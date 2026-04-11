@@ -224,9 +224,6 @@ pub fn main() {
         let separated_target_dir = target.join(&desc.collection);
         let unified_target_dir = target.join(UNIFIED_COLLECTION);
 
-        // Manual: target files are managed externally. Protect every target
-        // file that matches this video's title prefix under either target
-        // directory from being uninstalled, and do not install anything.
         if desc.visibility == Visibility::Manual {
             let prefix = format!("{}.", desc.video_title);
             let separated = separated_target_dir.as_path();
@@ -263,11 +260,13 @@ pub fn main() {
                 .to_str()
                 .unwrap_or_else(|| panic!("error: Non-UTF-8 filename in {video_dir:?}"));
 
-            // Map lyrics.{lang}.{ext} → {desc.video_title}.{lang}.{ext}
-            let target_name = local_name
-                .strip_prefix("lyrics.")
-                .map(|suffix| format!("{}.{suffix}", desc.video_title))
-                .unwrap_or_else(|| local_name.to_owned());
+            // Map lyrics.{lang}.{ext} → {desc.video_title}.{lang}.{ext}.
+            // Files that don't match the canonical `lyrics.*` pattern are
+            // skipped so they don't get installed under the target.
+            let Some(suffix) = local_name.strip_prefix("lyrics.") else {
+                continue;
+            };
+            let target_name = format!("{}.{suffix}", desc.video_title);
 
             let source_file = video_dir.join(local_name);
             let separated_target_file = separated_target_dir.join(&target_name);
