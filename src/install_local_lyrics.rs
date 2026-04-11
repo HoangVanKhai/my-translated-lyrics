@@ -19,6 +19,7 @@ const SEPARATED_COLLECTIONS: &[&str] = &[
 ];
 
 const UNIFIED_COLLECTION: &str = "Short Relaxing Playlist 2025";
+
 const SONG_CONFIG_FILENAME: &str = "song.toml";
 
 #[derive(Deserialize)]
