@@ -9,7 +9,7 @@ use std::path::Path;
 /// ```text
 /// data/
 /// ├── SongName/
-/// │   ├── song.toml
+/// │   ├── video.toml
 /// │   ├── lyrics.vi.srt
 /// │   └── lyrics.zh.srt
 /// └── AnotherSong/
