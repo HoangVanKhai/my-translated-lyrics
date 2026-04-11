@@ -34,23 +34,21 @@ struct VideoDesc {
     #[serde(rename = "song-titles")]
     #[expect(dead_code, reason = "not used for now, may be used in the future")]
     song_titles: HashMap<Language, String>,
-    /// Controls how the tool treats this video's target subtitle files.
-    /// See [`Visibility`] for details.
     #[serde(default)]
     visibility: Visibility,
 }
 
-/// Target collection path. Only values listed in [`SEPARATED_COLLECTIONS`]
-/// can construct this type.
+/// Name of a managed target-collection directory. Can only be
+/// constructed from values listed in [`SEPARATED_COLLECTIONS`].
 #[derive(AsRef, Deref, Display, Into, Deserialize)]
 #[as_ref(forward)]
 #[deref(forward)]
 #[serde(try_from = "String")]
 struct Collection(
-    /// The inner value is an owned `String` rather than `&'static str` even
-    /// though every valid value is statically known today. This leaves room
-    /// to replace the hard-coded [`SEPARATED_COLLECTIONS`] list with a runtime
-    /// source later without changing the type's shape.
+    /// Owned `String` rather than `&'static str`: every valid value is
+    /// known statically today, but owning the string leaves room to
+    /// replace [`SEPARATED_COLLECTIONS`] with a runtime source later
+    /// without breaking the public API.
     String,
 );
 
@@ -70,9 +68,10 @@ impl TryFrom<String> for Collection {
 #[display("unknown collection: {_0:?}")]
 struct UnknownCollection(#[error(not(source))] String);
 
-/// Title of a video. The constructor enforces that the value is a
-/// single normal path component with no backslashes, so it can be used
-/// directly as the stem of an output filename.
+/// Title of a video. The constructor enforces two invariants on the
+/// title: it must be a single normal path component (so it can be used
+/// directly as the stem of an output filename), and it must contain
+/// no backslashes (for cross-platform consistency).
 #[derive(AsRef, Deref, Display, Into, Deserialize)]
 #[as_ref(forward)]
 #[deref(forward)]
@@ -135,8 +134,8 @@ enum Visibility {
     /// the existence of the source.
     #[serde(rename = "hidden")]
     Hidden,
-    /// The target subtitle files are managed externally; they shall
-    /// neither be deleted nor created nor synchronized.
+    /// The target subtitle files are edited manually. They should
+    /// neither be deleted, created, nor synchronized.
     #[serde(rename = "manual")]
     Manual,
 }
