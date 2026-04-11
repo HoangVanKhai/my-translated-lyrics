@@ -255,11 +255,7 @@ pub fn main() {
                 .to_str()
                 .unwrap_or_else(|| panic!("error: Non-UTF-8 filename in {video_dir:?}"));
 
-            // Map lyrics.{lang}.{ext} → {desc.video_title}.{lang}.{ext}.
-            // Files that don't match the canonical `lyrics.{lang}.{srt|vtt}`
-            // shape (non-empty lowercase ASCII `lang`) are skipped so they
-            // don't get installed under the target. This matches the
-            // canonical rule enforced by `tests/directory_structure.rs`.
+            // Map lyrics.{lang}.{ext} → {video_title}.{lang}.{ext}
             let Some(suffix) = local_name.strip_prefix("lyrics.") else {
                 continue;
             };
