@@ -13,7 +13,7 @@ path = "cli/ai_instructions.rs"
 
 [dependencies]
 clap = { version = "4.6.0", features = ["derive"] }
-derive_more = { version = "2.0.1", features = ["as_ref", "deref", "display", "into"] }
+derive_more = { version = "2.1.1", features = ["as_ref", "deref", "display", "error", "into"] }
 itertools = "0.14.0"
 pipe-trait = "0.4.0"
 reflink = "0.1.3"

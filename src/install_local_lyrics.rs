@@ -1,13 +1,12 @@
 use crate::args::Args;
 use crate::file_descriptor::FileDescriptor;
 use clap::Parser;
-use derive_more::{AsRef, Deref, Display, Into};
+use derive_more::{AsRef, Deref, Display, Error, Into};
 use itertools::Itertools;
 use pipe_trait::Pipe;
 use reflink::reflink_or_copy;
 use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
-use std::fmt;
 use std::fs::{DirEntry, hard_link, read_dir, read_to_string, remove_file};
 use std::io::{self, ErrorKind};
 use std::iter::once;
@@ -42,10 +41,14 @@ struct VideoDesc {
 
 /// Target collection path. Only values listed in [`SEPARATED_COLLECTIONS`]
 /// can construct this type.
+///
+/// The inner value is an owned `String` rather than `&'static str` even
+/// though every valid value is statically known today. This leaves room
+/// to replace the hard-coded [`SEPARATED_COLLECTIONS`] list with a runtime
+/// source later without changing the type's shape.
 #[derive(Deserialize, AsRef, Deref, Display, Into)]
 #[as_ref(forward)]
 #[deref(forward)]
-#[display("{_0}")]
 #[serde(try_from = "String")]
 struct Collection(String);
 
@@ -61,14 +64,9 @@ impl TryFrom<String> for Collection {
     }
 }
 
-#[derive(Debug)]
-struct UnknownCollection(String);
-
-impl fmt::Display for UnknownCollection {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "unknown collection: {:?}", self.0)
-    }
-}
+#[derive(Debug, Display, Error)]
+#[display("unknown collection: {_0:?}")]
+struct UnknownCollection(#[error(not(source))] String);
 
 /// Title of a YouTube video. The constructor enforces that the value is a
 /// single normal path component with no backslashes, so it can be used
@@ -76,7 +74,6 @@ impl fmt::Display for UnknownCollection {
 #[derive(Deserialize, AsRef, Deref, Display, Into)]
 #[as_ref(forward)]
 #[deref(forward)]
-#[display("{_0}")]
 #[serde(try_from = "String")]
 struct VideoTitle(String);
 
@@ -98,21 +95,12 @@ impl TryFrom<String> for VideoTitle {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Display, Error)]
 enum VideoTitleError {
+    #[display("video_title must not contain backslashes")]
     ContainsBackslash,
+    #[display("video_title must be a single normal path component")]
     NotSingleComponent,
-}
-
-impl fmt::Display for VideoTitleError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::ContainsBackslash => f.write_str("video_title must not contain backslashes"),
-            Self::NotSingleComponent => {
-                f.write_str("video_title must be a single normal path component")
-            }
-        }
-    }
 }
 
 #[derive(Deserialize, Eq, PartialEq, Hash)]
