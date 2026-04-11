@@ -196,9 +196,9 @@ pub fn main() {
             .unwrap_or_else(|error| panic!("error: Cannot read directory {video_dir:?}: {error}"));
 
         for source_entry in source_entries {
-            let source_entry = source_entry.unwrap_or_else(|error| {
-                panic!("error: Cannot read an entry of directory {video_dir:?}: {error}")
-            });
+            let Ok(source_entry) = source_entry else {
+                continue;
+            };
             if !is_subtitle_file(&source_entry) {
                 continue;
             }
