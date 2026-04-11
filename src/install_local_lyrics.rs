@@ -42,16 +42,17 @@ struct VideoDesc {
 
 /// Target collection path. Only values listed in [`SEPARATED_COLLECTIONS`]
 /// can construct this type.
-///
-/// The inner value is an owned `String` rather than `&'static str` even
-/// though every valid value is statically known today. This leaves room
-/// to replace the hard-coded [`SEPARATED_COLLECTIONS`] list with a runtime
-/// source later without changing the type's shape.
 #[derive(AsRef, Deref, Display, Into, Deserialize)]
 #[as_ref(forward)]
 #[deref(forward)]
 #[serde(try_from = "String")]
-struct Collection(String);
+struct Collection(
+    /// The inner value is an owned `String` rather than `&'static str` even
+    /// though every valid value is statically known today. This leaves room
+    /// to replace the hard-coded [`SEPARATED_COLLECTIONS`] list with a runtime
+    /// source later without changing the type's shape.
+    String,
+);
 
 impl TryFrom<String> for Collection {
     type Error = UnknownCollection;
