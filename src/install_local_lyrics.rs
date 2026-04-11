@@ -113,15 +113,12 @@ fn validate_video_desc(desc: &VideoDesc, desc_path: &Path) {
     // regardless of platform (on Unix, `Path::components` treats `\` as a
     // normal character).
     let mut title_components = desc.video_title.pipe_ref(Path::new).components();
-    let has_valid_shape = matches!(
-        (title_components.next(), title_components.next()),
-        (Some(Component::Normal(_)), None)
-    ) && !desc.video_title.contains('\\');
-    if !has_valid_shape {
-        panic!(
+    match (title_components.next(), title_components.next()) {
+        (Some(Component::Normal(_)), None) if !desc.video_title.contains('\\') => {}
+        _ => panic!(
             "error: invalid video_title in {desc_path:?}: {:?}",
             desc.video_title
-        );
+        ),
     }
 }
 
