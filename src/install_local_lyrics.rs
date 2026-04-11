@@ -12,6 +12,7 @@ use std::io::{self, ErrorKind};
 use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Component, Path, PathBuf};
+use strum::EnumString;
 
 const SEPARATED_COLLECTIONS: &[&str] = &[
     "Feng Ling Yu Xiu",
@@ -103,14 +104,23 @@ enum VideoTitleError {
     NotSingleComponent,
 }
 
-#[derive(Deserialize, Eq, PartialEq, Hash)]
+#[derive(Deserialize, Eq, PartialEq, Hash, EnumString)]
+#[serde(try_from = "String")]
 enum Language {
-    #[serde(rename = "en")]
+    #[strum(serialize = "en")]
     English,
-    #[serde(rename = "vi")]
+    #[strum(serialize = "vi")]
     Vietnamese,
-    #[serde(rename = "zh")]
+    #[strum(serialize = "zh")]
     Chinese,
+}
+
+impl TryFrom<String> for Language {
+    type Error = strum::ParseError;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        value.parse()
+    }
 }
 
 #[derive(Default, Deserialize, PartialEq, Eq)]
@@ -303,7 +313,7 @@ pub fn main() {
             if !matches!(ext, "srt" | "vtt") {
                 continue;
             }
-            if lang.is_empty() || !lang.chars().all(|c| c.is_ascii_lowercase()) {
+            if lang.parse::<Language>().is_err() {
                 continue;
             }
             let target_name = format!("{}.{suffix}", desc.video_title);
