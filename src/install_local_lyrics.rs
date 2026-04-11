@@ -145,7 +145,7 @@ pub fn main() {
     } = Args::parse();
 
     // Read all video descriptors from source directories
-    let video_descs: Vec<(PathBuf, VideoDesc)> = source
+    let descriptors: Vec<(PathBuf, VideoDesc)> = source
         .pipe_ref(read_dir)
         .unwrap_or_else(|error| panic!("error: Cannot read source directory {source:?}: {error}"))
         .map(|entry| {
@@ -209,7 +209,7 @@ pub fn main() {
     let mut files_need_install: Vec<(PathBuf, PathBuf)> =
         Vec::with_capacity(existing_target_files.len());
 
-    for (video_dir, desc) in &video_descs {
+    for (video_dir, desc) in &descriptors {
         // Hidden: do nothing. Any existing target files stay in
         // `files_need_uninstall` and will be removed.
         if desc.visibility == Visibility::Hidden {
