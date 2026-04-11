@@ -27,8 +27,8 @@ const VIDEO_CONFIG_FILENAME: &str = "video.toml";
 #[derive(Deserialize)]
 struct VideoDesc {
     collection: Collection,
-    /// Title of the video this subtitle set translates. Used as
-    /// the stem of target subtitle filenames.
+    /// Title of the video to which this subtitle set apply.
+    /// It is used as the stem of target subtitle filenames.
     video_title: VideoTitle,
     /// Titles of the song in each supported language.
     #[serde(rename = "song-titles")]
