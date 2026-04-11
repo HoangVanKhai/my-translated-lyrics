@@ -27,7 +27,7 @@ const VIDEO_CONFIG_FILENAME: &str = "video.toml";
 #[derive(Deserialize)]
 struct VideoDesc {
     collection: Collection,
-    /// Title of the YouTube video this subtitle set translates. Used as
+    /// Title of the video this subtitle set translates. Used as
     /// the stem of target subtitle filenames.
     video_title: VideoTitle,
     /// Titles of the song in each supported language.
@@ -70,7 +70,7 @@ impl TryFrom<String> for Collection {
 #[display("unknown collection: {_0:?}")]
 struct UnknownCollection(#[error(not(source))] String);
 
-/// Title of a YouTube video. The constructor enforces that the value is a
+/// Title of a video. The constructor enforces that the value is a
 /// single normal path component with no backslashes, so it can be used
 /// directly as the stem of an output filename.
 #[derive(AsRef, Deref, Display, Into, Deserialize)]
