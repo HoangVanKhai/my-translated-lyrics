@@ -95,8 +95,7 @@ fn data_subtitle_filenames_are_canonical() {
             let name = inner_entry.file_name();
             let name = name.to_str().expect("path isn't valid UTF-8");
 
-            let is_subtitle = name.ends_with(".srt") || name.ends_with(".vtt");
-            if !is_subtitle {
+            if !name.ends_with(".srt") && !name.ends_with(".vtt") {
                 continue;
             }
 
