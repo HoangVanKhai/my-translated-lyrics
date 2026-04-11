@@ -159,7 +159,17 @@ pub fn main() {
                 panic!("error: Cannot read an entry of directory {source:?}: {error}")
             })
         })
-        .filter(|entry| entry.file_type().is_ok_and(|file_type| file_type.is_dir()))
+        .filter(|entry| {
+            entry
+                .file_type()
+                .unwrap_or_else(|error| {
+                    panic!(
+                        "error: Cannot read file type of {:?}: {error}",
+                        entry.path()
+                    )
+                })
+                .is_dir()
+        })
         .map(|entry| {
             let video_dir = entry.path();
             let desc_path = video_dir.join(VIDEO_CONFIG_FILENAME);
