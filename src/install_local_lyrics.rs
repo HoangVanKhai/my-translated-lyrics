@@ -20,10 +20,10 @@ const SEPARATED_COLLECTIONS: &[&str] = &[
 
 const UNIFIED_COLLECTION: &str = "Short Relaxing Playlist 2025";
 
-const SONG_CONFIG_FILENAME: &str = "song.toml";
+const VIDEO_CONFIG_FILENAME: &str = "video.toml";
 
 #[derive(Deserialize)]
-struct SongConfig {
+struct VideoConfig {
     collection: String,
     filename: String,
     #[serde(default)]
@@ -81,7 +81,7 @@ fn install(execute: bool, source: &Path, target: &Path) {
     }
 }
 
-fn validate_song_config(config: &SongConfig, config_path: &Path) {
+fn validate_video_config(config: &VideoConfig, config_path: &Path) {
     // collection must be one of the known managed collections
     if !SEPARATED_COLLECTIONS.contains(&config.collection.as_str()) {
         panic!(
@@ -126,8 +126,8 @@ pub fn main() {
         target,
     } = Args::parse();
 
-    // Read all song configurations from source directories
-    let songs: Vec<(PathBuf, SongConfig)> = source
+    // Read all video configurations from source directories
+    let videos: Vec<(PathBuf, VideoConfig)> = source
         .pipe_ref(read_dir)
         .unwrap_or_else(|error| panic!("error: Cannot read source directory {source:?}: {error}"))
         .map(|entry| {
@@ -137,16 +137,16 @@ pub fn main() {
         })
         .filter(|entry| entry.file_type().is_ok_and(|file_type| file_type.is_dir()))
         .map(|entry| {
-            let song_dir = entry.path();
-            let config_path = song_dir.join(SONG_CONFIG_FILENAME);
+            let video_dir = entry.path();
+            let config_path = video_dir.join(VIDEO_CONFIG_FILENAME);
             let content = config_path
                 .pipe_ref(read_to_string)
                 .unwrap_or_else(|error| panic!("error: Cannot read {config_path:?}: {error}"));
-            let config: SongConfig = content
+            let config: VideoConfig = content
                 .pipe_as_ref(toml::from_str)
                 .unwrap_or_else(|error| panic!("error: Cannot parse {config_path:?}: {error}"));
-            validate_song_config(&config, &config_path);
-            (song_dir, config)
+            validate_video_config(&config, &config_path);
+            (video_dir, config)
         })
         .collect();
 
@@ -181,7 +181,7 @@ pub fn main() {
     let mut files_need_install: Vec<(PathBuf, PathBuf)> =
         Vec::with_capacity(existing_target_files.len());
 
-    for (song_dir, config) in &songs {
+    for (video_dir, config) in &videos {
         // Hidden: do nothing. Any existing target files stay in
         // `files_need_uninstall` and will be removed.
         if matches!(config.visibility, Visibility::Hidden) {
@@ -191,9 +191,9 @@ pub fn main() {
         let separated_target_dir = target.join(&config.collection);
         let unified_target_dir = target.join(UNIFIED_COLLECTION);
 
-        let source_entries = song_dir
+        let source_entries = video_dir
             .pipe(read_dir)
-            .unwrap_or_else(|error| panic!("error: Cannot read directory {song_dir:?}: {error}"));
+            .unwrap_or_else(|error| panic!("error: Cannot read directory {video_dir:?}: {error}"));
 
         for source_entry in source_entries {
             let Ok(source_entry) = source_entry else {
@@ -206,7 +206,7 @@ pub fn main() {
             let local_name = source_entry.file_name();
             let local_name = local_name
                 .to_str()
-                .unwrap_or_else(|| panic!("error: Non-UTF-8 filename in {song_dir:?}"));
+                .unwrap_or_else(|| panic!("error: Non-UTF-8 filename in {video_dir:?}"));
 
             // Map lyrics.{lang}.{ext} → {config.filename}.{lang}.{ext}
             let target_name = local_name
@@ -214,7 +214,7 @@ pub fn main() {
                 .map(|suffix| format!("{}.{suffix}", config.filename))
                 .unwrap_or_else(|| local_name.to_owned());
 
-            let source_file = song_dir.join(local_name);
+            let source_file = video_dir.join(local_name);
             let separated_target_file = separated_target_dir.join(&target_name);
             let unified_target_file = unified_target_dir.join(&target_name);
 
