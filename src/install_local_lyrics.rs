@@ -47,7 +47,7 @@ struct VideoDesc {
 /// though every valid value is statically known today. This leaves room
 /// to replace the hard-coded [`SEPARATED_COLLECTIONS`] list with a runtime
 /// source later without changing the type's shape.
-#[derive(Deserialize, AsRef, Deref, Display, Into)]
+#[derive(AsRef, Deref, Display, Into, Deserialize)]
 #[as_ref(forward)]
 #[deref(forward)]
 #[serde(try_from = "String")]
@@ -72,7 +72,7 @@ struct UnknownCollection(#[error(not(source))] String);
 /// Title of a YouTube video. The constructor enforces that the value is a
 /// single normal path component with no backslashes, so it can be used
 /// directly as the stem of an output filename.
-#[derive(Deserialize, AsRef, Deref, Display, Into)]
+#[derive(AsRef, Deref, Display, Into, Deserialize)]
 #[as_ref(forward)]
 #[deref(forward)]
 #[serde(try_from = "String")]
@@ -104,7 +104,7 @@ enum VideoTitleError {
     NotSingleComponent,
 }
 
-#[derive(Deserialize, Eq, PartialEq, Hash, EnumString)]
+#[derive(PartialEq, Eq, Hash, EnumString, Deserialize)]
 #[serde(try_from = "String")]
 enum Language {
     #[strum(serialize = "en")]
@@ -123,7 +123,7 @@ impl TryFrom<String> for Language {
     }
 }
 
-#[derive(Default, Deserialize, PartialEq, Eq)]
+#[derive(Default, PartialEq, Eq, Deserialize)]
 enum Visibility {
     /// The target subtitle files should be created and
     /// synchronized with the source.
