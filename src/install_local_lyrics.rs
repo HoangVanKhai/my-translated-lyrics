@@ -106,7 +106,11 @@ pub fn main() {
     let songs: Vec<(PathBuf, SongConfig)> = source
         .pipe_ref(read_dir)
         .unwrap_or_else(|error| panic!("error: Cannot read source directory {source:?}: {error}"))
-        .map(Result::<DirEntry, _>::unwrap)
+        .map(|entry| {
+            entry.unwrap_or_else(|error| {
+                panic!("error: Cannot read an entry of directory {source:?}: {error}")
+            })
+        })
         .filter(|entry| entry.file_type().is_ok_and(|file_type| file_type.is_dir()))
         .map(|entry| {
             let song_dir = entry.path();
