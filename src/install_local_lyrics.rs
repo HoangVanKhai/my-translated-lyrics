@@ -186,9 +186,9 @@ pub fn main() {
 
             let lyrics = match local_name.parse::<LyricsFileName>() {
                 Ok(lyrics) => lyrics,
-                Err(ParseLyricsFileNameError::UnrecognizedLanguage(error)) => {
+                Err(ParseLyricsFileNameError::UnrecognizedLanguage(language)) => {
                     panic!(
-                        "error: Unrecognized language code in {dir}/{local_name}: {error}",
+                        "error: Unrecognized language code in {dir}/{local_name}: {language}",
                         dir = video_dir.display(),
                     );
                 }
