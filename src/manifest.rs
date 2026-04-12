@@ -128,3 +128,65 @@ pub(crate) enum Visibility {
     #[serde(rename = "manual")]
     Manual,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn collection_accepts_known_values() {
+        for value in SEPARATED_COLLECTIONS {
+            let result = Collection::try_from(value.to_string());
+            assert!(result.is_ok(), "expected {value:?} to be accepted");
+        }
+    }
+
+    #[test]
+    fn collection_rejects_unknown_value() {
+        assert!(Collection::try_from("Unknown Collection".to_string()).is_err());
+    }
+
+    #[test]
+    fn video_title_accepts_normal_component() {
+        let result = VideoTitle::try_from("【洛天依&乐正绫】月轮回 [MLG8OlppS9o]".to_string());
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn video_title_rejects_backslash() {
+        let result = VideoTitle::try_from("foo\\bar".to_string());
+        assert!(matches!(result, Err(VideoTitleError::ContainsBackslash)));
+    }
+
+    #[test]
+    fn video_title_rejects_slash() {
+        let result = VideoTitle::try_from("foo/bar".to_string());
+        assert!(matches!(result, Err(VideoTitleError::NotSingleComponent)));
+    }
+
+    #[test]
+    fn video_title_rejects_empty() {
+        let result = VideoTitle::try_from(String::new());
+        assert!(matches!(result, Err(VideoTitleError::NotSingleComponent)));
+    }
+
+    #[test]
+    fn video_title_rejects_dot_dot() {
+        let result = VideoTitle::try_from("..".to_string());
+        assert!(matches!(result, Err(VideoTitleError::NotSingleComponent)));
+    }
+
+    #[test]
+    fn language_accepts_known_codes() {
+        assert!(Language::try_from("en".to_string()).is_ok());
+        assert!(Language::try_from("vi".to_string()).is_ok());
+        assert!(Language::try_from("zh".to_string()).is_ok());
+    }
+
+    #[test]
+    fn language_rejects_unknown_code() {
+        assert!(Language::try_from("ja".to_string()).is_err());
+        assert!(Language::try_from("xx".to_string()).is_err());
+        assert!(Language::try_from(String::new()).is_err());
+    }
+}
