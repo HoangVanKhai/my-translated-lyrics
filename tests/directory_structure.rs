@@ -25,6 +25,7 @@ fn data_and_drafts_have_flat_structure() {
     for top_dir_name in ["data", "drafts"] {
         let top_dir = manifest_dir.join(top_dir_name);
         if !top_dir.exists() {
+            assert_ne!(top_dir_name, "data", "data/ directory must exist",);
             continue;
         }
 
