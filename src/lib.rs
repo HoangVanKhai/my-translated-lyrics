@@ -1,5 +1,5 @@
 mod args;
 mod file_snapshot;
-mod manifest;
+mod video_descriptor;
 
 pub mod install_local_lyrics;

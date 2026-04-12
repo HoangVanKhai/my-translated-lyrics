@@ -1,6 +1,6 @@
 use crate::args::Args;
 use crate::file_snapshot::FileSnapshot;
-use crate::manifest::{
+use crate::video_descriptor::{
     Language, SEPARATED_COLLECTIONS, VIDEO_CONFIG_FILENAME, VideoDesc, Visibility,
 };
 use clap::Parser;
