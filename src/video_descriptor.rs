@@ -14,6 +14,7 @@ pub(crate) const SEPARATED_COLLECTIONS: &[&str] = &[
 
 pub(crate) const VIDEO_CONFIG_FILE_NAME: &str = "video.toml";
 
+/// Parsed contents of a `video.toml` file.
 #[derive(Deserialize)]
 pub(crate) struct VideoDesc {
     /// Target collection this video belongs to.
@@ -172,7 +173,7 @@ impl FromStr for LyricsFileName {
         }
         let language = lang
             .parse::<Language>()
-            .map_err(ParseLyricsFileNameError::UnrecognizedLanguage)?;
+            .map_err(|_| ParseLyricsFileNameError::UnrecognizedLanguage(lang.to_owned()))?;
         Ok(Self { language, format })
     }
 }
@@ -194,8 +195,8 @@ pub(crate) enum ParseLyricsFileNameError {
     MissingLanguageCode,
     #[display("unsupported subtitle format (expected srt or vtt)")]
     UnsupportedFormat,
-    #[display("unrecognized language code: {_0}")]
-    UnrecognizedLanguage(strum::ParseError),
+    #[display("unrecognized language code: {_0:?}")]
+    UnrecognizedLanguage(#[error(not(source))] String),
 }
 
 #[derive(Display)]

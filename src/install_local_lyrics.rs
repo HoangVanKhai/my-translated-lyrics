@@ -184,7 +184,6 @@ pub fn main() {
                 .to_str()
                 .unwrap_or_else(|| panic!("error: Non-UTF-8 filename in {video_dir:?}"));
 
-            // Map lyrics.{lang}.{ext} → {video_title}.{lang}.{ext}
             let lyrics = match local_name.parse::<LyricsFileName>() {
                 Ok(lyrics) => lyrics,
                 Err(ParseLyricsFileNameError::UnrecognizedLanguage(error)) => {
