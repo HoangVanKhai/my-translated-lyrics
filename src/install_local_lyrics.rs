@@ -100,7 +100,7 @@ pub fn main() {
                 .unwrap_or_else(|error| panic!("error: Cannot parse {desc_path:?}: {error}"));
             (video_dir, desc)
         })
-        .collect();
+        .collect(); // Eagerly validate all manifests before touching any files.
 
     let existing_target_files: HashMap<PathBuf, FileDescriptor> = SEPARATED_COLLECTIONS
         .iter()
