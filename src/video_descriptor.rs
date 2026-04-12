@@ -13,12 +13,12 @@ pub(crate) const SEPARATED_COLLECTIONS: &[&str] = &[
     "Touhou Hero of Ice Fairy",
 ];
 
-pub(crate) const VIDEO_CONFIG_FILE_NAME: &str = "video.toml";
+pub const VIDEO_CONFIG_FILE_NAME: &str = "video.toml";
 
 /// Parsed contents of a `video.toml` file.
 #[derive(Deserialize)]
 #[serde(rename_all = "kebab-case")]
-pub(crate) struct VideoDesc {
+pub struct VideoDesc {
     /// Target collection this video belongs to.
     pub(crate) collection: CollectionName,
     /// Title of the video to which this subtitle set applies.
