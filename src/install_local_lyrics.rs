@@ -191,12 +191,10 @@ pub fn main() {
                     error @ (ParseLyricsFileNameError::MissingLanguageCode
                     | ParseLyricsFileNameError::UnsupportedFormat(_)
                     | ParseLyricsFileNameError::UnrecognizedLanguage(_)),
-                ) => {
-                    panic!(
-                        "error: {dir}/{local_name}: {error}",
-                        dir = video_dir.display(),
-                    );
-                }
+                ) => panic!(
+                    "error: {dir}/{local_name}: {error}",
+                    dir = video_dir.display(),
+                ),
             };
             let target_name = lyrics.target_file_name(&desc.video_title).to_string();
 
