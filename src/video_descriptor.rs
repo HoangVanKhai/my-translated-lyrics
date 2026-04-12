@@ -135,12 +135,12 @@ pub(crate) enum Visibility {
 /// A validated subtitle filename in the `lyrics.{lang}.{srt|vtt}` format.
 pub(crate) struct LyricsFileName {
     language: Language,
-    extension: SubtitleExtension,
+    format: SubtitleFormat,
 }
 
 impl LyricsFileName {
     pub(crate) fn suffix(&self) -> String {
-        format!("{}.{}", self.language.as_ref(), self.extension.as_ref())
+        format!("{}.{}", self.language.as_ref(), self.format.as_ref())
     }
 }
 
@@ -152,36 +152,24 @@ impl FromStr for LyricsFileName {
             .strip_prefix("lyrics.")
             .ok_or(ParseLyricsFileNameError::NotLyricsFile)?;
         let Some((lang, ext)) = suffix.rsplit_once('.') else {
-            return Err(ParseLyricsFileNameError::UnsupportedExtension);
+            return Err(ParseLyricsFileNameError::MissingLanguageCode);
         };
-        let extension = match ext {
-            "srt" => SubtitleExtension::Srt,
-            "vtt" => SubtitleExtension::Vtt,
-            _ => return Err(ParseLyricsFileNameError::UnsupportedExtension),
-        };
+        let format = ext
+            .parse::<SubtitleFormat>()
+            .map_err(|_| ParseLyricsFileNameError::UnsupportedFormat)?;
         let language = lang
             .parse::<Language>()
             .map_err(ParseLyricsFileNameError::UnrecognizedLanguage)?;
-        Ok(Self {
-            language,
-            extension,
-        })
+        Ok(Self { language, format })
     }
 }
 
-#[derive(Clone, Copy)]
-enum SubtitleExtension {
-    Srt,
-    Vtt,
-}
-
-impl AsRef<str> for SubtitleExtension {
-    fn as_ref(&self) -> &str {
-        match self {
-            Self::Srt => "srt",
-            Self::Vtt => "vtt",
-        }
-    }
+#[derive(Clone, Copy, AsRefStr, EnumString)]
+enum SubtitleFormat {
+    #[strum(serialize = "srt")]
+    SubRip,
+    #[strum(serialize = "vtt")]
+    WebVtt,
 }
 
 #[derive(Debug, Display, Error)]
@@ -189,8 +177,10 @@ impl AsRef<str> for SubtitleExtension {
 pub(crate) enum ParseLyricsFileNameError {
     #[display("filename does not start with \"lyrics.\"")]
     NotLyricsFile,
-    #[display("expected lyrics.{{lang}}.{{srt|vtt}}")]
-    UnsupportedExtension,
+    #[display("missing language code in lyrics filename")]
+    MissingLanguageCode,
+    #[display("unsupported subtitle format (expected srt or vtt)")]
+    UnsupportedFormat,
     #[display("unrecognized language code: {_0}")]
     UnrecognizedLanguage(strum::ParseError),
 }
@@ -319,7 +309,7 @@ mod tests {
     fn lyrics_filename_rejects_bad_extension() {
         assert!(matches!(
             "lyrics.vi.txt".parse::<LyricsFileName>(),
-            Err(ParseLyricsFileNameError::UnsupportedExtension)
+            Err(ParseLyricsFileNameError::UnsupportedFormat)
         ));
     }
 
@@ -327,7 +317,7 @@ mod tests {
     fn lyrics_filename_rejects_no_lang() {
         assert!(matches!(
             "lyrics.srt".parse::<LyricsFileName>(),
-            Err(ParseLyricsFileNameError::UnsupportedExtension)
+            Err(ParseLyricsFileNameError::MissingLanguageCode)
         ));
     }
 
