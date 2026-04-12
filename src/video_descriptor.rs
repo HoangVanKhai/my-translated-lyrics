@@ -173,7 +173,10 @@ impl FromStr for LyricsFileName {
         }
         let language = language
             .parse::<Language>()
-            .map_err(|_| ParseLyricsFileNameError::UnrecognizedLanguage(language.to_string()))?;
+            .map_err(drop::<strum::ParseError>)
+            .map_err(|()| language)
+            .map_err(<str>::to_string)
+            .map_err(ParseLyricsFileNameError::UnrecognizedLanguage)?;
         Ok(Self { language, format })
     }
 }
