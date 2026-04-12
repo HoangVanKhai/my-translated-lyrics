@@ -64,8 +64,7 @@ fn data_and_drafts_have_flat_structure() {
     }
 }
 
-/// Subtitle files in `data/` must be named `lyrics.{lang}.{srt|vtt}` where
-/// `lang` is one of the supported languages (`en`, `vi`, `zh`).
+/// Subtitle files in `data/` must be named `lyrics.{lang}.{ext}`.
 #[test]
 fn data_subtitle_filenames_are_canonical() {
     let data_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("data");
@@ -109,7 +108,7 @@ fn data_subtitle_filenames_are_canonical() {
 
             assert!(
                 is_valid,
-                "data/{song_name}/{name} must match lyrics.{{lang}}.{{srt|vtt}}",
+                "data/{song_name}/{name} must match lyrics.{{lang}}.{{ext}}",
             );
         }
     }

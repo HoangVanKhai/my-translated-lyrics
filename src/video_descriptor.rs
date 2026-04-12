@@ -132,7 +132,7 @@ pub(crate) enum Visibility {
     Manual,
 }
 
-/// A validated subtitle filename in the `lyrics.{lang}.{srt|vtt}` format.
+/// A validated subtitle filename in the `lyrics.{lang}.{ext}` format.
 pub(crate) struct LyricsFileName {
     language: Language,
     format: SubtitleFormat,
