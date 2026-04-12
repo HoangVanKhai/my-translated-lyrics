@@ -187,11 +187,7 @@ pub fn main() {
             let lyrics = match local_name.parse::<LyricsFileName>() {
                 Ok(lyrics) => lyrics,
                 Err(ParseLyricsFileNameError::NotLyricsFile) => continue,
-                Err(
-                    error @ (ParseLyricsFileNameError::MissingLanguageCode
-                    | ParseLyricsFileNameError::UnsupportedFormat(_)
-                    | ParseLyricsFileNameError::UnrecognizedLanguage(_)),
-                ) => panic!(
+                Err(error) => panic!(
                     "error: {dir}/{local_name}: {error}",
                     dir = video_dir.display(),
                 ),
