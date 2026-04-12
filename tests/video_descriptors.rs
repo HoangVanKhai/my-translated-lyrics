@@ -1,8 +1,7 @@
 use itertools::Itertools;
 use my_translated_lyrics::video_descriptor::{VIDEO_CONFIG_FILE_NAME, VideoDesc};
 use pipe_trait::Pipe;
-use std::fs;
-use std::fs::DirEntry;
+use std::fs::{DirEntry, read_dir, read_to_string};
 use std::path::Path;
 
 /// Every `data/*/video.toml` must parse as a valid [`VideoDesc`].
@@ -11,7 +10,7 @@ fn data_video_descriptors_are_valid() {
     let data_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("data");
 
     let entries = data_dir
-        .pipe(fs::read_dir)
+        .pipe(read_dir)
         .unwrap()
         .map(Result::unwrap)
         .sorted_by_key(DirEntry::file_name);
@@ -25,7 +24,7 @@ fn data_video_descriptors_are_valid() {
         eprintln!("CASE: {}", entry.file_name().display());
         video_dir
             .join(VIDEO_CONFIG_FILE_NAME)
-            .pipe(fs::read_to_string)
+            .pipe(read_to_string)
             .unwrap()
             .pipe_as_ref(toml::from_str::<VideoDesc>)
             .unwrap()
