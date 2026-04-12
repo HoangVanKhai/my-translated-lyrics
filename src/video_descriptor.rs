@@ -198,7 +198,7 @@ pub(crate) enum ParseLyricsFileNameError {
     NotLyricsFile,
     #[display("missing language code in lyrics filename")]
     MissingLanguageCode,
-    #[display("unsupported subtitle format: {_0:?} (expected one of {})", SubtitleFormat::VARIANTS.iter().join(", "))]
+    #[display("unsupported subtitle format: {_0:?} (expected one of {})", SubtitleFormat::VARIANTS.iter().format(", "))]
     UnsupportedFormat(#[error(not(source))] String),
     #[display("unrecognized language code: {_0:?}")]
     UnrecognizedLanguage(#[error(not(source))] String),
