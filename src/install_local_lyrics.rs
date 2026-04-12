@@ -188,7 +188,8 @@ pub fn main() {
                 Ok(lyrics) => lyrics,
                 Err(ParseLyricsFileNameError::UnrecognizedLanguage(error)) => {
                     panic!(
-                        "error: Unrecognized language code in {video_dir:?}/{local_name}: {error}"
+                        "error: Unrecognized language code in {dir}/{local_name}: {error}",
+                        dir = video_dir.display(),
                     );
                 }
                 Err(_) => continue,
