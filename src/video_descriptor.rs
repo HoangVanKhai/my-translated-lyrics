@@ -131,11 +131,54 @@ pub(crate) enum Visibility {
     Manual,
 }
 
+/// A validated subtitle filename in the `lyrics.{lang}.{srt|vtt}` format.
+pub(crate) struct LyricsFilename {
+    suffix: String,
+}
+
+impl LyricsFilename {
+    pub(crate) fn suffix(&self) -> &str {
+        &self.suffix
+    }
+}
+
+impl std::str::FromStr for LyricsFilename {
+    type Err = ParseLyricsFilenameError;
+
+    fn from_str(filename: &str) -> Result<Self, Self::Err> {
+        let suffix = filename
+            .strip_prefix("lyrics.")
+            .ok_or(ParseLyricsFilenameError::NotLyricsFile)?;
+        let Some((lang, ext)) = suffix.rsplit_once('.') else {
+            return Err(ParseLyricsFilenameError::UnsupportedExtension);
+        };
+        if ext != "srt" && ext != "vtt" {
+            return Err(ParseLyricsFilenameError::UnsupportedExtension);
+        }
+        lang.parse::<Language>()
+            .map_err(ParseLyricsFilenameError::UnrecognizedLanguage)?;
+        Ok(Self {
+            suffix: suffix.to_owned(),
+        })
+    }
+}
+
+#[derive(Debug, Display, Error)]
+#[non_exhaustive]
+pub(crate) enum ParseLyricsFilenameError {
+    #[display("filename does not start with \"lyrics.\"")]
+    NotLyricsFile,
+    #[display("expected lyrics.{{lang}}.{{srt|vtt}}")]
+    UnsupportedExtension,
+    #[display("unrecognized language code: {_0}")]
+    UnrecognizedLanguage(strum::ParseError),
+}
+
 #[cfg(test)]
 mod tests {
     use super::{
-        CollectionName, Language, ParseCollectionNameError, ParseVideoTitleError,
-        SEPARATED_COLLECTIONS, VideoTitle,
+        CollectionName, Language, LyricsFilename, ParseCollectionNameError,
+        ParseLyricsFilenameError, ParseVideoTitleError, SEPARATED_COLLECTIONS, VideoTitle,
     };
     use pipe_trait::Pipe;
 
@@ -227,5 +270,51 @@ mod tests {
         assert!("ja".to_string().pipe(Language::try_from).is_err());
         assert!("xx".to_string().pipe(Language::try_from).is_err());
         assert!(String::new().pipe(Language::try_from).is_err());
+    }
+
+    #[test]
+    fn lyrics_filename_parses_valid() {
+        let cases = [
+            ("lyrics.vi.srt", "vi.srt"),
+            ("lyrics.en.vtt", "en.vtt"),
+            ("lyrics.zh.srt", "zh.srt"),
+        ];
+        for (input, expected_suffix) in cases {
+            eprintln!("CASE: {input:?}");
+            let filename: LyricsFilename = input.parse().unwrap();
+            assert_eq!(filename.suffix(), expected_suffix);
+        }
+    }
+
+    #[test]
+    fn lyrics_filename_rejects_no_prefix() {
+        assert!(matches!(
+            "continuous.srt".parse::<LyricsFilename>(),
+            Err(ParseLyricsFilenameError::NotLyricsFile)
+        ));
+    }
+
+    #[test]
+    fn lyrics_filename_rejects_bad_extension() {
+        assert!(matches!(
+            "lyrics.vi.txt".parse::<LyricsFilename>(),
+            Err(ParseLyricsFilenameError::UnsupportedExtension)
+        ));
+    }
+
+    #[test]
+    fn lyrics_filename_rejects_no_lang() {
+        assert!(matches!(
+            "lyrics.srt".parse::<LyricsFilename>(),
+            Err(ParseLyricsFilenameError::UnsupportedExtension)
+        ));
+    }
+
+    #[test]
+    fn lyrics_filename_rejects_unknown_lang() {
+        assert!(matches!(
+            "lyrics.ja.srt".parse::<LyricsFilename>(),
+            Err(ParseLyricsFilenameError::UnrecognizedLanguage(_))
+        ));
     }
 }
