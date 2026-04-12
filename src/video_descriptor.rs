@@ -191,38 +191,17 @@ enum SubtitleFormat {
     WebVtt,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Display, Error)]
 #[non_exhaustive]
 pub(crate) enum ParseLyricsFileNameError {
+    #[display("filename does not start with \"lyrics.\"")]
     NotLyricsFile,
+    #[display("missing language code in lyrics filename")]
     MissingLanguageCode,
+    #[display("unsupported subtitle format: {_0:?} (expected one of {expected})", expected = SubtitleFormat::iter().map(|format| format.to_string()).join(", "))]
     UnsupportedFormat(#[error(not(source))] String),
+    #[display("unrecognized language code: {_0:?}")]
     UnrecognizedLanguage(#[error(not(source))] String),
-}
-
-impl std::fmt::Display for ParseLyricsFileNameError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ParseLyricsFileNameError::NotLyricsFile => {
-                f.write_str("filename does not start with \"lyrics.\"")
-            }
-            ParseLyricsFileNameError::MissingLanguageCode => {
-                f.write_str("missing language code in lyrics filename")
-            }
-            ParseLyricsFileNameError::UnsupportedFormat(extension) => {
-                let expected = SubtitleFormat::iter()
-                    .map(|format| format.to_string())
-                    .join(", ");
-                write!(
-                    f,
-                    "unsupported subtitle format: {extension:?} (expected one of {expected})"
-                )
-            }
-            ParseLyricsFileNameError::UnrecognizedLanguage(language) => {
-                write!(f, "unrecognized language code: {language:?}")
-            }
-        }
-    }
 }
 
 #[derive(Display)]
