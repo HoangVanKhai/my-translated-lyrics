@@ -142,6 +142,7 @@ mod tests {
     #[test]
     fn collection_name_accepts_known_values() {
         for &value in SEPARATED_COLLECTIONS {
+            eprintln!("CASE: {value:?}");
             let name = value.to_string().pipe(CollectionName::try_from).unwrap();
             assert_eq!(&*name, value);
         }
@@ -169,6 +170,7 @@ mod tests {
             "【FULL ver.】Example Performer 示例表演者 - Example Song 示例歌曲【示例标签】",
         ];
         for input in cases {
+            eprintln!("CASE: {input:?}");
             let title = input.to_string().pipe(VideoTitle::try_from).unwrap();
             assert_eq!(&*title, input);
         }
@@ -208,18 +210,16 @@ mod tests {
 
     #[test]
     fn language_accepts_known_codes() {
-        assert_eq!(
-            "en".to_string().pipe(Language::try_from).unwrap(),
-            Language::English
-        );
-        assert_eq!(
-            "vi".to_string().pipe(Language::try_from).unwrap(),
-            Language::Vietnamese
-        );
-        assert_eq!(
-            "zh".to_string().pipe(Language::try_from).unwrap(),
-            Language::Chinese
-        );
+        let cases = [
+            ("en", Language::English),
+            ("vi", Language::Vietnamese),
+            ("zh", Language::Chinese),
+        ];
+        for (input, expected) in cases {
+            eprintln!("CASE: {input:?} → {expected:?}");
+            let actual = input.to_string().pipe(Language::try_from).unwrap();
+            assert_eq!(actual, expected);
+        }
     }
 
     #[test]
