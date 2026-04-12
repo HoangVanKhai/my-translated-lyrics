@@ -96,7 +96,7 @@ pub(crate) enum ParseVideoTitleError {
     NotSingleComponent,
 }
 
-#[derive(Debug, PartialEq, Eq, Hash, AsRefStr, EnumString, Deserialize)]
+#[derive(Debug, strum::Display, PartialEq, Eq, Hash, AsRefStr, EnumString, Deserialize)]
 #[serde(try_from = "String")]
 pub(crate) enum Language {
     #[strum(serialize = "en")]
@@ -139,8 +139,16 @@ pub(crate) struct LyricsFileName {
 }
 
 impl LyricsFileName {
-    pub(crate) fn suffix(&self) -> String {
-        format!("{}.{}", self.language.as_ref(), self.format.as_ref())
+    pub(crate) fn target_file_name<'a>(
+        &'a self,
+        video_title: &'a VideoTitle,
+    ) -> impl std::fmt::Display + 'a {
+        let LyricsFileName { language, format } = self;
+        TargetFileName {
+            video_title,
+            language,
+            format,
+        }
     }
 }
 
@@ -167,7 +175,7 @@ impl FromStr for LyricsFileName {
     }
 }
 
-#[derive(Clone, Copy, AsRefStr, EnumString)]
+#[derive(strum::Display, Clone, Copy, AsRefStr, EnumString)]
 enum SubtitleFormat {
     #[strum(serialize = "srt")]
     SubRip,
@@ -186,6 +194,14 @@ pub(crate) enum ParseLyricsFileNameError {
     UnsupportedFormat,
     #[display("unrecognized language code: {_0}")]
     UnrecognizedLanguage(strum::ParseError),
+}
+
+#[derive(Display)]
+#[display("{video_title}.{language}.{format}")]
+struct TargetFileName<'a> {
+    video_title: &'a VideoTitle,
+    language: &'a Language,
+    format: &'a SubtitleFormat,
 }
 
 #[cfg(test)]
@@ -288,15 +304,20 @@ mod tests {
 
     #[test]
     fn lyrics_filename_parses_valid() {
+        let video_title = "Example Title"
+            .to_string()
+            .pipe(VideoTitle::try_from)
+            .unwrap();
         let cases = [
-            ("lyrics.vi.srt", "vi.srt"),
-            ("lyrics.en.vtt", "en.vtt"),
-            ("lyrics.zh.srt", "zh.srt"),
+            ("lyrics.vi.srt", "Example Title.vi.srt"),
+            ("lyrics.en.vtt", "Example Title.en.vtt"),
+            ("lyrics.zh.srt", "Example Title.zh.srt"),
         ];
-        for (input, expected_suffix) in cases {
+        for (input, expected_target) in cases {
             eprintln!("CASE: {input:?}");
             let filename: LyricsFileName = input.parse().unwrap();
-            assert_eq!(filename.suffix(), expected_suffix);
+            let target = filename.target_file_name(&video_title).to_string();
+            assert_eq!(target, expected_target);
         }
     }
 

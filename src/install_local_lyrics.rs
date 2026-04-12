@@ -194,7 +194,7 @@ pub fn main() {
                 }
                 Err(_) => continue,
             };
-            let target_name = format!("{}.{}", desc.video_title, lyrics.suffix());
+            let target_name = lyrics.target_file_name(&desc.video_title).to_string();
 
             let source_file = video_dir.join(local_name);
             let separated_target_file = separated_target_dir.join(&target_name);
