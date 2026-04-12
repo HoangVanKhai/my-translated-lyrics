@@ -15,7 +15,8 @@ pub(crate) const VIDEO_CONFIG_FILENAME: &str = "video.toml";
 
 #[derive(Deserialize)]
 pub(crate) struct VideoDesc {
-    pub(crate) collection: Collection,
+    /// Target collection this video belongs to.
+    pub(crate) collection: CollectionName,
     /// Title of the video to which this subtitle set applies.
     /// It is used as the stem of target subtitle filenames.
     pub(crate) video_title: VideoTitle,
@@ -33,7 +34,7 @@ pub(crate) struct VideoDesc {
 #[as_ref(forward)]
 #[deref(forward)]
 #[serde(try_from = "String")]
-pub(crate) struct Collection(
+pub(crate) struct CollectionName(
     /// Owned `String` rather than `&'static str`: every valid value is
     /// known statically today, but owning the string leaves room to
     /// replace [`SEPARATED_COLLECTIONS`] with a runtime source later
@@ -41,21 +42,24 @@ pub(crate) struct Collection(
     String,
 );
 
-impl TryFrom<String> for Collection {
-    type Error = UnknownCollection;
+impl TryFrom<String> for CollectionName {
+    type Error = ParseCollectionNameError;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         if SEPARATED_COLLECTIONS.contains(&value.as_str()) {
             Ok(Self(value))
         } else {
-            Err(UnknownCollection(value))
+            Err(ParseCollectionNameError::UnknownCollection(value))
         }
     }
 }
 
 #[derive(Debug, Display, Error)]
-#[display("unknown collection: {_0:?}")]
-pub(crate) struct UnknownCollection(#[error(not(source))] String);
+#[non_exhaustive]
+pub(crate) enum ParseCollectionNameError {
+    #[display("unknown collection: {_0:?}")]
+    UnknownCollection(#[error(not(source))] String),
+}
 
 /// Title of a video. The constructor enforces two invariants on the
 /// title: it must be a single normal path component (so it can be used
@@ -68,25 +72,23 @@ pub(crate) struct UnknownCollection(#[error(not(source))] String);
 pub(crate) struct VideoTitle(String);
 
 impl TryFrom<String> for VideoTitle {
-    type Error = VideoTitleError;
+    type Error = ParseVideoTitleError;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        // Backslashes are rejected explicitly so configs behave consistently
-        // regardless of platform (on Unix, `Path::components` treats `\` as
-        // a normal character).
         if value.contains('\\') {
-            return Err(VideoTitleError::ContainsBackslash);
+            return Err(ParseVideoTitleError::ContainsBackslash);
         }
         let mut components = value.pipe_ref(Path::new).components();
         match (components.next(), components.next()) {
             (Some(Component::Normal(_)), None) => Ok(Self(value)),
-            _ => Err(VideoTitleError::NotSingleComponent),
+            _ => Err(ParseVideoTitleError::NotSingleComponent),
         }
     }
 }
 
 #[derive(Debug, Display, Error)]
-pub(crate) enum VideoTitleError {
+#[non_exhaustive]
+pub(crate) enum ParseVideoTitleError {
     #[display("video_title must not contain backslashes")]
     ContainsBackslash,
     #[display("video_title must be a single normal path component")]
@@ -132,63 +134,77 @@ pub(crate) enum Visibility {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pipe_trait::Pipe;
 
     #[test]
-    fn collection_accepts_known_values() {
-        for value in SEPARATED_COLLECTIONS {
-            let result = Collection::try_from(value.to_string());
-            assert!(result.is_ok(), "expected {value:?} to be accepted");
+    fn collection_name_accepts_known_values() {
+        for &value in SEPARATED_COLLECTIONS {
+            let name = value.to_string().pipe(CollectionName::try_from).unwrap();
+            assert_eq!(&*name, value);
         }
     }
 
     #[test]
-    fn collection_rejects_unknown_value() {
-        assert!(Collection::try_from("Unknown Collection".to_string()).is_err());
+    fn collection_name_rejects_unknown_value() {
+        assert!(
+            "Unknown Collection"
+                .to_string()
+                .pipe(CollectionName::try_from)
+                .is_err()
+        );
     }
 
     #[test]
     fn video_title_accepts_normal_component() {
-        let result = VideoTitle::try_from(
-            "【示例表演者】《示例歌曲》Example Song [ExampleVideoID]".to_string(),
-        );
-        assert!(result.is_ok());
+        "【示例表演者】《示例歌曲》Example Song [ExampleVideoID]"
+            .to_string()
+            .pipe(VideoTitle::try_from)
+            .unwrap();
     }
 
     #[test]
     fn video_title_rejects_backslash() {
-        let result = VideoTitle::try_from("foo\\bar".to_string());
-        assert!(matches!(result, Err(VideoTitleError::ContainsBackslash)));
+        assert!(matches!(
+            "foo\\bar".to_string().pipe(VideoTitle::try_from),
+            Err(ParseVideoTitleError::ContainsBackslash)
+        ));
     }
 
     #[test]
     fn video_title_rejects_slash() {
-        let result = VideoTitle::try_from("foo/bar".to_string());
-        assert!(matches!(result, Err(VideoTitleError::NotSingleComponent)));
+        assert!(matches!(
+            "foo/bar".to_string().pipe(VideoTitle::try_from),
+            Err(ParseVideoTitleError::NotSingleComponent)
+        ));
     }
 
     #[test]
     fn video_title_rejects_empty() {
-        let result = VideoTitle::try_from(String::new());
-        assert!(matches!(result, Err(VideoTitleError::NotSingleComponent)));
+        assert!(matches!(
+            String::new().pipe(VideoTitle::try_from),
+            Err(ParseVideoTitleError::NotSingleComponent)
+        ));
     }
 
     #[test]
     fn video_title_rejects_dot_dot() {
-        let result = VideoTitle::try_from("..".to_string());
-        assert!(matches!(result, Err(VideoTitleError::NotSingleComponent)));
+        assert!(matches!(
+            "..".to_string().pipe(VideoTitle::try_from),
+            Err(ParseVideoTitleError::NotSingleComponent)
+        ));
     }
 
     #[test]
     fn language_accepts_known_codes() {
-        assert!(Language::try_from("en".to_string()).is_ok());
-        assert!(Language::try_from("vi".to_string()).is_ok());
-        assert!(Language::try_from("zh".to_string()).is_ok());
+        "en".to_string().pipe(Language::try_from).unwrap();
+        "vi".to_string().pipe(Language::try_from).unwrap();
+        "zh".to_string().pipe(Language::try_from).unwrap();
     }
 
     #[test]
     fn language_rejects_unknown_code() {
-        assert!(Language::try_from("ja".to_string()).is_err());
-        assert!(Language::try_from("xx".to_string()).is_err());
-        assert!(Language::try_from(String::new()).is_err());
+        assert!("ja".to_string().pipe(Language::try_from).is_err());
+        assert!("xx".to_string().pipe(Language::try_from).is_err());
+        assert!(String::new().pipe(Language::try_from).is_err());
     }
 }
