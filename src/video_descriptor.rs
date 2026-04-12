@@ -92,9 +92,9 @@ impl TryFrom<String> for VideoTitle {
 #[derive(Debug, Display, Error)]
 #[non_exhaustive]
 pub(crate) enum ParseVideoTitleError {
-    #[display("video_title must not contain backslashes")]
+    #[display("video title must not contain backslashes")]
     ContainsBackslash,
-    #[display("video_title must be a single normal path component")]
+    #[display("video title must be a single normal path component")]
     NotSingleComponent,
 }
 
