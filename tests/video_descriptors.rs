@@ -23,10 +23,8 @@ fn data_video_descriptors_are_valid() {
         }
 
         let toml_path = video_dir.join(VIDEO_CONFIG_FILE_NAME);
-        let video_name = entry.file_name();
-        let video_name = video_name.to_str().expect("path isn't valid UTF-8");
 
-        eprintln!("CASE: {video_name}");
+        eprintln!("CASE: {}", entry.file_name().display());
         let content = fs::read_to_string(&toml_path)
             .unwrap_or_else(|error| panic!("cannot read {toml_path:?}: {error}"));
         let _desc: VideoDesc = toml::from_str(&content)
