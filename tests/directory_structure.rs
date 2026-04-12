@@ -105,9 +105,7 @@ fn data_subtitle_filenames_are_canonical() {
                     rest.strip_suffix(".srt")
                         .or_else(|| rest.strip_suffix(".vtt"))
                 })
-                .is_some_and(|lang| {
-                    !lang.is_empty() && lang.chars().all(|c| c.is_ascii_lowercase())
-                });
+                .is_some_and(|lang| matches!(lang, "en" | "vi" | "zh"));
 
             assert!(
                 is_valid,
