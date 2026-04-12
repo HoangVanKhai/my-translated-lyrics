@@ -148,7 +148,9 @@ mod tests {
 
     #[test]
     fn video_title_accepts_normal_component() {
-        let result = VideoTitle::try_from("【洛天依&乐正绫】月轮回 [MLG8OlppS9o]".to_string());
+        let result = VideoTitle::try_from(
+            "【示例表演者】《示例歌曲》Example Song [ExampleVideoID]".to_string(),
+        );
         assert!(result.is_ok());
     }
 
