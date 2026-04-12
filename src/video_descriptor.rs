@@ -163,7 +163,7 @@ mod tests {
             "【示例表演者】《示例歌曲》Example Song [ExampleID]",
             "【示例表演者 | 日本語タグ】《示例歌曲名》 [ExampleID]",
             "【示例表演者】示例歌(Example Song)——“示例歌词”【示例标签】 [ExampleID]",
-            "【示例表演者】回舟《示例歌》(Example Song)，归去示例。【示例标签】 [ExampleID]",
+            "【示例表演者】回舟《示例歌》(Example Song)，示例描述。【示例标签】 [ExampleID]",
             "【示例表演者】示例歌(Example Song)  【示例标签】 [ExampleID]",
             "【示例表演者】《示例歌曲》SuffixText020 [ExampleID]",
             "【FULL ver.】Example Performer 示例表演者 - Example Song 示例歌曲【示例标签】",
