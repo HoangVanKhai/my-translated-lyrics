@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use pipe_trait::Pipe;
 
 #[derive(Clone)]
-pub(crate) struct FileDescriptor {
+pub(crate) struct FileSnapshot {
     path: PathBuf,
     dev: u64,
     inode: u64,
@@ -16,10 +16,10 @@ pub(crate) struct FileDescriptor {
     content: OnceCell<String>,
 }
 
-/// Debug implementation that omits [`FileDescriptor::content`].
-impl fmt::Debug for FileDescriptor {
+/// Debug implementation that omits [`FileSnapshot::content`].
+impl fmt::Debug for FileSnapshot {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("FileDescriptor")
+        f.debug_struct("FileSnapshot")
             .field("path", &self.path)
             .field("dev", &self.dev)
             .field("inode", &self.inode)
@@ -28,10 +28,10 @@ impl fmt::Debug for FileDescriptor {
     }
 }
 
-impl FileDescriptor {
+impl FileSnapshot {
     pub(crate) fn new(path: PathBuf) -> io::Result<Self> {
         let stats = symlink_metadata(&path)?;
-        Ok(FileDescriptor {
+        Ok(FileSnapshot {
             path,
             dev: stats.dev(),
             inode: stats.ino(),
