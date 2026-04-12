@@ -160,19 +160,12 @@ mod tests {
     #[test]
     fn video_title_accepts_normal_component() {
         let cases = [
-            // basic: 【performers】title(English)【tags】 [ID]
             "【示例表演者】《示例歌曲》Example Song [ExampleVideoID]",
-            // Chinese-only with guillemets, no English name
             "【示例表演者 | 日本語タグ】《示例歌曲名》 [ExampleID]",
-            // em-dashes and typographic quotes
             "【示例表演者】示例歌(Example Song)\u{2014}\u{2014}\u{201c}示例歌词\u{201d}【示例标签】 [ExampleID]",
-            // full-width comma and period
             "【示例表演者】回舟《示例歌》(Example)\u{ff0c}归去示例。【示例标签】 [ExampleID]",
-            // double spaces before a tag
             "【示例表演者】示例歌(Example Song)  【示例标签】 [ExampleID]",
-            // suffix after guillemets
             "【示例表演者】《示例歌曲》SuffixText020 [ExampleID]",
-            // English-first, no [ID]
             "【FULL ver.】Example Performer 示例表演者 - Example Song 示例歌曲【示例标签】",
         ];
         for input in cases {
