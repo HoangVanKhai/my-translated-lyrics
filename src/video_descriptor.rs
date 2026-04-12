@@ -156,14 +156,9 @@ mod tests {
 
     #[test]
     fn video_title_accepts_normal_component() {
-        let title = "【示例表演者】《示例歌曲》Example Song [ExampleVideoID]"
-            .to_string()
-            .pipe(VideoTitle::try_from)
-            .unwrap();
-        assert_eq!(
-            &*title,
-            "【示例表演者】《示例歌曲》Example Song [ExampleVideoID]"
-        );
+        let input = "【示例表演者】《示例歌曲》Example Song [ExampleVideoID]";
+        let title = input.to_string().pipe(VideoTitle::try_from).unwrap();
+        assert_eq!(&*title, input);
     }
 
     #[test]
