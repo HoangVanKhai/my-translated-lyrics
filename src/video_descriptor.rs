@@ -5,7 +5,7 @@ use serde::Deserialize;
 use std::collections::HashMap;
 use std::path::{Component, Path};
 use std::str::FromStr;
-use strum::{AsRefStr, EnumIter, EnumString, IntoEnumIterator};
+use strum::{AsRefStr, EnumString, VariantArray};
 
 pub(crate) const SEPARATED_COLLECTIONS: &[&str] = &[
     "Feng Ling Yu Xiu",
@@ -183,7 +183,7 @@ impl FromStr for LyricsFileName {
     }
 }
 
-#[derive(strum::Display, Clone, Copy, AsRefStr, EnumIter, EnumString)]
+#[derive(strum::Display, Clone, Copy, AsRefStr, EnumString, VariantArray)]
 enum SubtitleFormat {
     #[strum(serialize = "srt")]
     SubRip,
@@ -198,7 +198,7 @@ pub(crate) enum ParseLyricsFileNameError {
     NotLyricsFile,
     #[display("missing language code in lyrics filename")]
     MissingLanguageCode,
-    #[display("unsupported subtitle format: {_0:?} (expected one of {})", SubtitleFormat::iter().join(", "))]
+    #[display("unsupported subtitle format: {_0:?} (expected one of {})", SubtitleFormat::VARIANTS.iter().join(", "))]
     UnsupportedFormat(#[error(not(source))] String),
     #[display("unrecognized language code: {_0:?}")]
     UnrecognizedLanguage(#[error(not(source))] String),
