@@ -85,11 +85,11 @@ pub fn main() {
                 .map(|entry| entry.path())
         })
         .map(|path| {
-            let desc = path
+            let snapshot = path
                 .to_path_buf()
                 .pipe(FileSnapshot::new)
                 .unwrap_or_else(|error| panic!("error: Cannot read file {path:?}: {error}"));
-            (path, desc)
+            (path, snapshot)
         })
         .collect();
     eprintln!(
@@ -126,14 +126,14 @@ pub fn main() {
             let separated_target_file = separated_target_dir.join(&file_name);
             let unified_target_file = unified_target_dir.join(&file_name);
 
-            let source_file_desc = source_file.clone().pipe(FileSnapshot::new);
+            let source_file_snapshot = source_file.clone().pipe(FileSnapshot::new);
             for target_file in [separated_target_file, unified_target_file] {
-                let Some(target_file_desc) = existing_target_files.get(&target_file) else {
+                let Some(target_file_snapshot) = existing_target_files.get(&target_file) else {
                     files_need_install.push((source_file.clone(), target_file));
                     continue;
                 };
 
-                let source_file_desc = source_file_desc.as_ref().unwrap_or_else(|error| {
+                let source_file_snapshot = source_file_snapshot.as_ref().unwrap_or_else(|error| {
                     panic!("error: Cannot read file {:?}: {error}", source_file.clone())
                 });
 
@@ -142,7 +142,7 @@ pub fn main() {
                     "Expecting {target_file:?} to still exist but it doesn't"
                 );
 
-                if target_file_desc.content_eq(source_file_desc) {
+                if target_file_snapshot.content_eq(source_file_snapshot) {
                     continue;
                 }
 
