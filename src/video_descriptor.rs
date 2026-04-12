@@ -157,6 +157,9 @@ impl FromStr for LyricsFileName {
         let format = ext
             .parse::<SubtitleFormat>()
             .map_err(|_| ParseLyricsFileNameError::UnsupportedFormat)?;
+        if lang.is_empty() {
+            return Err(ParseLyricsFileNameError::MissingLanguageCode);
+        }
         let language = lang
             .parse::<Language>()
             .map_err(ParseLyricsFileNameError::UnrecognizedLanguage)?;
@@ -317,6 +320,14 @@ mod tests {
     fn lyrics_filename_rejects_no_lang() {
         assert!(matches!(
             "lyrics.srt".parse::<LyricsFileName>(),
+            Err(ParseLyricsFileNameError::MissingLanguageCode)
+        ));
+    }
+
+    #[test]
+    fn lyrics_filename_rejects_empty_lang() {
+        assert!(matches!(
+            "lyrics..srt".parse::<LyricsFileName>(),
             Err(ParseLyricsFileNameError::MissingLanguageCode)
         ));
     }
