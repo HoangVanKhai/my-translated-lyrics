@@ -162,8 +162,8 @@ mod tests {
         let cases = [
             "【示例表演者】《示例歌曲》Example Song [ExampleVideoID]",
             "【示例表演者 | 日本語タグ】《示例歌曲名》 [ExampleID]",
-            "【示例表演者】示例歌(Example Song)\u{2014}\u{2014}\u{201c}示例歌词\u{201d}【示例标签】 [ExampleID]",
-            "【示例表演者】回舟《示例歌》(Example)\u{ff0c}归去示例。【示例标签】 [ExampleID]",
+            "【示例表演者】示例歌(Example Song)——“示例歌词”【示例标签】 [ExampleID]",
+            "【示例表演者】回舟《示例歌》(Example)，归去示例。【示例标签】 [ExampleID]",
             "【示例表演者】示例歌(Example Song)  【示例标签】 [ExampleID]",
             "【示例表演者】《示例歌曲》SuffixText020 [ExampleID]",
             "【FULL ver.】Example Performer 示例表演者 - Example Song 示例歌曲【示例标签】",
