@@ -119,8 +119,8 @@ pub(crate) enum Visibility {
     #[default]
     #[serde(rename = "visible")]
     Visible,
-    /// The target subtitle files should not be there despite
-    /// the existence of the source.
+    /// The target subtitle files should not exist. They are removed
+    /// if present.
     #[serde(rename = "hidden")]
     Hidden,
     /// The target subtitle files are edited manually. They should
