@@ -16,6 +16,7 @@ pub(crate) const VIDEO_CONFIG_FILE_NAME: &str = "video.toml";
 
 /// Parsed contents of a `video.toml` file.
 #[derive(Deserialize)]
+#[serde(rename_all = "kebab-case")]
 pub(crate) struct VideoDesc {
     /// Target collection this video belongs to.
     pub(crate) collection: CollectionName,
@@ -23,7 +24,6 @@ pub(crate) struct VideoDesc {
     /// It is used as the stem of target subtitle filenames.
     pub(crate) video_title: VideoTitle,
     /// Titles of the song in each supported language.
-    #[serde(rename = "song-titles")]
     #[expect(dead_code, reason = "not used for now, may be used in the future")]
     song_titles: HashMap<Language, String>,
     #[serde(default)]
@@ -117,19 +117,17 @@ impl TryFrom<String> for Language {
 }
 
 #[derive(Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "kebab-case")]
 pub(crate) enum Visibility {
     /// The target subtitle files should be created and
     /// synchronized with the source.
     #[default]
-    #[serde(rename = "visible")]
     Visible,
     /// The target subtitle files should not exist. They are removed
     /// if present.
-    #[serde(rename = "hidden")]
     Hidden,
     /// The target subtitle files are edited manually. They should
     /// neither be deleted, created, nor synchronized.
-    #[serde(rename = "manual")]
     Manual,
 }
 
