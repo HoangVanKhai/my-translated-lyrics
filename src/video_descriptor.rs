@@ -13,6 +13,8 @@ pub(crate) const SEPARATED_COLLECTIONS: &[&str] = &[
     "Touhou Hero of Ice Fairy",
 ];
 
+pub(crate) const UNIFIED_COLLECTION: &str = "Short Relaxing Playlist 2025";
+
 pub const VIDEO_CONFIG_FILE_NAME: &str = "video.toml";
 
 /// Parsed contents of a `video.toml` file.

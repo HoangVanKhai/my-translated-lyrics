@@ -1,8 +1,8 @@
 use crate::args::Args;
 use crate::file_snapshot::FileSnapshot;
 use crate::video_descriptor::{
-    LyricsFileName, ParseLyricsFileNameError, SEPARATED_COLLECTIONS, VIDEO_CONFIG_FILE_NAME,
-    VideoDesc, Visibility,
+    LyricsFileName, ParseLyricsFileNameError, SEPARATED_COLLECTIONS, UNIFIED_COLLECTION,
+    VIDEO_CONFIG_FILE_NAME, VideoDesc, Visibility,
 };
 use clap::Parser;
 use itertools::Itertools;
@@ -14,8 +14,6 @@ use std::io::{self, ErrorKind};
 use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
-
-const UNIFIED_COLLECTION: &str = "Short Relaxing Playlist 2025";
 
 /// Try hardlink, then try reflink, and finally copy.
 fn link_or_copy(source: &Path, target: &Path) -> io::Result<()> {
