@@ -1,7 +1,7 @@
 use crate::args::Args;
 use crate::file_snapshot::FileSnapshot;
 use crate::video_descriptor::{
-    LyricsFilename, ParseLyricsFilenameError, SEPARATED_COLLECTIONS, VIDEO_CONFIG_FILENAME,
+    LyricsFileName, ParseLyricsFileNameError, SEPARATED_COLLECTIONS, VIDEO_CONFIG_FILENAME,
     VideoDesc, Visibility,
 };
 use clap::Parser;
@@ -185,9 +185,9 @@ pub fn main() {
                 .unwrap_or_else(|| panic!("error: Non-UTF-8 filename in {video_dir:?}"));
 
             // Map lyrics.{lang}.{ext} → {video_title}.{lang}.{ext}
-            let lyrics = match local_name.parse::<LyricsFilename>() {
+            let lyrics = match local_name.parse::<LyricsFileName>() {
                 Ok(lyrics) => lyrics,
-                Err(ParseLyricsFilenameError::UnrecognizedLanguage(error)) => {
+                Err(ParseLyricsFileNameError::UnrecognizedLanguage(error)) => {
                     panic!(
                         "error: Unrecognized language code in {video_dir:?}/{local_name}: {error}"
                     );
