@@ -22,12 +22,13 @@ fn data_video_descriptors_are_valid() {
             continue;
         }
 
-        let toml_path = video_dir.join(VIDEO_CONFIG_FILE_NAME);
-
         eprintln!("CASE: {}", entry.file_name().display());
-        let content = fs::read_to_string(&toml_path)
-            .unwrap_or_else(|error| panic!("cannot read {toml_path:?}: {error}"));
-        let _desc: VideoDesc = toml::from_str(&content)
-            .unwrap_or_else(|error| panic!("cannot parse {toml_path:?}: {error}"));
+        video_dir
+            .join(VIDEO_CONFIG_FILE_NAME)
+            .pipe(fs::read_to_string)
+            .unwrap()
+            .pipe_as_ref(toml::from_str::<VideoDesc>)
+            .unwrap()
+            .pipe(drop::<VideoDesc>);
     }
 }
