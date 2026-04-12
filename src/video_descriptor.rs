@@ -313,11 +313,11 @@ mod tests {
             ("lyrics.en.vtt", "Example Title.en.vtt"),
             ("lyrics.zh.srt", "Example Title.zh.srt"),
         ];
-        for (input, expected_target) in cases {
+        for (input, expected) in cases {
             eprintln!("CASE: {input:?}");
             let filename: LyricsFileName = input.parse().unwrap();
-            let target = filename.target_file_name(&video_title).to_string();
-            assert_eq!(target, expected_target);
+            let actual = filename.target_file_name(&video_title).to_string();
+            assert_eq!(actual, expected);
         }
     }
 
