@@ -141,11 +141,11 @@ pub(crate) struct LyricsFileName {
 impl LyricsFileName {
     pub(crate) fn target_file_name<'a>(
         &'a self,
-        video_title: &'a VideoTitle,
+        video: &'a VideoTitle,
     ) -> impl std::fmt::Display + 'a {
         let LyricsFileName { language, format } = self;
         TargetFileName {
-            video_title,
+            video,
             language,
             format,
         }
@@ -197,9 +197,9 @@ pub(crate) enum ParseLyricsFileNameError {
 }
 
 #[derive(Display)]
-#[display("{video_title}.{language}.{format}")]
+#[display("{video}.{language}.{format}")]
 struct TargetFileName<'a> {
-    video_title: &'a VideoTitle,
+    video: &'a VideoTitle,
     language: &'a Language,
     format: &'a SubtitleFormat,
 }
