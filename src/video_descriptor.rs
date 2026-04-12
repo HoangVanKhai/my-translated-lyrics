@@ -95,7 +95,7 @@ pub(crate) enum ParseVideoTitleError {
     NotSingleComponent,
 }
 
-#[derive(PartialEq, Eq, Hash, EnumString, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Hash, EnumString, Deserialize)]
 #[serde(try_from = "String")]
 pub(crate) enum Language {
     #[strum(serialize = "en")]
@@ -156,10 +156,14 @@ mod tests {
 
     #[test]
     fn video_title_accepts_normal_component() {
-        "【示例表演者】《示例歌曲》Example Song [ExampleVideoID]"
+        let title = "【示例表演者】《示例歌曲》Example Song [ExampleVideoID]"
             .to_string()
             .pipe(VideoTitle::try_from)
             .unwrap();
+        assert_eq!(
+            &*title,
+            "【示例表演者】《示例歌曲》Example Song [ExampleVideoID]"
+        );
     }
 
     #[test]
@@ -196,9 +200,18 @@ mod tests {
 
     #[test]
     fn language_accepts_known_codes() {
-        "en".to_string().pipe(Language::try_from).unwrap();
-        "vi".to_string().pipe(Language::try_from).unwrap();
-        "zh".to_string().pipe(Language::try_from).unwrap();
+        assert_eq!(
+            "en".to_string().pipe(Language::try_from).unwrap(),
+            Language::English
+        );
+        assert_eq!(
+            "vi".to_string().pipe(Language::try_from).unwrap(),
+            Language::Vietnamese
+        );
+        assert_eq!(
+            "zh".to_string().pipe(Language::try_from).unwrap(),
+            Language::Chinese
+        );
     }
 
     #[test]
