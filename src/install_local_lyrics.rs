@@ -193,7 +193,7 @@ pub fn main() {
                     | ParseLyricsFileNameError::UnrecognizedLanguage(_)),
                 ) => {
                     panic!(
-                        "error: {error} in {dir}/{local_name}",
+                        "error: {dir}/{local_name}: {error}",
                         dir = video_dir.display(),
                     );
                 }
