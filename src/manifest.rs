@@ -37,7 +37,7 @@ pub(crate) struct Collection(
     /// Owned `String` rather than `&'static str`: every valid value is
     /// known statically today, but owning the string leaves room to
     /// replace [`SEPARATED_COLLECTIONS`] with a runtime source later
-    /// without breaking the public API.
+    /// without breaking the crate API.
     String,
 );
 
