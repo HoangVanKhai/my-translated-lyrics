@@ -186,17 +186,17 @@ pub fn main() {
 
             let lyrics = match local_name.parse::<LyricsFileName>() {
                 Ok(lyrics) => lyrics,
-                Err(ParseLyricsFileNameError::UnrecognizedLanguage(language)) => {
+                Err(ParseLyricsFileNameError::NotLyricsFile) => continue,
+                Err(
+                    error @ (ParseLyricsFileNameError::MissingLanguageCode
+                    | ParseLyricsFileNameError::UnsupportedFormat(_)
+                    | ParseLyricsFileNameError::UnrecognizedLanguage(_)),
+                ) => {
                     panic!(
-                        "error: Unrecognized language code in {dir}/{local_name}: {language}",
+                        "error: {error} in {dir}/{local_name}",
                         dir = video_dir.display(),
                     );
                 }
-                Err(
-                    ParseLyricsFileNameError::NotLyricsFile
-                    | ParseLyricsFileNameError::MissingLanguageCode
-                    | ParseLyricsFileNameError::UnsupportedFormat(_),
-                ) => continue,
             };
             let target_name = lyrics.target_file_name(&desc.video_title).to_string();
 
