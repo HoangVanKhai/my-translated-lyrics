@@ -7,9 +7,9 @@ use std::path::Path;
 /// Every `data/*/video.toml` must parse as a valid [`VideoDesc`].
 #[test]
 fn data_video_descriptors_are_valid() {
-    let data_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("data");
-
-    let entries = data_dir
+    let entries = env!("CARGO_MANIFEST_DIR")
+        .pipe(Path::new)
+        .join("data")
         .pipe(read_dir)
         .unwrap()
         .map(Result::unwrap)
