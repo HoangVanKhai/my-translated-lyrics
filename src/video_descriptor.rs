@@ -133,7 +133,10 @@ pub(crate) enum Visibility {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{
+        CollectionName, Language, ParseCollectionNameError, ParseVideoTitleError,
+        SEPARATED_COLLECTIONS, VideoTitle,
+    };
     use pipe_trait::Pipe;
 
     #[test]
