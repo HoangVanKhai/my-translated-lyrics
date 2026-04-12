@@ -154,9 +154,13 @@ pub fn main() {
                 if parent != separated && parent != unified {
                     return true;
                 }
-                let Some(name) = target_path.file_name().and_then(|n| n.to_str()) else {
-                    return true;
-                };
+                let name = target_path
+                    .file_name()
+                    .expect("target path has no file name")
+                    .to_str()
+                    .unwrap_or_else(|| {
+                        panic!("error: Non-UTF-8 filename in target: {target_path:?}")
+                    });
                 !name.starts_with(&prefix)
             });
             continue;
