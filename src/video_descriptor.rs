@@ -162,18 +162,18 @@ impl FromStr for LyricsFileName {
         let suffix = file_name
             .strip_prefix("lyrics.")
             .ok_or(ParseLyricsFileNameError::NotLyricsFile)?;
-        let Some((lang, ext)) = suffix.rsplit_once('.') else {
+        let Some((language, extension)) = suffix.rsplit_once('.') else {
             return Err(ParseLyricsFileNameError::MissingLanguageCode);
         };
-        let format = ext
+        let format = extension
             .parse::<SubtitleFormat>()
             .map_err(|_| ParseLyricsFileNameError::UnsupportedFormat)?;
-        if lang.is_empty() {
+        if language.is_empty() {
             return Err(ParseLyricsFileNameError::MissingLanguageCode);
         }
-        let language = lang
+        let language = language
             .parse::<Language>()
-            .map_err(|_| ParseLyricsFileNameError::UnrecognizedLanguage(lang.to_owned()))?;
+            .map_err(|_| ParseLyricsFileNameError::UnrecognizedLanguage(language.to_owned()))?;
         Ok(Self { language, format })
     }
 }
