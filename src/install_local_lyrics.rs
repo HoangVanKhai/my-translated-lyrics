@@ -1,7 +1,7 @@
 use crate::args::Args;
 use crate::file_snapshot::FileSnapshot;
 use crate::video_descriptor::{
-    LyricsFileName, ParseLyricsFileNameError, SEPARATED_COLLECTIONS, VIDEO_CONFIG_FILENAME,
+    LyricsFileName, ParseLyricsFileNameError, SEPARATED_COLLECTIONS, VIDEO_CONFIG_FILE_NAME,
     VideoDesc, Visibility,
 };
 use clap::Parser;
@@ -92,7 +92,7 @@ pub fn main() {
         })
         .map(|entry| {
             let video_dir = entry.path();
-            let desc_path = video_dir.join(VIDEO_CONFIG_FILENAME);
+            let desc_path = video_dir.join(VIDEO_CONFIG_FILE_NAME);
             let content = desc_path
                 .pipe_ref(read_to_string)
                 .unwrap_or_else(|error| panic!("error: Cannot read {desc_path:?}: {error}"));

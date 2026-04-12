@@ -12,7 +12,7 @@ pub(crate) const SEPARATED_COLLECTIONS: &[&str] = &[
     "Touhou Hero of Ice Fairy",
 ];
 
-pub(crate) const VIDEO_CONFIG_FILENAME: &str = "video.toml";
+pub(crate) const VIDEO_CONFIG_FILE_NAME: &str = "video.toml";
 
 #[derive(Deserialize)]
 pub(crate) struct VideoDesc {
@@ -157,8 +157,8 @@ impl LyricsFileName {
 impl FromStr for LyricsFileName {
     type Err = ParseLyricsFileNameError;
 
-    fn from_str(filename: &str) -> Result<Self, Self::Err> {
-        let suffix = filename
+    fn from_str(file_name: &str) -> Result<Self, Self::Err> {
+        let suffix = file_name
             .strip_prefix("lyrics.")
             .ok_or(ParseLyricsFileNameError::NotLyricsFile)?;
         let Some((lang, ext)) = suffix.rsplit_once('.') else {
@@ -305,7 +305,7 @@ mod tests {
     }
 
     #[test]
-    fn lyrics_filename_parses_valid() {
+    fn lyrics_file_name_parses_valid() {
         let video_title = "Example Title"
             .to_string()
             .pipe(VideoTitle::try_from)
@@ -317,14 +317,14 @@ mod tests {
         ];
         for (input, expected) in cases {
             eprintln!("CASE: {input:?}");
-            let filename: LyricsFileName = input.parse().unwrap();
-            let actual = filename.target_file_name(&video_title).to_string();
+            let file_name: LyricsFileName = input.parse().unwrap();
+            let actual = file_name.target_file_name(&video_title).to_string();
             assert_eq!(actual, expected);
         }
     }
 
     #[test]
-    fn lyrics_filename_rejects_no_prefix() {
+    fn lyrics_file_name_rejects_no_prefix() {
         assert!(matches!(
             "continuous.srt".parse::<LyricsFileName>(),
             Err(ParseLyricsFileNameError::NotLyricsFile)
@@ -332,7 +332,7 @@ mod tests {
     }
 
     #[test]
-    fn lyrics_filename_rejects_bad_extension() {
+    fn lyrics_file_name_rejects_bad_extension() {
         assert!(matches!(
             "lyrics.vi.txt".parse::<LyricsFileName>(),
             Err(ParseLyricsFileNameError::UnsupportedFormat)
@@ -340,7 +340,7 @@ mod tests {
     }
 
     #[test]
-    fn lyrics_filename_rejects_no_lang() {
+    fn lyrics_file_name_rejects_no_lang() {
         assert!(matches!(
             "lyrics.srt".parse::<LyricsFileName>(),
             Err(ParseLyricsFileNameError::MissingLanguageCode)
@@ -348,7 +348,7 @@ mod tests {
     }
 
     #[test]
-    fn lyrics_filename_rejects_empty_lang() {
+    fn lyrics_file_name_rejects_empty_lang() {
         assert!(matches!(
             "lyrics..srt".parse::<LyricsFileName>(),
             Err(ParseLyricsFileNameError::MissingLanguageCode)
@@ -356,7 +356,7 @@ mod tests {
     }
 
     #[test]
-    fn lyrics_filename_rejects_unknown_lang() {
+    fn lyrics_file_name_rejects_unknown_lang() {
         assert!(matches!(
             "lyrics.ja.srt".parse::<LyricsFileName>(),
             Err(ParseLyricsFileNameError::UnrecognizedLanguage(_))

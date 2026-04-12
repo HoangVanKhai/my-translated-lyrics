@@ -66,7 +66,7 @@ fn data_and_drafts_have_flat_structure() {
 
 /// Subtitle files in `data/` must be named `lyrics.{lang}.{ext}`.
 #[test]
-fn data_subtitle_filenames_are_canonical() {
+fn data_subtitle_file_names_are_canonical() {
     let data_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("data");
 
     let entries = data_dir
