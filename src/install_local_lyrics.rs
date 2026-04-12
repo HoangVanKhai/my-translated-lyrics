@@ -190,7 +190,7 @@ pub fn main() {
             let Some((lang, ext)) = suffix.rsplit_once('.') else {
                 continue;
             };
-            if !matches!(ext, "srt" | "vtt") {
+            if ext != "srt" && ext != "vtt" {
                 continue;
             }
             if lang.parse::<Language>().is_err() {
