@@ -139,6 +139,8 @@ pub(crate) struct LyricsFileName {
 }
 
 impl LyricsFileName {
+    /// Combines with a video title to produce the target subtitle
+    /// file name: `{video}.{language}.{format}`.
     pub(crate) fn target_file_name<'a>(
         &'a self,
         video: &'a VideoTitle,
