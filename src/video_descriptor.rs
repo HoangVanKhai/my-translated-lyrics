@@ -3,7 +3,8 @@ use pipe_trait::Pipe;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::path::{Component, Path};
-use strum::EnumString;
+use std::str::FromStr;
+use strum::{AsRefStr, EnumString};
 
 pub(crate) const SEPARATED_COLLECTIONS: &[&str] = &[
     "Feng Ling Yu Xiu",
@@ -95,7 +96,7 @@ pub(crate) enum ParseVideoTitleError {
     NotSingleComponent,
 }
 
-#[derive(Debug, PartialEq, Eq, Hash, EnumString, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Hash, AsRefStr, EnumString, Deserialize)]
 #[serde(try_from = "String")]
 pub(crate) enum Language {
     #[strum(serialize = "en")]
@@ -133,16 +134,17 @@ pub(crate) enum Visibility {
 
 /// A validated subtitle filename in the `lyrics.{lang}.{srt|vtt}` format.
 pub(crate) struct LyricsFileName {
-    suffix: String,
+    language: Language,
+    extension: SubtitleExtension,
 }
 
 impl LyricsFileName {
-    pub(crate) fn suffix(&self) -> &str {
-        &self.suffix
+    pub(crate) fn suffix(&self) -> String {
+        format!("{}.{}", self.language.as_ref(), self.extension.as_ref())
     }
 }
 
-impl std::str::FromStr for LyricsFileName {
+impl FromStr for LyricsFileName {
     type Err = ParseLyricsFileNameError;
 
     fn from_str(filename: &str) -> Result<Self, Self::Err> {
@@ -152,14 +154,33 @@ impl std::str::FromStr for LyricsFileName {
         let Some((lang, ext)) = suffix.rsplit_once('.') else {
             return Err(ParseLyricsFileNameError::UnsupportedExtension);
         };
-        if ext != "srt" && ext != "vtt" {
-            return Err(ParseLyricsFileNameError::UnsupportedExtension);
-        }
-        lang.parse::<Language>()
+        let extension = match ext {
+            "srt" => SubtitleExtension::Srt,
+            "vtt" => SubtitleExtension::Vtt,
+            _ => return Err(ParseLyricsFileNameError::UnsupportedExtension),
+        };
+        let language = lang
+            .parse::<Language>()
             .map_err(ParseLyricsFileNameError::UnrecognizedLanguage)?;
         Ok(Self {
-            suffix: suffix.to_owned(),
+            language,
+            extension,
         })
+    }
+}
+
+#[derive(Clone, Copy)]
+enum SubtitleExtension {
+    Srt,
+    Vtt,
+}
+
+impl AsRef<str> for SubtitleExtension {
+    fn as_ref(&self) -> &str {
+        match self {
+            Self::Srt => "srt",
+            Self::Vtt => "vtt",
+        }
     }
 }
 
