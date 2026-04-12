@@ -192,7 +192,11 @@ pub fn main() {
                         dir = video_dir.display(),
                     );
                 }
-                Err(_) => continue,
+                Err(
+                    ParseLyricsFileNameError::NotLyricsFile
+                    | ParseLyricsFileNameError::MissingLanguageCode
+                    | ParseLyricsFileNameError::UnsupportedFormat(_),
+                ) => continue,
             };
             let target_name = lyrics.target_file_name(&desc.video_title).to_string();
 

@@ -1,10 +1,11 @@
 use derive_more::{AsRef, Deref, Display, Error, Into};
+use itertools::Itertools;
 use pipe_trait::Pipe;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::path::{Component, Path};
 use std::str::FromStr;
-use strum::{AsRefStr, EnumString};
+use strum::{AsRefStr, EnumIter, EnumString, IntoEnumIterator};
 
 pub(crate) const SEPARATED_COLLECTIONS: &[&str] = &[
     "Feng Ling Yu Xiu",
@@ -49,7 +50,7 @@ impl TryFrom<String> for CollectionName {
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         if SEPARATED_COLLECTIONS.contains(&value.as_str()) {
-            Ok(Self(value))
+            Ok(CollectionName(value))
         } else {
             Err(ParseCollectionNameError::UnknownCollection(value))
         }
@@ -82,7 +83,7 @@ impl TryFrom<String> for VideoTitle {
         }
         let mut components = value.pipe_ref(Path::new).components();
         match (components.next(), components.next()) {
-            (Some(Component::Normal(_)), None) => Ok(Self(value)),
+            (Some(Component::Normal(_)), None) => Ok(VideoTitle(value)),
             _ => Err(ParseVideoTitleError::NotSingleComponent),
         }
     }
@@ -165,7 +166,10 @@ impl FromStr for LyricsFileName {
         };
         let format = extension
             .parse::<SubtitleFormat>()
-            .map_err(|_| ParseLyricsFileNameError::UnsupportedFormat)?;
+            .map_err(drop::<strum::ParseError>)
+            .map_err(|()| extension)
+            .map_err(<str>::to_string)
+            .map_err(ParseLyricsFileNameError::UnsupportedFormat)?;
         if language.is_empty() {
             return Err(ParseLyricsFileNameError::MissingLanguageCode);
         }
@@ -175,11 +179,11 @@ impl FromStr for LyricsFileName {
             .map_err(|()| language)
             .map_err(<str>::to_string)
             .map_err(ParseLyricsFileNameError::UnrecognizedLanguage)?;
-        Ok(Self { language, format })
+        Ok(LyricsFileName { language, format })
     }
 }
 
-#[derive(strum::Display, Clone, Copy, AsRefStr, EnumString)]
+#[derive(strum::Display, Clone, Copy, AsRefStr, EnumIter, EnumString)]
 enum SubtitleFormat {
     #[strum(serialize = "srt")]
     SubRip,
@@ -187,17 +191,38 @@ enum SubtitleFormat {
     WebVtt,
 }
 
-#[derive(Debug, Display, Error)]
+#[derive(Debug, Error)]
 #[non_exhaustive]
 pub(crate) enum ParseLyricsFileNameError {
-    #[display("filename does not start with \"lyrics.\"")]
     NotLyricsFile,
-    #[display("missing language code in lyrics filename")]
     MissingLanguageCode,
-    #[display("unsupported subtitle format (expected srt or vtt)")]
-    UnsupportedFormat,
-    #[display("unrecognized language code: {_0:?}")]
+    UnsupportedFormat(#[error(not(source))] String),
     UnrecognizedLanguage(#[error(not(source))] String),
+}
+
+impl std::fmt::Display for ParseLyricsFileNameError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ParseLyricsFileNameError::NotLyricsFile => {
+                f.write_str("filename does not start with \"lyrics.\"")
+            }
+            ParseLyricsFileNameError::MissingLanguageCode => {
+                f.write_str("missing language code in lyrics filename")
+            }
+            ParseLyricsFileNameError::UnsupportedFormat(extension) => {
+                let expected = SubtitleFormat::iter()
+                    .map(|format| format.to_string())
+                    .join(", ");
+                write!(
+                    f,
+                    "unsupported subtitle format: {extension:?} (expected one of {expected})"
+                )
+            }
+            ParseLyricsFileNameError::UnrecognizedLanguage(language) => {
+                write!(f, "unrecognized language code: {language:?}")
+            }
+        }
+    }
 }
 
 #[derive(Display)]
@@ -337,7 +362,7 @@ mod tests {
     fn lyrics_file_name_rejects_bad_extension() {
         assert!(matches!(
             "lyrics.vi.txt".parse::<LyricsFileName>(),
-            Err(ParseLyricsFileNameError::UnsupportedFormat)
+            Err(ParseLyricsFileNameError::UnsupportedFormat(_))
         ));
     }
 
