@@ -193,8 +193,8 @@ pub fn main() {
             if ext != "srt" && ext != "vtt" {
                 continue;
             }
-            if lang.parse::<Language>().is_err() {
-                continue;
+            if let Err(error) = lang.parse::<Language>() {
+                panic!("error: Unrecognized language code {lang:?} in {video_dir:?}: {error}");
             }
             let target_name = format!("{}.{suffix}", desc.video_title);
 
