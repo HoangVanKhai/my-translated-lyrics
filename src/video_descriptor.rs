@@ -146,12 +146,12 @@ mod tests {
 
     #[test]
     fn collection_name_rejects_unknown_value() {
-        assert!(
+        assert!(matches!(
             "Unknown Collection"
                 .to_string()
-                .pipe(CollectionName::try_from)
-                .is_err()
-        );
+                .pipe(CollectionName::try_from),
+            Err(ParseCollectionNameError::UnknownCollection(_))
+        ));
     }
 
     #[test]
