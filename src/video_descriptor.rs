@@ -102,7 +102,7 @@ pub(crate) enum ParseVideoTitleError {
 
 #[derive(Debug, strum::Display, PartialEq, Eq, Hash, AsRefStr, EnumString, Deserialize)]
 #[serde(try_from = "String")]
-pub(crate) enum Language {
+pub enum Language {
     #[strum(serialize = "en")]
     English,
     #[strum(serialize = "vi")]

@@ -1,3 +1,4 @@
+use my_translated_lyrics::video_descriptor::Language;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::collections::BTreeMap;
@@ -31,10 +32,7 @@ fn subtitle_group_key(path: &Path) -> Option<String> {
             && let Some(dot_pos) = without_format.rfind('.')
         {
             let language = &without_format[dot_pos + 1..];
-            if !language.is_empty()
-                && language.len() <= 5
-                && language.chars().all(|c| c.is_ascii_lowercase())
-            {
+            if language.parse::<Language>().is_ok() {
                 let stem = &without_format[..dot_pos];
                 return Some(format!("{stem}::{format}"));
             }
