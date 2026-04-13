@@ -15,7 +15,7 @@ use std::process::Command;
 
 const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
 
-/// Temporary directory that would be clean up on drop.
+/// Temporary directory that will be cleaned up on drop.
 #[derive(Debug, AsRef, Deref)]
 #[as_ref(forward)]
 #[deref(forward)]
