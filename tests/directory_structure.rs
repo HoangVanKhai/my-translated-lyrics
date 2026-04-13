@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use my_translated_lyrics::video_descriptor::LyricsFileName;
+use my_translated_lyrics::video_descriptor::{LyricsFileName, ParseLyricsFileNameError};
 use pipe_trait::Pipe;
 use std::fs;
 use std::fs::DirEntry;
@@ -96,13 +96,11 @@ fn data_subtitle_file_names_are_canonical() {
             let name = inner_entry.file_name();
             let name = name.to_str().expect("path isn't valid UTF-8");
 
-            if !name.ends_with(".srt") && !name.ends_with(".vtt") {
-                continue;
+            match name.parse::<LyricsFileName>() {
+                Ok(_) => {}
+                Err(ParseLyricsFileNameError::NotLyricsFile) => continue,
+                Err(error) => panic!("data/{song_name}/{name}: {error}"),
             }
-
-            name.parse::<LyricsFileName>().unwrap_or_else(|error| {
-                panic!("data/{song_name}/{name}: {error}");
-            });
         }
     }
 }
