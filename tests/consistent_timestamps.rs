@@ -7,7 +7,8 @@ use std::path::{Path, PathBuf};
 
 /// Collects all recognized lyrics files (`lyrics.{lang}.{srt,vtt}`) from the
 /// song subdirectories of `data_dir`.
-fn collect_lyrics_files(files: &mut Vec<PathBuf>, data_dir: &Path) {
+fn collect_lyrics_files(data_dir: &Path) -> Vec<PathBuf> {
+    let mut files = Vec::new();
     for entry in read_dir(data_dir).unwrap() {
         let song_dir = entry.unwrap().path();
         if !song_dir.is_dir() {
@@ -25,6 +26,8 @@ fn collect_lyrics_files(files: &mut Vec<PathBuf>, data_dir: &Path) {
             }
         }
     }
+    files.sort();
+    files
 }
 
 /// Returns a grouping key that is shared by all language variants of the same
@@ -61,10 +64,7 @@ fn extract_timestamps(content: &str) -> Vec<&str> {
 #[test]
 fn file_timestamps_match() {
     let data_dir = env!("CARGO_MANIFEST_DIR").pipe(Path::new).join("data");
-
-    let mut files = Vec::new();
-    collect_lyrics_files(&mut files, &data_dir);
-    files.sort();
+    let files = collect_lyrics_files(&data_dir);
 
     // Group files by (stem, format) so that language variants share a key.
     let mut groups: BTreeMap<String, Vec<PathBuf>> = BTreeMap::new();
