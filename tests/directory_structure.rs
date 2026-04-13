@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use my_translated_lyrics::video_descriptor::LyricsFileName;
 use pipe_trait::Pipe;
 use std::fs;
 use std::fs::DirEntry;
@@ -99,18 +100,9 @@ fn data_subtitle_file_names_are_canonical() {
                 continue;
             }
 
-            let is_valid = name
-                .strip_prefix("lyrics.")
-                .and_then(|rest| {
-                    rest.strip_suffix(".srt")
-                        .or_else(|| rest.strip_suffix(".vtt"))
-                })
-                .is_some_and(|language| matches!(language, "en" | "vi" | "zh"));
-
-            assert!(
-                is_valid,
-                "data/{song_name}/{name} must match lyrics.{{lang}}.{{ext}}",
-            );
+            name.parse::<LyricsFileName>().unwrap_or_else(|error| {
+                panic!("data/{song_name}/{name}: {error}");
+            });
         }
     }
 }
