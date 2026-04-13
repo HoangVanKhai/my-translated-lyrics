@@ -1,46 +1,48 @@
+use itertools::Itertools;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::collections::BTreeMap;
-use std::fs::{read_dir, read_to_string};
+use std::fs::{DirEntry, ReadDir, read_dir, read_to_string};
 use std::path::{Path, PathBuf};
+use translated_lyrics::video_descriptor::LyricsFileName;
 
-fn collect_subtitle_files(files: &mut Vec<PathBuf>, data_dir: &Path) {
-    for entry in read_dir(data_dir).unwrap() {
-        let song_dir = entry.unwrap().path();
-        if !song_dir.is_dir() {
-            continue;
-        }
-        for entry in read_dir(&song_dir).unwrap() {
-            let path = entry.unwrap().path();
-            let path_str = path.to_str().expect("path isn't valid UTF-8");
-            if path_str.ends_with(".srt") || path_str.ends_with(".vtt") {
-                files.push(path);
-            }
-        }
-    }
+/// Collects all recognized lyrics files from the
+/// song subdirectories of `data_dir`.
+fn collect_lyrics_files(data_dir: &Path) -> Vec<PathBuf> {
+    data_dir
+        .pipe(read_dir)
+        .unwrap()
+        .map(Result::<DirEntry, _>::unwrap)
+        .map(|entry| entry.path())
+        .filter(|song_dir| song_dir.is_dir())
+        .map(read_dir)
+        .flat_map(Result::<ReadDir, _>::unwrap)
+        .map(Result::<DirEntry, _>::unwrap)
+        .map(|entry| entry.path())
+        .filter(|path| {
+            path.file_name()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .parse::<LyricsFileName>()
+                .is_ok()
+        })
+        .sorted()
+        .collect()
 }
 
 /// Returns a grouping key that is shared by all language variants of the same
 /// subtitle file (e.g. `.../{song_dir}/lyrics.{lang}.srt`). The language component
 /// is stripped so that different translations map to the same key.
-fn subtitle_group_key(path: &Path) -> Option<String> {
-    let path = path.to_str().expect("path isn't valid UTF-8");
-    for format in ["srt", "vtt"] {
-        let suffix = format!(".{format}");
-        if let Some(without_format) = path.strip_suffix(&suffix)
-            && let Some(dot_pos) = without_format.rfind('.')
-        {
-            let language = &without_format[dot_pos + 1..];
-            if !language.is_empty()
-                && language.len() <= 5
-                && language.chars().all(|c| c.is_ascii_lowercase())
-            {
-                let stem = &without_format[..dot_pos];
-                return Some(format!("{stem}::{format}"));
-            }
-        }
-    }
-    None
+fn subtitle_group_key(path: &Path) -> String {
+    let format = path.extension().unwrap().to_str().unwrap();
+    let path_str = path.to_str().unwrap();
+    let (stem, _) = path_str
+        .strip_suffix(&format!(".{format}"))
+        .unwrap()
+        .rsplit_once('.')
+        .unwrap();
+    format!("{stem}::{format}")
 }
 
 fn extract_timestamps(content: &str) -> Vec<&str> {
@@ -53,17 +55,13 @@ fn extract_timestamps(content: &str) -> Vec<&str> {
 #[test]
 fn file_timestamps_match() {
     let data_dir = env!("CARGO_MANIFEST_DIR").pipe(Path::new).join("data");
-
-    let mut files = Vec::new();
-    collect_subtitle_files(&mut files, &data_dir);
-    files.sort();
+    let files = collect_lyrics_files(&data_dir);
 
     // Group files by (stem, format) so that language variants share a key.
     let mut groups: BTreeMap<String, Vec<PathBuf>> = BTreeMap::new();
     for path in files {
-        if let Some(key) = subtitle_group_key(&path) {
-            groups.entry(key).or_default().push(path);
-        }
+        let key = subtitle_group_key(&path);
+        groups.entry(key).or_default().push(path);
     }
 
     assert!(
@@ -80,11 +78,7 @@ fn file_timestamps_match() {
         let contents: Vec<_> = paths
             .iter()
             .map(|path| {
-                let name = path
-                    .file_name()
-                    .unwrap()
-                    .to_str()
-                    .expect("path isn't valid UTF-8");
+                let name = path.file_name().unwrap().to_str().unwrap();
                 let content = path
                     .pipe(read_to_string)
                     .unwrap_or_else(|err| panic!("failed to read {}: {err}", path.display()));
