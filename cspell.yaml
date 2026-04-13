@@ -4,6 +4,7 @@ words:
   - Tianyi
   - Touhou
   - transciptor
+  - WEBVTT
   - Yuezheng
 ignorePaths:
   # because of a bug in overrides.filename,
