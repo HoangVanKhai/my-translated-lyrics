@@ -26,7 +26,7 @@ fn dry_run_does_not_create_files() {
 
     assert!(
         stderr.contains("No changes were actually made"),
-        "expected dry-run message in stderr:\n{stderr}",
+        "expected dry-run message in stderr",
     );
     assert!(
         workspace.target_subtitle_files().is_empty(),

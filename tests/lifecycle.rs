@@ -84,15 +84,15 @@ fn skips_up_to_date_files() {
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
         stderr.contains("0 files would be removed from the target location"),
-        "expected 0 removals:\n{stderr}",
+        "expected 0 removals",
     );
     assert!(
         stderr.contains("0 files would be added to the target location"),
-        "expected 0 additions:\n{stderr}",
+        "expected 0 additions",
     );
     assert!(
         stderr.contains("0 files in the target location would be updated"),
-        "expected 0 updates:\n{stderr}",
+        "expected 0 updates",
     );
 }
 
