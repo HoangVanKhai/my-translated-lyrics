@@ -168,9 +168,9 @@ pub fn video_desc(collection_name: &str, video_title: &str, visibility: Visibili
 
 pub fn expected_stderr(
     existing_count: usize,
-    removes: &[&PathBuf],
-    installs: &[(&PathBuf, &PathBuf)],
-    updates: &[(&PathBuf, &PathBuf)],
+    removes: &[PathBuf],
+    installs: &[(PathBuf, PathBuf)],
+    updates: &[(PathBuf, PathBuf)],
     dry_run: bool,
 ) -> String {
     use std::fmt::Write;

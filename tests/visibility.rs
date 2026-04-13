@@ -25,12 +25,12 @@ fn hidden_visibility_causes_removal() {
     );
 
     let output = env.run(["--execute"]);
-    assert_eq!(
-        String::from_utf8_lossy(&output.stderr),
-        expected_stderr(2, &[&separated, &unified], &[], &[], false),
-    );
     assert!(!separated.exists());
     assert!(!unified.exists());
+    assert_eq!(
+        String::from_utf8_lossy(&output.stderr),
+        expected_stderr(2, &[separated, unified], &[], &[], false),
+    );
 }
 
 #[test]
@@ -52,12 +52,12 @@ fn dry_run_does_not_remove_hidden_files() {
     );
 
     let output = env.run([]);
-    assert_eq!(
-        String::from_utf8_lossy(&output.stderr),
-        expected_stderr(2, &[&separated, &unified], &[], &[], true),
-    );
     assert!(separated.exists());
     assert!(unified.exists());
+    assert_eq!(
+        String::from_utf8_lossy(&output.stderr),
+        expected_stderr(2, &[separated, unified], &[], &[], true),
+    );
 }
 
 #[test]
@@ -81,12 +81,12 @@ fn manual_visibility_preserves_existing_files() {
     );
 
     let output = env.run(["--execute"]);
+    assert_eq!(separated.pipe_ref(read_to_string).unwrap(), manual_content);
+    assert_eq!(unified.pipe_ref(read_to_string).unwrap(), manual_content);
     assert_eq!(
         String::from_utf8_lossy(&output.stderr),
         expected_stderr(2, &[], &[], &[], false),
     );
-    assert_eq!(separated.pipe_ref(read_to_string).unwrap(), manual_content);
-    assert_eq!(unified.pipe_ref(read_to_string).unwrap(), manual_content);
 }
 
 #[test]
@@ -110,10 +110,10 @@ fn dry_run_manual_visibility_preserves_existing_files() {
     );
 
     let output = env.run([]);
+    assert_eq!(separated.pipe_ref(read_to_string).unwrap(), manual_content);
+    assert_eq!(unified.pipe_ref(read_to_string).unwrap(), manual_content);
     assert_eq!(
         String::from_utf8_lossy(&output.stderr),
         expected_stderr(2, &[], &[], &[], true),
     );
-    assert_eq!(separated.pipe_ref(read_to_string).unwrap(), manual_content);
-    assert_eq!(unified.pipe_ref(read_to_string).unwrap(), manual_content);
 }

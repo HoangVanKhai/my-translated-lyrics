@@ -47,10 +47,10 @@ fn installs_subtitles_to_separated_and_unified_collections() {
             0,
             &[],
             &[
-                (&source_srt, &sep_srt),
-                (&source_srt, &uni_srt),
-                (&source_vtt, &sep_vtt),
-                (&source_vtt, &uni_vtt),
+                (source_srt.clone(), sep_srt),
+                (source_srt, uni_srt),
+                (source_vtt.clone(), sep_vtt),
+                (source_vtt, uni_vtt),
             ],
             &[],
             false,
@@ -105,16 +105,23 @@ fn dry_run_does_not_install_subtitles() {
     let output = env.run([]);
 
     let source_srt = env.source.join("ExampleSong").join("lyrics.vi.srt");
-    let sep = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
-    let uni = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
     assert_eq!(
         String::from_utf8_lossy(&output.stderr),
         expected_stderr(
             0,
             &[],
-            &[(&source_srt, &sep), (&source_srt, &uni)],
+            &[
+                (
+                    source_srt.clone(),
+                    env.target_path(collection_name, &format!("{video_title}.vi.srt")),
+                ),
+                (
+                    source_srt,
+                    env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
+                ),
+            ],
             &[],
-            true
+            true,
         ),
     );
     assert!(env.target_subtitle_files().is_empty());
@@ -184,16 +191,23 @@ fn updates_modified_source_files() {
 
     let output = env.run(["--execute"]);
 
-    let sep = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
-    let uni = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
     assert_eq!(
         String::from_utf8_lossy(&output.stderr),
         expected_stderr(
             2,
             &[],
             &[],
-            &[(&source_file, &sep), (&source_file, &uni)],
-            false
+            &[
+                (
+                    source_file.clone(),
+                    env.target_path(collection_name, &format!("{video_title}.vi.srt")),
+                ),
+                (
+                    source_file,
+                    env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
+                ),
+            ],
+            false,
         ),
     );
     assert_eq!(
@@ -240,16 +254,23 @@ fn dry_run_does_not_update_modified_source_files() {
 
     let output = env.run([]);
 
-    let sep = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
-    let uni = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
     assert_eq!(
         String::from_utf8_lossy(&output.stderr),
         expected_stderr(
             2,
             &[],
             &[],
-            &[(&source_file, &sep), (&source_file, &uni)],
-            true
+            &[
+                (
+                    source_file.clone(),
+                    env.target_path(collection_name, &format!("{video_title}.vi.srt")),
+                ),
+                (
+                    source_file,
+                    env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
+                ),
+            ],
+            true,
         ),
     );
     assert_eq!(
@@ -271,11 +292,11 @@ fn removes_orphaned_target_files() {
     write_file(&orphaned, "orphaned content").unwrap();
 
     let output = env.run(["--execute"]);
+    assert!(!orphaned.exists());
     assert_eq!(
         String::from_utf8_lossy(&output.stderr),
-        expected_stderr(1, &[&orphaned], &[], &[], false),
+        expected_stderr(1, &[orphaned], &[], &[], false),
     );
-    assert!(!orphaned.exists());
 }
 
 #[test]
@@ -287,9 +308,9 @@ fn dry_run_does_not_remove_orphaned_target_files() {
     write_file(&orphaned, "orphaned content").unwrap();
 
     let output = env.run([]);
+    assert!(orphaned.exists());
     assert_eq!(
         String::from_utf8_lossy(&output.stderr),
-        expected_stderr(1, &[&orphaned], &[], &[], true),
+        expected_stderr(1, &[orphaned], &[], &[], true),
     );
-    assert!(orphaned.exists());
 }
