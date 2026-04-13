@@ -99,6 +99,11 @@ impl Workspace {
             .with_arg(&self.target)
             .output()
             .expect("failed to spawn install-local-lyrics");
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let stdout = stdout.trim();
+        if !stdout.is_empty() {
+            eprintln!("STDOUT:\n{stdout}\n");
+        }
         let stderr = String::from_utf8_lossy(&output.stderr);
         let stderr = stderr.trim();
         if !stderr.is_empty() {
