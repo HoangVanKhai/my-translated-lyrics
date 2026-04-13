@@ -1,4 +1,3 @@
-use crate::args::Args;
 use crate::file_snapshot::FileSnapshot;
 use crate::video_descriptor::{
     LyricsFileName, ParseLyricsFileNameError, SEPARATED_COLLECTIONS, UNIFIED_COLLECTION,
@@ -14,6 +13,20 @@ use std::io::{self, ErrorKind};
 use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
+
+#[derive(Debug, Clone, Parser)]
+#[clap(about = "Synchronize the lyrics")]
+struct Args {
+    /// For safety reasons, this programs list actions by default, this flag makes the program take those actions.
+    #[clap(long, short = 'x')]
+    execute: bool,
+
+    /// Source directory of the subtitles.
+    source: PathBuf,
+
+    /// Container of the target directories of the subtitles.
+    target: PathBuf,
+}
 
 /// Try hardlink, then try reflink, and finally copy.
 fn link_or_copy(source: &Path, target: &Path) -> io::Result<()> {
