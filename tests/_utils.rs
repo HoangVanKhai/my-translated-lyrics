@@ -24,14 +24,19 @@ pub struct Temp(PathBuf);
 impl Temp {
     /// Create a temporary directory.
     pub fn new_dir() -> Self {
-        let path = rng()
-            .sample_iter(&Alphanumeric)
-            .take(15)
-            .map(char::from)
-            .collect::<String>()
-            .pipe(|name| temp_dir().join(name));
-        create_dir(&path).unwrap_or_else(|error| panic!("failed to create {path:?}: {error}"));
-        Temp(path)
+        loop {
+            let path = rng()
+                .sample_iter(&Alphanumeric)
+                .take(15)
+                .map(char::from)
+                .collect::<String>()
+                .pipe(|name| temp_dir().join(name));
+            if path.exists() {
+                continue;
+            }
+            create_dir(&path).unwrap_or_else(|error| panic!("failed to create {path:?}: {error}"));
+            return Temp(path);
+        }
     }
 }
 
