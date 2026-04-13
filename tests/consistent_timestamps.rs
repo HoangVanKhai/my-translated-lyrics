@@ -37,12 +37,11 @@ fn subtitle_group_key(path: &Path) -> String {
         .to_str()
         .expect("extension isn't valid UTF-8");
     let path_str = path.to_str().expect("path isn't valid UTF-8");
-    let stem = path_str
+    let (stem, _) = path_str
         .strip_suffix(&format!(".{format}"))
         .unwrap()
         .rsplit_once('.')
-        .unwrap()
-        .0;
+        .unwrap();
     format!("{stem}::{format}")
 }
 
