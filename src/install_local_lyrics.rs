@@ -122,15 +122,13 @@ pub fn main() {
         .copied()
         .chain(once(UNIFIED_COLLECTION))
         .map(|suffix| target.join(suffix))
-        .flat_map(|path| {
-            let path_for_err = path.clone();
-            read_dir(path)
-                .unwrap_or_else(|error| {
-                    panic!("error: Cannot read directory {path_for_err:?}: {error}")
-                })
+        .flat_map(|ref path| {
+            let path_str = format!("{path:?}");
+            path.pipe(read_dir)
+                .unwrap_or_else(|error| panic!("error: Cannot read directory {path_str}: {error}"))
                 .map(move |entry| {
                     entry.unwrap_or_else(|error| {
-                        panic!("error: Cannot read an entry of directory {path_for_err:?}: {error}")
+                        panic!("error: Cannot read an entry of directory {path_str}: {error}")
                     })
                 })
                 .filter(is_subtitle_file)
