@@ -3,9 +3,11 @@ pub use _utils::*;
 
 use command_extra::CommandExtra;
 use itertools::Itertools;
+use maplit::hashmap;
 use my_translated_lyrics::video_descriptor::{
     Language, SEPARATED_COLLECTIONS, UNIFIED_COLLECTION, VideoDesc, Visibility,
 };
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::fs::{
     create_dir, create_dir_all, read_dir, read_to_string, remove_file, write as write_file,
@@ -34,13 +36,13 @@ impl Workspace {
         let target = temp.join("target");
         create_dir(&source).unwrap();
         create_dir(&target).unwrap();
-        for name in SEPARATED_COLLECTIONS
+        SEPARATED_COLLECTIONS
             .iter()
             .copied()
             .chain(once(UNIFIED_COLLECTION))
-        {
-            create_dir_all(target.join(name)).unwrap();
-        }
+            .map(|name| target.join(name))
+            .try_for_each(create_dir_all)
+            .unwrap();
         Workspace {
             _temp: temp,
             source,
@@ -69,11 +71,12 @@ impl Workspace {
             .with_arg(&self.target)
             .output()
             .expect("failed to spawn install-local-lyrics");
-        assert!(
-            output.status.success(),
-            "install-local-lyrics failed:\n{}",
-            String::from_utf8_lossy(&output.stderr),
-        );
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stderr = stderr.trim();
+        if !stderr.is_empty() {
+            eprintln!("STDERR:\n{stderr}\n");
+        }
+        assert!(output.status.success(), "install-local-lyrics failed");
         output
     }
 
@@ -85,14 +88,13 @@ impl Workspace {
             .copied()
             .chain(once(UNIFIED_COLLECTION))
             .flat_map(|name| {
-                read_dir(self.target.join(name))
+                self.target
+                    .join(name)
+                    .pipe(read_dir)
                     .unwrap()
                     .map(Result::unwrap)
                     .filter(|entry| entry.file_type().unwrap().is_file())
-                    .map(move |entry| {
-                        let file_name = entry.file_name();
-                        format!("{name}/{}", file_name.to_str().unwrap())
-                    })
+                    .map(move |entry| format!("{name}/{}", entry.file_name().to_str().unwrap()))
             })
             .sorted()
             .collect()
@@ -100,7 +102,11 @@ impl Workspace {
 
     /// Reads a target file's content.
     fn read_target(&self, collection: &str, file_name: &str) -> String {
-        read_to_string(self.target.join(collection).join(file_name)).unwrap()
+        self.target
+            .join(collection)
+            .join(file_name)
+            .pipe(read_to_string)
+            .unwrap()
     }
 
     /// Returns the path to a target file.
@@ -113,11 +119,10 @@ fn video_desc(collection: &str, video_title: &str, visibility: Visibility) -> Vi
     VideoDesc {
         collection: collection.to_string().try_into().unwrap(),
         video_title: video_title.to_string().try_into().unwrap(),
-        song_titles: [
-            (Language::Vietnamese, "test".to_string()),
-            (Language::Chinese, "test".to_string()),
-        ]
-        .into(),
+        song_titles: hashmap! {
+            Language::Vietnamese => "test".to_string(),
+            Language::Chinese => "test".to_string(),
+        },
         visibility,
     }
 }
@@ -125,9 +130,9 @@ fn video_desc(collection: &str, video_title: &str, visibility: Visibility) -> Vi
 #[test]
 fn dry_run_does_not_create_files() {
     let workspace = Workspace::new();
-    let desc = video_desc("Feng Ling Yu Xiu", "TestVideo", Visibility::default());
+    let desc = video_desc("Feng Ling Yu Xiu", "Example Song", Visibility::default());
     workspace.add_video(
-        "TestSong",
+        "ExampleSong",
         &desc,
         &[(
             "lyrics.vi.srt",
@@ -156,7 +161,7 @@ fn dry_run_does_not_create_files() {
 fn installs_subtitles_to_separated_and_unified_collections() {
     let workspace = Workspace::new();
     let collection = "Feng Ling Yu Xiu";
-    let video_title = "TestVideo";
+    let video_title = "Example Song";
     let desc = video_desc(collection, video_title, Visibility::default());
     let srt_content = text_block_fnl! {
         "1"
@@ -171,7 +176,7 @@ fn installs_subtitles_to_separated_and_unified_collections() {
     };
 
     workspace.add_video(
-        "TestSong",
+        "ExampleSong",
         &desc,
         &[
             ("lyrics.vi.srt", srt_content),
@@ -210,9 +215,9 @@ fn installs_subtitles_to_separated_and_unified_collections() {
 #[test]
 fn skips_up_to_date_files() {
     let workspace = Workspace::new();
-    let desc = video_desc("Feng Ling Yu Xiu", "TestVideo", Visibility::default());
+    let desc = video_desc("Feng Ling Yu Xiu", "Example Song", Visibility::default());
     workspace.add_video(
-        "TestSong",
+        "ExampleSong",
         &desc,
         &[(
             "lyrics.vi.srt",
@@ -246,7 +251,7 @@ fn skips_up_to_date_files() {
 fn updates_modified_source_files() {
     let workspace = Workspace::new();
     let collection = "Feng Ling Yu Xiu";
-    let video_title = "UpdateVideo";
+    let video_title = "Song Whose Subtitles Get Updated";
     let desc = video_desc(collection, video_title, Visibility::default());
     let original = text_block_fnl! {
         "1"
@@ -259,11 +264,18 @@ fn updates_modified_source_files() {
         "Updated"
     };
 
-    workspace.add_video("UpdateSong", &desc, &[("lyrics.vi.srt", original)]);
+    workspace.add_video(
+        "SongWhoseSubtitlesGetUpdated",
+        &desc,
+        &[("lyrics.vi.srt", original)],
+    );
     workspace.run(["--execute"]);
 
     // Break the hardlink by removing and recreating the source file
-    let source_file = workspace.source.join("UpdateSong").join("lyrics.vi.srt");
+    let source_file = workspace
+        .source
+        .join("SongWhoseSubtitlesGetUpdated")
+        .join("lyrics.vi.srt");
     remove_file(&source_file).unwrap();
     write_file(&source_file, updated).unwrap();
 
@@ -299,7 +311,7 @@ fn removes_orphaned_target_files() {
 fn hidden_visibility_causes_removal() {
     let workspace = Workspace::new();
     let collection = "Feng Ling Yu Xiu";
-    let video_title = "HiddenVideo";
+    let video_title = "Song Whose Subtitles Are Hidden";
     let desc = video_desc(collection, video_title, Visibility::Hidden);
 
     let separated = workspace.target_path(collection, &format!("{video_title}.vi.srt"));
@@ -308,7 +320,7 @@ fn hidden_visibility_causes_removal() {
     write_file(&unified, "old content").unwrap();
 
     workspace.add_video(
-        "HiddenSong",
+        "SongWhoseSubtitlesAreHidden",
         &desc,
         &[("lyrics.vi.srt", "new content that should not be installed")],
     );
@@ -317,11 +329,11 @@ fn hidden_visibility_causes_removal() {
 
     assert!(
         !separated.exists(),
-        "hidden video's separated file should be removed",
+        "hidden song's separated file should be removed",
     );
     assert!(
         !unified.exists(),
-        "hidden video's unified file should be removed",
+        "hidden song's unified file should be removed",
     );
 }
 
@@ -329,7 +341,7 @@ fn hidden_visibility_causes_removal() {
 fn manual_visibility_preserves_existing_files() {
     let workspace = Workspace::new();
     let collection = "Feng Ling Yu Xiu";
-    let video_title = "ManualVideo";
+    let video_title = "Song Whose Subtitles Are Manually Managed";
     let desc = video_desc(collection, video_title, Visibility::Manual);
     let manual_content = "manually edited content";
 
@@ -339,13 +351,13 @@ fn manual_visibility_preserves_existing_files() {
     write_file(&unified, manual_content).unwrap();
 
     workspace.add_video(
-        "ManualSong",
+        "SongWhoseSubtitlesAreManuallyManaged",
         &desc,
         &[("lyrics.vi.srt", "source content that should not overwrite")],
     );
 
     workspace.run(["--execute"]);
 
-    assert_eq!(read_to_string(&separated).unwrap(), manual_content);
-    assert_eq!(read_to_string(&unified).unwrap(), manual_content);
+    assert_eq!(separated.pipe_ref(read_to_string).unwrap(), manual_content);
+    assert_eq!(unified.pipe_ref(read_to_string).unwrap(), manual_content);
 }
