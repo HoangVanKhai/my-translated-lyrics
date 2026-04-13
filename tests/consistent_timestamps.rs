@@ -1,33 +1,34 @@
+use itertools::Itertools;
 use my_translated_lyrics::video_descriptor::LyricsFileName;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::collections::BTreeMap;
-use std::fs::{read_dir, read_to_string};
+use std::fs::{DirEntry, ReadDir, read_dir, read_to_string};
 use std::path::{Path, PathBuf};
 
 /// Collects all recognized lyrics files (`lyrics.{lang}.{srt,vtt}`) from the
 /// song subdirectories of `data_dir`.
 fn collect_lyrics_files(data_dir: &Path) -> Vec<PathBuf> {
-    let mut files = Vec::new();
-    for entry in read_dir(data_dir).unwrap() {
-        let song_dir = entry.unwrap().path();
-        if !song_dir.is_dir() {
-            continue;
-        }
-        for entry in read_dir(&song_dir).unwrap() {
-            let path = entry.unwrap().path();
-            let file_name = path
-                .file_name()
+    data_dir
+        .pipe(read_dir)
+        .unwrap()
+        .map(Result::<DirEntry, _>::unwrap)
+        .map(|entry| entry.path())
+        .filter(|song_dir| song_dir.is_dir())
+        .map(read_dir)
+        .flat_map(Result::<ReadDir, _>::unwrap)
+        .map(Result::<DirEntry, _>::unwrap)
+        .map(|entry| entry.path())
+        .filter(|path| {
+            path.file_name()
                 .unwrap()
                 .to_str()
-                .expect("path isn't valid UTF-8");
-            if file_name.parse::<LyricsFileName>().is_ok() {
-                files.push(path);
-            }
-        }
-    }
-    files.sort();
-    files
+                .expect("path isn't valid UTF-8")
+                .parse::<LyricsFileName>()
+                .is_ok()
+        })
+        .sorted()
+        .collect()
 }
 
 /// Returns a grouping key that is shared by all language variants of the same
