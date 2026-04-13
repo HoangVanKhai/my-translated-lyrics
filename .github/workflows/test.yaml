@@ -29,7 +29,7 @@ jobs:
         run: |
           installer=$(mktemp -d)/install-rustup
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > $installer
-          bash $installer --default-toolchain $(cat rust-toolchain) --component rustfmt clippy -y
+          bash $installer --default-toolchain $(cat rust-toolchain) --component rustfmt,clippy -y
 
       - name: Fmt
         run: cargo fmt -- --check
