@@ -1,4 +1,5 @@
 use derive_more::{AsRef, Deref};
+use my_translated_lyrics::video_descriptor::{SEPARATED_COLLECTIONS, UNIFIED_COLLECTION};
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::collections::BTreeSet;
@@ -9,13 +10,6 @@ use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
-
-const SEPARATED_COLLECTIONS: &[&str] = &[
-    "Feng Ling Yu Xiu",
-    "Luo Tianyi, Yuezheng Ling/洛天依_乐正绫",
-    "Touhou Hero of Ice Fairy",
-];
-const UNIFIED_COLLECTION: &str = "Short Relaxing Playlist 2025";
 
 static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
 

@@ -7,13 +7,13 @@ use std::path::{Component, Path};
 use std::str::FromStr;
 use strum::{AsRefStr, EnumString, VariantArray};
 
-pub(crate) const SEPARATED_COLLECTIONS: &[&str] = &[
+pub const SEPARATED_COLLECTIONS: &[&str] = &[
     "Feng Ling Yu Xiu",
     "Luo Tianyi, Yuezheng Ling/洛天依_乐正绫",
     "Touhou Hero of Ice Fairy",
 ];
 
-pub(crate) const UNIFIED_COLLECTION: &str = "Short Relaxing Playlist 2025";
+pub const UNIFIED_COLLECTION: &str = "Short Relaxing Playlist 2025";
 
 pub const VIDEO_CONFIG_FILE_NAME: &str = "video.toml";
 
