@@ -47,18 +47,19 @@ impl Drop for Temp {
     }
 }
 
-/// Test workspace with temporary source and target directories.
-pub struct Workspace {
+/// Test environment for `install-local-lyrics` with temporary
+/// source and target directories.
+pub struct InstallLocalLyricsEnv {
     _temp: Temp,
     pub source: PathBuf,
     pub target: PathBuf,
 }
 
-impl Workspace {
-    /// Creates a new workspace with empty source and target
+impl InstallLocalLyricsEnv {
+    /// Prepares a new environment with empty source and target
     /// directories. The target directory is pre-populated with the
     /// required collection subdirectories.
-    pub fn create() -> Self {
+    pub fn prepare() -> Self {
         let temp = Temp::new_dir();
         let source = temp.join("source");
         let target = temp.join("target");
@@ -71,15 +72,16 @@ impl Workspace {
             .map(|name| target.join(name))
             .try_for_each(create_dir_all)
             .unwrap();
-        Workspace {
+        InstallLocalLyricsEnv {
             _temp: temp,
             source,
             target,
         }
     }
 
-    /// Creates a video source directory with the given subtitle files.
-    pub fn add_video(&self, dir_name: &str, desc: &VideoDesc, lyrics: &[(&str, &str)]) {
+    /// Creates a source entry directory with a video descriptor and
+    /// the given subtitle files.
+    pub fn add_source_entry(&self, dir_name: &str, desc: &VideoDesc, lyrics: &[(&str, &str)]) {
         let video_dir = self.source.join(dir_name);
         create_dir_all(&video_dir).unwrap();
 
@@ -134,23 +136,23 @@ impl Workspace {
     }
 
     /// Reads a target file's content.
-    pub fn read_target(&self, collection: &str, file_name: &str) -> String {
+    pub fn read_target(&self, collection_name: &str, file_name: &str) -> String {
         self.target
-            .join(collection)
+            .join(collection_name)
             .join(file_name)
             .pipe(read_to_string)
             .unwrap()
     }
 
     /// Returns the path to a target file.
-    pub fn target_path(&self, collection: &str, file_name: &str) -> PathBuf {
-        self.target.join(collection).join(file_name)
+    pub fn target_path(&self, collection_name: &str, file_name: &str) -> PathBuf {
+        self.target.join(collection_name).join(file_name)
     }
 }
 
-pub fn video_desc(collection: &str, video_title: &str, visibility: Visibility) -> VideoDesc {
+pub fn video_desc(collection_name: &str, video_title: &str, visibility: Visibility) -> VideoDesc {
     VideoDesc {
-        collection: collection.to_string().try_into().unwrap(),
+        collection: collection_name.to_string().try_into().unwrap(),
         video_title: video_title.to_string().try_into().unwrap(),
         song_titles: hashmap! {
             Language::Vietnamese => "test".to_string(),

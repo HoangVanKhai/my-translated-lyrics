@@ -8,10 +8,10 @@ use text_block_macros::text_block_fnl;
 
 #[test]
 fn installs_subtitles_to_separated_and_unified_collections() {
-    let workspace = Workspace::create();
-    let collection = "Feng Ling Yu Xiu";
-    let video_title = "Example Song";
-    let desc = video_desc(collection, video_title, Visibility::default());
+    let env = InstallLocalLyricsEnv::prepare();
+    let collection_name = "Feng Ling Yu Xiu";
+    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let desc = video_desc(collection_name, video_title, Visibility::default());
     let srt_content = text_block_fnl! {
         "1"
         "00:00:01,000 --> 00:00:02,000"
@@ -24,7 +24,7 @@ fn installs_subtitles_to_separated_and_unified_collections() {
         "Hello"
     };
 
-    workspace.add_video(
+    env.add_source_entry(
         "ExampleSong",
         &desc,
         &[
@@ -33,39 +33,43 @@ fn installs_subtitles_to_separated_and_unified_collections() {
         ],
     );
 
-    workspace.run(["--execute"]);
+    env.run(["--execute"]);
 
     let expected = vec![
-        format!("{collection}/{video_title}.vi.srt"),
-        format!("{collection}/{video_title}.zh.vtt"),
+        format!("{collection_name}/{video_title}.vi.srt"),
+        format!("{collection_name}/{video_title}.zh.vtt"),
         format!("{UNIFIED_COLLECTION}/{video_title}.vi.srt"),
         format!("{UNIFIED_COLLECTION}/{video_title}.zh.vtt"),
     ];
-    assert_eq!(workspace.target_subtitle_files(), expected);
+    assert_eq!(env.target_subtitle_files(), expected);
 
     assert_eq!(
-        workspace.read_target(collection, &format!("{video_title}.vi.srt")),
+        env.read_target(collection_name, &format!("{video_title}.vi.srt")),
         srt_content,
     );
     assert_eq!(
-        workspace.read_target(collection, &format!("{video_title}.zh.vtt")),
+        env.read_target(collection_name, &format!("{video_title}.zh.vtt")),
         vtt_content,
     );
     assert_eq!(
-        workspace.read_target(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
+        env.read_target(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
         srt_content,
     );
     assert_eq!(
-        workspace.read_target(UNIFIED_COLLECTION, &format!("{video_title}.zh.vtt")),
+        env.read_target(UNIFIED_COLLECTION, &format!("{video_title}.zh.vtt")),
         vtt_content,
     );
 }
 
 #[test]
 fn skips_up_to_date_files() {
-    let workspace = Workspace::create();
-    let desc = video_desc("Feng Ling Yu Xiu", "Example Song", Visibility::default());
-    workspace.add_video(
+    let env = InstallLocalLyricsEnv::prepare();
+    let desc = video_desc(
+        "Feng Ling Yu Xiu",
+        "【示例表演者】《示例歌曲》Example Song [ExampleID]",
+        Visibility::default(),
+    );
+    env.add_source_entry(
         "ExampleSong",
         &desc,
         &[(
@@ -78,9 +82,9 @@ fn skips_up_to_date_files() {
         )],
     );
 
-    workspace.run(["--execute"]);
+    env.run(["--execute"]);
 
-    let output = workspace.run(["--execute"]);
+    let output = env.run(["--execute"]);
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
         stderr.contains("0 files would be removed from the target location"),
@@ -98,10 +102,10 @@ fn skips_up_to_date_files() {
 
 #[test]
 fn updates_modified_source_files() {
-    let workspace = Workspace::create();
-    let collection = "Feng Ling Yu Xiu";
-    let video_title = "Song Whose Subtitles Get Updated";
-    let desc = video_desc(collection, video_title, Visibility::default());
+    let env = InstallLocalLyricsEnv::prepare();
+    let collection_name = "Feng Ling Yu Xiu";
+    let video_title = "【示例表演者】示例歌(Example Song)——\"示例歌词\"【示例标签】 [ExampleID]";
+    let desc = video_desc(collection_name, video_title, Visibility::default());
     let original = text_block_fnl! {
         "1"
         "00:00:01,000 --> 00:00:02,000"
@@ -113,42 +117,42 @@ fn updates_modified_source_files() {
         "Updated"
     };
 
-    workspace.add_video(
+    env.add_source_entry(
         "SongWhoseSubtitlesGetUpdated",
         &desc,
         &[("lyrics.vi.srt", original)],
     );
-    workspace.run(["--execute"]);
+    env.run(["--execute"]);
 
     // Break the hardlink by removing and recreating the source file
-    let source_file = workspace
+    let source_file = env
         .source
         .join("SongWhoseSubtitlesGetUpdated")
         .join("lyrics.vi.srt");
     remove_file(&source_file).unwrap();
     write_file(&source_file, updated).unwrap();
 
-    workspace.run(["--execute"]);
+    env.run(["--execute"]);
 
     assert_eq!(
-        workspace.read_target(collection, &format!("{video_title}.vi.srt")),
+        env.read_target(collection_name, &format!("{video_title}.vi.srt")),
         updated,
     );
     assert_eq!(
-        workspace.read_target(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
+        env.read_target(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
         updated,
     );
 }
 
 #[test]
 fn removes_orphaned_target_files() {
-    let workspace = Workspace::create();
-    let collection = "Feng Ling Yu Xiu";
+    let env = InstallLocalLyricsEnv::prepare();
+    let collection_name = "Feng Ling Yu Xiu";
 
-    let orphaned = workspace.target_path(collection, "Orphaned.vi.srt");
+    let orphaned = env.target_path(collection_name, "Orphaned.vi.srt");
     write_file(&orphaned, "orphaned content").unwrap();
 
-    workspace.run(["--execute"]);
+    env.run(["--execute"]);
 
     assert!(
         !orphaned.exists(),

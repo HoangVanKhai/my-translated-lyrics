@@ -6,9 +6,13 @@ use text_block_macros::text_block_fnl;
 
 #[test]
 fn dry_run_does_not_create_files() {
-    let workspace = Workspace::create();
-    let desc = video_desc("Feng Ling Yu Xiu", "Example Song", Visibility::default());
-    workspace.add_video(
+    let env = InstallLocalLyricsEnv::prepare();
+    let desc = video_desc(
+        "Feng Ling Yu Xiu",
+        "【示例表演者】《示例歌曲》Example Song [ExampleID]",
+        Visibility::default(),
+    );
+    env.add_source_entry(
         "ExampleSong",
         &desc,
         &[(
@@ -21,7 +25,7 @@ fn dry_run_does_not_create_files() {
         )],
     );
 
-    let output = workspace.run(None::<&str>);
+    let output = env.run(None::<&str>);
     let stderr = String::from_utf8_lossy(&output.stderr);
 
     assert!(
@@ -29,7 +33,7 @@ fn dry_run_does_not_create_files() {
         "expected dry-run message in stderr",
     );
     assert!(
-        workspace.target_subtitle_files().is_empty(),
+        env.target_subtitle_files().is_empty(),
         "dry run should not create any files",
     );
 }
