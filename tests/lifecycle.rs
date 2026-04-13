@@ -33,7 +33,29 @@ fn installs_subtitles_to_separated_and_unified_collections() {
         ],
     );
 
-    env.run(["--execute"]);
+    let output = env.run(["--execute"]);
+
+    let source_srt = env.source.join("ExampleSong").join("lyrics.vi.srt");
+    let source_vtt = env.source.join("ExampleSong").join("lyrics.zh.vtt");
+    let sep_srt = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
+    let sep_vtt = env.target_path(collection_name, &format!("{video_title}.zh.vtt"));
+    let uni_srt = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
+    let uni_vtt = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.zh.vtt"));
+    assert_eq!(
+        String::from_utf8_lossy(&output.stderr),
+        expected_stderr(
+            0,
+            &[],
+            &[
+                (&source_srt, &sep_srt),
+                (&source_srt, &uni_srt),
+                (&source_vtt, &sep_vtt),
+                (&source_vtt, &uni_vtt),
+            ],
+            &[],
+            false,
+        ),
+    );
 
     let expected = vec![
         format!("{collection_name}/{video_title}.vi.srt"),
@@ -64,11 +86,9 @@ fn installs_subtitles_to_separated_and_unified_collections() {
 #[test]
 fn dry_run_does_not_install_subtitles() {
     let env = InstallLocalLyricsEnv::prepare();
-    let desc = video_desc(
-        "Feng Ling Yu Xiu",
-        "【示例表演者】《示例歌曲》Example Song [ExampleID]",
-        Visibility::default(),
-    );
+    let collection_name = "Feng Ling Yu Xiu";
+    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let desc = video_desc(collection_name, video_title, Visibility::default());
     env.add_source_entry(
         "ExampleSong",
         &desc,
@@ -82,8 +102,21 @@ fn dry_run_does_not_install_subtitles() {
         )],
     );
 
-    env.run([]);
+    let output = env.run([]);
 
+    let source_srt = env.source.join("ExampleSong").join("lyrics.vi.srt");
+    let sep = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
+    let uni = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
+    assert_eq!(
+        String::from_utf8_lossy(&output.stderr),
+        expected_stderr(
+            0,
+            &[],
+            &[(&source_srt, &sep), (&source_srt, &uni)],
+            &[],
+            true
+        ),
+    );
     assert!(env.target_subtitle_files().is_empty());
 }
 
@@ -111,10 +144,10 @@ fn skips_up_to_date_files() {
     env.run(["--execute"]);
 
     let output = env.run(["--execute"]);
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.contains("0 files would be removed from the target location"));
-    assert!(stderr.contains("0 files would be added to the target location"));
-    assert!(stderr.contains("0 files in the target location would be updated"));
+    assert_eq!(
+        String::from_utf8_lossy(&output.stderr),
+        expected_stderr(2, &[], &[], &[], false),
+    );
 }
 
 #[test]
@@ -149,8 +182,20 @@ fn updates_modified_source_files() {
     remove_file(&source_file).unwrap();
     write_file(&source_file, updated).unwrap();
 
-    env.run(["--execute"]);
+    let output = env.run(["--execute"]);
 
+    let sep = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
+    let uni = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
+    assert_eq!(
+        String::from_utf8_lossy(&output.stderr),
+        expected_stderr(
+            2,
+            &[],
+            &[],
+            &[(&source_file, &sep), (&source_file, &uni)],
+            false
+        ),
+    );
     assert_eq!(
         env.read_target(collection_name, &format!("{video_title}.vi.srt")),
         updated,
@@ -193,8 +238,20 @@ fn dry_run_does_not_update_modified_source_files() {
     remove_file(&source_file).unwrap();
     write_file(&source_file, updated).unwrap();
 
-    env.run([]);
+    let output = env.run([]);
 
+    let sep = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
+    let uni = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
+    assert_eq!(
+        String::from_utf8_lossy(&output.stderr),
+        expected_stderr(
+            2,
+            &[],
+            &[],
+            &[(&source_file, &sep), (&source_file, &uni)],
+            true
+        ),
+    );
     assert_eq!(
         env.read_target(collection_name, &format!("{video_title}.vi.srt")),
         original,
@@ -213,8 +270,11 @@ fn removes_orphaned_target_files() {
     let orphaned = env.target_path(collection_name, "Orphaned.vi.srt");
     write_file(&orphaned, "orphaned content").unwrap();
 
-    env.run(["--execute"]);
-
+    let output = env.run(["--execute"]);
+    assert_eq!(
+        String::from_utf8_lossy(&output.stderr),
+        expected_stderr(1, &[&orphaned], &[], &[], false),
+    );
     assert!(!orphaned.exists());
 }
 
@@ -226,7 +286,10 @@ fn dry_run_does_not_remove_orphaned_target_files() {
     let orphaned = env.target_path(collection_name, "Orphaned.vi.srt");
     write_file(&orphaned, "orphaned content").unwrap();
 
-    env.run([]);
-
+    let output = env.run([]);
+    assert_eq!(
+        String::from_utf8_lossy(&output.stderr),
+        expected_stderr(1, &[&orphaned], &[], &[], true),
+    );
     assert!(orphaned.exists());
 }

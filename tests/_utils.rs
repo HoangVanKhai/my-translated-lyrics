@@ -161,3 +161,63 @@ pub fn video_desc(collection_name: &str, video_title: &str, visibility: Visibili
         visibility,
     }
 }
+
+use std::fmt::Write;
+
+pub fn expected_stderr(
+    existing_count: usize,
+    removes: &[&dyn std::fmt::Debug],
+    installs: &[(&dyn std::fmt::Debug, &dyn std::fmt::Debug)],
+    updates: &[(&dyn std::fmt::Debug, &dyn std::fmt::Debug)],
+    dry_run: bool,
+) -> String {
+    let mut out = String::new();
+    writeln!(
+        out,
+        "info: There are currently {existing_count} existing files at the target location"
+    )
+    .unwrap();
+    writeln!(
+        out,
+        "info: {} files would be removed from the target location",
+        removes.len()
+    )
+    .unwrap();
+    writeln!(
+        out,
+        "info: {} files would be added to the target location",
+        installs.len()
+    )
+    .unwrap();
+    writeln!(
+        out,
+        "info: {} files in the target location would be updated",
+        updates.len()
+    )
+    .unwrap();
+    writeln!(out).unwrap();
+    writeln!(out, "stage: Removing old subtitles").unwrap();
+    for target in removes {
+        writeln!(out, "remove {target:?}").unwrap();
+    }
+    writeln!(out).unwrap();
+    writeln!(out, "stage: Adding new subtitles").unwrap();
+    for (source, target) in installs {
+        writeln!(out, "copy {source:?} → {target:?}").unwrap();
+    }
+    writeln!(out).unwrap();
+    writeln!(out, "stage: Updating outdated subtitles").unwrap();
+    for (source, target) in updates {
+        writeln!(out, "copy {source:?} → {target:?}").unwrap();
+    }
+    if dry_run {
+        writeln!(out).unwrap();
+        writeln!(out, "info: No changes were actually made.").unwrap();
+        writeln!(
+            out,
+            "info: Run the command again with --execute to make actual changes."
+        )
+        .unwrap();
+    }
+    out
+}

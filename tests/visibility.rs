@@ -24,8 +24,11 @@ fn hidden_visibility_causes_removal() {
         &[("lyrics.vi.srt", "new content that should not be installed")],
     );
 
-    env.run(["--execute"]);
-
+    let output = env.run(["--execute"]);
+    assert_eq!(
+        String::from_utf8_lossy(&output.stderr),
+        expected_stderr(2, &[&separated, &unified], &[], &[], false),
+    );
     assert!(!separated.exists());
     assert!(!unified.exists());
 }
@@ -48,8 +51,11 @@ fn dry_run_does_not_remove_hidden_files() {
         &[("lyrics.vi.srt", "new content that should not be installed")],
     );
 
-    env.run([]);
-
+    let output = env.run([]);
+    assert_eq!(
+        String::from_utf8_lossy(&output.stderr),
+        expected_stderr(2, &[&separated, &unified], &[], &[], true),
+    );
     assert!(separated.exists());
     assert!(unified.exists());
 }
@@ -74,8 +80,11 @@ fn manual_visibility_preserves_existing_files() {
         &[("lyrics.vi.srt", "source content that should not overwrite")],
     );
 
-    env.run(["--execute"]);
-
+    let output = env.run(["--execute"]);
+    assert_eq!(
+        String::from_utf8_lossy(&output.stderr),
+        expected_stderr(2, &[], &[], &[], false),
+    );
     assert_eq!(separated.pipe_ref(read_to_string).unwrap(), manual_content);
     assert_eq!(unified.pipe_ref(read_to_string).unwrap(), manual_content);
 }
@@ -100,8 +109,11 @@ fn dry_run_manual_visibility_preserves_existing_files() {
         &[("lyrics.vi.srt", "source content that should not overwrite")],
     );
 
-    env.run([]);
-
+    let output = env.run([]);
+    assert_eq!(
+        String::from_utf8_lossy(&output.stderr),
+        expected_stderr(2, &[], &[], &[], true),
+    );
     assert_eq!(separated.pipe_ref(read_to_string).unwrap(), manual_content);
     assert_eq!(unified.pipe_ref(read_to_string).unwrap(), manual_content);
 }
