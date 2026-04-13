@@ -35,12 +35,6 @@ fn collect_lyrics_files(data_dir: &Path) -> Vec<PathBuf> {
 /// subtitle file (e.g. `.../{song_dir}/lyrics.{lang}.srt`). The language component
 /// is stripped so that different translations map to the same key.
 fn subtitle_group_key(path: &Path) -> String {
-    let file_name = path
-        .file_name()
-        .unwrap()
-        .to_str()
-        .expect("path isn't valid UTF-8");
-    file_name.parse::<LyricsFileName>().unwrap();
     let format = path
         .extension()
         .unwrap()
