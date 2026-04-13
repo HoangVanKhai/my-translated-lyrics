@@ -2,6 +2,7 @@ pub mod _utils;
 pub use _utils::*;
 
 use my_translated_lyrics::video_descriptor::Visibility;
+use std::iter::empty;
 use text_block_macros::text_block_fnl;
 
 #[test]
@@ -25,7 +26,7 @@ fn dry_run_does_not_create_files() {
         )],
     );
 
-    let output = env.run(None::<&str>);
+    let output = env.run(empty());
     let stderr = String::from_utf8_lossy(&output.stderr);
 
     assert!(stderr.contains("No changes were actually made"));
