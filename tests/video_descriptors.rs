@@ -1,8 +1,8 @@
 use itertools::Itertools;
-use my_translated_lyrics::video_descriptor::{VIDEO_CONFIG_FILE_NAME, VideoDesc};
 use pipe_trait::Pipe;
 use std::fs::{DirEntry, read_dir, read_to_string};
 use std::path::Path;
+use translated_lyrics::video_descriptor::{VIDEO_CONFIG_FILE_NAME, VideoDesc};
 
 /// Every `data/*/video.toml` must parse as a valid [`VideoDesc`].
 #[test]

@@ -1,4 +1,4 @@
-# Contributing to my-translated-lyrics
+# Contributing to translated-lyrics
 
 ## Commit Message Convention
 

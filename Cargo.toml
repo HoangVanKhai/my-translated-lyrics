@@ -1,5 +1,5 @@
 [package]
-name = "my-translated-lyrics"
+name = "translated-lyrics"
 version = "0.0.0"
 edition = "2024"
 
@@ -23,4 +23,7 @@ toml = "1.1.2"
 
 [dev-dependencies]
 command-extra = "1.0.0"
+maplit = "1.0.2"
 pretty_assertions = "1.4.1"
+rand = "0.10.0"
+text-block-macros = "0.2.0"
