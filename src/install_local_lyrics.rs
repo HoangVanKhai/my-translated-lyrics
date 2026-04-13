@@ -1,4 +1,3 @@
-use crate::args::Args;
 use crate::file_snapshot::FileSnapshot;
 use clap::Parser;
 use itertools::Itertools;
@@ -10,6 +9,20 @@ use std::io::{self, ErrorKind};
 use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
+
+#[derive(Debug, Clone, Parser)]
+#[clap(about = "Synchronize the lyrics")]
+struct Args {
+    /// For safety reasons, this programs list actions by default, this flag makes the program take those actions.
+    #[clap(long, short = 'x')]
+    execute: bool,
+
+    /// Source directory of the subtitles.
+    source: PathBuf,
+
+    /// Container of the target directories of the subtitles.
+    target: PathBuf,
+}
 
 const SEPARATED_COLLECTIONS: &[&str] = &[
     "Feng Ling Yu Xiu",
