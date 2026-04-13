@@ -64,7 +64,10 @@ fn install(execute: bool, source: &Path, target: &Path) {
 
 fn is_subtitle_file(entry: &DirEntry) -> bool {
     match entry.file_type() {
-        Err(_) => return false,
+        Err(error) => panic!(
+            "error: Cannot read file type of {:?}: {error}",
+            entry.path()
+        ),
         Ok(file_type) if !file_type.is_file() => return false,
         Ok(file_type) => debug_assert!(file_type.is_file()),
     }
@@ -119,10 +122,14 @@ pub fn main() {
         .copied()
         .chain(once(UNIFIED_COLLECTION))
         .map(|suffix| target.join(suffix))
-        .flat_map(|ref path| {
-            path.pipe(read_dir)
+        .flat_map(|path| {
+            path.pipe_ref(read_dir)
                 .unwrap_or_else(|error| panic!("error: Cannot read directory {path:?}: {error}"))
-                .flatten()
+                .map(move |entry| {
+                    entry.unwrap_or_else(|error| {
+                        panic!("error: Cannot read an entry of directory {path:?}: {error}")
+                    })
+                })
                 .filter(is_subtitle_file)
                 .map(|entry| entry.path())
         })
