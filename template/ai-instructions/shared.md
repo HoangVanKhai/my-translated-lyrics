@@ -7,6 +7,7 @@ Read and follow the CONTRIBUTING.md file in this repository for all code style c
 - Commit format: Conventional Commits — `type(scope): lowercase description`
 - Use descriptive variable and closure parameter names by default — single letters are only allowed in: conventional names (`n` for count, `f` for formatter), comparison closures (`|a, b|`), trivial single-expression closures, fold accumulators, index variables (`i`/`j`/`k` in short closures or index-based loops only), and test fixtures (identical roles only). Never use single letters in multi-line functions or closures
 - Use `pipe-trait` for chaining through unary functions (constructors, `Some`, `Ok`, free functions, etc.), avoiding nested calls, and continuing method chains — but not for simple standalone calls (prefer `foo(value)` over `value.pipe(foo)`)
+- Use `command-extra` (`CommandExtra` trait) when building `std::process::Command` — use `.with_arg(…)`, `.with_env(…)`, etc. instead of `.arg(…)`, `.env(…)` to keep construction as a single owned expression chain
 - Prefer `where` clauses for multiple trait bounds
 - Minimize `unwrap()` in non-test code — use proper error handling
 - Prefer `#[cfg_attr(..., ignore = "reason")]` over `#[cfg(...)]` to skip tests — use `#[cfg]` on tests only when the code cannot compile under the condition (e.g., references types/functions that don't exist on other platforms)

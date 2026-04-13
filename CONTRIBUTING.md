@@ -167,6 +167,29 @@ let result = value.pipe(foo);
 let result = foo(value);
 ```
 
+### Using `command-extra`
+
+This codebase uses the [`command-extra`](https://docs.rs/command-extra) crate to build `std::process::Command` values in a chainable, owned style. Import it as `use command_extra::CommandExtra;`.
+
+The standard `Command` builder methods (`arg`, `env`, `current_dir`, etc.) take `&mut self` and return `&mut Command`, making them unsuitable for method chains that end in an owned value. The `CommandExtra` extension trait provides `.with_*` counterparts that take ownership and return an owned `Command`, enabling fluent one-expression construction:
+
+```rust
+// Good — fully chainable, owned style
+let output = Command::new("my-tool")
+    .with_arg("--flag")
+    .with_arg(value)
+    .output()
+    .expect("spawn my-tool");
+
+// Avoid — mutable-reference style, cannot chain with owned methods
+let mut cmd = Command::new("my-tool");
+cmd.arg("--flag");
+cmd.arg(value);
+let output = cmd.output().expect("spawn my-tool");
+```
+
+Available `.with_*` methods mirror every standard builder method: `with_arg`, `with_args`, `with_env`, `with_envs`, `with_env_remove`, `with_env_clear`, `with_current_dir`, `with_stdin`, `with_stdout`, `with_stderr`.
+
 ## Setup
 
 Install the required Rust toolchain and components before running any checks:
