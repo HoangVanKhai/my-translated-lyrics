@@ -23,7 +23,7 @@ fn collect_lyrics_files(data_dir: &Path) -> Vec<PathBuf> {
             path.file_name()
                 .unwrap()
                 .to_str()
-                .expect("path isn't valid UTF-8")
+                .unwrap()
                 .parse::<LyricsFileName>()
                 .is_ok()
         })
@@ -35,12 +35,8 @@ fn collect_lyrics_files(data_dir: &Path) -> Vec<PathBuf> {
 /// subtitle file (e.g. `.../{song_dir}/lyrics.{lang}.srt`). The language component
 /// is stripped so that different translations map to the same key.
 fn subtitle_group_key(path: &Path) -> String {
-    let format = path
-        .extension()
-        .unwrap()
-        .to_str()
-        .expect("extension isn't valid UTF-8");
-    let path_str = path.to_str().expect("path isn't valid UTF-8");
+    let format = path.extension().unwrap().to_str().unwrap();
+    let path_str = path.to_str().unwrap();
     let (stem, _) = path_str
         .strip_suffix(&format!(".{format}"))
         .unwrap()
@@ -82,11 +78,7 @@ fn file_timestamps_match() {
         let contents: Vec<_> = paths
             .iter()
             .map(|path| {
-                let name = path
-                    .file_name()
-                    .unwrap()
-                    .to_str()
-                    .expect("path isn't valid UTF-8");
+                let name = path.file_name().unwrap().to_str().unwrap();
                 let content = path
                     .pipe(read_to_string)
                     .unwrap_or_else(|err| panic!("failed to read {}: {err}", path.display()));
