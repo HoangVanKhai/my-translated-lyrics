@@ -1,10 +1,9 @@
 use derive_more::{AsRef, Deref};
+use pipe_trait::Pipe;
+use rand::{RngExt, distr::Alphanumeric, rng};
 use std::env::temp_dir;
 use std::fs::{create_dir, remove_dir_all};
 use std::path::PathBuf;
-use std::sync::atomic::{AtomicU64, Ordering};
-
-static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 /// RAII temporary directory that is deleted on drop.
 #[derive(Debug, AsRef, Deref)]
@@ -15,9 +14,15 @@ pub struct Temp(PathBuf);
 impl Temp {
     /// Create a temporary directory.
     pub fn new_dir() -> Self {
-        let count = TEMP_COUNTER.fetch_add(1, Ordering::Relaxed);
-        let pid = std::process::id();
-        let path = temp_dir().join(format!("my-translated-lyrics-test-{pid}-{count}"));
+        let path = rng()
+            .sample_iter(&Alphanumeric)
+            .take(15)
+            .map(char::from)
+            .collect::<String>()
+            .pipe(|name| temp_dir().join(name));
+        if path.exists() {
+            return Self::new_dir();
+        }
         create_dir(&path).unwrap_or_else(|error| panic!("failed to create {path:?}: {error}"));
         Temp(path)
     }
