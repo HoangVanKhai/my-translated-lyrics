@@ -24,7 +24,7 @@ impl fmt::Debug for FileSnapshot {
             .field("dev", &self.dev)
             .field("inode", &self.inode)
             .field("size", &self.size)
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
