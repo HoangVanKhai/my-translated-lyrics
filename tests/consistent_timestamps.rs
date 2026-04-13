@@ -4,17 +4,18 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-fn collect_subtitle_files(files: &mut Vec<PathBuf>, dir: &Path) {
-    for entry in fs::read_dir(dir).unwrap() {
-        let path = entry.unwrap().path();
-        if path.is_dir() {
-            collect_subtitle_files(files, &path);
+fn collect_subtitle_files(files: &mut Vec<PathBuf>, data_dir: &Path) {
+    for entry in fs::read_dir(data_dir).unwrap() {
+        let song_dir = entry.unwrap().path();
+        if !song_dir.is_dir() {
             continue;
         }
-
-        let path_str = path.to_str().expect("path isn't valid UTF-8");
-        if path_str.ends_with(".srt") || path_str.ends_with(".vtt") {
-            files.push(path);
+        for entry in fs::read_dir(&song_dir).unwrap() {
+            let path = entry.unwrap().path();
+            let path_str = path.to_str().expect("path isn't valid UTF-8");
+            if path_str.ends_with(".srt") || path_str.ends_with(".vtt") {
+                files.push(path);
+            }
         }
     }
 }

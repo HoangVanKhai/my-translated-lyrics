@@ -1,10 +1,14 @@
 use crate::file_snapshot::FileSnapshot;
+use crate::video_descriptor::{
+    LyricsFileName, ParseLyricsFileNameError, SEPARATED_COLLECTIONS, UNIFIED_COLLECTION,
+    VIDEO_CONFIG_FILE_NAME, VideoDesc, Visibility,
+};
 use clap::Parser;
 use itertools::Itertools;
 use pipe_trait::Pipe;
 use reflink::reflink_or_copy;
 use std::collections::{HashMap, HashSet};
-use std::fs::{DirEntry, hard_link, read_dir, remove_file};
+use std::fs::{DirEntry, hard_link, read_dir, read_to_string, remove_file};
 use std::io::{self, ErrorKind};
 use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
@@ -23,14 +27,6 @@ struct Args {
     /// Container of the target directories of the subtitles.
     target: PathBuf,
 }
-
-const SEPARATED_COLLECTIONS: &[&str] = &[
-    "Feng Ling Yu Xiu",
-    "Luo Tianyi, Yuezheng Ling/洛天依_乐正绫",
-    "Touhou Hero of Ice Fairy",
-];
-
-const UNIFIED_COLLECTION: &str = "Short Relaxing Playlist 2025";
 
 /// Try hardlink, then try reflink, and finally copy.
 fn link_or_copy(source: &Path, target: &Path) -> io::Result<()> {
@@ -85,6 +81,39 @@ pub fn main() {
         target,
     } = Args::parse();
 
+    // Read all video descriptors from source directories
+    let descriptors: Vec<(PathBuf, VideoDesc)> = source
+        .pipe_ref(read_dir)
+        .unwrap_or_else(|error| panic!("error: Cannot read source directory {source:?}: {error}"))
+        .map(|entry| {
+            entry.unwrap_or_else(|error| {
+                panic!("error: Cannot read an entry of directory {source:?}: {error}")
+            })
+        })
+        .filter(|entry| {
+            entry
+                .file_type()
+                .unwrap_or_else(|error| {
+                    panic!(
+                        "error: Cannot read file type of {:?}: {error}",
+                        entry.path()
+                    )
+                })
+                .is_dir()
+        })
+        .map(|entry| {
+            let video_dir = entry.path();
+            let desc_path = video_dir.join(VIDEO_CONFIG_FILE_NAME);
+            let content = desc_path
+                .pipe_ref(read_to_string)
+                .unwrap_or_else(|error| panic!("error: Cannot read {desc_path:?}: {error}"));
+            let desc: VideoDesc = content
+                .pipe_as_ref(toml::from_str)
+                .unwrap_or_else(|error| panic!("error: Cannot parse {desc_path:?}: {error}"));
+            (video_dir, desc)
+        })
+        .collect(); // eagerly validate all video descriptors before touching any files
+
     let existing_target_files: HashMap<PathBuf, FileSnapshot> = SEPARATED_COLLECTIONS
         .iter()
         .copied()
@@ -116,28 +145,69 @@ pub fn main() {
     let mut files_need_install: Vec<(PathBuf, PathBuf)> =
         Vec::with_capacity(existing_target_files.len());
 
-    for suffix in SEPARATED_COLLECTIONS {
-        let source_dir = source.join(suffix);
-        let separated_target_dir = target.join(suffix);
+    for (video_dir, desc) in &descriptors {
+        // Hidden: do nothing. Any existing target files stay in
+        // `files_need_uninstall` and will be removed.
+        if desc.visibility == Visibility::Hidden {
+            continue;
+        }
+
+        let separated_target_dir = target.join(&desc.collection);
         let unified_target_dir = target.join(UNIFIED_COLLECTION);
 
-        let source_entries = match read_dir(&source_dir) {
-            Ok(source_entries) => source_entries,
-            Err(error) if error.kind() == ErrorKind::NotFound => continue,
-            Err(error) => panic!("error: Cannot read directory {source_dir:?}: {error}"),
-        };
+        if desc.visibility == Visibility::Manual {
+            let prefix = format!("{}.", desc.video_title);
+            let separated = separated_target_dir.as_path();
+            let unified = unified_target_dir.as_path();
+            files_need_uninstall.retain(|target_path| {
+                let Some(parent) = target_path.parent() else {
+                    return true;
+                };
+                if parent != separated && parent != unified {
+                    return true;
+                }
+                let name = target_path
+                    .file_name()
+                    .expect("target path has no file name")
+                    .to_str()
+                    .unwrap_or_else(|| {
+                        panic!("error: Non-UTF-8 filename in target: {target_path:?}")
+                    });
+                !name.starts_with(&prefix)
+            });
+            continue;
+        }
+
+        let source_entries = video_dir
+            .pipe(read_dir)
+            .unwrap_or_else(|error| panic!("error: Cannot read directory {video_dir:?}: {error}"));
 
         for source_entry in source_entries {
-            let Ok(source_entry) = source_entry else {
-                continue;
-            };
+            let source_entry = source_entry.unwrap_or_else(|error| {
+                panic!("error: Cannot read an entry of directory {video_dir:?}: {error}")
+            });
             if !is_subtitle_file(&source_entry) {
                 continue;
             }
-            let file_name = source_entry.file_name();
-            let source_file = source_dir.join(&file_name);
-            let separated_target_file = separated_target_dir.join(&file_name);
-            let unified_target_file = unified_target_dir.join(&file_name);
+
+            let local_name = source_entry.file_name();
+            let local_name = local_name
+                .to_str()
+                .unwrap_or_else(|| panic!("error: Non-UTF-8 filename in {video_dir:?}"));
+
+            let lyrics = match local_name.parse::<LyricsFileName>() {
+                Ok(lyrics) => lyrics,
+                Err(ParseLyricsFileNameError::NotLyricsFile) => continue,
+                Err(error) => panic!(
+                    "error: {dir}/{local_name}: {error}",
+                    dir = video_dir.display(),
+                ),
+            };
+            let target_name = lyrics.target_file_name(&desc.video_title).to_string();
+
+            let source_file = video_dir.join(local_name);
+            let separated_target_file = separated_target_dir.join(&target_name);
+            let unified_target_file = unified_target_dir.join(&target_name);
 
             let source_file_snapshot = source_file.clone().pipe(FileSnapshot::new);
             for target_file in [separated_target_file, unified_target_file] {
