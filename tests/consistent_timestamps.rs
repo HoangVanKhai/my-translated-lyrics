@@ -30,8 +30,11 @@ fn subtitle_group_key(path: &Path) -> Option<String> {
         if let Some(without_format) = path.strip_suffix(&suffix)
             && let Some(dot_pos) = without_format.rfind('.')
         {
-            let lang = &without_format[dot_pos + 1..];
-            if !lang.is_empty() && lang.len() <= 5 && lang.chars().all(|c| c.is_ascii_lowercase()) {
+            let language = &without_format[dot_pos + 1..];
+            if !language.is_empty()
+                && language.len() <= 5
+                && language.chars().all(|c| c.is_ascii_lowercase())
+            {
                 let stem = &without_format[..dot_pos];
                 return Some(format!("{stem}::{format}"));
             }
