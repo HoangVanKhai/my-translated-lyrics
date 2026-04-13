@@ -1,3 +1,4 @@
+use command_extra::CommandExtra;
 use std::process::Command;
 
 const LYRICS_AI_INSTRUCTIONS: &str = env!("CARGO_BIN_EXE_lyrics-ai-instructions");
@@ -5,7 +6,7 @@ const LYRICS_AI_INSTRUCTIONS: &str = env!("CARGO_BIN_EXE_lyrics-ai-instructions"
 #[test]
 fn ai_instructions_up_to_date() {
     let output = Command::new(LYRICS_AI_INSTRUCTIONS)
-        .arg(env!("CARGO_MANIFEST_DIR"))
+        .with_arg(env!("CARGO_MANIFEST_DIR"))
         .output()
         .expect("spawn lyrics-ai-instructions");
     let stdout = String::from_utf8_lossy(&output.stdout);
