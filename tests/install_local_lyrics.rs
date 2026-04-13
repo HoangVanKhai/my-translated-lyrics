@@ -146,6 +146,7 @@ fn dry_run_does_not_create_files() {
 
     let output = workspace.run(None::<&str>);
     let stderr = String::from_utf8_lossy(&output.stderr);
+    eprintln!("STDERR:\n{stderr}");
 
     assert!(
         stderr.contains("No changes were actually made"),
