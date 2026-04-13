@@ -1,9 +1,12 @@
+use derive_more::{AsRef, Deref};
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::collections::BTreeSet;
+use std::env::temp_dir;
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
-use tempfile::TempDir;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
 
@@ -14,9 +17,40 @@ const SEPARATED_COLLECTIONS: &[&str] = &[
 ];
 const UNIFIED_COLLECTION: &str = "Short Relaxing Playlist 2025";
 
+static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
+
+/// RAII temporary directory that is deleted on drop.
+#[derive(Debug, AsRef, Deref)]
+#[as_ref(forward)]
+#[deref(forward)]
+struct Temp(PathBuf);
+
+impl Temp {
+    fn new_dir() -> Self {
+        let count = TEMP_COUNTER.fetch_add(1, Ordering::Relaxed);
+        let pid = std::process::id();
+        format!("my-translated-lyrics-test-{pid}-{count}")
+            .pipe(|name| temp_dir().join(name))
+            .pipe(|path| {
+                fs::create_dir(&path)
+                    .unwrap_or_else(|error| panic!("failed to create {path:?}: {error}"));
+                Temp(path)
+            })
+    }
+}
+
+impl Drop for Temp {
+    fn drop(&mut self) {
+        let path = &self.0;
+        if let Err(error) = fs::remove_dir_all(path) {
+            eprintln!("warning: Failed to delete {path:?}: {error}");
+        }
+    }
+}
+
 /// Test environment with temporary source and target directories.
 struct TestEnv {
-    _temp: TempDir,
+    _temp: Temp,
     source: PathBuf,
     target: PathBuf,
 }
@@ -26,9 +60,9 @@ impl TestEnv {
     /// directories. The target directory is pre-populated with the
     /// required collection subdirectories.
     fn new() -> Self {
-        let temp = TempDir::new().unwrap();
-        let source = temp.path().join("source");
-        let target = temp.path().join("target");
+        let temp = Temp::new_dir();
+        let source = temp.join("source");
+        let target = temp.join("target");
         fs::create_dir(&source).unwrap();
         fs::create_dir(&target).unwrap();
         for name in SEPARATED_COLLECTIONS
