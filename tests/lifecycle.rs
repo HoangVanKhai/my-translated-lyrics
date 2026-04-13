@@ -95,7 +95,7 @@ fn skips_up_to_date_files() {
 fn updates_modified_source_files() {
     let env = InstallLocalLyricsEnv::prepare();
     let collection_name = "Feng Ling Yu Xiu";
-    let video_title = "【示例表演者】示例歌(Example Song)——\"示例歌词\"【示例标签】 [ExampleID]";
+    let video_title = "【示例表演者】示例歌(Example Song)——“示例歌词”【示例标签】 [ExampleID]";
     let desc = video_desc(collection_name, video_title, Visibility::default());
     let original = text_block_fnl! {
         "1"
