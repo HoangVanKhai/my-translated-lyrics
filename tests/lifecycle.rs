@@ -1,10 +1,10 @@
 pub mod _utils;
 pub use _utils::*;
 
-use my_translated_lyrics::video_descriptor::{UNIFIED_COLLECTION, Visibility};
 use pretty_assertions::assert_eq;
 use std::fs::{remove_file, write as write_file};
 use text_block_macros::text_block_fnl;
+use translated_lyrics::video_descriptor::{UNIFIED_COLLECTION, Visibility};
 
 #[test]
 fn installs_subtitles_to_separated_and_unified_collections() {

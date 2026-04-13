@@ -1,10 +1,10 @@
 pub mod _utils;
 pub use _utils::*;
 
-use my_translated_lyrics::video_descriptor::{UNIFIED_COLLECTION, Visibility};
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::fs::{read_to_string, write as write_file};
+use translated_lyrics::video_descriptor::{UNIFIED_COLLECTION, Visibility};
 
 #[test]
 fn hidden_visibility_causes_removal() {

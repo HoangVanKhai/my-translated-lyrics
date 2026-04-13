@@ -280,9 +280,9 @@ checksum = "09edd9e8b54e49e587e4f6295a7d29c3ea94d469cb40ab8ca70b288248a81db2"
 
 [[package]]
 name = "libc"
-version = "0.2.183"
+version = "0.2.185"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5b646652bf6661599e1da8901b3b9522896f01e736bad5f723fe7a3a27f899d"
+checksum = "52ff2c0fe9bc6cb6b14a0592c2ff4fa9ceb83eea9db979b0487cd054946a2b8f"
 
 [[package]]
 name = "log"
@@ -301,25 +301,6 @@ name = "memchr"
 version = "2.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8ca58f447f06ed17d5fc4043ce1b10dd205e060fb3ce5b979b8ed8e59ff3f79"
-
-[[package]]
-name = "my-translated-lyrics"
-version = "0.0.0"
-dependencies = [
- "clap",
- "command-extra",
- "derive_more",
- "itertools",
- "maplit",
- "pipe-trait",
- "pretty_assertions",
- "rand",
- "reflink",
- "serde",
- "strum",
- "text-block-macros",
- "toml",
-]
 
 [[package]]
 name = "once_cell_polyfill"
@@ -390,9 +371,9 @@ dependencies = [
 
 [[package]]
 name = "rand_core"
-version = "0.10.0"
+version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c8d0fd677905edcbeedbf2edb6494d676f0e98d54d5cf9bda0b061cb8fb8aba"
+checksum = "63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69"
 
 [[package]]
 name = "reflink"
@@ -553,6 +534,25 @@ name = "toml_writer"
 version = "1.1.1+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "756daf9b1013ebe47a8776667b466417e2d4c5679d441c26230efd9ef78692db"
+
+[[package]]
+name = "translated-lyrics"
+version = "0.0.0"
+dependencies = [
+ "clap",
+ "command-extra",
+ "derive_more",
+ "itertools",
+ "maplit",
+ "pipe-trait",
+ "pretty_assertions",
+ "rand",
+ "reflink",
+ "serde",
+ "strum",
+ "text-block-macros",
+ "toml",
+]
 
 [[package]]
 name = "unicode-ident"

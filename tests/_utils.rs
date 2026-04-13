@@ -2,9 +2,6 @@ use command_extra::CommandExtra;
 use derive_more::{AsRef, Deref};
 use itertools::Itertools;
 use maplit::hashmap;
-use my_translated_lyrics::video_descriptor::{
-    Language, SEPARATED_COLLECTIONS, UNIFIED_COLLECTION, VideoDesc, Visibility,
-};
 use pipe_trait::Pipe;
 use rand::{RngExt, distr::Alphanumeric, rng};
 use std::env::temp_dir;
@@ -13,6 +10,9 @@ use std::fs::{create_dir, create_dir_all, read_dir, read_to_string, write as wri
 use std::iter::once;
 use std::path::PathBuf;
 use std::process::Command;
+use translated_lyrics::video_descriptor::{
+    Language, SEPARATED_COLLECTIONS, UNIFIED_COLLECTION, VideoDesc, Visibility,
+};
 
 const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
 
