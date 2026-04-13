@@ -4,7 +4,6 @@ pub use _utils::*;
 use my_translated_lyrics::video_descriptor::{UNIFIED_COLLECTION, Visibility};
 use pretty_assertions::assert_eq;
 use std::fs::{remove_file, write as write_file};
-use std::iter::empty;
 use text_block_macros::text_block_fnl;
 
 #[test]
@@ -83,7 +82,7 @@ fn dry_run_does_not_install_subtitles() {
         )],
     );
 
-    env.run(empty());
+    env.run([]);
 
     assert!(env.target_subtitle_files().is_empty());
 }
@@ -194,7 +193,7 @@ fn dry_run_does_not_update_modified_source_files() {
     remove_file(&source_file).unwrap();
     write_file(&source_file, updated).unwrap();
 
-    env.run(empty());
+    env.run([]);
 
     assert_eq!(
         env.read_target(collection_name, &format!("{video_title}.vi.srt")),
@@ -227,7 +226,7 @@ fn dry_run_does_not_remove_orphaned_target_files() {
     let orphaned = env.target_path(collection_name, "Orphaned.vi.srt");
     write_file(&orphaned, "orphaned content").unwrap();
 
-    env.run(empty());
+    env.run([]);
 
     assert!(orphaned.exists());
 }

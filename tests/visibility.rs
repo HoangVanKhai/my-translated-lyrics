@@ -5,7 +5,6 @@ use my_translated_lyrics::video_descriptor::{UNIFIED_COLLECTION, Visibility};
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::fs::{read_to_string, write as write_file};
-use std::iter::empty;
 
 #[test]
 fn hidden_visibility_causes_removal() {
@@ -49,7 +48,7 @@ fn dry_run_does_not_remove_hidden_files() {
         &[("lyrics.vi.srt", "new content that should not be installed")],
     );
 
-    env.run(empty());
+    env.run([]);
 
     assert!(separated.exists());
     assert!(unified.exists());
@@ -101,7 +100,7 @@ fn dry_run_manual_visibility_preserves_existing_files() {
         &[("lyrics.vi.srt", "source content that should not overwrite")],
     );
 
-    env.run(empty());
+    env.run([]);
 
     assert_eq!(separated.pipe_ref(read_to_string).unwrap(), manual_content);
     assert_eq!(unified.pipe_ref(read_to_string).unwrap(), manual_content);
