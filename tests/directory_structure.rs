@@ -1,8 +1,8 @@
 use itertools::Itertools;
-use my_translated_lyrics::video_descriptor::{LyricsFileName, ParseLyricsFileNameError};
 use pipe_trait::Pipe;
 use std::fs::{DirEntry, read_dir};
 use std::path::Path;
+use translated_lyrics::video_descriptor::{LyricsFileName, ParseLyricsFileNameError};
 
 /// Verify that `data/` and `drafts/` have a flat two-level structure:
 ///
