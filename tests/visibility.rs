@@ -8,7 +8,7 @@ use std::fs::{read_to_string, write as write_file};
 
 #[test]
 fn hidden_visibility_causes_removal() {
-    let workspace = Workspace::new();
+    let workspace = Workspace::create();
     let collection = "Feng Ling Yu Xiu";
     let video_title = "Song Whose Subtitles Are Hidden";
     let desc = video_desc(collection, video_title, Visibility::Hidden);
@@ -38,7 +38,7 @@ fn hidden_visibility_causes_removal() {
 
 #[test]
 fn manual_visibility_preserves_existing_files() {
-    let workspace = Workspace::new();
+    let workspace = Workspace::create();
     let collection = "Feng Ling Yu Xiu";
     let video_title = "Song Whose Subtitles Are Manually Managed";
     let desc = video_desc(collection, video_title, Visibility::Manual);

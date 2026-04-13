@@ -54,17 +54,11 @@ pub struct Workspace {
     pub target: PathBuf,
 }
 
-impl Default for Workspace {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl Workspace {
     /// Creates a new workspace with empty source and target
     /// directories. The target directory is pre-populated with the
     /// required collection subdirectories.
-    pub fn new() -> Self {
+    pub fn create() -> Self {
         let temp = Temp::new_dir();
         let source = temp.join("source");
         let target = temp.join("target");

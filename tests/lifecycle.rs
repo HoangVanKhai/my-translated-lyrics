@@ -8,7 +8,7 @@ use text_block_macros::text_block_fnl;
 
 #[test]
 fn installs_subtitles_to_separated_and_unified_collections() {
-    let workspace = Workspace::new();
+    let workspace = Workspace::create();
     let collection = "Feng Ling Yu Xiu";
     let video_title = "Example Song";
     let desc = video_desc(collection, video_title, Visibility::default());
@@ -63,7 +63,7 @@ fn installs_subtitles_to_separated_and_unified_collections() {
 
 #[test]
 fn skips_up_to_date_files() {
-    let workspace = Workspace::new();
+    let workspace = Workspace::create();
     let desc = video_desc("Feng Ling Yu Xiu", "Example Song", Visibility::default());
     workspace.add_video(
         "ExampleSong",
@@ -98,7 +98,7 @@ fn skips_up_to_date_files() {
 
 #[test]
 fn updates_modified_source_files() {
-    let workspace = Workspace::new();
+    let workspace = Workspace::create();
     let collection = "Feng Ling Yu Xiu";
     let video_title = "Song Whose Subtitles Get Updated";
     let desc = video_desc(collection, video_title, Visibility::default());
@@ -142,7 +142,7 @@ fn updates_modified_source_files() {
 
 #[test]
 fn removes_orphaned_target_files() {
-    let workspace = Workspace::new();
+    let workspace = Workspace::create();
     let collection = "Feng Ling Yu Xiu";
 
     let orphaned = workspace.target_path(collection, "Orphaned.vi.srt");
