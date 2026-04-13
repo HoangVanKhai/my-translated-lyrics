@@ -1,16 +1,16 @@
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::collections::BTreeMap;
-use std::fs;
+use std::fs::{read_dir, read_to_string};
 use std::path::{Path, PathBuf};
 
 fn collect_subtitle_files(files: &mut Vec<PathBuf>, data_dir: &Path) {
-    for entry in fs::read_dir(data_dir).unwrap() {
+    for entry in read_dir(data_dir).unwrap() {
         let song_dir = entry.unwrap().path();
         if !song_dir.is_dir() {
             continue;
         }
-        for entry in fs::read_dir(&song_dir).unwrap() {
+        for entry in read_dir(&song_dir).unwrap() {
             let path = entry.unwrap().path();
             let path_str = path.to_str().expect("path isn't valid UTF-8");
             if path_str.ends_with(".srt") || path_str.ends_with(".vtt") {
@@ -86,7 +86,7 @@ fn file_timestamps_match() {
                     .to_str()
                     .expect("path isn't valid UTF-8");
                 let content = path
-                    .pipe(fs::read_to_string)
+                    .pipe(read_to_string)
                     .unwrap_or_else(|err| panic!("failed to read {}: {err}", path.display()));
                 (name, content)
             })

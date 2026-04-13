@@ -1,8 +1,7 @@
 use itertools::Itertools;
 use my_translated_lyrics::video_descriptor::{LyricsFileName, ParseLyricsFileNameError};
 use pipe_trait::Pipe;
-use std::fs;
-use std::fs::DirEntry;
+use std::fs::{DirEntry, read_dir};
 use std::path::Path;
 
 /// Verify that `data/` and `drafts/` have a flat two-level structure:
@@ -31,7 +30,7 @@ fn data_and_drafts_have_flat_structure() {
         }
 
         let entries = top_dir
-            .pipe(fs::read_dir)
+            .pipe(read_dir)
             .unwrap()
             .map(Result::unwrap)
             .sorted_by_key(DirEntry::file_name);
@@ -47,7 +46,7 @@ fn data_and_drafts_have_flat_structure() {
             );
 
             let inner_entries = path
-                .pipe(fs::read_dir)
+                .pipe(read_dir)
                 .unwrap()
                 .map(Result::unwrap)
                 .sorted_by_key(DirEntry::file_name);
@@ -72,7 +71,7 @@ fn data_subtitle_file_names_are_canonical() {
     let data_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("data");
 
     let entries = data_dir
-        .pipe(fs::read_dir)
+        .pipe(read_dir)
         .unwrap()
         .map(Result::unwrap)
         .sorted_by_key(DirEntry::file_name);
@@ -87,7 +86,7 @@ fn data_subtitle_file_names_are_canonical() {
         let song_name = song_name.to_str().expect("path isn't valid UTF-8");
 
         let inner_entries = song_dir
-            .pipe(fs::read_dir)
+            .pipe(read_dir)
             .unwrap()
             .map(Result::unwrap)
             .sorted_by_key(DirEntry::file_name);
