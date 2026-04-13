@@ -86,18 +86,9 @@ fn skips_up_to_date_files() {
 
     let output = env.run(["--execute"]);
     let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(
-        stderr.contains("0 files would be removed from the target location"),
-        "expected 0 removals",
-    );
-    assert!(
-        stderr.contains("0 files would be added to the target location"),
-        "expected 0 additions",
-    );
-    assert!(
-        stderr.contains("0 files in the target location would be updated"),
-        "expected 0 updates",
-    );
+    assert!(stderr.contains("0 files would be removed from the target location"));
+    assert!(stderr.contains("0 files would be added to the target location"));
+    assert!(stderr.contains("0 files in the target location would be updated"));
 }
 
 #[test]
@@ -154,8 +145,5 @@ fn removes_orphaned_target_files() {
 
     env.run(["--execute"]);
 
-    assert!(
-        !orphaned.exists(),
-        "orphaned file should be removed from target",
-    );
+    assert!(!orphaned.exists());
 }

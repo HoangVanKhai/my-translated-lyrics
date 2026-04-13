@@ -26,14 +26,8 @@ fn hidden_visibility_causes_removal() {
 
     env.run(["--execute"]);
 
-    assert!(
-        !separated.exists(),
-        "hidden song's separated file should be removed",
-    );
-    assert!(
-        !unified.exists(),
-        "hidden song's unified file should be removed",
-    );
+    assert!(!separated.exists());
+    assert!(!unified.exists());
 }
 
 #[test]
