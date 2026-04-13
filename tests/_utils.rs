@@ -30,9 +30,6 @@ impl Temp {
             .map(char::from)
             .collect::<String>()
             .pipe(|name| temp_dir().join(name));
-        if path.exists() {
-            return Self::new_dir();
-        }
         create_dir(&path).unwrap_or_else(|error| panic!("failed to create {path:?}: {error}"));
         Temp(path)
     }
