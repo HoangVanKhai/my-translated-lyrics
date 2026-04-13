@@ -21,7 +21,7 @@ fn collect_subtitle_files(files: &mut Vec<PathBuf>, data_dir: &Path) {
 }
 
 /// Returns a grouping key that is shared by all language variants of the same
-/// subtitle file (e.g. `.../{video_title}.{lang}.srt`). The language component
+/// subtitle file (e.g. `.../{song_dir}/lyrics.{lang}.srt`). The language component
 /// is stripped so that different translations map to the same key.
 fn subtitle_group_key(path: &Path) -> Option<String> {
     let path = path.to_str().expect("path isn't valid UTF-8");
