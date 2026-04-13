@@ -1,7 +1,7 @@
 use derive_more::{AsRef, Deref, Display, Error, Into};
 use itertools::Itertools;
 use pipe_trait::Pipe;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Component, Path};
 use std::str::FromStr;
@@ -18,28 +18,27 @@ pub const UNIFIED_COLLECTION: &str = "Short Relaxing Playlist 2025";
 pub const VIDEO_CONFIG_FILE_NAME: &str = "video.toml";
 
 /// Parsed contents of a `video.toml` file.
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct VideoDesc {
     /// Target collection this video belongs to.
-    pub(crate) collection: CollectionName,
+    pub collection: CollectionName,
     /// Title of the video to which this subtitle set applies.
     /// It is used as the stem of target subtitle filenames.
-    pub(crate) video_title: VideoTitle,
+    pub video_title: VideoTitle,
     /// Titles of the song in each supported language.
-    #[expect(dead_code, reason = "not used for now, may be used in the future")]
-    song_titles: HashMap<Language, String>,
+    pub song_titles: HashMap<Language, String>,
     #[serde(default)]
-    pub(crate) visibility: Visibility,
+    pub visibility: Visibility,
 }
 
 /// Name of a managed target-collection directory. Can only be
 /// constructed from values listed in [`SEPARATED_COLLECTIONS`].
-#[derive(AsRef, Deref, Display, Into, Deserialize)]
+#[derive(Clone, AsRef, Deref, Display, Into, Deserialize, Serialize)]
 #[as_ref(forward)]
 #[deref(forward)]
-#[serde(try_from = "String")]
-pub(crate) struct CollectionName(
+#[serde(try_from = "String", into = "String")]
+pub struct CollectionName(
     /// Owned `String` rather than `&'static str`: every valid value is
     /// known statically today, but owning the string leaves room to
     /// replace [`SEPARATED_COLLECTIONS`] with a runtime source later
@@ -61,7 +60,7 @@ impl TryFrom<String> for CollectionName {
 
 #[derive(Debug, Display, Error)]
 #[non_exhaustive]
-pub(crate) enum ParseCollectionNameError {
+pub enum ParseCollectionNameError {
     #[display("unknown collection: {_0:?}")]
     UnknownCollection(#[error(not(source))] String),
 }
@@ -70,11 +69,11 @@ pub(crate) enum ParseCollectionNameError {
 /// title: it must be a single normal path component (so it can be used
 /// directly as the stem of an output filename), and it must contain
 /// no backslashes (for cross-platform consistency).
-#[derive(AsRef, Deref, Display, Into, Deserialize)]
+#[derive(Clone, AsRef, Deref, Display, Into, Deserialize, Serialize)]
 #[as_ref(forward)]
 #[deref(forward)]
-#[serde(try_from = "String")]
-pub(crate) struct VideoTitle(String);
+#[serde(try_from = "String", into = "String")]
+pub struct VideoTitle(String);
 
 impl TryFrom<String> for VideoTitle {
     type Error = ParseVideoTitleError;
@@ -93,16 +92,18 @@ impl TryFrom<String> for VideoTitle {
 
 #[derive(Debug, Display, Error)]
 #[non_exhaustive]
-pub(crate) enum ParseVideoTitleError {
+pub enum ParseVideoTitleError {
     #[display("video title must not contain backslashes")]
     ContainsBackslash,
     #[display("video title must be a single normal path component")]
     NotSingleComponent,
 }
 
-#[derive(Debug, strum::Display, PartialEq, Eq, Hash, AsRefStr, EnumString, Deserialize)]
-#[serde(try_from = "String")]
-pub(crate) enum Language {
+#[derive(
+    Clone, Debug, strum::Display, PartialEq, Eq, Hash, AsRefStr, EnumString, Deserialize, Serialize,
+)]
+#[serde(try_from = "String", into = "String")]
+pub enum Language {
     #[strum(serialize = "en")]
     English,
     #[strum(serialize = "vi")]
@@ -119,9 +120,15 @@ impl TryFrom<String> for Language {
     }
 }
 
-#[derive(Default, PartialEq, Eq, Deserialize)]
+impl From<Language> for String {
+    fn from(value: Language) -> Self {
+        value.to_string()
+    }
+}
+
+#[derive(Default, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
-pub(crate) enum Visibility {
+pub enum Visibility {
     /// The target subtitle files should be created and
     /// synchronized with the source.
     #[default]

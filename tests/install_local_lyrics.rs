@@ -1,72 +1,47 @@
-use derive_more::{AsRef, Deref};
-use my_translated_lyrics::video_descriptor::{SEPARATED_COLLECTIONS, UNIFIED_COLLECTION};
-use pipe_trait::Pipe;
+pub mod _utils;
+pub use _utils::*;
+
+use command_extra::CommandExtra;
+use itertools::Itertools;
+use my_translated_lyrics::video_descriptor::{
+    Language, SEPARATED_COLLECTIONS, UNIFIED_COLLECTION, VideoDesc, Visibility,
+};
 use pretty_assertions::assert_eq;
-use std::collections::BTreeSet;
-use std::env::temp_dir;
-use std::fs;
+use std::fs::{
+    create_dir, create_dir_all, read_dir, read_to_string, remove_file, write as write_file,
+};
+use std::iter::once;
 use std::path::PathBuf;
 use std::process::Command;
-use std::sync::atomic::{AtomicU64, Ordering};
+use text_block_macros::text_block_fnl;
 
 const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
 
-static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
-
-/// RAII temporary directory that is deleted on drop.
-#[derive(Debug, AsRef, Deref)]
-#[as_ref(forward)]
-#[deref(forward)]
-struct Temp(PathBuf);
-
-impl Temp {
-    fn new_dir() -> Self {
-        let count = TEMP_COUNTER.fetch_add(1, Ordering::Relaxed);
-        let pid = std::process::id();
-        format!("my-translated-lyrics-test-{pid}-{count}")
-            .pipe(|name| temp_dir().join(name))
-            .pipe(|path| {
-                fs::create_dir(&path)
-                    .unwrap_or_else(|error| panic!("failed to create {path:?}: {error}"));
-                Temp(path)
-            })
-    }
-}
-
-impl Drop for Temp {
-    fn drop(&mut self) {
-        let path = &self.0;
-        if let Err(error) = fs::remove_dir_all(path) {
-            eprintln!("warning: Failed to delete {path:?}: {error}");
-        }
-    }
-}
-
-/// Test environment with temporary source and target directories.
-struct TestEnv {
+/// Test workspace with temporary source and target directories.
+struct Workspace {
     _temp: Temp,
     source: PathBuf,
     target: PathBuf,
 }
 
-impl TestEnv {
-    /// Creates a new test environment with empty source and target
+impl Workspace {
+    /// Creates a new workspace with empty source and target
     /// directories. The target directory is pre-populated with the
     /// required collection subdirectories.
     fn new() -> Self {
         let temp = Temp::new_dir();
         let source = temp.join("source");
         let target = temp.join("target");
-        fs::create_dir(&source).unwrap();
-        fs::create_dir(&target).unwrap();
+        create_dir(&source).unwrap();
+        create_dir(&target).unwrap();
         for name in SEPARATED_COLLECTIONS
             .iter()
             .copied()
-            .chain(std::iter::once(UNIFIED_COLLECTION))
+            .chain(once(UNIFIED_COLLECTION))
         {
-            fs::create_dir_all(target.join(name)).unwrap();
+            create_dir_all(target.join(name)).unwrap();
         }
-        TestEnv {
+        Workspace {
             _temp: temp,
             source,
             target,
@@ -74,43 +49,26 @@ impl TestEnv {
     }
 
     /// Creates a video source directory with the given subtitle files.
-    fn create_video(
-        &self,
-        dir_name: &str,
-        collection: &str,
-        video_title: &str,
-        visibility: Option<&str>,
-        lyrics: &[(&str, &str)],
-    ) {
+    fn add_video(&self, dir_name: &str, desc: &VideoDesc, lyrics: &[(&str, &str)]) {
         let video_dir = self.source.join(dir_name);
-        fs::create_dir_all(&video_dir).unwrap();
+        create_dir_all(&video_dir).unwrap();
 
-        let visibility_line = visibility
-            .map(|vis| format!("visibility = \"{vis}\"\n"))
-            .unwrap_or_default();
-        let toml_content = format!(
-            "collection = \"{collection}\"\n\
-             video-title = \"{video_title}\"\n\
-             {visibility_line}\n\
-             [song-titles]\n\
-             vi = \"test\"\n\
-             zh = \"test\"\n"
-        );
-        fs::write(video_dir.join("video.toml"), toml_content).unwrap();
+        let toml_content = toml::to_string(desc).unwrap();
+        write_file(video_dir.join("video.toml"), toml_content).unwrap();
 
         for (file_name, content) in lyrics {
-            fs::write(video_dir.join(file_name), content).unwrap();
+            write_file(video_dir.join(file_name), content).unwrap();
         }
     }
 
     /// Runs `install-local-lyrics` and asserts it exits successfully.
-    fn run(&self, execute: bool) -> std::process::Output {
-        let mut cmd = Command::new(INSTALL_LOCAL_LYRICS);
-        if execute {
-            cmd.arg("--execute");
-        }
-        cmd.arg(&self.source).arg(&self.target);
-        let output = cmd.output().expect("failed to spawn install-local-lyrics");
+    fn run<Args: IntoIterator<Item = &'static str>>(&self, args: Args) -> std::process::Output {
+        let output = Command::new(INSTALL_LOCAL_LYRICS)
+            .with_args(args)
+            .with_arg(&self.source)
+            .with_arg(&self.target)
+            .output()
+            .expect("failed to spawn install-local-lyrics");
         assert!(
             output.status.success(),
             "install-local-lyrics failed:\n{}",
@@ -121,29 +79,28 @@ impl TestEnv {
 
     /// Collects all subtitle file paths relative to the target
     /// directory, sorted for deterministic comparison.
-    fn target_subtitle_files(&self) -> BTreeSet<String> {
-        let mut files = BTreeSet::new();
-        for name in SEPARATED_COLLECTIONS
+    fn target_subtitle_files(&self) -> Vec<String> {
+        SEPARATED_COLLECTIONS
             .iter()
             .copied()
-            .chain(std::iter::once(UNIFIED_COLLECTION))
-        {
-            let dir = self.target.join(name);
-            for entry in fs::read_dir(&dir).unwrap() {
-                let entry = entry.unwrap();
-                if entry.file_type().unwrap().is_file() {
-                    let file_name = entry.file_name();
-                    let file_name = file_name.to_str().unwrap();
-                    files.insert(format!("{name}/{file_name}"));
-                }
-            }
-        }
-        files
+            .chain(once(UNIFIED_COLLECTION))
+            .flat_map(|name| {
+                read_dir(self.target.join(name))
+                    .unwrap()
+                    .map(Result::unwrap)
+                    .filter(|entry| entry.file_type().unwrap().is_file())
+                    .map(move |entry| {
+                        let file_name = entry.file_name();
+                        format!("{name}/{}", file_name.to_str().unwrap())
+                    })
+            })
+            .sorted()
+            .collect()
     }
 
     /// Reads a target file's content.
     fn read_target(&self, collection: &str, file_name: &str) -> String {
-        fs::read_to_string(self.target.join(collection).join(file_name)).unwrap()
+        read_to_string(self.target.join(collection).join(file_name)).unwrap()
     }
 
     /// Returns the path to a target file.
@@ -152,18 +109,37 @@ impl TestEnv {
     }
 }
 
+fn video_desc(collection: &str, video_title: &str, visibility: Visibility) -> VideoDesc {
+    VideoDesc {
+        collection: collection.to_string().try_into().unwrap(),
+        video_title: video_title.to_string().try_into().unwrap(),
+        song_titles: [
+            (Language::Vietnamese, "test".to_string()),
+            (Language::Chinese, "test".to_string()),
+        ]
+        .into(),
+        visibility,
+    }
+}
+
 #[test]
 fn dry_run_does_not_create_files() {
-    let env = TestEnv::new();
-    env.create_video(
+    let workspace = Workspace::new();
+    let desc = video_desc("Feng Ling Yu Xiu", "TestVideo", Visibility::default());
+    workspace.add_video(
         "TestSong",
-        "Feng Ling Yu Xiu",
-        "TestVideo",
-        None,
-        &[("lyrics.vi.srt", "1\n00:00:01,000 --> 00:00:02,000\nHello\n")],
+        &desc,
+        &[(
+            "lyrics.vi.srt",
+            text_block_fnl! {
+                "1"
+                "00:00:01,000 --> 00:00:02,000"
+                "Hello"
+            },
+        )],
     );
 
-    let output = env.run(false);
+    let output = workspace.run(None::<&str>);
     let stderr = String::from_utf8_lossy(&output.stderr);
 
     assert!(
@@ -171,74 +147,86 @@ fn dry_run_does_not_create_files() {
         "expected dry-run message in stderr:\n{stderr}",
     );
     assert!(
-        env.target_subtitle_files().is_empty(),
+        workspace.target_subtitle_files().is_empty(),
         "dry run should not create any files",
     );
 }
 
 #[test]
 fn installs_subtitles_to_separated_and_unified_collections() {
-    let env = TestEnv::new();
+    let workspace = Workspace::new();
     let collection = "Feng Ling Yu Xiu";
     let video_title = "TestVideo";
-    let srt_content = "1\n00:00:01,000 --> 00:00:02,000\nHello\n";
-    let vtt_content = "WEBVTT\n\n00:00:01.000 --> 00:00:02.000\nHello\n";
+    let desc = video_desc(collection, video_title, Visibility::default());
+    let srt_content = text_block_fnl! {
+        "1"
+        "00:00:01,000 --> 00:00:02,000"
+        "Hello"
+    };
+    let vtt_content = text_block_fnl! {
+        "WEBVTT"
+        ""
+        "00:00:01.000 --> 00:00:02.000"
+        "Hello"
+    };
 
-    env.create_video(
+    workspace.add_video(
         "TestSong",
-        collection,
-        video_title,
-        None,
+        &desc,
         &[
             ("lyrics.vi.srt", srt_content),
             ("lyrics.zh.vtt", vtt_content),
         ],
     );
 
-    env.run(true);
+    workspace.run(["--execute"]);
 
-    let expected: BTreeSet<String> = [
+    let expected = vec![
         format!("{collection}/{video_title}.vi.srt"),
         format!("{collection}/{video_title}.zh.vtt"),
         format!("{UNIFIED_COLLECTION}/{video_title}.vi.srt"),
         format!("{UNIFIED_COLLECTION}/{video_title}.zh.vtt"),
-    ]
-    .into_iter()
-    .collect();
-    assert_eq!(env.target_subtitle_files(), expected);
+    ];
+    assert_eq!(workspace.target_subtitle_files(), expected);
 
     assert_eq!(
-        env.read_target(collection, &format!("{video_title}.vi.srt")),
+        workspace.read_target(collection, &format!("{video_title}.vi.srt")),
         srt_content,
     );
     assert_eq!(
-        env.read_target(collection, &format!("{video_title}.zh.vtt")),
+        workspace.read_target(collection, &format!("{video_title}.zh.vtt")),
         vtt_content,
     );
     assert_eq!(
-        env.read_target(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
+        workspace.read_target(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
         srt_content,
     );
     assert_eq!(
-        env.read_target(UNIFIED_COLLECTION, &format!("{video_title}.zh.vtt")),
+        workspace.read_target(UNIFIED_COLLECTION, &format!("{video_title}.zh.vtt")),
         vtt_content,
     );
 }
 
 #[test]
 fn skips_up_to_date_files() {
-    let env = TestEnv::new();
-    env.create_video(
+    let workspace = Workspace::new();
+    let desc = video_desc("Feng Ling Yu Xiu", "TestVideo", Visibility::default());
+    workspace.add_video(
         "TestSong",
-        "Feng Ling Yu Xiu",
-        "TestVideo",
-        None,
-        &[("lyrics.vi.srt", "1\n00:00:01,000 --> 00:00:02,000\nHello\n")],
+        &desc,
+        &[(
+            "lyrics.vi.srt",
+            text_block_fnl! {
+                "1"
+                "00:00:01,000 --> 00:00:02,000"
+                "Hello"
+            },
+        )],
     );
 
-    env.run(true);
+    workspace.run(["--execute"]);
 
-    let output = env.run(true);
+    let output = workspace.run(["--execute"]);
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
         stderr.contains("0 files would be removed from the target location"),
@@ -256,47 +244,50 @@ fn skips_up_to_date_files() {
 
 #[test]
 fn updates_modified_source_files() {
-    let env = TestEnv::new();
+    let workspace = Workspace::new();
     let collection = "Feng Ling Yu Xiu";
     let video_title = "UpdateVideo";
-    let original = "1\n00:00:01,000 --> 00:00:02,000\nOriginal\n";
-    let updated = "1\n00:00:01,000 --> 00:00:02,000\nUpdated\n";
+    let desc = video_desc(collection, video_title, Visibility::default());
+    let original = text_block_fnl! {
+        "1"
+        "00:00:01,000 --> 00:00:02,000"
+        "Original"
+    };
+    let updated = text_block_fnl! {
+        "1"
+        "00:00:01,000 --> 00:00:02,000"
+        "Updated"
+    };
 
-    env.create_video(
-        "UpdateSong",
-        collection,
-        video_title,
-        None,
-        &[("lyrics.vi.srt", original)],
-    );
-    env.run(true);
+    workspace.add_video("UpdateSong", &desc, &[("lyrics.vi.srt", original)]);
+    workspace.run(["--execute"]);
 
     // Break the hardlink by removing and recreating the source file
-    let source_file = env.source.join("UpdateSong").join("lyrics.vi.srt");
-    fs::remove_file(&source_file).unwrap();
-    fs::write(&source_file, updated).unwrap();
+    let source_file = workspace.source.join("UpdateSong").join("lyrics.vi.srt");
+    remove_file(&source_file).unwrap();
+    write_file(&source_file, updated).unwrap();
 
-    env.run(true);
+    workspace.run(["--execute"]);
 
     assert_eq!(
-        env.read_target(collection, &format!("{video_title}.vi.srt")),
+        workspace.read_target(collection, &format!("{video_title}.vi.srt")),
         updated,
     );
     assert_eq!(
-        env.read_target(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
+        workspace.read_target(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
         updated,
     );
 }
 
 #[test]
 fn removes_orphaned_target_files() {
-    let env = TestEnv::new();
+    let workspace = Workspace::new();
     let collection = "Feng Ling Yu Xiu";
 
-    let orphaned = env.target_path(collection, "Orphaned.vi.srt");
-    fs::write(&orphaned, "orphaned content").unwrap();
+    let orphaned = workspace.target_path(collection, "Orphaned.vi.srt");
+    write_file(&orphaned, "orphaned content").unwrap();
 
-    env.run(true);
+    workspace.run(["--execute"]);
 
     assert!(
         !orphaned.exists(),
@@ -306,24 +297,23 @@ fn removes_orphaned_target_files() {
 
 #[test]
 fn hidden_visibility_causes_removal() {
-    let env = TestEnv::new();
+    let workspace = Workspace::new();
     let collection = "Feng Ling Yu Xiu";
     let video_title = "HiddenVideo";
+    let desc = video_desc(collection, video_title, Visibility::Hidden);
 
-    let separated = env.target_path(collection, &format!("{video_title}.vi.srt"));
-    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
-    fs::write(&separated, "old content").unwrap();
-    fs::write(&unified, "old content").unwrap();
+    let separated = workspace.target_path(collection, &format!("{video_title}.vi.srt"));
+    let unified = workspace.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
+    write_file(&separated, "old content").unwrap();
+    write_file(&unified, "old content").unwrap();
 
-    env.create_video(
+    workspace.add_video(
         "HiddenSong",
-        collection,
-        video_title,
-        Some("hidden"),
+        &desc,
         &[("lyrics.vi.srt", "new content that should not be installed")],
     );
 
-    env.run(true);
+    workspace.run(["--execute"]);
 
     assert!(
         !separated.exists(),
@@ -337,26 +327,25 @@ fn hidden_visibility_causes_removal() {
 
 #[test]
 fn manual_visibility_preserves_existing_files() {
-    let env = TestEnv::new();
+    let workspace = Workspace::new();
     let collection = "Feng Ling Yu Xiu";
     let video_title = "ManualVideo";
+    let desc = video_desc(collection, video_title, Visibility::Manual);
     let manual_content = "manually edited content";
 
-    let separated = env.target_path(collection, &format!("{video_title}.vi.srt"));
-    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
-    fs::write(&separated, manual_content).unwrap();
-    fs::write(&unified, manual_content).unwrap();
+    let separated = workspace.target_path(collection, &format!("{video_title}.vi.srt"));
+    let unified = workspace.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
+    write_file(&separated, manual_content).unwrap();
+    write_file(&unified, manual_content).unwrap();
 
-    env.create_video(
+    workspace.add_video(
         "ManualSong",
-        collection,
-        video_title,
-        Some("manual"),
+        &desc,
         &[("lyrics.vi.srt", "source content that should not overwrite")],
     );
 
-    env.run(true);
+    workspace.run(["--execute"]);
 
-    assert_eq!(fs::read_to_string(&separated).unwrap(), manual_content);
-    assert_eq!(fs::read_to_string(&unified).unwrap(), manual_content);
+    assert_eq!(read_to_string(&separated).unwrap(), manual_content);
+    assert_eq!(read_to_string(&unified).unwrap(), manual_content);
 }

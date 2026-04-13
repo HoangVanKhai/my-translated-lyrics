@@ -22,4 +22,6 @@ strum = { version = "0.28.0", features = ["derive"] }
 toml = "1.1.2"
 
 [dev-dependencies]
+command-extra = "1.0.0"
 pretty_assertions = "1.4.1"
+text-block-macros = "0.2.0"
