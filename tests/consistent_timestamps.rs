@@ -1,4 +1,4 @@
-use my_translated_lyrics::video_descriptor::Language;
+use my_translated_lyrics::video_descriptor::LyricsFileName;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::collections::BTreeMap;
@@ -25,20 +25,18 @@ fn collect_subtitle_files(files: &mut Vec<PathBuf>, data_dir: &Path) {
 /// subtitle file (e.g. `.../{song_dir}/lyrics.{lang}.srt`). The language component
 /// is stripped so that different translations map to the same key.
 fn subtitle_group_key(path: &Path) -> Option<String> {
-    let path = path.to_str().expect("path isn't valid UTF-8");
-    for format in ["srt", "vtt"] {
-        let suffix = format!(".{format}");
-        if let Some(without_format) = path.strip_suffix(&suffix)
-            && let Some(dot_pos) = without_format.rfind('.')
-        {
-            let language = &without_format[dot_pos + 1..];
-            if language.parse::<Language>().is_ok() {
-                let stem = &without_format[..dot_pos];
-                return Some(format!("{stem}::{format}"));
-            }
-        }
-    }
-    None
+    let file_name = path.file_name()?.to_str().expect("path isn't valid UTF-8");
+    file_name.parse::<LyricsFileName>().ok()?;
+    let format = path
+        .extension()?
+        .to_str()
+        .expect("extension isn't valid UTF-8");
+    let path_str = path.to_str().expect("path isn't valid UTF-8");
+    let stem = path_str
+        .strip_suffix(&format!(".{format}"))?
+        .rsplit_once('.')?
+        .0;
+    Some(format!("{stem}::{format}"))
 }
 
 fn extract_timestamps(content: &str) -> Vec<&str> {
