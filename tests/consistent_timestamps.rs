@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 use std::fs::{DirEntry, ReadDir, read_dir, read_to_string};
 use std::path::{Path, PathBuf};
 
-/// Collects all recognized lyrics files (`lyrics.{lang}.{srt,vtt}`) from the
+/// Collects all recognized lyrics files from the
 /// song subdirectories of `data_dir`.
 fn collect_lyrics_files(data_dir: &Path) -> Vec<PathBuf> {
     data_dir
