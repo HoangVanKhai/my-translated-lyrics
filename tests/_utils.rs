@@ -8,6 +8,7 @@ use my_translated_lyrics::video_descriptor::{
 use pipe_trait::Pipe;
 use rand::{RngExt, distr::Alphanumeric, rng};
 use std::env::temp_dir;
+use std::ffi::OsString;
 use std::fs::{create_dir, create_dir_all, read_dir, read_to_string, write as write_file};
 use std::iter::once;
 use std::path::PathBuf;
@@ -129,7 +130,10 @@ impl InstallLocalLyricsEnv {
                     .unwrap()
                     .map(Result::unwrap)
                     .filter(|entry| entry.file_type().unwrap().is_file())
-                    .map(move |entry| format!("{name}/{}", entry.file_name().to_str().unwrap()))
+                    .map(|entry| entry.file_name())
+                    .map(OsString::into_string)
+                    .map(Result::unwrap)
+                    .map(move |file_name| format!("{name}/{file_name}"))
             })
             .sorted()
             .collect()
