@@ -28,10 +28,7 @@ fn dry_run_does_not_create_files() {
     let output = env.run(None::<&str>);
     let stderr = String::from_utf8_lossy(&output.stderr);
 
-    assert!(
-        stderr.contains("No changes were actually made"),
-        "expected dry-run message in stderr",
-    );
+    assert!(stderr.contains("No changes were actually made"));
     assert!(
         env.target_subtitle_files().is_empty(),
         "dry run should not create any files",
