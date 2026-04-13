@@ -5,7 +5,9 @@ use std::collections::BTreeMap;
 use std::fs::{read_dir, read_to_string};
 use std::path::{Path, PathBuf};
 
-fn collect_subtitle_files(files: &mut Vec<PathBuf>, data_dir: &Path) {
+/// Collects all recognized lyrics files (`lyrics.{lang}.{srt,vtt}`) from the
+/// song subdirectories of `data_dir`.
+fn collect_lyrics_files(files: &mut Vec<PathBuf>, data_dir: &Path) {
     for entry in read_dir(data_dir).unwrap() {
         let song_dir = entry.unwrap().path();
         if !song_dir.is_dir() {
@@ -13,8 +15,12 @@ fn collect_subtitle_files(files: &mut Vec<PathBuf>, data_dir: &Path) {
         }
         for entry in read_dir(&song_dir).unwrap() {
             let path = entry.unwrap().path();
-            let path_str = path.to_str().expect("path isn't valid UTF-8");
-            if path_str.ends_with(".srt") || path_str.ends_with(".vtt") {
+            let file_name = path
+                .file_name()
+                .unwrap()
+                .to_str()
+                .expect("path isn't valid UTF-8");
+            if file_name.parse::<LyricsFileName>().is_ok() {
                 files.push(path);
             }
         }
@@ -57,7 +63,7 @@ fn file_timestamps_match() {
     let data_dir = env!("CARGO_MANIFEST_DIR").pipe(Path::new).join("data");
 
     let mut files = Vec::new();
-    collect_subtitle_files(&mut files, &data_dir);
+    collect_lyrics_files(&mut files, &data_dir);
     files.sort();
 
     // Group files by (stem, format) so that language variants share a key.
