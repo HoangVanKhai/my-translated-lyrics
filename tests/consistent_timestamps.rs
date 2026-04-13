@@ -24,19 +24,26 @@ fn collect_subtitle_files(files: &mut Vec<PathBuf>, data_dir: &Path) {
 /// Returns a grouping key that is shared by all language variants of the same
 /// subtitle file (e.g. `.../{song_dir}/lyrics.{lang}.srt`). The language component
 /// is stripped so that different translations map to the same key.
-fn subtitle_group_key(path: &Path) -> Option<String> {
-    let file_name = path.file_name()?.to_str().expect("path isn't valid UTF-8");
-    file_name.parse::<LyricsFileName>().ok()?;
+fn subtitle_group_key(path: &Path) -> String {
+    let file_name = path
+        .file_name()
+        .unwrap()
+        .to_str()
+        .expect("path isn't valid UTF-8");
+    file_name.parse::<LyricsFileName>().unwrap();
     let format = path
-        .extension()?
+        .extension()
+        .unwrap()
         .to_str()
         .expect("extension isn't valid UTF-8");
     let path_str = path.to_str().expect("path isn't valid UTF-8");
     let stem = path_str
-        .strip_suffix(&format!(".{format}"))?
-        .rsplit_once('.')?
+        .strip_suffix(&format!(".{format}"))
+        .unwrap()
+        .rsplit_once('.')
+        .unwrap()
         .0;
-    Some(format!("{stem}::{format}"))
+    format!("{stem}::{format}")
 }
 
 fn extract_timestamps(content: &str) -> Vec<&str> {
@@ -57,9 +64,8 @@ fn file_timestamps_match() {
     // Group files by (stem, format) so that language variants share a key.
     let mut groups: BTreeMap<String, Vec<PathBuf>> = BTreeMap::new();
     for path in files {
-        if let Some(key) = subtitle_group_key(&path) {
-            groups.entry(key).or_default().push(path);
-        }
+        let key = subtitle_group_key(&path);
+        groups.entry(key).or_default().push(path);
     }
 
     assert!(
