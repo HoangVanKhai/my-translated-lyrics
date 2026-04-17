@@ -16,7 +16,7 @@
 00:00:14,160 --> 00:00:22,120
 <font color="#AAAA22">Hòa âm</font>  <font color="#AAAAAA">雨观</font>
 <font color="#AAAA22">Mỹ thuật</font>  <font color="#AAAAAA">一勺酸橙汁</font>
-<font color="#AAAA22">Video</font>  <font color="#AAAAAA"> Ａ影羌<font color="#55ABCD">【璇玑坊Studio】</font></font>
+<font color="#AAAA22">Video</font>  <font color="#AAAAAA">Ａ影羌<font color="#55ABCD">【璇玑坊Studio】</font></font>
 <font color="#AAAA22">Tư liệu tham chiếu</font>  <font color="#AAAAAA"><font color="#55ABCD">【废画】</font>良月十八 <font color="#55ABCD">【无声诗】</font>山晚樵渔 <font color="#55ABCD">【今日晴】</font>九镜</font>
 
 4
@@ -129,7 +129,7 @@ Cười trở về chốn sơn thủy hồng trần.
 00:01:47,560 --> 00:01:55,120
 <font color="#AAAA22">Hòa âm</font>  <font color="#AAAAAA">雨观</font>
 <font color="#AAAA22">Mỹ thuật</font>  <font color="#AAAAAA">一勺酸橙汁</font>
-<font color="#AAAA22">Video</font>  <font color="#AAAAAA"> Ａ影羌<font color="#55ABCD">【璇玑坊Studio】</font></font>
+<font color="#AAAA22">Video</font>  <font color="#AAAAAA">Ａ影羌<font color="#55ABCD">【璇玑坊Studio】</font></font>
 <font color="#AAAA22">Tư liệu tham chiếu</font>  <font color="#AAAAAA"><font color="#55ABCD">【废画】</font>良月十八 <font color="#55ABCD">【无声诗】</font>山晚樵渔 <font color="#55ABCD">【今日晴】</font>九镜</font>
 
 30
