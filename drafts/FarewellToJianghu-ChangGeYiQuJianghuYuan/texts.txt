@@ -52,13 +52,13 @@
 # Checkpoint: 00-00-55-160.png
 燃却繁星野火
 
-# NOTE: the ~~ was inserted manually by the transciptor
+# NOTE: the ~~ was inserted manually by the transcriptor
 ~~燃却繁星野火~~
 何惧生死比肩
 
 西风此去天涯
 
-# NOTE: the ~~ was inserted manually by the transciptor
+# NOTE: the ~~ was inserted manually by the transcriptor
 ~~西风此去天涯~~
 片叶皆不沾
 
@@ -130,7 +130,7 @@
 # Checkpoint: 00-02-11-240.png
 飘摇风雪回眸处
 
-# NOTE: the ~~ was inserted manually by the transciptor
+# NOTE: the ~~ was inserted manually by the transcriptor
 ~~飘摇风雪回眸处~~
 探丛中刀与剑
 
@@ -152,13 +152,13 @@
 
 此夜晴好  花欲燃
 
-# NOTE: the ~~ was inserted manually by the transciptor
+# NOTE: the ~~ was inserted manually by the transcriptor
 ~~此夜晴好  花欲燃~~
 伴霜露倚斜阑
 
 是故人千里风
 
-# NOTE: the ~~ was inserted manually by the transciptor
+# NOTE: the ~~ was inserted manually by the transcriptor
 ~~是故人千里风~~
 殷勤为探看
 
