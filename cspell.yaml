@@ -74,13 +74,12 @@ words:
   - Vsrk
   - WOVOP
   # Technical terms
-  - millis
   - transciptor
   - WEBVTT
-  - viet
 import:
   - '@cspell/dict-vi-vn/cspell-ext.json'
 ignorePaths:
+  - 'drafts/**/*.js'
   - 'trash/**'
 overrides:
   - filename:
