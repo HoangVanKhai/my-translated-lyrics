@@ -19,16 +19,22 @@ overrides:
       - '**/*.vi.*.txt'
     language: en,vi
     words:
+      - AXIDI
+      - Dinstakovich
+      - distantal
       - khóa
       - nguôi
       - nhòa
       - Nhụy
+      - Sekinen
       - thỏa
       - Thùy
       - Thủy
+      - Tianyi
       - trỗi
-      - Dinstakovich
-      - Sekinen
+      - Vsinger
+      - WOVOP
+      - Yuezheng
   - filename:
       - '**/*.zh.srt'
       - '**/*.zh.vtt'
@@ -36,19 +42,6 @@ overrides:
       - '**/*.zh-*.srt'
       - '**/*.zh-*.vtt'
     language: en
-  - filename:
-      - '**/*.en.srt'
-      - '**/*.en.vtt'
-    language: en
-  - filename:
-      - '**/*.vi.srt'
-      - '**/*.vi.vtt'
-      - '**/*.vi.*.srt'
-      - '**/*.vi.*.vtt'
-      - '**/*.vi.*.txt'
-      - '**/*.zh.srt'
-      - '**/*.zh.vtt'
-      - '**/*.zh.txt'
     words:
       - AXIDI
       - distantal
@@ -56,6 +49,10 @@ overrides:
       - Vsinger
       - WOVOP
       - Yuezheng
+  - filename:
+      - '**/*.en.srt'
+      - '**/*.en.vtt'
+    language: en
   - filename: '**/*.vtt'
     words:
       - WEBVTT
