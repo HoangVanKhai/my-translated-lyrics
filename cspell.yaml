@@ -59,6 +59,3 @@ overrides:
   - filename: '**/*.vtt'
     words:
       - WEBVTT
-  - filename: '**/texts.txt'
-    words:
-      - transciptor
