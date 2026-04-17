@@ -1,0 +1,10 @@
+{
+  "name": "translated-lyrics",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.0.0-rc.1",
+  "devDependencies": {
+    "@cspell/dict-vi-vn": "^3.0.6",
+    "cspell": "^10.0.0"
+  }
+}

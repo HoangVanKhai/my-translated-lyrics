@@ -1,22 +1,79 @@
-language: en
-words:
-  - Feng
-  - Tianyi
-  - Touhou
-  - transciptor
-  - WEBVTT
-  - Yuezheng
+import:
+  - '@cspell/dict-vi-vn/cspell-ext.json'
 ignorePaths:
-  # because of a bug in overrides.filename,
-  # disabling cspell entirely for all subtitles
-  # is the only way
-  - 'data/**'
-  - 'drafts/**'
+  - '**/video.toml'
+  - 'Cargo.lock'
+  - 'Cargo.toml'
+  - 'cspell.yaml'
+  - 'drafts/**/*.js'
+  - 'drafts/**/*.json'
+  - 'LICENSE.md'
+  - 'package.json'
+  - 'pnpm-lock.yaml'
   - 'trash/**'
-# overrides:
-#   - filename: "**/*.vi.srt"
-#     language: vi-VN
-#   - filename: "**/*.zh.srt"
-#     language: zh-CN
-#   - filename: "**/*.en.srt"
-#     language: en
+overrides:
+  - filename:
+      - '**/*.vi.srt'
+      - '**/*.vi.vtt'
+      - '**/*.vi.*.srt'
+      - '**/*.vi.*.vtt'
+      - '**/*.vi.*.txt'
+    language: en,vi
+    words:
+      - AXIDI
+      - Dinstakovich
+      - distantal
+      - khóa
+      - nguôi
+      - nhòa
+      - Nhụy
+      - Sekinen
+      - thỏa
+      - Thùy
+      - Thủy
+      - Tianyi
+      - trỗi
+      - Vsinger
+      - WOVOP
+      - Yuezheng
+  - filename:
+      - '**/*.zh.srt'
+      - '**/*.zh.vtt'
+      - '**/*.zh.txt'
+      - '**/*.zh-*.srt'
+      - '**/*.zh-*.vtt'
+    language: en,zh
+    words:
+      - AXIDI
+      - distantal
+      - Tianyi
+      - Vsinger
+      - WOVOP
+      - Yuezheng
+  - filename:
+      - '**/*.en.srt'
+      - '**/*.en.vtt'
+    language: en
+  - filename: '**/*.vtt'
+    words:
+      - WEBVTT
+  - filename: '**/texts.txt'
+    words:
+      - transcriptor
+  - filename: '**/*.rs'
+    words:
+      - Feng
+      - hardlink
+      - maplit
+      - rsplit
+      - Tianyi
+      - Touhou
+      - WEBVTT
+      - Yuezheng
+  - filename: '**/*.md'
+    words:
+      - clippy
+      - newtype
+      - rustup
+      - serde
+      - usize
