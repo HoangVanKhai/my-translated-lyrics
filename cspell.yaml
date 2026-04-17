@@ -1,16 +1,15 @@
-language: en
 import:
   - '@cspell/dict-vi-vn/cspell-ext.json'
 ignorePaths:
+  - '**/video.toml'
   - 'Cargo.lock'
   - 'Cargo.toml'
   - 'cspell.yaml'
+  - 'drafts/**/*.js'
+  - 'drafts/**/*.json'
   - 'LICENSE.md'
   - 'package.json'
   - 'pnpm-lock.yaml'
-  - '**/video.toml'
-  - 'drafts/**/*.js'
-  - 'drafts/**/*.json'
   - 'trash/**'
 overrides:
   - filename:
