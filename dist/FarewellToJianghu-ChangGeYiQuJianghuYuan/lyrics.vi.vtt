@@ -1,0 +1,222 @@
+WEBVTT
+Language: vi
+
+STYLE
+::cue {
+  background-color: transparent;
+  text-shadow: 2px 2px 2px black;
+}
+::cue(c.creditRole) {
+  color: #AAAA22;
+}
+::cue(c.creditName) {
+  color: #AAAAAA;
+}
+::cue(c.creditSpecial) {
+  color: #55ABCD;
+}
+::cue(c.title) {
+  color: #FFD966;
+  font-weight: bold;
+}
+
+00:00:02.960 --> 00:00:08.360
+<c.creditRole>Trình bày</c>  <c.creditName>Luo Tianyi  Yuezheng Ling</c>
+<c.creditRole>Soạn nhạc</c>  <c.creditName>雨观</c>
+<c.creditRole>Viết lời</c>  <c.creditName>雨观</c>
+<c.creditRole>Phối khí</c>  <c.creditName>雨观</c>
+
+00:00:08.360 --> 00:00:14.160
+<c.creditRole>Kế hoạch</c>  <c.creditName>三世</c>
+<c.creditRole>Nhà sản xuất</c>  <c.creditName>雨观</c>
+<c.creditRole>Căn chỉnh giọng hát</c>  <c.creditName>鬼面Ｐ</c>
+<c.creditRole>Viết hòa thanh</c>  <c.creditName>雨观</c>
+
+00:00:14.160 --> 00:00:22.120
+<c.creditRole>Hòa âm</c>  <c.creditName>雨观</c>
+<c.creditRole>Mỹ thuật</c>  <c.creditName>一勺酸橙汁</c>
+<c.creditRole>Video</c>  <c.creditName> Ａ影羌<c.creditSpecial>【璇玑坊Studio】</c></c>
+<c.creditRole>Tư liệu tham chiếu</c>  <c.creditName><c.creditSpecial>【废画】</c>良月十八 <c.creditSpecial>【无声诗】</c>山晚樵渔 <c.creditSpecial>【今日晴】</c>九镜</c>
+
+00:00:22.120 --> 00:00:30.600
+<c.title>《Trường Ca Nhất Khứ Giang Hồ Viễn》</c.title>
+
+00:00:30.600 --> 00:00:33.320
+Trăng sông soi bóng núi trùng điệp, ruổi ngựa gấp hướng về Nam
+
+00:00:33.320 --> 00:00:34.800
+Triệu gọi kiếm ý thập phương, làm rung chuyển cả ngàn con sông
+
+00:00:34.800 --> 00:00:36.880
+Đất trời bao la, thỏa du ngoạn
+
+00:00:36.880 --> 00:00:38.880
+Có linh thú bầu bạn tâm đầu
+
+00:00:38.880 --> 00:00:41.520
+Cùng người dạo thuyền ngắm thế gian
+
+00:00:41.520 --> 00:00:43.920
+Trăng rụng, trời sương lạnh lẽo
+
+00:00:43.920 --> 00:00:48.480
+Cũng chẳng thể làm nguội lạnh tấm lòng can đảm của bình sinh.
+
+00:00:48.480 --> 00:00:51.200
+Nước chảy đá mòn, sông ra biển lớn chẳng quay về
+
+00:00:51.200 --> 00:00:52.800
+Đêm nay cỏ cây xoay chuyển, nỗi lòng mềm yếu
+
+00:00:52.800 --> 00:00:54.760
+Cảnh xuân nơi rừng vắng đã muộn màng
+
+00:00:54.760 --> 00:00:57.160
+Đốt cháy những vì sao bằng ngọn lửa hoang dã
+
+00:00:57.160 --> 00:01:00.160
+Sá chi sinh tử, kề vai sát cánh
+
+00:01:00.160 --> 00:01:02.520
+Gió tây lên đường đến chân trời
+
+00:01:02.520 --> 00:01:07.480
+Một phiến lá cũng chẳng vương thân.
+
+00:01:07.480 --> 00:01:11.080
+Có câu rằng: Gặp gỡ nơi đây, những thiếu niên đầy ý chí
+
+00:01:11.080 --> 00:01:13.600
+Một khúc trường ca cất lên, giang hồ đã cách xa
+
+00:01:13.600 --> 00:01:17.360
+Lại kể về nghìn thu thịnh thế, bên cạnh Trích Tinh Lâu
+
+00:01:17.360 --> 00:01:19.560
+Bắn hạ tên bay rơi trước yên
+
+00:01:19.560 --> 00:01:23.040
+Khi ấy mây ngũ sắc vẫn còn đó, lòng tràn đầy tình ý
+
+00:01:23.040 --> 00:01:25.640
+Một nắm trăng tan, rửa sạch suối lòng
+
+00:01:25.640 --> 00:01:28.920
+Quê cũ xa xăm, gió xuân hiu hắt, mưa chiều lạnh lẽo
+
+00:01:28.920 --> 00:01:36.000
+Cười trở về chốn sơn thủy hồng trần.
+
+00:01:36.000 --> 00:01:41.520
+<c.creditRole>Trình bày</c>  <c.creditName>Luo Tianyi  Yuezheng Ling</c>
+<c.creditRole>Soạn nhạc</c>  <c.creditName>雨观</c>
+<c.creditRole>Viết lời</c>  <c.creditName>雨观</c>
+<c.creditRole>Phối khí</c>  <c.creditName>雨观</c>
+
+00:01:41.520 --> 00:01:47.560
+<c.creditRole>Kế hoạch</c>  <c.creditName>三世</c>
+<c.creditRole>Nhà sản xuất</c>  <c.creditName>雨观</c>
+<c.creditRole>Căn chỉnh giọng hát</c>  <c.creditName>鬼面Ｐ</c>
+<c.creditRole>Viết hòa thanh</c>  <c.creditName>雨观</c>
+
+00:01:47.560 --> 00:01:55.120
+<c.creditRole>Hòa âm</c>  <c.creditName>雨观</c>
+<c.creditRole>Mỹ thuật</c>  <c.creditName>一勺酸橙汁</c>
+<c.creditRole>Video</c>  <c.creditName> Ａ影羌<c.creditSpecial>【璇玑坊Studio】</c></c>
+<c.creditRole>Tư liệu tham chiếu</c>  <c.creditName><c.creditSpecial>【废画】</c>良月十八 <c.creditSpecial>【无声诗】</c>山晚樵渔 <c.creditSpecial>【今日晴】</c>九镜</c>
+
+00:01:55.120 --> 00:02:03.160
+<c.title>《Trường Ca Nhất Khứ Giang Hồ Viễn》</c.title>
+
+00:02:03.160 --> 00:02:06.280
+Nơi nào là giang hồ? Phàm tâm tự khắc thấu hiểu
+
+00:02:06.280 --> 00:02:08.120
+Một tối thu sang, mưa chiều đối diện cánh buồm cô độc
+
+00:02:08.120 --> 00:02:09.920
+Gối đầu lên mộng mà đi đến Linh Sơn
+
+00:02:09.920 --> 00:02:12.400
+Nơi tuyết bay gió cuốn, ngoảnh đầu nhìn lại
+
+00:02:12.400 --> 00:02:15.120
+Giữa cỏ nội thám tìm đao cùng kiếm
+
+00:02:15.120 --> 00:02:17.320
+Lưỡi đao lạnh lẽo đôi khi cũng mòn cùn
+
+00:02:17.320 --> 00:02:21.200
+Mà ánh sáng thiên giới lại bao la vô tận.
+
+00:02:21.200 --> 00:02:24.640
+Nhược Thủy hà tất phải uống, cứ đuổi theo biển rộng vực sâu
+
+00:02:24.640 --> 00:02:25.880
+Là vạn khoảnh bích sơn ngời sắc ngọc
+
+00:02:25.880 --> 00:02:27.840
+In bóng giữa làn mây mặt nước mênh mông
+
+00:02:27.840 --> 00:02:30.440
+Đêm nay trời đẹp, hoa rực rỡ như muốn cháy lên
+
+00:02:30.440 --> 00:02:33.400
+Cùng sương sớm tựa bên hiên vắng
+
+00:02:33.400 --> 00:02:35.520
+Là ngọn gió ngàn dặm của cố nhân
+
+00:02:35.520 --> 00:02:39.200
+Ân cần ghé thăm ta.
+
+00:02:39.200 --> 00:02:42.800
+Người có biết chăng? Dẫu trời mòn đất lở, biển xanh hóa nương dâu
+
+00:02:42.800 --> 00:02:44.880
+Khúc trường ca hát vang khắp giang hồ xa xôi
+
+00:02:44.880 --> 00:02:48.800
+Cũng hát không hết một ánh mắt thấu hiểu của thiếu niên
+
+00:02:48.800 --> 00:02:51.080
+Duyên sâu mộng cũ gửi lại chốn nhân gian
+
+00:02:51.080 --> 00:02:54.800
+Biết bao ánh ráng chiều tan đi, gió trăng là vô tận
+
+00:02:54.800 --> 00:02:56.880
+Gảy đàn ca hát, uống rượu say, phải hỏi đến thanh kiếm
+
+00:02:56.880 --> 00:03:00.440
+Đợi đến khi nước thu róc rách, mây trôi hững hờ
+
+00:03:00.440 --> 00:03:06.400
+Nơi đào hoa sâu thẳm, tìm đến hỏi bậc thần tiên.
+
+00:03:06.400 --> 00:03:09.960
+Có câu rằng: Gặp gỡ nơi đây, những thiếu niên đầy ý chí
+
+00:03:09.960 --> 00:03:11.920
+Một khúc trường ca cất lên, giang hồ đã cách xa
+
+00:03:11.920 --> 00:03:15.680
+Lại kể về nghìn thu thịnh thế, bên cạnh Trích Tinh Lâu
+
+00:03:15.680 --> 00:03:18.040
+Bắn hạ tên bay rơi trước yên
+
+00:03:18.040 --> 00:03:22.040
+Khi ấy mây ngũ sắc vẫn còn đó, lòng tràn đầy tình ý
+
+00:03:22.040 --> 00:03:23.880
+Cầm một vốc trăng tan, rửa sạch suối lòng
+
+00:03:23.880 --> 00:03:27.800
+Quê cũ xa xăm, gió xuân hiu hắt, mưa chiều lạnh lẽo
+
+00:03:27.800 --> 00:03:34.760
+Cười vang khi trở về giữa sơn thủy hồng trần.
+
+00:03:34.760 --> 00:03:48.000
+<c.title>《Trường Ca Nhất Khứ Giang Hồ Viễn》</c.title>
