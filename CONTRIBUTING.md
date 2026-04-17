@@ -199,9 +199,15 @@ rustup toolchain install "$(< rust-toolchain)"
 rustup component add --toolchain "$(< rust-toolchain)" rustfmt clippy
 ```
 
+Install the Node.js dependencies used for spell checking via [pnpm](https://pnpm.io):
+
+```sh
+pnpm install --frozen-lockfile
+```
+
 ## Automated Checks
 
-Before submitting, ensure:
+Before submitting, ensure the Rust checks pass:
 
 - `cargo fmt -- --check` passes
 - `cargo clippy --all-targets` passes
@@ -218,3 +224,13 @@ cargo fmt -- --check && cargo clippy --all-targets && cargo test
 
 > [!NOTE]
 > If a sync test fails, read its error message carefully and run the exact command it tells you to run.
+
+### Spell Check
+
+CI also runs a [CSpell](https://cspell.org) spell check via the following command:
+
+```sh
+pnpm exec cspell lint --no-progress --gitignore '**'
+```
+
+Running it locally is a good idea when you touch prose or identifiers, but it is a lighter check than the Rust test suite and triggers only occasionally. Spell-check configuration — including per-language dictionaries and allowed words — lives in `cspell.yaml`. When CSpell flags a legitimate word that is missing from the dictionary, add it to the appropriate `words` list in `cspell.yaml` rather than rewording the content.
