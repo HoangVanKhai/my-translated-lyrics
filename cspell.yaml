@@ -5,7 +5,9 @@ words:
 import:
   - '@cspell/dict-vi-vn/cspell-ext.json'
 ignorePaths:
+  - 'Cargo.lock'
   - 'cspell.yaml'
+  - 'pnpm-lock.yaml'
   - '**/video.toml'
   - 'drafts/**/*.js'
   - 'drafts/**/*.json'
