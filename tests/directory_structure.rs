@@ -4,7 +4,7 @@ use std::fs::{DirEntry, read_dir};
 use std::path::Path;
 use translated_lyrics::video_descriptor::{LyricsFileName, ParseLyricsFileNameError};
 
-/// Verify that `data/` and `drafts/` have a flat two-level structure:
+/// Verify that `data/`, `drafts/`, and `sources/` have a flat two-level structure:
 ///
 /// ```text
 /// data/
@@ -20,7 +20,7 @@ use translated_lyrics::video_descriptor::{LyricsFileName, ParseLyricsFileNameErr
 /// and directories nested inside a song directory (too deep).
 #[test]
 fn data_and_drafts_have_flat_structure() {
-    for top_dir_name in ["data", "drafts"] {
+    for top_dir_name in ["data", "drafts", "sources"] {
         let top_dir = env!("CARGO_MANIFEST_DIR")
             .pipe(Path::new)
             .join(top_dir_name);
