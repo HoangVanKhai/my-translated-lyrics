@@ -1,0 +1,92 @@
+# clr: Xóa chữ trên màn hình
+# LRC: Lời ca (chưa rõ ai là người hát)
+# ttl: Tiêu đề ca khúc
+# cre: Thông tin sản xuất
+# eov: Kết thúc MV
+
+00:02.960 cre: Trình bày  Luo Tianyi  Yuezheng Ling
+               Soạn nhạc  雨观
+               Viết lời  雨观
+               Phối khí  雨观
+00:08.360 cre: Kế hoạch  三世
+               Nhà sản xuất  雨观
+               Căn chỉnh giọng hát  鬼面Ｐ
+               Viết hòa thanh  雨观
+00:14.160 cre: Hòa âm  雨观
+               Mỹ thuật  一勺酸橙汁
+               Video  Ａ影羌【璇玑坊Studio】
+               Tư liệu tham chiếu  【废画】良月十八 【无声诗】山晚樵渔 【今日晴】九镜
+00:22.120 ttl:《Trường Ca Nhất Khứ Giang Hồ Viễn》
+
+00:30.600 LRC: Trăng sông soi bóng núi trùng điệp, ruổi ngựa gấp hướng về Nam
+00:33.320 LRC: Triệu gọi kiếm ý thập phương, làm rung chuyển cả ngàn con sông
+00:34.800 LRC: Đất trời bao la, thỏa du ngoạn
+00:36.880 LRC: Có linh thú bầu bạn tâm đầu
+00:38.880 LRC: Cùng người dạo thuyền ngắm thế gian
+00:41.520 LRC: Trăng rụng, trời sương lạnh lẽo
+00:43.920 LRC: Cũng chẳng thể làm nguội lạnh tấm lòng can đảm của bình sinh.
+00:48.480 LRC: Nước chảy đá mòn, sông ra biển lớn chẳng quay về
+00:51.200 LRC: Đêm nay cỏ cây xoay chuyển, nỗi lòng mềm yếu
+00:52.800 LRC: Cảnh xuân nơi rừng vắng đã muộn màng
+00:54.760 LRC: Đốt cháy những vì sao bằng ngọn lửa hoang dã
+00:57.160 LRC: Sá chi sinh tử, kề vai sát cánh
+01:00.160 LRC: Gió tây lên đường đến chân trời
+01:02.520 LRC: Một phiến lá cũng chẳng vương thân.
+01:07.480 LRC: Có câu rằng: Gặp gỡ nơi đây, những thiếu niên đầy ý chí
+01:11.080 LRC: Một khúc trường ca cất lên, giang hồ đã cách xa
+01:13.600 LRC: Lại kể về nghìn thu thịnh thế, bên cạnh Trích Tinh Lâu
+01:17.360 LRC: Bắn hạ tên bay rơi trước yên
+01:19.560 LRC: Khi ấy mây ngũ sắc vẫn còn đó, lòng tràn đầy tình ý
+01:23.040 LRC: Một nắm trăng tan, rửa sạch suối lòng
+01:25.640 LRC: Quê cũ xa xăm, gió xuân hiu hắt, mưa chiều lạnh lẽo
+01:28.920 LRC: Cười trở về chốn sơn thủy hồng trần.
+
+01:36.000 cre: Trình bày  Luo Tianyi  Yuezheng Ling
+               Soạn nhạc  雨观
+               Viết lời  雨观
+               Phối khí  雨观
+01:41.520 cre: Kế hoạch  三世
+               Nhà sản xuất  雨观
+               Căn chỉnh giọng hát  鬼面Ｐ
+               Viết hòa thanh  雨观
+01:47.560 cre: Hòa âm  雨观
+               Mỹ thuật  一勺酸橙汁
+               Video  Ａ影羌【璇玑坊Studio】
+               Tư liệu tham chiếu  【废画】良月十八 【无声诗】山晚樵渔 【今日晴】九镜
+01:55.120 ttl:《Trường Ca Nhất Khứ Giang Hồ Viễn》
+
+02:03.160 LRC: Nơi nào là giang hồ? Phàm tâm tự khắc thấu hiểu
+02:06.280 LRC: Một tối thu sang, mưa chiều đối diện cánh buồm cô độc
+02:08.120 LRC: Gối đầu lên mộng mà đi đến Linh Sơn
+02:09.920 LRC: Nơi tuyết bay gió cuốn, ngoảnh đầu nhìn lại
+02:12.400 LRC: Giữa cỏ nội thám tìm đao cùng kiếm
+02:15.120 LRC: Lưỡi đao lạnh lẽo đôi khi cũng mòn cùn
+02:17.320 LRC: Mà ánh sáng thiên giới lại bao la vô tận.
+02:21.200 LRC: Nhược Thủy hà tất phải uống, cứ đuổi theo biển rộng vực sâu
+02:24.640 LRC: Là vạn khoảnh bích sơn ngời sắc ngọc
+02:25.880 LRC: In bóng giữa làn mây mặt nước mênh mông
+02:27.840 LRC: Đêm nay trời đẹp, hoa rực rỡ như muốn cháy lên
+02:30.440 LRC: Cùng sương sớm tựa bên hiên vắng
+02:33.400 LRC: Là ngọn gió ngàn dặm của cố nhân
+02:35.520 LRC: Ân cần ghé thăm ta.
+02:39.200 LRC: Người có biết chăng? Dẫu trời mòn đất lở, biển xanh hóa nương dâu
+02:42.800 LRC: Khúc trường ca hát vang khắp giang hồ xa xôi
+02:44.880 LRC: Cũng hát không hết một ánh mắt thấu hiểu của thiếu niên
+02:48.800 LRC: Duyên sâu mộng cũ gửi lại chốn nhân gian
+02:51.080 LRC: Biết bao ánh ráng chiều tan đi, gió trăng là vô tận
+02:54.800 LRC: Gảy đàn ca hát, uống rượu say, phải hỏi đến thanh kiếm
+02:56.880 LRC: Đợi đến khi nước thu róc rách, mây trôi hững hờ
+03:00.440 LRC: Nơi đào hoa sâu thẳm, tìm đến hỏi bậc thần tiên.
+03:06.400 LRC: Có câu rằng: Gặp gỡ nơi đây, những thiếu niên đầy ý chí
+03:09.960 LRC: Một khúc trường ca cất lên, giang hồ đã cách xa
+03:11.920 LRC: Lại kể về nghìn thu thịnh thế, bên cạnh Trích Tinh Lâu
+03:15.680 LRC: Bắn hạ tên bay rơi trước yên
+03:18.040 LRC: Khi ấy mây ngũ sắc vẫn còn đó, lòng tràn đầy tình ý
+03:22.040 LRC: Cầm một vốc trăng tan, rửa sạch suối lòng
+03:23.880 LRC: Quê cũ xa xăm, gió xuân hiu hắt, mưa chiều lạnh lẽo
+03:27.800 LRC: Cười vang khi trở về giữa sơn thủy hồng trần.
+
+03:34.760 ttl:《Trường Ca Nhất Khứ Giang Hồ Viễn》
+03:48.000 clr
+
+03:48.000 eov

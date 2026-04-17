@@ -59,9 +59,6 @@ overrides:
   - filename: '**/*.vtt'
     words:
       - WEBVTT
-  - filename: '**/texts.txt'
-    words:
-      - transcriptor
   - filename: '**/*.rs'
     words:
       - Feng
