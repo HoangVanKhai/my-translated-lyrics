@@ -1,22 +1,103 @@
 language: en
 words:
+  # Vietnamese names (characters, artists, places)
+  - Biên
+  - Chẳng
+  - Chính
+  - Diện
+  - Giang
+  - Hoàng
+  - Khương
+  - Kính
+  - Luân
+  - Lăng
+  - Lương
+  - Minh
+  - Mộng
+  - Nguyên
+  - Nguyệt
+  - Nhạc
+  - Nhất
+  - Nhật
+  - Nhụy
+  - Phường
+  - Phối
+  - Quan
+  - Soạn
+  - Thiên
+  - Thoại
+  - Thùy
+  - Thược
+  - Thập
+  - Thủy
+  - Tiêu
+  - Tiều
+  - Toan
+  - Toàn
+  - Tranh
+  - Trình
+  - Trăng
+  - Trường
+  - Trấp
+  - Tình
+  - Viết
+  - Viễn
+  # Vietnamese common words not in dict-vi-vn
+  - chiếu
+  - chỉnh
+  - giọng
+  - hoạch
+  - khóa
+  - liệu
+  - nguôi
+  - nhòa
+  - tham
+  - thuật
+  - thỏa
+  - trỗi
+  - xuất
+  # Chinese pinyin and names
   - Feng
   - Tianyi
   - Touhou
+  - Yuezheng
+  # Brand and artist names
+  - AXIDI
+  - Ajvjmip
+  - Cloudside
+  - Dinstakovich
+  - distantal
+  - Jiui
+  - Olpp
+  - Sekinen
+  - Vsinger
+  - Vsrk
+  - WOVOP
+  # Technical terms
+  - millis
   - transciptor
   - WEBVTT
-  - Yuezheng
+  - viet
+import:
+  - '@cspell/dict-vi-vn/cspell-ext.json'
 ignorePaths:
-  # because of a bug in overrides.filename,
-  # disabling cspell entirely for all subtitles
-  # is the only way
-  - 'data/**'
-  - 'drafts/**'
   - 'trash/**'
-# overrides:
-#   - filename: "**/*.vi.srt"
-#     language: vi-VN
-#   - filename: "**/*.zh.srt"
-#     language: zh-CN
-#   - filename: "**/*.en.srt"
-#     language: en
+overrides:
+  - filename:
+      - '**/*.vi.srt'
+      - '**/*.vi.vtt'
+      - '**/*.vi.*.srt'
+      - '**/*.vi.*.vtt'
+      - '**/*.vi.*.txt'
+    language: en,vi
+  - filename:
+      - '**/*.zh.srt'
+      - '**/*.zh.vtt'
+      - '**/*.zh.txt'
+      - '**/*.zh-*.srt'
+      - '**/*.zh-*.vtt'
+    language: en
+  - filename:
+      - '**/*.en.srt'
+      - '**/*.en.vtt'
+    language: en
