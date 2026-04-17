@@ -4,10 +4,10 @@ use std::fs::{DirEntry, read_dir};
 use std::path::Path;
 use translated_lyrics::video_descriptor::{LyricsFileName, ParseLyricsFileNameError};
 
-/// Verify that `data/` and `drafts/` have a flat two-level structure:
+/// Verify that `dist/`, `drafts/`, and `sources/` have a flat two-level structure:
 ///
 /// ```text
-/// data/
+/// dist/
 /// ├── SongName/
 /// │   ├── video.toml
 /// │   ├── lyrics.vi.srt
@@ -19,13 +19,13 @@ use translated_lyrics::video_descriptor::{LyricsFileName, ParseLyricsFileNameErr
 /// Rejects files placed directly under the top-level directory (too shallow)
 /// and directories nested inside a song directory (too deep).
 #[test]
-fn data_and_drafts_have_flat_structure() {
-    for top_dir_name in ["data", "drafts"] {
+fn dist_drafts_and_sources_have_flat_structure() {
+    for top_dir_name in ["dist", "drafts", "sources"] {
         let top_dir = env!("CARGO_MANIFEST_DIR")
             .pipe(Path::new)
             .join(top_dir_name);
         if !top_dir.exists() {
-            assert_ne!(top_dir_name, "data", "data/ directory must exist",);
+            assert_ne!(top_dir_name, "dist", "dist/ directory must exist",);
             continue;
         }
 
@@ -65,12 +65,12 @@ fn data_and_drafts_have_flat_structure() {
     }
 }
 
-/// Subtitle files in `data/` must be named `lyrics.{lang}.{ext}`.
+/// Subtitle files in `dist/` must be named `lyrics.{lang}.{ext}`.
 #[test]
-fn data_subtitle_file_names_are_canonical() {
-    let data_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("data");
+fn dist_subtitle_file_names_are_canonical() {
+    let dist_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("dist");
 
-    let entries = data_dir
+    let entries = dist_dir
         .pipe(read_dir)
         .unwrap()
         .map(Result::unwrap)
@@ -98,7 +98,7 @@ fn data_subtitle_file_names_are_canonical() {
             match name.parse::<LyricsFileName>() {
                 Ok(_) => {}
                 Err(ParseLyricsFileNameError::NotLyricsFile) => continue,
-                Err(error) => panic!("data/{song_name}/{name}: {error}"),
+                Err(error) => panic!("dist/{song_name}/{name}: {error}"),
             }
         }
     }
