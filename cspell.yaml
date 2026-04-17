@@ -41,7 +41,7 @@ overrides:
       - '**/*.zh.txt'
       - '**/*.zh-*.srt'
       - '**/*.zh-*.vtt'
-    language: en
+    language: en,zh
     words:
       - AXIDI
       - distantal
