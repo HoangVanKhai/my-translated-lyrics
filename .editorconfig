@@ -10,9 +10,6 @@ trim_trailing_whitespace = true
 indent_style = space
 indent_size = 4
 
-[*.srt]
-end_of_line = crlf
-
 [.gitattributes]
 indent_style = tab
 tab_width = 24

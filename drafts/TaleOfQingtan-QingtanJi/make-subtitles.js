@@ -353,7 +353,7 @@ function generateSrt(cues, languageCode, colorMap) {
     const styledText = formatSrtText(cue.marker, cue.text, languageCode, colorMap)
     srt += `${styledText}\n\n`
   })
-  return (srt.trim() + '\n').replaceAll('\n', '\r\n')
+  return srt.trim() + '\n'
 }
 
 /**

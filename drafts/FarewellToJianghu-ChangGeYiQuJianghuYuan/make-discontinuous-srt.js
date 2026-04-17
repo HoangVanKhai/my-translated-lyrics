@@ -138,7 +138,6 @@ for (let index = 0; index < segments.length; index++) {
   srt += `${content}\n\n`
 }
 srt = srt.trimEnd() + '\n'
-srt = srt.replaceAll('\n', '\r\n')
 
 fs.writeFileSync(path.join(scriptDir, 'discontinuous.srt'), srt)
 console.log('SRT file generated: discontinuous.srt')
