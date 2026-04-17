@@ -7,6 +7,7 @@ import:
 ignorePaths:
   - 'Cargo.lock'
   - 'cspell.yaml'
+  - 'LICENSE.md'
   - 'pnpm-lock.yaml'
   - '**/video.toml'
   - 'drafts/**/*.js'
@@ -61,3 +62,18 @@ overrides:
   - filename: '**/texts.txt'
     words:
       - transcriptor
+  - filename: '**/*.rs'
+    words:
+      - hardlink
+      - maplit
+      - rsplit
+      - Tianyi
+      - WEBVTT
+      - Yuezheng
+  - filename: '**/*.md'
+    words:
+      - clippy
+      - newtype
+      - rustup
+      - serde
+      - usize
