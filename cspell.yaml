@@ -1,38 +1,19 @@
 language: en
+# Collection names referenced from Rust source and tests outside
+# `data/` and `drafts/`.
 words:
-  # Vietnamese names not in dict-vi-vn
-  - Nhụy
-  - Thùy
-  - Thủy
-  # Vietnamese common words not in dict-vi-vn
-  - khóa
-  - nguôi
-  - nhòa
-  - thỏa
-  - trỗi
-  # Chinese pinyin and names
   - Feng
-  - Tianyi
   - Touhou
-  - Yuezheng
-  # Brand and artist names
-  - AXIDI
-  - Dinstakovich
-  - distantal
-  - Sekinen
-  - Vsinger
-  - WOVOP
-  # Technical terms
-  - transciptor
-  - WEBVTT
 import:
   - '@cspell/dict-vi-vn/cspell-ext.json'
 ignorePaths:
+  - 'cspell.yaml'
   - '**/video.toml'
   - 'drafts/**/*.js'
   - 'drafts/**/*.json'
   - 'trash/**'
 overrides:
+  # Vietnamese subtitles and machine-translation drafts.
   - filename:
       - '**/*.vi.srt'
       - '**/*.vi.vtt'
@@ -40,6 +21,20 @@ overrides:
       - '**/*.vi.*.vtt'
       - '**/*.vi.*.txt'
     language: en,vi
+    words:
+      # Vietnamese words missing from `@cspell/dict-vi-vn`.
+      - khóa
+      - nguôi
+      - nhòa
+      - Nhụy
+      - thỏa
+      - Thùy
+      - Thủy
+      - trỗi
+      # Names appearing only in Vietnamese subtitle credits.
+      - Dinstakovich
+      - Sekinen
+  # Chinese subtitles.
   - filename:
       - '**/*.zh.srt'
       - '**/*.zh.vtt'
@@ -47,7 +42,33 @@ overrides:
       - '**/*.zh-*.srt'
       - '**/*.zh-*.vtt'
     language: en
+  # English subtitles.
   - filename:
       - '**/*.en.srt'
       - '**/*.en.vtt'
     language: en
+  # Credit-line tokens shared across `.vi.*` and `.zh.*` subtitles.
+  - filename:
+      - '**/*.vi.srt'
+      - '**/*.vi.vtt'
+      - '**/*.vi.*.srt'
+      - '**/*.vi.*.vtt'
+      - '**/*.vi.*.txt'
+      - '**/*.zh.srt'
+      - '**/*.zh.vtt'
+      - '**/*.zh.txt'
+    words:
+      - AXIDI
+      - distantal
+      - Tianyi
+      - Vsinger
+      - WOVOP
+      - Yuezheng
+  # `WEBVTT` file format marker at the top of `.vtt` files.
+  - filename: '**/*.vtt'
+    words:
+      - WEBVTT
+  # Draft transcription notes.
+  - filename: '**/texts.txt'
+    words:
+      - transciptor
