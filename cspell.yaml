@@ -6,8 +6,10 @@ import:
   - '@cspell/dict-vi-vn/cspell-ext.json'
 ignorePaths:
   - 'Cargo.lock'
+  - 'Cargo.toml'
   - 'cspell.yaml'
   - 'LICENSE.md'
+  - 'package.json'
   - 'pnpm-lock.yaml'
   - '**/video.toml'
   - 'drafts/**/*.js'
