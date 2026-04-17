@@ -7,9 +7,9 @@ use std::path::{Path, PathBuf};
 use translated_lyrics::video_descriptor::LyricsFileName;
 
 /// Collects all recognized lyrics files from the
-/// song subdirectories of `data_dir`.
-fn collect_lyrics_files(data_dir: &Path) -> Vec<PathBuf> {
-    data_dir
+/// song subdirectories of `dist_dir`.
+fn collect_lyrics_files(dist_dir: &Path) -> Vec<PathBuf> {
+    dist_dir
         .pipe(read_dir)
         .unwrap()
         .map(Result::<DirEntry, _>::unwrap)
@@ -54,8 +54,8 @@ fn extract_timestamps(content: &str) -> Vec<&str> {
 
 #[test]
 fn file_timestamps_match() {
-    let data_dir = env!("CARGO_MANIFEST_DIR").pipe(Path::new).join("data");
-    let files = collect_lyrics_files(&data_dir);
+    let dist_dir = env!("CARGO_MANIFEST_DIR").pipe(Path::new).join("dist");
+    let files = collect_lyrics_files(&dist_dir);
 
     // Group files by (stem, format) so that language variants share a key.
     let mut groups: BTreeMap<String, Vec<PathBuf>> = BTreeMap::new();
@@ -67,7 +67,7 @@ fn file_timestamps_match() {
     assert!(
         groups.values().any(|paths| paths.len() >= 2),
         "no subtitle file pairs found to compare in {}",
-        data_dir.display(),
+        dist_dir.display(),
     );
 
     for paths in groups.values() {

@@ -4,12 +4,12 @@ use std::fs::{DirEntry, read_dir, read_to_string};
 use std::path::Path;
 use translated_lyrics::video_descriptor::{VIDEO_CONFIG_FILE_NAME, VideoDesc};
 
-/// Every `data/*/video.toml` must parse as a valid [`VideoDesc`].
+/// Every `dist/*/video.toml` must parse as a valid [`VideoDesc`].
 #[test]
-fn data_video_descriptors_are_valid() {
+fn dist_video_descriptors_are_valid() {
     let entries = env!("CARGO_MANIFEST_DIR")
         .pipe(Path::new)
-        .join("data")
+        .join("dist")
         .pipe(read_dir)
         .unwrap()
         .map(Result::unwrap)
