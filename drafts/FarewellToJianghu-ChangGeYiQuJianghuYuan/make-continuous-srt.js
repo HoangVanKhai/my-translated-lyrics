@@ -260,6 +260,7 @@ for (const entry of outputEntries) {
 }
 
 srt = srt.trimEnd() + '\n'
+srt = srt.replaceAll('\n', '\r\n')
 
 // ----- Write output -----
 fs.writeFileSync(path.join(scriptDir, 'continuous.srt'), srt)
