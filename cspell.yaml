@@ -1,7 +1,4 @@
 language: en
-words:
-  - Feng
-  - Touhou
 import:
   - '@cspell/dict-vi-vn/cspell-ext.json'
 ignorePaths:
@@ -66,10 +63,12 @@ overrides:
       - transcriptor
   - filename: '**/*.rs'
     words:
+      - Feng
       - hardlink
       - maplit
       - rsplit
       - Tianyi
+      - Touhou
       - WEBVTT
       - Yuezheng
   - filename: '**/*.md'
