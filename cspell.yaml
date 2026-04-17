@@ -1,6 +1,4 @@
 language: en
-# Collection names referenced from Rust source and tests outside
-# `data/` and `drafts/`.
 words:
   - Feng
   - Touhou
@@ -13,7 +11,6 @@ ignorePaths:
   - 'drafts/**/*.json'
   - 'trash/**'
 overrides:
-  # Vietnamese subtitles and machine-translation drafts.
   - filename:
       - '**/*.vi.srt'
       - '**/*.vi.vtt'
@@ -22,7 +19,6 @@ overrides:
       - '**/*.vi.*.txt'
     language: en,vi
     words:
-      # Vietnamese words missing from `@cspell/dict-vi-vn`.
       - khóa
       - nguôi
       - nhòa
@@ -31,10 +27,8 @@ overrides:
       - Thùy
       - Thủy
       - trỗi
-      # Names appearing only in Vietnamese subtitle credits.
       - Dinstakovich
       - Sekinen
-  # Chinese subtitles.
   - filename:
       - '**/*.zh.srt'
       - '**/*.zh.vtt'
@@ -42,12 +36,10 @@ overrides:
       - '**/*.zh-*.srt'
       - '**/*.zh-*.vtt'
     language: en
-  # English subtitles.
   - filename:
       - '**/*.en.srt'
       - '**/*.en.vtt'
     language: en
-  # Credit-line tokens shared across `.vi.*` and `.zh.*` subtitles.
   - filename:
       - '**/*.vi.srt'
       - '**/*.vi.vtt'
@@ -64,11 +56,9 @@ overrides:
       - Vsinger
       - WOVOP
       - Yuezheng
-  # `WEBVTT` file format marker at the top of `.vtt` files.
   - filename: '**/*.vtt'
     words:
       - WEBVTT
-  # Draft transcription notes.
   - filename: '**/texts.txt'
     words:
       - transciptor
