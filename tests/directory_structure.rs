@@ -19,7 +19,7 @@ use translated_lyrics::video_descriptor::{LyricsFileName, ParseLyricsFileNameErr
 /// Rejects files placed directly under the top-level directory (too shallow)
 /// and directories nested inside a song directory (too deep).
 #[test]
-fn dist_and_drafts_have_flat_structure() {
+fn dist_drafts_and_sources_have_flat_structure() {
     for top_dir_name in ["dist", "drafts", "sources"] {
         let top_dir = env!("CARGO_MANIFEST_DIR")
             .pipe(Path::new)
