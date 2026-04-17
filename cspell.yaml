@@ -1,61 +1,15 @@
 language: en
 words:
-  # Vietnamese names (characters, artists, places)
-  - Biên
-  - Chẳng
-  - Chính
-  - Diện
-  - Giang
-  - Hoàng
-  - Khương
-  - Kính
-  - Luân
-  - Lăng
-  - Lương
-  - Minh
-  - Mộng
-  - Nguyên
-  - Nguyệt
-  - Nhạc
-  - Nhất
-  - Nhật
+  # Vietnamese names not in dict-vi-vn
   - Nhụy
-  - Phường
-  - Phối
-  - Quan
-  - Soạn
-  - Thiên
-  - Thoại
   - Thùy
-  - Thược
-  - Thập
   - Thủy
-  - Tiêu
-  - Tiều
-  - Toan
-  - Toàn
-  - Tranh
-  - Trình
-  - Trăng
-  - Trường
-  - Trấp
-  - Tình
-  - Viết
-  - Viễn
   # Vietnamese common words not in dict-vi-vn
-  - chiếu
-  - chỉnh
-  - giọng
-  - hoạch
   - khóa
-  - liệu
   - nguôi
   - nhòa
-  - tham
-  - thuật
   - thỏa
   - trỗi
-  - xuất
   # Chinese pinyin and names
   - Feng
   - Tianyi
@@ -63,15 +17,10 @@ words:
   - Yuezheng
   # Brand and artist names
   - AXIDI
-  - Ajvjmip
-  - Cloudside
   - Dinstakovich
   - distantal
-  - Jiui
-  - Olpp
   - Sekinen
   - Vsinger
-  - Vsrk
   - WOVOP
   # Technical terms
   - transciptor
@@ -79,7 +28,9 @@ words:
 import:
   - '@cspell/dict-vi-vn/cspell-ext.json'
 ignorePaths:
+  - '**/video.toml'
   - 'drafts/**/*.js'
+  - 'drafts/**/*.json'
   - 'trash/**'
 overrides:
   - filename:
