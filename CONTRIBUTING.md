@@ -199,7 +199,7 @@ rustup toolchain install "$(< rust-toolchain)"
 rustup component add --toolchain "$(< rust-toolchain)" rustfmt clippy
 ```
 
-If CSpell is necessary, install the Node.js dependencies via [pnpm](https://pnpm.io):
+If you need to run the spell check locally, install the Node.js dependencies via [pnpm](https://pnpm.io):
 
 ```sh
 pnpm install --frozen-lockfile
