@@ -2,7 +2,7 @@ use crate::video_descriptor::Language;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-pub const SUBTITLE_CONFIG_FILE_NAME: &str = "subtitle.toml";
+pub const SUBTITLE_CONFIG_FILE_NAME: &str = "subtitle.yaml";
 
 /// Parsed contents of a `subtitle.toml` file.
 ///

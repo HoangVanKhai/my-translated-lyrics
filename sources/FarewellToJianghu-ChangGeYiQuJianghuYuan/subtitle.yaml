@@ -1,0 +1,52 @@
+credit-roles:
+  - zh: 作词
+    vi: Tác từ
+  - zh: 编曲
+    vi: Biên khúc
+  - zh: VSINGER
+    vi: VSINGER
+  - zh: 笛子
+    vi: Sáo
+  - zh: 作曲
+    vi: Tác khúc
+  - zh: 演唱
+    vi: Trình bày
+  - zh: 调校
+    vi: Điều giáo
+  - zh: 制作人
+    vi: Sản xuất
+  - zh: Ｖ家曲绘
+    vi: Hình ảnh
+  - zh: 美术
+    vi: Mỹ thuật
+  - zh: PV
+    vi: PV
+  - zh: 鸣谢素材
+    vi: Cảm ơn
+
+credit-names:
+  - zh: 雨観
+  - zh: 雨观
+  - zh: 洛天依X楽正绫
+    vi: Luo Tianyi X Yuezheng Ling
+  - zh: 再也不上课
+  - zh: 雨観X溪里
+  - zh: 鬼面P
+  - zh: Vsinger团队
+  - zh: 碎夊
+  - zh: 超级水水
+  - zh: 山晚樵渔
+
+speaker-names:
+  zh:
+    LTY: 洛天依
+    lty: 洛天依（念白）
+    YZL: 乐正绫
+    yzl: 乐正绫（念白）
+    "Y+L": 洛天依 & 乐正绫
+  vi:
+    LTY: Lạc Thiên Y
+    lty: Lạc Thiên Y (thoại)
+    YZL: Nhạc Chính Lăng
+    yzl: Nhạc Chính Lăng (thoại)
+    "Y+L": Lạc Thiên Y & Nhạc Chính Lăng

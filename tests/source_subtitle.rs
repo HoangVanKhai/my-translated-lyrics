@@ -4,7 +4,7 @@ use std::fs::{DirEntry, read_dir, read_to_string};
 use std::path::Path;
 use translated_lyrics::subtitle_descriptor::{SUBTITLE_CONFIG_FILE_NAME, SubtitleDesc};
 
-/// Every `sources/*/subtitle.toml` must parse as a valid [`SubtitleDesc`].
+/// Every `sources/*/subtitle.yaml` must parse as a valid [`SubtitleDesc`].
 #[test]
 fn source_subtitle_descriptors_are_valid() {
     let sources_dir = env!("CARGO_MANIFEST_DIR").pipe(Path::new).join("sources");
@@ -33,7 +33,7 @@ fn source_subtitle_descriptors_are_valid() {
         subtitle_path
             .pipe(read_to_string)
             .unwrap()
-            .pipe_as_ref(toml::from_str::<SubtitleDesc>)
+            .pipe_as_ref(serde_saphyr::from_str::<SubtitleDesc>)
             .unwrap()
             .pipe(drop::<SubtitleDesc>);
     }
