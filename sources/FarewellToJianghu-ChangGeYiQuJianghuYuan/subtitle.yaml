@@ -1,66 +1,66 @@
 credit-roles:
-  - zh: 作词
-    vi: Tác từ
-  - zh: 编曲
-    vi: Biên khúc
-  - zh: VSINGER
-    vi: VSINGER
-  - zh: 笛子
-    vi: Sáo
-  - zh: 作曲
-    vi: Tác khúc
-  - zh: 演唱
-    vi: Trình bày
-  - zh: 调校
-    vi: Điều giáo
-  - zh: 制作人
-    vi: Sản xuất
-  - zh: Ｖ家曲绘
-    vi: Hình ảnh
-  - zh: 美术
-    vi: Mỹ thuật
   - zh: PV
     vi: PV
+  - zh: VSINGER
+    vi: VSINGER
+  - zh: 作曲
+    vi: Tác khúc
+  - zh: 作词
+    vi: Tác từ
+  - zh: 制作人
+    vi: Sản xuất
+  - zh: 演唱
+    vi: Trình bày
+  - zh: 笛子
+    vi: Sáo
+  - zh: 编曲
+    vi: Biên khúc
+  - zh: 美术
+    vi: Mỹ thuật
+  - zh: 调校
+    vi: Điều giáo
   - zh: 鸣谢素材
     vi: Cảm ơn
+  - zh: Ｖ家曲绘
+    vi: Hình ảnh
 
 credit-names:
-  - zh: 雨観
-    vi: 雨観
-  - zh: 雨观
-    vi: 雨观
-  - zh: 洛天依X楽正绫
-    vi: Luo Tianyi X Yuezheng Ling
-  - zh: 再也不上课
-    vi: 再也不上课
-  - zh: 雨観X溪里
-    vi: 雨観X溪里
-  - zh: 鬼面P
-    vi: 鬼面P
   - zh: Vsinger团队
     vi: Vsinger团队
-  - zh: 碎夊
-    vi: 碎夊
-  - zh: 超级水水
-    vi: 超级水水
   - zh: 一勺酸橙汁
     vi: 一勺酸橙汁
-  - zh: Ａ影羌
-    vi: Ａ影羌
-  - zh: 璇玑坊Studio
-    vi: 璇玑坊Studio
-  - zh: 废画
-    vi: 废画
-  - zh: 良月十八
-    vi: 良月十八
-  - zh: 无声诗
-    vi: 无声诗
-  - zh: 山晚樵渔
-    vi: 山晚樵渔
-  - zh: 今日晴
-    vi: 今日晴
   - zh: 九镜
     vi: 九镜
+  - zh: 今日晴
+    vi: 今日晴
+  - zh: 再也不上课
+    vi: 再也不上课
+  - zh: 山晚樵渔
+    vi: 山晚樵渔
+  - zh: 废画
+    vi: 废画
+  - zh: 无声诗
+    vi: 无声诗
+  - zh: 洛天依X楽正绫
+    vi: Luo Tianyi X Yuezheng Ling
+  - zh: 璇玑坊Studio
+    vi: 璇玑坊Studio
+  - zh: 碎夊
+    vi: 碎夊
+  - zh: 良月十八
+    vi: 良月十八
+  - zh: 超级水水
+    vi: 超级水水
+  - zh: 雨観
+    vi: 雨観
+  - zh: 雨観X溪里
+    vi: 雨観X溪里
+  - zh: 雨观
+    vi: 雨观
+  - zh: 鬼面P
+    vi: 鬼面P
+  - zh: Ａ影羌
+    vi: Ａ影羌
 
 speaker-names:
   LTY:
