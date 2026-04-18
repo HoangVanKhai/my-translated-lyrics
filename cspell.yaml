@@ -1,6 +1,7 @@
 import:
   - '@cspell/dict-vi-vn/cspell-ext.json'
 ignorePaths:
+  - '**/subtitle.toml'
   - '**/video.toml'
   - 'Cargo.lock'
   - 'Cargo.toml'
@@ -57,40 +58,6 @@ overrides:
   - filename: '**/*.vtt'
     words:
       - WEBVTT
-  - filename: '**/words.toml'
-    language: en,vi
-    words:
-      - Biên
-      - chiếu
-      - chỉnh
-      - Chính
-      - Điều
-      - Giang
-      - giáo
-      - giọng
-      - Hình
-      - hoạch
-      - khúc
-      - Lăng
-      - liệu
-      - nhạc
-      - Nhạc
-      - Nhất
-      - Phối
-      - Soạn
-      - tham
-      - Thiên
-      - thoại
-      - thuật
-      - Tianyi
-      - Trình
-      - Trường
-      - VSINGER
-      - Vsinger
-      - Viễn
-      - Viết
-      - xuất
-      - Yuezheng
   - filename: '**/*.rs'
     words:
       - Feng
