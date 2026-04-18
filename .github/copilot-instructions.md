@@ -15,6 +15,6 @@ Read and follow the CONTRIBUTING.md file in this repository for all code style c
 - Validate changes with `cargo fmt -- --check && cargo clippy --all-targets && cargo test`.
 - **Always run the full Rust test suite** (`cargo fmt -- --check && cargo clippy --all-targets && cargo test`) before every commit. This rule applies to all changes, including documentation changes, comment edits, and config updates.
 - When a sync test fails, read its error message and run the exact command it reports.
-- Run the CSpell spell check when a change may introduce new words: `pnpm install --frozen-lockfile && pnpm exec cspell lint --gitignore '**'`.
+- Run the CSpell spell check when a change may introduce new words: `pnpm install --frozen-lockfile && pnpm exec cspell lint --no-progress --gitignore '**'`.
 - When the user provides a diff to apply, run `git apply` rather than interpreting each hunk manually. When a diff is provided for context or discussion, respond accordingly.
 - The `gh` (GitHub CLI) is not installed. Do not attempt to use it.
