@@ -17,7 +17,7 @@ pub struct LineMarkersDesc {
     /// markers such as `clr` and `eov` are excluded because they produce
     /// no cue output.
     #[serde(default)]
-    pub codes: Vec<String>,
+    pub cues: Vec<String>,
     /// Per-code voice attribution. Each entry maps a prefix code to the
     /// voice-element inner text rendered as `<v …>…</v>` in VTT cues.
     #[serde(default)]
