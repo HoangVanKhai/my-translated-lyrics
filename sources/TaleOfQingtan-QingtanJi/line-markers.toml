@@ -1,6 +1,21 @@
-[speakers]
+codes = [
+  "cre",
+  "ttl",
+  "txt",
+  "LTY",
+  "lty",
+  "YZL",
+  "yzl",
+  "Y+L",
+]
+
+[voices]
 LTY = { vi = "Lạc Thiên Y", zh = "洛天依" }
 lty = { vi = "Lạc Thiên Y (thoại)", zh = "洛天依（念白）" }
 YZL = { vi = "Nhạc Chính Lăng", zh = "乐正绫" }
 yzl = { vi = "Nhạc Chính Lăng (thoại)", zh = "乐正绫（念白）" }
 "Y+L" = { vi = "Lạc Thiên Y & Nhạc Chính Lăng", zh = "洛天依 & 乐正绫" }
+
+[classes]
+ttl = "title"
+txt = "expo"
