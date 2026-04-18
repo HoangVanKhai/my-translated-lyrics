@@ -233,7 +233,7 @@ function formatCreditLineVtt(line) {
 function formatVttText(marker, text) {
   switch (marker) {
     case 'ttl':
-      return `<c.title>${text}</c.title>`
+      return `<c.title>${text}</c>`
     case 'cre': {
       const lines = text.split('\n')
       const formattedLines = lines.map(formatCreditLineVtt)
