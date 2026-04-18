@@ -220,7 +220,7 @@ cargo fmt -- --check && cargo clippy --all-targets && cargo test
 ```
 
 > [!IMPORTANT]
-> Always run the full test suite before committing, even for seemingly trivial changes such as documentation edits, comment changes, or config updates. Any change can break formatting, linting, or tests.
+> Always run the full Rust test suite before committing, even for seemingly trivial changes such as documentation edits, comment changes, or config updates. Any change can break formatting, linting, or tests.
 
 > [!NOTE]
 > If a sync test fails, read its error message carefully and run the exact command it tells you to run.
