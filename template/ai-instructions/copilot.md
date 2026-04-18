@@ -1,1 +1,3 @@
 - The `gh` (GitHub CLI) is not installed. Do not attempt to use it.
+- Format pull request titles using the Conventional Commits convention, matching the same `type(scope): lowercase description` pattern specified for commit messages.
+- After completing a task, rewrite the pull request description so that it summarizes the totality of the pull request's changes in their final state. Do not leave the description as a running bullet list of checkboxes or AI task updates.
