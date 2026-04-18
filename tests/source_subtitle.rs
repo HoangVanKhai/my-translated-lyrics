@@ -8,7 +8,7 @@ use std::path::Path;
 use translated_lyrics::subtitle_descriptor::{SUBTITLE_CONFIG_FILE_NAME, SubtitleDesc};
 use translated_lyrics::video_descriptor::Language::{self, Chinese as Zh, Vietnamese as Vi};
 
-fn load_subtitle(rel_path: &str) -> SubtitleDesc {
+fn load_subtitle_desc(rel_path: &str) -> SubtitleDesc {
     env!("CARGO_MANIFEST_DIR")
         .pipe(Path::new)
         .join(rel_path)
@@ -55,106 +55,106 @@ fn source_subtitle_descriptors_are_valid() {
     }
 }
 
-fn zh(value: &str) -> BTreeMap<Language, String> {
+fn chinese_only(value: &str) -> BTreeMap<Language, String> {
     btreemap! { Zh => value.to_string() }
 }
 
-fn zh_vi(zh_value: &str, vi_value: &str) -> BTreeMap<Language, String> {
+fn chinese_vietnamese(zh_value: &str, vi_value: &str) -> BTreeMap<Language, String> {
     btreemap! { Zh => zh_value.to_string(), Vi => vi_value.to_string() }
 }
 
 #[test]
 fn farewell_to_jianghu_credit_roles_order() {
-    let desc = load_subtitle("sources/FarewellToJianghu-ChangGeYiQuJianghuYuan/subtitle.yaml");
+    let desc = load_subtitle_desc("sources/FarewellToJianghu-ChangGeYiQuJianghuYuan/subtitle.yaml");
     assert_eq!(
         desc.credit_roles,
         vec![
-            zh_vi("作词", "Tác từ"),
-            zh_vi("编曲", "Biên khúc"),
-            zh_vi("VSINGER", "VSINGER"),
-            zh_vi("笛子", "Sáo"),
-            zh_vi("作曲", "Tác khúc"),
-            zh_vi("演唱", "Trình bày"),
-            zh_vi("调校", "Điều giáo"),
-            zh_vi("制作人", "Sản xuất"),
-            zh_vi("Ｖ家曲绘", "Hình ảnh"),
-            zh_vi("美术", "Mỹ thuật"),
-            zh_vi("PV", "PV"),
-            zh_vi("鸣谢素材", "Cảm ơn"),
+            chinese_vietnamese("作词", "Tác từ"),
+            chinese_vietnamese("编曲", "Biên khúc"),
+            chinese_vietnamese("VSINGER", "VSINGER"),
+            chinese_vietnamese("笛子", "Sáo"),
+            chinese_vietnamese("作曲", "Tác khúc"),
+            chinese_vietnamese("演唱", "Trình bày"),
+            chinese_vietnamese("调校", "Điều giáo"),
+            chinese_vietnamese("制作人", "Sản xuất"),
+            chinese_vietnamese("Ｖ家曲绘", "Hình ảnh"),
+            chinese_vietnamese("美术", "Mỹ thuật"),
+            chinese_vietnamese("PV", "PV"),
+            chinese_vietnamese("鸣谢素材", "Cảm ơn"),
         ]
     );
 }
 
 #[test]
 fn farewell_to_jianghu_credit_names_order() {
-    let desc = load_subtitle("sources/FarewellToJianghu-ChangGeYiQuJianghuYuan/subtitle.yaml");
+    let desc = load_subtitle_desc("sources/FarewellToJianghu-ChangGeYiQuJianghuYuan/subtitle.yaml");
     assert_eq!(
         desc.credit_names,
         vec![
-            zh_vi("雨観", "雨観"),
-            zh_vi("雨观", "雨观"),
-            zh_vi("洛天依X楽正绫", "Luo Tianyi X Yuezheng Ling"),
-            zh_vi("再也不上课", "再也不上课"),
-            zh_vi("雨観X溪里", "雨観X溪里"),
-            zh_vi("鬼面P", "鬼面P"),
-            zh_vi("Vsinger团队", "Vsinger团队"),
-            zh_vi("碎夊", "碎夊"),
-            zh_vi("超级水水", "超级水水"),
-            zh_vi("一勺酸橙汁", "一勺酸橙汁"),
-            zh_vi("Ａ影羌", "Ａ影羌"),
-            zh_vi("璇玑坊Studio", "璇玑坊Studio"),
-            zh_vi("废画", "废画"),
-            zh_vi("良月十八", "良月十八"),
-            zh_vi("无声诗", "无声诗"),
-            zh_vi("山晚樵渔", "山晚樵渔"),
-            zh_vi("今日晴", "今日晴"),
-            zh_vi("九镜", "九镜"),
+            chinese_vietnamese("雨観", "雨観"),
+            chinese_vietnamese("雨观", "雨观"),
+            chinese_vietnamese("洛天依X楽正绫", "Luo Tianyi X Yuezheng Ling"),
+            chinese_vietnamese("再也不上课", "再也不上课"),
+            chinese_vietnamese("雨観X溪里", "雨観X溪里"),
+            chinese_vietnamese("鬼面P", "鬼面P"),
+            chinese_vietnamese("Vsinger团队", "Vsinger团队"),
+            chinese_vietnamese("碎夊", "碎夊"),
+            chinese_vietnamese("超级水水", "超级水水"),
+            chinese_vietnamese("一勺酸橙汁", "一勺酸橙汁"),
+            chinese_vietnamese("Ａ影羌", "Ａ影羌"),
+            chinese_vietnamese("璇玑坊Studio", "璇玑坊Studio"),
+            chinese_vietnamese("废画", "废画"),
+            chinese_vietnamese("良月十八", "良月十八"),
+            chinese_vietnamese("无声诗", "无声诗"),
+            chinese_vietnamese("山晚樵渔", "山晚樵渔"),
+            chinese_vietnamese("今日晴", "今日晴"),
+            chinese_vietnamese("九镜", "九镜"),
         ]
     );
 }
 
 #[test]
 fn tale_of_qingtan_credit_roles_order() {
-    let desc = load_subtitle("sources/TaleOfQingtan-QingtanJi/subtitle.yaml");
+    let desc = load_subtitle_desc("sources/TaleOfQingtan-QingtanJi/subtitle.yaml");
     assert_eq!(
         desc.credit_roles,
         vec![
-            zh_vi("演唱", "Trình bày"),
-            zh_vi("作曲", "Soạn nhạc"),
-            zh_vi("作词", "Viết lời"),
-            zh_vi("编曲", "Phối khí"),
-            zh_vi("企划", "Kế hoạch"),
-            zh_vi("制作人", "Nhà sản xuất"),
-            zh_vi("调校", "Căn chỉnh giọng hát"),
-            zh_vi("和声编写", "Viết hòa thanh"),
-            zh_vi("混音", "Hòa âm"),
-            zh_vi("美术", "Mỹ thuật"),
-            zh_vi("视频", "Video"),
-            zh_vi("素材鸣谢", "Tư liệu tham chiếu"),
+            chinese_vietnamese("演唱", "Trình bày"),
+            chinese_vietnamese("作曲", "Soạn nhạc"),
+            chinese_vietnamese("作词", "Viết lời"),
+            chinese_vietnamese("编曲", "Phối khí"),
+            chinese_vietnamese("企划", "Kế hoạch"),
+            chinese_vietnamese("制作人", "Nhà sản xuất"),
+            chinese_vietnamese("调校", "Căn chỉnh giọng hát"),
+            chinese_vietnamese("和声编写", "Viết hòa thanh"),
+            chinese_vietnamese("混音", "Hòa âm"),
+            chinese_vietnamese("美术", "Mỹ thuật"),
+            chinese_vietnamese("视频", "Video"),
+            chinese_vietnamese("素材鸣谢", "Tư liệu tham chiếu"),
         ]
     );
 }
 
 #[test]
 fn tale_of_qingtan_credit_names_order() {
-    let desc = load_subtitle("sources/TaleOfQingtan-QingtanJi/subtitle.yaml");
+    let desc = load_subtitle_desc("sources/TaleOfQingtan-QingtanJi/subtitle.yaml");
     assert_eq!(
         desc.credit_names,
         vec![
-            zh_vi("洛天依", "Luo Tianyi"),
-            zh_vi("乐正绫", "Yuezheng Ling"),
-            zh("雨观"),
-            zh("三世"),
-            zh("鬼面Ｐ"),
-            zh("一勺酸橙汁"),
-            zh("Ａ影羌"),
-            zh("璇玑坊Studio"),
-            zh("废画"),
-            zh("良月十八"),
-            zh("无声诗"),
-            zh("山晚樵渔"),
-            zh("今日晴"),
-            zh("九镜"),
+            chinese_vietnamese("洛天依", "Luo Tianyi"),
+            chinese_vietnamese("乐正绫", "Yuezheng Ling"),
+            chinese_only("雨观"),
+            chinese_only("三世"),
+            chinese_only("鬼面Ｐ"),
+            chinese_only("一勺酸橙汁"),
+            chinese_only("Ａ影羌"),
+            chinese_only("璇玑坊Studio"),
+            chinese_only("废画"),
+            chinese_only("良月十八"),
+            chinese_only("无声诗"),
+            chinese_only("山晚樵渔"),
+            chinese_only("今日晴"),
+            chinese_only("九镜"),
         ]
     );
 }
