@@ -1,0 +1,6 @@
+[speakers]
+LTY = { vi = "Lạc Thiên Y", zh = "洛天依" }
+YZL = { vi = "Nhạc Chính Lăng", zh = "乐正绫" }
+"Y+L" = { vi = "Lạc Thiên Y & Nhạc Chính Lăng", zh = "洛天依 & 乐正绫" }
+lty = { vi = "Lạc Thiên Y (thoại)", zh = "洛天依（念白）" }
+yzl = { vi = "Nhạc Chính Lăng (thoại)", zh = "乐正绫（念白）" }

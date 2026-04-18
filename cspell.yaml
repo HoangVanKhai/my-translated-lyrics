@@ -1,7 +1,8 @@
 import:
   - '@cspell/dict-vi-vn/cspell-ext.json'
 ignorePaths:
-  - '**/subtitle.yaml'
+  - '**/credits.yaml'
+  - '**/line-markers.toml'
   - '**/video.toml'
   - 'Cargo.lock'
   - 'Cargo.toml'

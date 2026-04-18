@@ -5,11 +5,11 @@ use pretty_assertions::assert_eq;
 use pretty_yaml::config::FormatOptions;
 use std::fs::{DirEntry, read_dir, read_to_string};
 use std::path::Path;
-use translated_lyrics::subtitle_descriptor::{SUBTITLE_CONFIG_FILE_NAME, SubtitleDesc};
+use translated_lyrics::credits_descriptor::{CREDITS_CONFIG_FILE_NAME, CreditsDesc};
 
-/// Each `sources/*/subtitle.yaml` must be in canonical form.
+/// Each `sources/*/credits.yaml` must be in canonical form.
 #[test]
-fn source_subtitle_descriptors() {
+fn source_credits_descriptors() {
     let sources_dir = env!("CARGO_MANIFEST_DIR").pipe(Path::new).join("sources");
     assert!(
         sources_dir.is_dir(),
@@ -31,16 +31,16 @@ fn source_subtitle_descriptors() {
             continue;
         }
 
-        let subtitle_path = song_dir.join(SUBTITLE_CONFIG_FILE_NAME);
-        if !subtitle_path.exists() {
+        let credits_path = song_dir.join(CREDITS_CONFIG_FILE_NAME);
+        if !credits_path.exists() {
             continue;
         }
 
         let song_name = entry.file_name();
         eprintln!("CASE: {}", song_name.display());
 
-        let original = subtitle_path.pipe(read_to_string).unwrap();
-        let desc: SubtitleDesc = original.pipe_as_ref(serde_saphyr::from_str).unwrap();
+        let original = credits_path.pipe(read_to_string).unwrap();
+        let desc: CreditsDesc = original.pipe_as_ref(serde_saphyr::from_str).unwrap();
 
         assert_eq!(
             desc.credit_roles,
