@@ -57,14 +57,55 @@ overrides:
   - filename: '**/*.vtt'
     words:
       - WEBVTT
+  - filename: '**/words.toml'
+    language: en,vi
+    words:
+      - Biên
+      - chiếu
+      - chỉnh
+      - Chính
+      - Điều
+      - Giang
+      - giáo
+      - giọng
+      - Hình
+      - hoạch
+      - khúc
+      - Lăng
+      - liệu
+      - nhạc
+      - Nhạc
+      - Nhất
+      - Phối
+      - Soạn
+      - tham
+      - Thiên
+      - thoại
+      - thuật
+      - Tianyi
+      - Trình
+      - Trường
+      - VSINGER
+      - Vsinger
+      - Viễn
+      - Viết
+      - xuất
+      - Yuezheng
   - filename: '**/*.rs'
     words:
+      - Chính
       - Feng
       - hardlink
+      - Lăng
       - maplit
+      - nhạc
+      - Nhạc
       - rsplit
+      - Soạn
+      - Thiên
       - Tianyi
       - Touhou
+      - Trình
       - WEBVTT
       - Yuezheng
   - filename: '**/*.md'
