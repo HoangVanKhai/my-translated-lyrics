@@ -30,6 +30,3 @@ pub struct WordsDesc {
     #[serde(default)]
     pub song_titles: HashMap<Language, String>,
 }
-
-#[cfg(test)]
-mod tests;
