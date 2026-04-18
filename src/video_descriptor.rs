@@ -207,7 +207,7 @@ impl FromStr for LyricsFileName {
 }
 
 #[derive(Debug, strum::Display, Clone, Copy, AsRefStr, EnumString, VariantArray, ValueEnum)]
-pub enum SubtitleFormat {
+pub(crate) enum SubtitleFormat {
     #[strum(serialize = "srt")]
     #[value(name = "srt")]
     SubRip,

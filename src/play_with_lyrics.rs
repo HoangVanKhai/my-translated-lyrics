@@ -42,18 +42,29 @@ struct Args {
     target: PathBuf,
 }
 
-/// Finds a video file in `collection_dir` whose stem exactly matches
+/// Finds the unique video file in `collection_dir` whose stem exactly matches
 /// `video_title` and whose extension is one of [`VIDEO_EXTENSIONS`].
+///
+/// Panics if no matching file is found, or if more than one matching file is
+/// found (which would make the choice nondeterministic).
 fn find_video_file(collection_dir: &Path, video_title: &str) -> PathBuf {
-    read_dir(collection_dir)
+    let mut matches = read_dir(collection_dir)
         .unwrap_or_else(|error| panic!("error: Cannot read directory {collection_dir:?}: {error}"))
         .map(|entry| {
             entry.unwrap_or_else(|error| {
                 panic!("error: Cannot read an entry of directory {collection_dir:?}: {error}")
             })
         })
+        .filter(|entry| {
+            entry
+                .file_type()
+                .unwrap_or_else(|error| {
+                    panic!("error: Cannot read file type in {collection_dir:?}: {error}")
+                })
+                .is_file()
+        })
         .map(|entry| entry.path())
-        .find(|path| {
+        .filter(|path| {
             let Some(stem) = path.file_stem() else {
                 return false;
             };
@@ -67,13 +78,17 @@ fn find_video_file(collection_dir: &Path, video_title: &str) -> PathBuf {
                 .to_str()
                 .unwrap_or_else(|| panic!("error: Non-UTF-8 filename in {collection_dir:?}"));
             stem == video_title && VIDEO_EXTENSIONS.contains(&ext)
-        })
-        .unwrap_or_else(|| {
-            panic!(
-                "error: No video file found for {video_title:?} in {collection_dir:?} (tried extensions: {})",
-                VIDEO_EXTENSIONS.join(", "),
-            )
-        })
+        });
+    let first = matches.next().unwrap_or_else(|| {
+        panic!(
+            "error: No video file found for {video_title:?} in {collection_dir:?} (tried extensions: {})",
+            VIDEO_EXTENSIONS.join(", "),
+        )
+    });
+    if matches.next().is_some() {
+        panic!("error: Multiple video files found for {video_title:?} in {collection_dir:?}");
+    }
+    first
 }
 
 pub fn main() {
