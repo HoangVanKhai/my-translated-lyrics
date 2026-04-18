@@ -1,0 +1,92 @@
+[[credit-roles]]
+zh = "作词"
+vi = "Tác từ"
+
+[[credit-roles]]
+zh = "编曲"
+vi = "Biên khúc"
+
+[[credit-roles]]
+zh = "VSINGER"
+vi = "VSINGER"
+
+[[credit-roles]]
+zh = "笛子"
+vi = "Sáo"
+
+[[credit-roles]]
+zh = "作曲"
+vi = "Tác khúc"
+
+[[credit-roles]]
+zh = "演唱"
+vi = "Trình bày"
+
+[[credit-roles]]
+zh = "调校"
+vi = "Điều giáo"
+
+[[credit-roles]]
+zh = "制作人"
+vi = "Sản xuất"
+
+[[credit-roles]]
+zh = "Ｖ家曲绘"
+vi = "Hình ảnh"
+
+[[credit-roles]]
+zh = "美术"
+vi = "Mỹ thuật"
+
+[[credit-roles]]
+zh = "PV"
+vi = "PV"
+
+[[credit-roles]]
+zh = "鸣谢素材"
+vi = "Cảm ơn"
+
+[[credit-names]]
+zh = "雨観"
+
+[[credit-names]]
+zh = "雨观"
+
+[[credit-names]]
+zh = "洛天依X楽正绫"
+vi = "Luo Tianyi X Yuezheng Ling"
+
+[[credit-names]]
+zh = "再也不上课"
+
+[[credit-names]]
+zh = "雨観X溪里"
+
+[[credit-names]]
+zh = "鬼面P"
+
+[[credit-names]]
+zh = "Vsinger团队"
+
+[[credit-names]]
+zh = "碎夊"
+
+[[credit-names]]
+zh = "超级水水"
+
+[[credit-names]]
+zh = "山晚樵渔"
+
+[speaker-names.zh]
+LTY = "洛天依"
+lty = "洛天依（念白）"
+YZL = "乐正绫"
+yzl = "乐正绫（念白）"
+"Y+L" = "洛天依 & 乐正绫"
+
+[speaker-names.vi]
+LTY = "Lạc Thiên Y"
+lty = "Lạc Thiên Y (thoại)"
+YZL = "Nhạc Chính Lăng"
+yzl = "Nhạc Chính Lăng (thoại)"
+"Y+L" = "Lạc Thiên Y & Nhạc Chính Lăng"

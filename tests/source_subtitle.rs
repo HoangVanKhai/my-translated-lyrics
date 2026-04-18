@@ -2,11 +2,11 @@ use itertools::Itertools;
 use pipe_trait::Pipe;
 use std::fs::{DirEntry, read_dir, read_to_string};
 use std::path::Path;
-use translated_lyrics::words_descriptor::{WORDS_CONFIG_FILE_NAME, WordsDesc};
+use translated_lyrics::subtitle_descriptor::{SUBTITLE_CONFIG_FILE_NAME, SubtitleDesc};
 
-/// Every `sources/*/words.toml` must parse as a valid [`WordsDesc`].
+/// Every `sources/*/subtitle.toml` must parse as a valid [`SubtitleDesc`].
 #[test]
-fn source_words_descriptors_are_valid() {
+fn source_subtitle_descriptors_are_valid() {
     let sources_dir = env!("CARGO_MANIFEST_DIR").pipe(Path::new).join("sources");
     if !sources_dir.exists() {
         return;
@@ -24,17 +24,17 @@ fn source_words_descriptors_are_valid() {
             continue;
         }
 
-        let words_path = song_dir.join(WORDS_CONFIG_FILE_NAME);
-        if !words_path.exists() {
+        let subtitle_path = song_dir.join(SUBTITLE_CONFIG_FILE_NAME);
+        if !subtitle_path.exists() {
             continue;
         }
 
         eprintln!("CASE: {}", entry.file_name().display());
-        words_path
+        subtitle_path
             .pipe(read_to_string)
             .unwrap()
-            .pipe_as_ref(toml::from_str::<WordsDesc>)
+            .pipe_as_ref(toml::from_str::<SubtitleDesc>)
             .unwrap()
-            .pipe(drop::<WordsDesc>);
+            .pipe(drop::<SubtitleDesc>);
     }
 }
