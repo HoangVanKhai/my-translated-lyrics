@@ -103,9 +103,9 @@ where
 
 ### Conditional Test Skipping: `#[cfg]` vs `#[cfg_attr(..., ignore)]`
 
-When a test cannot run under certain conditions, such as on the wrong platform, prefer `#[cfg_attr(..., ignore)]` over `#[cfg(...)]` to skip it. The test still compiles on all configurations, which catches type errors and regressions early, but is skipped at runtime.
+When a test cannot run under certain conditions, such as on the wrong platform, prefer `#[cfg_attr(..., ignore)]` over `#[cfg(...)]` to skip it. The test still compiles on every configuration and is only skipped at runtime. This approach catches type errors and regressions that a `#[cfg]` skip would hide.
 
-Use `#[cfg]` on tests **only** when the code cannot compile under the condition. One example is a test that references types, functions, or trait methods that are gated behind `#[cfg]` and do not exist on other platforms.
+Use `#[cfg]` on tests **only** when the code cannot compile under the condition. An example is a test that uses platform-specific types or functions gated behind `#[cfg]`.
 
 Prefer including a reason string in the `ignore` attribute to explain why the test is skipped.
 
