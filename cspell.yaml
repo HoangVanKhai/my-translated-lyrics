@@ -17,6 +17,7 @@ overrides:
   - filename:
       - '**/*.vi.srt'
       - '**/*.vi.vtt'
+      - '**/*.vi.txt'
       - '**/*.vi.*.srt'
       - '**/*.vi.*.vtt'
       - '**/*.vi.*.txt'
