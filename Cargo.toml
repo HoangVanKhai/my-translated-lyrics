@@ -11,8 +11,13 @@ path = "cli/install_local_lyrics.rs"
 name = "lyrics-ai-instructions"
 path = "cli/ai_instructions.rs"
 
+[[bin]]
+name = "play-with-lyrics"
+path = "cli/play_with_lyrics.rs"
+
 [dependencies]
 clap = { version = "4.6.0", features = ["derive"] }
+command-extra = "1.0.0"
 derive_more = { version = "2.1.1", features = ["as_ref", "deref", "display", "error", "into"] }
 itertools = "0.14.0"
 pipe-trait = "0.4.0"
@@ -22,7 +27,6 @@ strum = { version = "0.28.0", features = ["derive"] }
 toml = "1.1.2"
 
 [dev-dependencies]
-command-extra = "1.0.0"
 maplit = "1.0.2"
 pretty_assertions = "1.4.1"
 rand = "0.10.0"

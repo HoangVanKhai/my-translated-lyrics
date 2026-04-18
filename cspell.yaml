@@ -59,9 +59,11 @@ overrides:
       - WEBVTT
   - filename: '**/*.rs'
     words:
+      - Cloudside
       - Feng
       - hardlink
       - maplit
+      - rfind
       - rsplit
       - Tianyi
       - Touhou
