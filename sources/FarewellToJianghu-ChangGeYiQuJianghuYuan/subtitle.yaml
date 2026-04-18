@@ -26,27 +26,39 @@ credit-roles:
 
 credit-names:
   - zh: 雨観
+    vi: 雨観
   - zh: 雨观
+    vi: 雨观
   - zh: 洛天依X楽正绫
     vi: Luo Tianyi X Yuezheng Ling
   - zh: 再也不上课
+    vi: 再也不上课
   - zh: 雨観X溪里
+    vi: 雨観X溪里
   - zh: 鬼面P
+    vi: 鬼面P
   - zh: Vsinger团队
+    vi: Vsinger团队
   - zh: 碎夊
+    vi: 碎夊
   - zh: 超级水水
+    vi: 超级水水
   - zh: 山晚樵渔
+    vi: 山晚樵渔
 
 speaker-names:
-  zh:
-    LTY: 洛天依
-    lty: 洛天依（念白）
-    YZL: 乐正绫
-    yzl: 乐正绫（念白）
-    "Y+L": 洛天依 & 乐正绫
-  vi:
-    LTY: Lạc Thiên Y
-    lty: Lạc Thiên Y (thoại)
-    YZL: Nhạc Chính Lăng
-    yzl: Nhạc Chính Lăng (thoại)
-    "Y+L": Lạc Thiên Y & Nhạc Chính Lăng
+  LTY:
+    zh: 洛天依
+    vi: Lạc Thiên Y
+  lty:
+    zh: 洛天依（念白）
+    vi: Lạc Thiên Y (thoại)
+  YZL:
+    zh: 乐正绫
+    vi: Nhạc Chính Lăng
+  yzl:
+    zh: 乐正绫（念白）
+    vi: Nhạc Chính Lăng (thoại)
+  "Y+L":
+    zh: 洛天依 & 乐正绫
+    vi: Lạc Thiên Y & Nhạc Chính Lăng
