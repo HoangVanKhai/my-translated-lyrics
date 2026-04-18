@@ -13,7 +13,8 @@ Read and follow the CONTRIBUTING.md file in this repository for all code style c
 - Prefer `#[cfg_attr(..., ignore = "reason")]` over `#[cfg(...)]` when skipping tests. Use `#[cfg]` on tests only when the code cannot compile under the condition, such as when it references types or functions that do not exist on other platforms.
 - Install the toolchain before running tests: `rustup toolchain install "$(< rust-toolchain)" && rustup component add --toolchain "$(< rust-toolchain)" rustfmt clippy`.
 - Validate changes with `cargo fmt -- --check && cargo clippy --all-targets && cargo test`.
-- **Always run the full test suite** (`cargo fmt -- --check && cargo clippy --all-targets && cargo test`) before every commit. This rule applies to all changes, including documentation changes, comment edits, and config updates.
+- **Always run the full Rust test suite** (`cargo fmt -- --check && cargo clippy --all-targets && cargo test`) before every commit. This rule applies to all changes, including documentation changes, comment edits, and config updates.
 - When a sync test fails, read its error message and run the exact command it reports.
+- Run the CSpell spell check when a change may introduce new words: `pnpm install --frozen-lockfile && pnpm exec cspell lint --gitignore '**'`.
 - When the user provides a diff to apply, run `git apply` rather than interpreting each hunk manually. When a diff is provided for context or discussion, respond accordingly.
 - The `gh` (GitHub CLI) is not installed. Do not attempt to use it.
