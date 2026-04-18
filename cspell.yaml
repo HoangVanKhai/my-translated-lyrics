@@ -93,16 +93,10 @@ overrides:
       - Yuezheng
   - filename: '**/*.rs'
     words:
-      - Chính
       - Feng
       - hardlink
-      - Lăng
       - maplit
-      - nhạc
-      - Nhạc
       - rsplit
-      - Soạn
-      - Thiên
       - Tianyi
       - Touhou
       - Trình
