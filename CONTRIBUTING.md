@@ -34,7 +34,7 @@ Use **descriptive names** for variables and closure parameters by default. Singl
   items.sort_by(|a, b| a.name.cmp(&b.name));
   ```
 
-- **Conventional single-letter names:** `n` for a natural number (unsigned integer / count), `f` for a `fmt::Formatter`, and similar well-established conventions from math or the Rust standard library. Note: for indices, use `index`, `idx`, or `*_index`, not `n`. (For `i`/`j`/`k`, see the dedicated rule below.)
+- **Conventional single-letter names:** `n` for a natural number (unsigned integer / count); `f` for a `fmt::Formatter`; and similar well-established conventions from math or the Rust standard library. Note: for indices, use `index`, `idx`, or `*_index`, not `n`. (For `i`/`j`/`k`, see the dedicated rule below.)
 
   ```rust
   fn with_capacity(n: usize) -> Self { todo!() }
