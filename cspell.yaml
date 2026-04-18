@@ -17,9 +17,7 @@ overrides:
   - filename:
       - '**/*.vi.srt'
       - '**/*.vi.vtt'
-      - '**/*.vi.*.srt'
-      - '**/*.vi.*.vtt'
-      - '**/*.vi.*.txt'
+      - '**/*.vi.txt'
     language: en,vi
     words:
       - AXIDI

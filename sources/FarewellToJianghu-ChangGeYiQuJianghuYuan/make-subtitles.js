@@ -373,10 +373,10 @@ function main() {
   const baseDir = __dirname
 
   const zhInputPath = path.join(baseDir, 'lyrics.zh.txt')
-  const viInputPath = path.join(baseDir, 'lyrics.vi.mtl.txt')
+  const viInputPath = path.join(baseDir, 'lyrics.vi.txt')
 
   if (!fs.existsSync(zhInputPath) || !fs.existsSync(viInputPath)) {
-    console.error('Input files not found. Ensure lyrics.zh.txt and lyrics.vi.mtl.txt are in the script directory.')
+    console.error('Input files not found. Ensure lyrics.zh.txt and lyrics.vi.txt are in the script directory.')
     process.exit(1)
   }
 
@@ -388,8 +388,8 @@ function main() {
 
   fs.writeFileSync(path.join(baseDir, 'lyrics.zh.srt'), generateSrt(zhCues), 'utf8')
   fs.writeFileSync(path.join(baseDir, 'lyrics.zh.vtt'), generateVtt(zhCues, 'zh'), 'utf8')
-  fs.writeFileSync(path.join(baseDir, 'lyrics.vi.mtl.srt'), generateSrt(viCues), 'utf8')
-  fs.writeFileSync(path.join(baseDir, 'lyrics.vi.mtl.vtt'), generateVtt(viCues, 'vi'), 'utf8')
+  fs.writeFileSync(path.join(baseDir, 'lyrics.vi.srt'), generateSrt(viCues), 'utf8')
+  fs.writeFileSync(path.join(baseDir, 'lyrics.vi.vtt'), generateVtt(viCues, 'vi'), 'utf8')
 
   console.log('Subtitle files generated successfully.')
 }
