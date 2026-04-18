@@ -19,3 +19,5 @@ Read and follow the CONTRIBUTING.md file in this repository for all code style c
 - Run the CSpell spell check when a change may introduce new words: `pnpm install --frozen-lockfile && pnpm exec cspell lint --gitignore '**'`.
 - When the user provides a diff to apply, run `git apply` rather than interpreting each hunk manually. When a diff is provided for context or discussion, respond accordingly.
 - The `gh` (GitHub CLI) is not installed. Do not attempt to use it.
+- Format pull request titles using the Conventional Commits convention, matching the same `type(scope): lowercase description` pattern specified for commit messages.
+- After completing a task, rewrite the pull request description so that it summarizes the totality of the pull request's changes in their final state. Do not leave the description as a running bullet list of checkboxes or AI task updates.
