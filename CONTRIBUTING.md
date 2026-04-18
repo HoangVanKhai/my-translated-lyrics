@@ -207,7 +207,7 @@ pnpm install --frozen-lockfile
 
 ## Automated Checks
 
-Before submitting, ensure the Rust checks pass:
+Before submitting, ensure:
 
 - `cargo fmt -- --check` passes
 - `cargo clippy --all-targets` passes
@@ -233,4 +233,3 @@ CI also runs a [CSpell](https://cspell.org) spell check via the following comman
 pnpm exec cspell lint --no-progress --gitignore '**'
 ```
 
-Running it locally is a good idea when you touch prose or identifiers, but it is a lighter check than the Rust test suite and triggers only occasionally. Spell-check configuration — including per-language dictionaries and allowed words — lives in `cspell.yaml`. When CSpell flags a legitimate word that is missing from the dictionary, add it to the appropriate `words` list in `cspell.yaml` rather than rewording the content.
