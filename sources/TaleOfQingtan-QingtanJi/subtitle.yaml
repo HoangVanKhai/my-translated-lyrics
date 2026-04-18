@@ -43,7 +43,6 @@ credit-names:
   - zh: 九镜
 
 speaker-names:
-  zh:
-    LRC: 洛天依 X 乐正绫
-  vi:
-    LRC: Luo Tianyi X Yuezheng Ling
+  LRC:
+    zh: 洛天依 X 乐正绫
+    vi: Luo Tianyi X Yuezheng Ling

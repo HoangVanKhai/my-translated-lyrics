@@ -22,8 +22,8 @@ pub struct SubtitleDesc {
     /// credit block.
     #[serde(default)]
     pub credit_names: Vec<HashMap<Language, String>>,
-    /// Per-language mapping from dialogue-role marker code to the display
-    /// name used as a voice label in VTT cues.
+    /// Per-role mapping from dialogue-role marker code to a map of language
+    /// codes to the display name used as a voice label in VTT cues.
     #[serde(default)]
-    pub speaker_names: HashMap<Language, HashMap<String, String>>,
+    pub speaker_names: HashMap<String, HashMap<Language, String>>,
 }
