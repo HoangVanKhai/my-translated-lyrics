@@ -4,7 +4,7 @@ Read and follow the CONTRIBUTING.md file in this repository for all code style c
 
 ## Quick Reference
 
-- Commit format: Conventional Commits. Pattern: `type(scope): lowercase description`.
+- Commit format: Conventional Commits. Patterns: `type: lowercase description` or `type(scope): lowercase description`. The scope is optional.
 - Write documentation, comments, and other prose in a direct, formal tone using complete sentences. Avoid mid-sentence breaks introduced by em dashes, long parenthetical clauses, or conversational asides such as "basically", "just", "that'd be slow", or "etc." Em dashes are a reliable symptom of loose phrasing; when one appears, restructure the surrounding sentence so each clause stands on its own rather than swapping the em dash for another punctuation mark.
 - Use descriptive names for variables and closure parameters. Single letters are permitted only in the following cases: conventional names such as `n` for a count and `f` for a formatter; two-argument comparison closures written as `|a, b|`; trivial single-expression closures; fold accumulators; index variables `i`, `j`, and `k` in short closures or index-based loops; and test fixtures with identical roles. Single letters are never permitted in multi-line functions or closures.
 - Use `pipe-trait` to chain through unary functions such as constructors, `Some`, `Ok`, and free functions. Use it to flatten nested calls and to continue method chains. Do not use it for simple standalone calls; prefer `foo(value)` over `value.pipe(foo)`.
