@@ -100,15 +100,28 @@ pub enum ParseVideoTitleError {
 }
 
 #[derive(
-    Debug, Clone, strum::Display, PartialEq, Eq, Hash, AsRefStr, EnumString, Deserialize, Serialize,
+    Debug,
+    Clone,
+    strum::Display,
+    PartialEq,
+    Eq,
+    Hash,
+    AsRefStr,
+    EnumString,
+    Deserialize,
+    Serialize,
+    clap::ValueEnum,
 )]
 #[serde(try_from = "String", into = "String")]
 pub enum Language {
     #[strum(serialize = "en")]
+    #[value(name = "en")]
     English,
     #[strum(serialize = "vi")]
+    #[value(name = "vi")]
     Vietnamese,
     #[strum(serialize = "zh")]
+    #[value(name = "zh")]
     Chinese,
 }
 
@@ -192,11 +205,15 @@ impl FromStr for LyricsFileName {
     }
 }
 
-#[derive(strum::Display, Clone, Copy, AsRefStr, EnumString, VariantArray)]
-enum SubtitleFormat {
+#[derive(
+    Debug, strum::Display, Clone, Copy, AsRefStr, EnumString, VariantArray, clap::ValueEnum,
+)]
+pub enum SubtitleFormat {
     #[strum(serialize = "srt")]
+    #[value(name = "srt")]
     SubRip,
     #[strum(serialize = "vtt")]
+    #[value(name = "vtt")]
     WebVtt,
 }
 
