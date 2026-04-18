@@ -18,9 +18,6 @@ overrides:
       - '**/*.vi.srt'
       - '**/*.vi.vtt'
       - '**/*.vi.txt'
-      - '**/*.vi.*.srt'
-      - '**/*.vi.*.vtt'
-      - '**/*.vi.*.txt'
     language: en,vi
     words:
       - AXIDI
