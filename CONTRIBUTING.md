@@ -28,13 +28,13 @@ Use **descriptive names** for variables and closure parameters by default. Singl
 
 #### When single-letter names are allowed
 
-- **Comparison closures:** `|a, b|` in `sort_by`, `cmp`, or similar two-argument comparison callbacks — this is idiomatic Rust.
+- **Comparison closures:** `|a, b|` in `sort_by`, `cmp`, or similar two-argument comparison callbacks. This is idiomatic Rust.
 
   ```rust
   items.sort_by(|a, b| a.name.cmp(&b.name));
   ```
 
-- **Conventional single-letter names:** `n` for a natural number (unsigned integer / count), `f` for a `fmt::Formatter`, and similar well-established conventions from math or the Rust standard library. Note: for indices, use `index`, `idx`, or `*_index` — not `n`. (For `i`/`j`/`k`, see the dedicated rule below.)
+- **Conventional single-letter names:** `n` for a natural number (unsigned integer / count), `f` for a `fmt::Formatter`, and similar well-established conventions from math or the Rust standard library. Note: for indices, use `index`, `idx`, or `*_index`, not `n`. (For `i`/`j`/`k`, see the dedicated rule below.)
 
   ```rust
   fn with_capacity(n: usize) -> Self { todo!() }
@@ -55,7 +55,7 @@ Use **descriptive names** for variables and closure parameters by default. Singl
   .fold(PathBuf::new(), |acc, x| acc.join(x))
   ```
 
-- **Test fixtures:** `let a`, `let b`, `let c` for interchangeable specimens with identical roles in equality or comparison tests. Do not use single letters when the variables have distinct roles — use `actual`/`expected` or similar descriptive names instead.
+- **Test fixtures:** `let a`, `let b`, `let c` for interchangeable specimens with identical roles in equality or comparison tests. Do not use single letters when the variables have distinct roles; use `actual`/`expected` or similar descriptive names instead.
 
 #### When single-letter names are NOT allowed
 
@@ -99,23 +99,23 @@ where
 
 ### Error Handling
 
-- Minimize `unwrap()` in non-test code — use proper error propagation. `unwrap()` is acceptable in tests and for provably infallible operations (with a comment explaining why). When deliberately ignoring an error, use `.ok()` with a comment explaining why.
+- Minimize `unwrap()` in non-test code; use proper error propagation. `unwrap()` is acceptable in tests and for provably infallible operations (with a comment explaining why). When deliberately ignoring an error, use `.ok()` with a comment explaining why.
 
 ### Conditional Test Skipping: `#[cfg]` vs `#[cfg_attr(..., ignore)]`
 
-When a test cannot run under certain conditions (e.g., wrong platform), prefer `#[cfg_attr(..., ignore)]` over `#[cfg(...)]` to skip it. This way the test is still compiled on all configurations — catching type errors and regressions early — but simply skipped at runtime.
+When a test cannot run under certain conditions (e.g., wrong platform), prefer `#[cfg_attr(..., ignore)]` over `#[cfg(...)]` to skip it. This way the test is still compiled on all configurations (catching type errors and regressions early), but simply skipped at runtime.
 
-Use `#[cfg]` on tests **only** when the code cannot compile under the condition — for example, when the test references types, functions, or trait methods that are gated behind `#[cfg]` and do not exist on other platforms.
+Use `#[cfg]` on tests **only** when the code cannot compile under the condition, for example when the test references types, functions, or trait methods that are gated behind `#[cfg]` and do not exist on other platforms.
 
 Prefer including a reason string in the `ignore` attribute to explain why the test is skipped.
 
 ```rust
-// Good — test compiles everywhere, skipped at runtime on non-unix
+// Good: test compiles everywhere, skipped at runtime on non-unix
 #[test]
 #[cfg_attr(not(unix), ignore = "only unix path separators are tested")]
 fn unix_path_logic() { /* uses hardcoded unix paths but no unix-only types */ }
 
-// Good — test CANNOT compile on non-unix (uses unix-only types)
+// Good: test CANNOT compile on non-unix (uses unix-only types)
 #[cfg(unix)]
 #[test]
 fn unix_only_types() { /* uses OsStrExt which only exists on unix */ }
@@ -125,14 +125,14 @@ fn unix_only_types() { /* uses OsStrExt which only exists on unix */ }
 
 This codebase uses the [`pipe-trait`](https://docs.rs/pipe-trait) crate for method-chaining through unary functions, keeping code in a natural left-to-right reading order. Import it as `use pipe_trait::Pipe;`.
 
-Any callable that takes a single argument works with `.pipe()` — free functions, closures, newtype constructors, enum variant constructors, `Some`, `Ok`, `Err`, trait methods like `From::from`, etc.
+Any callable that takes a single argument works with `.pipe()`: free functions, closures, newtype constructors, enum variant constructors, `Some`, `Ok`, `Err`, trait methods like `From::from`, etc.
 
 #### When to use pipe
 
 **Chaining through a unary function at the end of an expression chain:**
 
 ```rust
-// Good — pipe keeps the chain flowing left-to-right
+// Good: pipe keeps the chain flowing left-to-right
 entry.file_name().pipe(OsStringDisplay::from).pipe(Some)
 ```
 
@@ -149,7 +149,7 @@ let data = stdin().pipe(serde_json::from_reader::<_, JsonData>);
 **Continuing a method chain through a free function and back to methods:**
 
 ```rust
-// Good — pipe bridges from methods to a free function and back
+// Good: pipe bridges from methods to a free function and back
 path_buf
     .pipe_as_ref(fs::read_to_string)
     .map(|content| content.trim().to_owned())
@@ -157,13 +157,13 @@ path_buf
 
 #### When NOT to use pipe
 
-**Simple standalone function calls** — pipe adds noise with no readability benefit:
+**Simple standalone function calls.** Pipe adds noise with no readability benefit:
 
 ```rust
-// Bad — unnecessary pipe
+// Bad: unnecessary pipe
 let result = value.pipe(foo);
 
-// Good — just call the function directly
+// Good: just call the function directly
 let result = foo(value);
 ```
 
@@ -174,14 +174,14 @@ This codebase uses the [`command-extra`](https://docs.rs/command-extra) crate to
 The standard `Command` builder methods (`arg`, `env`, `current_dir`, etc.) take `&mut self` and return `&mut Command`, making them unsuitable for method chains that end in an owned value. The `CommandExtra` extension trait provides `.with_*` counterparts that take ownership and return an owned `Command`, enabling fluent one-expression construction:
 
 ```rust
-// Good — fully chainable, owned style
+// Good: fully chainable, owned style
 let output = Command::new("my-tool")
     .with_arg("--flag")
     .with_arg(value)
     .output()
     .expect("spawn my-tool");
 
-// Avoid — mutable-reference style, cannot chain with owned methods
+// Avoid: mutable-reference style, cannot chain with owned methods
 let mut cmd = Command::new("my-tool");
 cmd.arg("--flag");
 cmd.arg(value);
