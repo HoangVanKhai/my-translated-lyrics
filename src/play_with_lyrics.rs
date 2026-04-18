@@ -1,5 +1,5 @@
 use crate::video_descriptor::{Language, SubtitleFormat, VIDEO_CONFIG_FILE_NAME, VideoDesc};
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use command_extra::CommandExtra;
 use pipe_trait::Pipe;
 use std::fs::{read_dir, read_to_string};
@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// The video player to use when launching a video with subtitles.
-#[derive(Debug, Clone, Copy, clap::ValueEnum, strum::Display)]
+#[derive(Debug, Clone, Copy, ValueEnum, strum::Display)]
 pub enum Player {
     /// MPV media player.
     #[strum(serialize = "mpv")]
@@ -23,57 +23,57 @@ const VIDEO_EXTENSIONS: &[&str] = &["mp4", "mkv", "webm", "avi", "m4v", "mov"];
 #[derive(Debug, Clone, Parser)]
 #[clap(about = "Play a video with its translated subtitle files")]
 struct Args {
-    /// Source directory containing video.toml.
-    source: PathBuf,
-
-    /// Container of the target directories of the subtitles and video files.
-    target: PathBuf,
-
     /// Media player to launch.
     #[clap(long, default_value_t = Player::Mpv)]
     player: Player,
 
     /// Language of the subtitle to load.
-    #[clap(long)]
+    #[clap(long, short)]
     language: Language,
 
     /// Format of the subtitle file to load.
-    #[clap(long)]
+    #[clap(long, short)]
     format: SubtitleFormat,
+
+    /// Source directory containing video.toml.
+    source: PathBuf,
+
+    /// Container of the target directories of the subtitles and video files.
+    target: PathBuf,
 }
 
 /// Finds a video file in `collection_dir` whose stem exactly matches
 /// `video_title` and whose extension is one of [`VIDEO_EXTENSIONS`].
 fn find_video_file(collection_dir: &Path, video_title: &str) -> PathBuf {
-    let entries = read_dir(collection_dir)
-        .unwrap_or_else(|error| panic!("error: Cannot read directory {collection_dir:?}: {error}"));
-
-    for entry in entries {
-        let entry = entry.unwrap_or_else(|error| {
-            panic!("error: Cannot read an entry of directory {collection_dir:?}: {error}")
-        });
-        let path = entry.path();
-        let Some(stem) = path.file_stem() else {
-            continue;
-        };
-        let Some(ext) = path.extension() else {
-            continue;
-        };
-        let stem = stem
-            .to_str()
-            .unwrap_or_else(|| panic!("error: Non-UTF-8 filename in {collection_dir:?}"));
-        let ext = ext
-            .to_str()
-            .unwrap_or_else(|| panic!("error: Non-UTF-8 filename in {collection_dir:?}"));
-        if stem == video_title && VIDEO_EXTENSIONS.contains(&ext) {
-            return path;
-        }
-    }
-
-    panic!(
-        "error: No video file found for {video_title:?} in {collection_dir:?} (tried extensions: {})",
-        VIDEO_EXTENSIONS.join(", "),
-    )
+    read_dir(collection_dir)
+        .unwrap_or_else(|error| panic!("error: Cannot read directory {collection_dir:?}: {error}"))
+        .map(|entry| {
+            entry.unwrap_or_else(|error| {
+                panic!("error: Cannot read an entry of directory {collection_dir:?}: {error}")
+            })
+        })
+        .map(|entry| entry.path())
+        .find(|path| {
+            let Some(stem) = path.file_stem() else {
+                return false;
+            };
+            let Some(ext) = path.extension() else {
+                return false;
+            };
+            let stem = stem
+                .to_str()
+                .unwrap_or_else(|| panic!("error: Non-UTF-8 filename in {collection_dir:?}"));
+            let ext = ext
+                .to_str()
+                .unwrap_or_else(|| panic!("error: Non-UTF-8 filename in {collection_dir:?}"));
+            stem == video_title && VIDEO_EXTENSIONS.contains(&ext)
+        })
+        .unwrap_or_else(|| {
+            panic!(
+                "error: No video file found for {video_title:?} in {collection_dir:?} (tried extensions: {})",
+                VIDEO_EXTENSIONS.join(", "),
+            )
+        })
 }
 
 pub fn main() {

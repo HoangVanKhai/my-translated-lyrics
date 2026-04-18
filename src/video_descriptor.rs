@@ -1,3 +1,4 @@
+use clap::ValueEnum;
 use derive_more::{AsRef, Deref, Display, Error, Into};
 use itertools::Itertools;
 use pipe_trait::Pipe;
@@ -110,7 +111,7 @@ pub enum ParseVideoTitleError {
     EnumString,
     Deserialize,
     Serialize,
-    clap::ValueEnum,
+    ValueEnum,
 )]
 #[serde(try_from = "String", into = "String")]
 pub enum Language {
@@ -205,9 +206,7 @@ impl FromStr for LyricsFileName {
     }
 }
 
-#[derive(
-    Debug, strum::Display, Clone, Copy, AsRefStr, EnumString, VariantArray, clap::ValueEnum,
-)]
+#[derive(Debug, strum::Display, Clone, Copy, AsRefStr, EnumString, VariantArray, ValueEnum)]
 pub enum SubtitleFormat {
     #[strum(serialize = "srt")]
     #[value(name = "srt")]
