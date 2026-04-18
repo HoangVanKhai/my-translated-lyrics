@@ -100,7 +100,18 @@ pub enum ParseVideoTitleError {
 }
 
 #[derive(
-    Debug, Clone, strum::Display, PartialEq, Eq, Hash, AsRefStr, EnumString, Deserialize, Serialize,
+    Debug,
+    Clone,
+    strum::Display,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    AsRefStr,
+    EnumString,
+    Deserialize,
+    Serialize,
 )]
 #[serde(try_from = "String", into = "String")]
 pub enum Language {
