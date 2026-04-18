@@ -1,30 +1,32 @@
 credit-roles:
-  - zh: PV
-    vi: PV
-  - zh: VSINGER
-    vi: VSINGER
-  - zh: 作曲
-    vi: Tác khúc
-  - zh: 作词
-    vi: Tác từ
-  - zh: 制作人
-    vi: Sản xuất
-  - zh: 演唱
-    vi: Trình bày
-  - zh: 笛子
-    vi: Sáo
   - zh: 编曲
     vi: Biên khúc
-  - zh: 美术
-    vi: Mỹ thuật
-  - zh: 调校
-    vi: Điều giáo
   - zh: 鸣谢素材
     vi: Cảm ơn
   - zh: Ｖ家曲绘
     vi: Hình ảnh
+  - zh: 美术
+    vi: Mỹ thuật
+  - zh: PV
+    vi: PV
+  - zh: 笛子
+    vi: Sáo
+  - zh: 制作人
+    vi: Sản xuất
+  - zh: 演唱
+    vi: Trình bày
+  - zh: 作曲
+    vi: Tác khúc
+  - zh: 作词
+    vi: Tác từ
+  - zh: VSINGER
+    vi: VSINGER
+  - zh: 调校
+    vi: Điều giáo
 
 credit-names:
+  - zh: 洛天依X楽正绫
+    vi: Luo Tianyi X Yuezheng Ling
   - zh: Vsinger团队
     vi: Vsinger团队
   - zh: 一勺酸橙汁
@@ -41,8 +43,6 @@ credit-names:
     vi: 废画
   - zh: 无声诗
     vi: 无声诗
-  - zh: 洛天依X楽正绫
-    vi: Luo Tianyi X Yuezheng Ling
   - zh: 璇玑坊Studio
     vi: 璇玑坊Studio
   - zh: 碎夊
