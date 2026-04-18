@@ -1,3 +1,4 @@
+use into_sorted::IntoSorted;
 use itertools::Itertools;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
@@ -41,17 +42,15 @@ fn source_subtitle_descriptors() {
         let original = subtitle_path.pipe(read_to_string).unwrap();
         let desc: SubtitleDesc = original.pipe_as_ref(serde_saphyr::from_str).unwrap();
 
-        let mut sorted_credit_roles = desc.credit_roles.clone();
-        sorted_credit_roles.sort();
         assert_eq!(
-            desc.credit_roles, sorted_credit_roles,
+            desc.credit_roles,
+            desc.credit_roles.clone().into_sorted(),
             "credit-roles in {song_name:?} are not in sorted order",
         );
 
-        let mut sorted_credit_names = desc.credit_names.clone();
-        sorted_credit_names.sort();
         assert_eq!(
-            desc.credit_names, sorted_credit_names,
+            desc.credit_names,
+            desc.credit_names.clone().into_sorted(),
             "credit-names in {song_name:?} are not in sorted order",
         );
 
