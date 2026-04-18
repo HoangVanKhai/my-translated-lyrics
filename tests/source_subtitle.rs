@@ -8,9 +8,11 @@ use translated_lyrics::subtitle_descriptor::{SUBTITLE_CONFIG_FILE_NAME, Subtitle
 #[test]
 fn source_subtitle_descriptors_are_valid() {
     let sources_dir = env!("CARGO_MANIFEST_DIR").pipe(Path::new).join("sources");
-    if !sources_dir.exists() {
-        return;
-    }
+    assert!(
+        sources_dir.is_dir(),
+        "expected sources directory to exist for subtitle descriptor validation: {}",
+        sources_dir.display()
+    );
 
     let entries = sources_dir
         .pipe(read_dir)
