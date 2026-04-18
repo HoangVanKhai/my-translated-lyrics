@@ -15,5 +15,5 @@ Read and follow the CONTRIBUTING.md file in this repository for all code style c
 - Run `cargo fmt -- --check && cargo clippy --all-targets && cargo test` to validate changes
 - **ALWAYS run the full test suite** (`cargo fmt -- --check && cargo clippy --all-targets && cargo test`) before committing, regardless of how trivial the change seems — this includes documentation-only changes, comment edits, and config changes
 - If a sync test fails, read its error message carefully and run the exact command it tells you to run
-- CI also runs CSpell (`pnpm exec cspell lint --no-progress --gitignore '**'`, set up with `pnpm install --frozen-lockfile`); running it locally is optional since it fails less often than the Rust checks, but a quick check is worthwhile when editing prose or identifiers. If a legitimate word is flagged, add it to the appropriate `words` list in `cspell.yaml` instead of rewording the content
+- Run CSpell check if necessary (with `pnpm install --frozen-lockfile && pnpm exec cspell lint --gitignore '**'`).
 - When the user provides a diff and you need to update the files, don't manually interpret each hunk (that'd be slow); apply it with `git apply` instead. If the user provides a diff for context or discussion rather than as a change to apply, respond accordingly instead.
