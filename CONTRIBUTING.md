@@ -227,7 +227,7 @@ cargo fmt -- --check && cargo clippy --all-targets && cargo test
 
 ### Spell Check
 
-CI also runs a [CSpell](https://cspell.org) spell check via the following command:
+Run the [CSpell](https://cspell.org) spell check if necessary:
 
 ```sh
 pnpm exec cspell lint --no-progress --gitignore '**'
