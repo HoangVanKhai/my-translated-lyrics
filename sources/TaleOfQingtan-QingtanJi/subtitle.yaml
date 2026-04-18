@@ -1,41 +1,41 @@
 credit-roles:
-  - zh: 企划
-    vi: Kế hoạch
-  - zh: 作曲
-    vi: Soạn nhạc
-  - zh: 作词
-    vi: Viết lời
-  - zh: 制作人
-    vi: Nhà sản xuất
-  - zh: 和声编写
-    vi: Viết hòa thanh
+  - zh: 调校
+    vi: Căn chỉnh giọng hát
   - zh: 混音
     vi: Hòa âm
+  - zh: 企划
+    vi: Kế hoạch
+  - zh: 美术
+    vi: Mỹ thuật
+  - zh: 制作人
+    vi: Nhà sản xuất
+  - zh: 编曲
+    vi: Phối khí
+  - zh: 作曲
+    vi: Soạn nhạc
   - zh: 演唱
     vi: Trình bày
   - zh: 素材鸣谢
     vi: Tư liệu tham chiếu
-  - zh: 编曲
-    vi: Phối khí
-  - zh: 美术
-    vi: Mỹ thuật
   - zh: 视频
     vi: Video
-  - zh: 调校
-    vi: Căn chỉnh giọng hát
+  - zh: 和声编写
+    vi: Viết hòa thanh
+  - zh: 作词
+    vi: Viết lời
 
 credit-names:
-  - zh: 一勺酸橙汁
-  - zh: 三世
+  - zh: 洛天依
+    vi: Luo Tianyi
   - zh: 乐正绫
     vi: Yuezheng Ling
+  - zh: 一勺酸橙汁
+  - zh: 三世
   - zh: 九镜
   - zh: 今日晴
   - zh: 山晚樵渔
   - zh: 废画
   - zh: 无声诗
-  - zh: 洛天依
-    vi: Luo Tianyi
   - zh: 璇玑坊Studio
   - zh: 良月十八
   - zh: 雨观

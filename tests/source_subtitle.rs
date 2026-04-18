@@ -1,25 +1,12 @@
 use itertools::Itertools;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
-use std::collections::BTreeMap;
 use std::fs::{DirEntry, read_dir, read_to_string};
 use std::path::Path;
 use translated_lyrics::subtitle_descriptor::{SUBTITLE_CONFIG_FILE_NAME, SubtitleDesc};
-use translated_lyrics::video_descriptor::Language::{self, Chinese as Zh};
-
-fn sorted_by_zh(entries: &[BTreeMap<Language, String>]) -> Vec<BTreeMap<Language, String>> {
-    let mut sorted = entries.to_vec();
-    sorted.sort_by(|a, b| {
-        a.get(&Zh)
-            .map(String::as_str)
-            .unwrap_or("")
-            .cmp(b.get(&Zh).map(String::as_str).unwrap_or(""))
-    });
-    sorted
-}
 
 /// Every `sources/*/subtitle.yaml` must parse as a valid [`SubtitleDesc`] whose
-/// `credit-roles` and `credit-names` are sorted by their `zh` value.
+/// `credit-roles` and `credit-names` are in natural sorted order.
 #[test]
 fn source_subtitle_descriptors() {
     let sources_dir = env!("CARGO_MANIFEST_DIR").pipe(Path::new).join("sources");
@@ -55,16 +42,18 @@ fn source_subtitle_descriptors() {
             .pipe_as_ref(serde_saphyr::from_str)
             .unwrap();
 
+        let mut sorted_credit_roles = desc.credit_roles.clone();
+        sorted_credit_roles.sort();
         assert_eq!(
-            desc.credit_roles,
-            sorted_by_zh(&desc.credit_roles),
-            "credit-roles in {song_name:?} are not sorted by zh value",
+            desc.credit_roles, sorted_credit_roles,
+            "credit-roles in {song_name:?} are not in sorted order",
         );
 
+        let mut sorted_credit_names = desc.credit_names.clone();
+        sorted_credit_names.sort();
         assert_eq!(
-            desc.credit_names,
-            sorted_by_zh(&desc.credit_names),
-            "credit-names in {song_name:?} are not sorted by zh value",
+            desc.credit_names, sorted_credit_names,
+            "credit-names in {song_name:?} are not in sorted order",
         );
     }
 }
