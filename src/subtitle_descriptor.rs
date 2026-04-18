@@ -4,9 +4,9 @@ use std::collections::HashMap;
 
 pub const SUBTITLE_CONFIG_FILE_NAME: &str = "subtitle.yaml";
 
-/// Parsed contents of a `subtitle.toml` file.
+/// Parsed contents of a `subtitle.yaml` file.
 ///
-/// Each source directory may contain a `subtitle.toml` file that carries
+/// Each source directory may contain a `subtitle.yaml` file that carries
 /// the structured vocabulary and speaker-role metadata required to parse
 /// and render the subtitle files for that song. All fields are optional
 /// and default to empty collections.
