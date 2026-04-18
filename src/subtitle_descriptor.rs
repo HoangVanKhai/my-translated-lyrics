@@ -14,8 +14,7 @@ pub const SUBTITLE_CONFIG_FILE_NAME: &str = "subtitle.toml";
 #[serde(rename_all = "kebab-case")]
 pub struct SubtitleDesc {
     /// Ordered list of credit role entries. Each entry maps one or more
-    /// language codes to the label used in the credit block for that role,
-    /// such as "演唱" (zh) or "Trình bày" (vi).
+    /// language codes to the label used in the credit block for that role.
     #[serde(default)]
     pub credit_roles: Vec<HashMap<Language, String>>,
     /// Ordered list of credited person or studio name entries. Each entry
