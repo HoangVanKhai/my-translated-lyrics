@@ -1,2 +1,5 @@
 [speakers]
-LRC = { vi = "Luo Tianyi X Yuezheng Ling", zh = "洛天依 X 乐正绫" }
+LTY = { vi = "Lạc Thiên Y", zh = "洛天依" }
+YZL = { vi = "Nhạc Chính Lăng", zh = "乐正绫" }
+"Y+L" = { vi = "Lạc Thiên Y & Nhạc Chính Lăng", zh = "洛天依 & 乐正绫" }
+yzl = { vi = "Nhạc Chính Lăng (thoại)", zh = "乐正绫（念白）" }
