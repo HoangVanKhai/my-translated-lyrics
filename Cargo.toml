@@ -23,6 +23,7 @@ toml = "1.1.2"
 
 [dev-dependencies]
 command-extra = "1.0.0"
+into-sorted = "0.0.3"
 maplit = "1.0.2"
 pretty_assertions = "1.4.1"
 rand = "0.10.0"
