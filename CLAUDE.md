@@ -13,6 +13,7 @@ Read and follow the CONTRIBUTING.md file in this repository for all code style c
 - Prefer `#[cfg_attr(..., ignore = "reason")]` over `#[cfg(...)]` to skip tests — use `#[cfg]` on tests only when the code cannot compile under the condition (e.g., references types/functions that don't exist on other platforms)
 - Install toolchain before running tests: `rustup toolchain install "$(< rust-toolchain)" && rustup component add --toolchain "$(< rust-toolchain)" rustfmt clippy`
 - Run `cargo fmt -- --check && cargo clippy --all-targets && cargo test` to validate changes
-- **ALWAYS run the full test suite** (`cargo fmt -- --check && cargo clippy --all-targets && cargo test`) before committing, regardless of how trivial the change seems — this includes documentation-only changes, comment edits, and config changes
+- **ALWAYS run the full Rust test suite** (`cargo fmt -- --check && cargo clippy --all-targets && cargo test`) before committing, regardless of how trivial the change seems — this includes documentation-only changes, comment edits, and config changes
 - If a sync test fails, read its error message carefully and run the exact command it tells you to run
+- Run CSpell check if necessary (with `pnpm install --frozen-lockfile && pnpm exec cspell lint --gitignore '**'`).
 - When the user provides a diff and you need to update the files, don't manually interpret each hunk (that'd be slow); apply it with `git apply` instead. If the user provides a diff for context or discussion rather than as a change to apply, respond accordingly instead.

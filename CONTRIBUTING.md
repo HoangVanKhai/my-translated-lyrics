@@ -199,6 +199,12 @@ rustup toolchain install "$(< rust-toolchain)"
 rustup component add --toolchain "$(< rust-toolchain)" rustfmt clippy
 ```
 
+If you need to run the spell check locally, install the Node.js dependencies via [pnpm](https://pnpm.io):
+
+```sh
+pnpm install --frozen-lockfile
+```
+
 ## Automated Checks
 
 Before submitting, ensure:
@@ -214,7 +220,16 @@ cargo fmt -- --check && cargo clippy --all-targets && cargo test
 ```
 
 > [!IMPORTANT]
-> Always run the full test suite before committing, even for seemingly trivial changes such as documentation edits, comment changes, or config updates. Any change can break formatting, linting, or tests.
+> Always run the full Rust test suite before committing, even for seemingly trivial changes such as documentation edits, comment changes, or config updates. Any change can break formatting, linting, or tests.
 
 > [!NOTE]
 > If a sync test fails, read its error message carefully and run the exact command it tells you to run.
+
+### Spell Check
+
+Run the [CSpell](https://cspell.org) spell check if necessary:
+
+```sh
+pnpm exec cspell lint --no-progress --gitignore '**'
+```
+
