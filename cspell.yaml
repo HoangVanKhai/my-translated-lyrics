@@ -64,6 +64,7 @@ overrides:
       - hardlink
       - maplit
       - rsplit
+      - saphyr
       - Tianyi
       - Touhou
       - WEBVTT

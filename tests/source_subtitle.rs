@@ -1,6 +1,7 @@
 use itertools::Itertools;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
+use pretty_yaml::config::FormatOptions;
 use std::fs::{DirEntry, read_dir, read_to_string};
 use std::path::Path;
 use translated_lyrics::subtitle_descriptor::{SUBTITLE_CONFIG_FILE_NAME, SubtitleDesc};
@@ -21,6 +22,8 @@ fn source_subtitle_descriptors() {
         .map(Result::unwrap)
         .sorted_by_key(DirEntry::file_name);
 
+    let format_options = FormatOptions::default();
+
     for entry in entries {
         let song_dir = entry.path();
         if !song_dir.is_dir() {
@@ -36,13 +39,25 @@ fn source_subtitle_descriptors() {
         eprintln!("CASE: {}", song_name.display());
 
         let original = subtitle_path.pipe(read_to_string).unwrap();
-        let mut desc: SubtitleDesc = original.pipe_as_ref(serde_norway::from_str).unwrap();
-        desc.credit_roles.sort();
-        desc.credit_names.sort();
+        let desc: SubtitleDesc = original.pipe_as_ref(serde_saphyr::from_str).unwrap();
 
-        let canonical = serde_norway::to_string(&desc).unwrap();
+        let mut sorted_credit_roles = desc.credit_roles.clone();
+        sorted_credit_roles.sort();
         assert_eq!(
-            original, canonical,
+            desc.credit_roles, sorted_credit_roles,
+            "credit-roles in {song_name:?} are not in sorted order",
+        );
+
+        let mut sorted_credit_names = desc.credit_names.clone();
+        sorted_credit_names.sort();
+        assert_eq!(
+            desc.credit_names, sorted_credit_names,
+            "credit-names in {song_name:?} are not in sorted order",
+        );
+
+        let formatted = pretty_yaml::format_text(&original, &format_options).unwrap();
+        assert_eq!(
+            original, formatted,
             "{song_name:?} is not in canonical form",
         );
     }
