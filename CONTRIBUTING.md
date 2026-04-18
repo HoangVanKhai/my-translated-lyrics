@@ -41,7 +41,7 @@ Use **descriptive names** for variables and closure parameters by default. Singl
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { todo!() }
   ```
 
-- **Index variables (`i`, `j`, `k`):** These may only be used in two contexts: (1) short closures, and (2) index-based loops/iterations (rare in Rust). In all other cases, use `index`, `idx`, or `*_index`.
+- **Index variables (`i`, `j`, `k`):** These may only be used in two contexts: short closures and index-based loops. In all other cases, use `index`, `idx`, or `*_index`.
 
 - **Trivial single-expression closures:** A closure whose body is a single field access, method call, or wrapper may use a single letter when the type and purpose are obvious from context.
 
@@ -103,9 +103,9 @@ where
 
 ### Conditional Test Skipping: `#[cfg]` vs `#[cfg_attr(..., ignore)]`
 
-When a test cannot run under certain conditions (e.g., wrong platform), prefer `#[cfg_attr(..., ignore)]` over `#[cfg(...)]` to skip it. This way the test is still compiled on all configurations (catching type errors and regressions early), but simply skipped at runtime.
+When a test cannot run under certain conditions, such as on the wrong platform, prefer `#[cfg_attr(..., ignore)]` over `#[cfg(...)]` to skip it. The test still compiles on all configurations, which catches type errors and regressions early, but is skipped at runtime.
 
-Use `#[cfg]` on tests **only** when the code cannot compile under the condition, for example when the test references types, functions, or trait methods that are gated behind `#[cfg]` and do not exist on other platforms.
+Use `#[cfg]` on tests **only** when the code cannot compile under the condition. One example is a test that references types, functions, or trait methods that are gated behind `#[cfg]` and do not exist on other platforms.
 
 Prefer including a reason string in the `ignore` attribute to explain why the test is skipped.
 
@@ -125,7 +125,7 @@ fn unix_only_types() { /* uses OsStrExt which only exists on unix */ }
 
 This codebase uses the [`pipe-trait`](https://docs.rs/pipe-trait) crate for method-chaining through unary functions, keeping code in a natural left-to-right reading order. Import it as `use pipe_trait::Pipe;`.
 
-Any callable that takes a single argument works with `.pipe()`: free functions, closures, newtype constructors, enum variant constructors, `Some`, `Ok`, `Err`, trait methods like `From::from`, etc.
+Any callable that takes a single argument works with `.pipe()`. This includes free functions, closures, newtype constructors, enum variant constructors, `Some`, `Ok`, `Err`, and trait methods such as `From::from`.
 
 #### When to use pipe
 
@@ -171,7 +171,7 @@ let result = foo(value);
 
 This codebase uses the [`command-extra`](https://docs.rs/command-extra) crate to build `std::process::Command` values in a chainable, owned style. Import it as `use command_extra::CommandExtra;`.
 
-The standard `Command` builder methods (`arg`, `env`, `current_dir`, etc.) take `&mut self` and return `&mut Command`, making them unsuitable for method chains that end in an owned value. The `CommandExtra` extension trait provides `.with_*` counterparts that take ownership and return an owned `Command`, enabling fluent one-expression construction:
+The standard `Command` builder methods, such as `arg`, `env`, and `current_dir`, take `&mut self` and return `&mut Command`. This makes them unsuitable for method chains that end in an owned value. The `CommandExtra` extension trait provides `.with_*` counterparts that take ownership and return an owned `Command`, enabling fluent one-expression construction:
 
 ```rust
 // Good: fully chainable, owned style
