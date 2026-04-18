@@ -1,4 +1,3 @@
-use into_sorted::IntoSorted;
 use itertools::Itertools;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
@@ -38,8 +37,8 @@ fn source_subtitle_descriptors() {
 
         let original = subtitle_path.pipe(read_to_string).unwrap();
         let mut desc: SubtitleDesc = original.pipe_as_ref(serde_norway::from_str).unwrap();
-        desc.credit_roles = desc.credit_roles.into_sorted();
-        desc.credit_names = desc.credit_names.into_sorted();
+        desc.credit_roles.sort();
+        desc.credit_names.sort();
 
         let canonical = serde_norway::to_string(&desc).unwrap();
         assert_eq!(
