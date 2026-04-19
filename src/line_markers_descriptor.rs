@@ -15,15 +15,17 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 /// the line in a single `<c.className>...</c>` element additionally
 /// appear in [`classes`].
 ///
-/// Cues with more complex rendering appear only in [`cues`]:
+/// A cue that appears in [`cues`] but in neither [`voices`] nor
+/// [`classes`] falls into one of two cases:
 ///
-/// * `cre` decomposes into multiple class-wrapped segments
-///   (`creditRole`, `creditName`, `creditSpecial`) driven by the
-///   column layout and the bracketing convention in the source text;
-/// * `LRC` emits plain unwrapped text.
-///
-/// Their behavior is inferred from the source line and, where
-/// relevant, from `credits.yaml`.
+/// * the generator has a hardcoded rendering for that specific cue.
+///   For example, `cre` decomposes into multiple class-wrapped
+///   segments (`creditRole`, `creditName`, `creditSpecial`) driven by
+///   the column layout and the bracketing convention in the source
+///   text, with validation against `credits.yaml`.
+/// * otherwise, the cue's content is emitted as plain unwrapped text.
+///   For example, `LRC` in a song that does not map it to a voice or
+///   class falls into this case.
 ///
 /// Universal control keywords such as `clr` and `eov` produce no
 /// output and are handled by the generator directly; they are not
