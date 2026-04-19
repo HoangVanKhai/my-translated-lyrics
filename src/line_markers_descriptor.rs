@@ -34,13 +34,13 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 /// A single timed cue in a `lyrics.*.txt` file may combine lines of
 /// different kinds. When a continuation line carries its own cue
 /// token, that token dispatches its own renderer for the line
-/// instead of inheriting from the line that opened the block. The
-/// convention was introduced for Cloudside Dreams, whose title and
-/// opening credit share one timed block:
+/// instead of inheriting from the line that opened the block. For
+/// example, a timed block whose first line is a song title and
+/// whose second line is an opening credit is written as:
 ///
 /// ```text
-/// 00:00:10.080 ttl: Vân Biên Mộng Thoại
-///              cre: Điều phối sản xuất âm nhạc  WOVOP
+/// 00:00:10.080 ttl: <song title>
+///              cre: <credit role>  <credit name>
 /// ```
 ///
 /// The two lines appear in the same rendered cue but are produced by
