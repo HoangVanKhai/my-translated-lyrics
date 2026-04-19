@@ -23,8 +23,6 @@ fn source_credits_descriptors() {
         .map(Result::unwrap)
         .sorted_by_key(DirEntry::file_name);
 
-    let format_options = FormatOptions::default();
-
     for entry in entries {
         let song_dir = entry.path();
         if !song_dir.is_dir() {
@@ -54,7 +52,7 @@ fn source_credits_descriptors() {
             "credit-names in {song_name:?} are not in sorted order",
         );
 
-        let formatted = pretty_yaml::format_text(&original, &format_options).unwrap();
+        let formatted = pretty_yaml::format_text(&original, &FormatOptions::default()).unwrap();
         assert_eq!(
             original, formatted,
             "{song_name:?} is not in canonical form",
