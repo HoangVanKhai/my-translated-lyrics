@@ -6,37 +6,37 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 
 /// Parsed contents of a `line-markers.toml` file.
 ///
-/// A _cue_ is a short token (for example `LTY`, `cre`, `ttl`, `LRC`)
+/// A _marker_ is a short token (for example `LTY`, `cre`, `ttl`, `LRC`)
 /// that appears at the start of a line in the song's lyric text files
-/// and controls how the line is rendered into VTT. The [`cues`] field
-/// holds the exhaustive inventory of cues the song uses. Each cue in
-/// [`cues`] falls into one of four categories:
+/// and controls how the line is rendered into VTT. The [`markers`]
+/// field holds the exhaustive inventory of markers the song uses.
+/// Each marker in [`markers`] falls into one of four categories:
 ///
-/// * Cues declared in [`voices`] wrap the line in `<v ...>...</v>`,
+/// * Markers declared in [`voices`] wrap the line in `<v ...>...</v>`,
 ///   with the voice name given per language.
-/// * Cues declared in [`classes`] wrap the line in
+/// * Markers declared in [`classes`] wrap the line in
 ///   `<c.className>...</c>`, with the class name given as the mapped
 ///   value.
-/// * Cues declared in [`credits`] invoke the credit-block renderer.
-///   The renderer splits the line by column layout into
+/// * Markers declared in [`credits`] invoke the credit-block
+///   renderer. The renderer splits the line by column layout into
 ///   `<c.creditRole>` and `<c.creditName>` segments and validates
 ///   each against `credits.yaml`. Names wrapped in brackets in the
 ///   source become `<c.creditSpecial>` instead of `<c.creditName>`.
-/// * Cues declared only in [`cues`] emit the line content as plain
-///   unwrapped text.
+/// * Markers absent from [`voices`], [`classes`], and [`credits`]
+///   emit the line content as plain unwrapped text.
 ///
 /// Universal control keywords such as `clr` and `eov` produce no
 /// output and are handled by the generator directly. They are not
 /// represented in this struct.
 ///
-/// # Mixed-kind cues
+/// # Per-line markers
 ///
-/// A single timed cue in a `lyrics.*.txt` file may combine lines of
-/// different kinds. When a continuation line carries its own cue
-/// token, that token dispatches its own renderer for the line
-/// instead of inheriting from the line that opened the block. For
-/// example, a timed block whose first line is a song title and
-/// whose second line is an opening credit is written as:
+/// A VTT cue, opened by a timestamp in a `lyrics.*.txt` file, may
+/// contain continuation lines that carry their own markers instead
+/// of inheriting the marker of the line that opened the block. The
+/// cue then combines renderings from different markers in a single
+/// timed output. For example, a cue whose first line is a song title
+/// and whose second line is an opening credit is written as:
 ///
 /// ```text
 /// 00:00:10.080 ttl: <song title>
@@ -45,31 +45,31 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 ///
 /// The two lines appear in the same rendered cue but are produced by
 /// different renderers. A cue whose lines all share one renderer
-/// should continue to omit prefixes on continuation lines so that
+/// should continue to omit markers on continuation lines so that
 /// inheritance applies.
 ///
-/// [`cues`]: Self::cues
+/// [`markers`]: Self::markers
 /// [`voices`]: Self::voices
 /// [`classes`]: Self::classes
 /// [`credits`]: Self::credits
 #[derive(Default, Deserialize, Serialize)]
 pub struct LineMarkersDesc {
-    /// Exhaustive inventory of cues used by this song. A future
+    /// Exhaustive inventory of markers used by this song. A future
     /// generator will use this list to validate the leading tokens of
-    /// `lyrics.*.txt` lines, rejecting unknown cues and warning on
-    /// declared cues that never appear.
+    /// `lyrics.*.txt` lines, rejecting unknown markers and warning on
+    /// declared markers that never appear.
     #[serde(default)]
-    pub cues: Vec<String>,
-    /// Cues that wrap the line in `<v ...>...</v>`. Each entry gives
-    /// the voice name per language, emitted as the inner text of the
-    /// `<v>` element.
+    pub markers: Vec<String>,
+    /// Markers that wrap the line in `<v ...>...</v>`. Each entry
+    /// gives the voice name per language, emitted as the inner text
+    /// of the `<v>` element.
     #[serde(default)]
     pub voices: BTreeMap<String, BTreeMap<Language, String>>,
-    /// Cues that wrap the line in `<c.className>...</c>`. The value
-    /// is the class name applied to the wrapping element.
+    /// Markers that wrap the line in `<c.className>...</c>`. The
+    /// value is the class name applied to the wrapping element.
     #[serde(default)]
     pub classes: BTreeMap<String, String>,
-    /// Cues that invoke the credit-block renderer. Columns of the
+    /// Markers that invoke the credit-block renderer. Columns of the
     /// line become `<c.creditRole>` and `<c.creditName>` segments,
     /// each validated against `credits.yaml`. Names wrapped in
     /// brackets in the source become `<c.creditSpecial>` instead of
