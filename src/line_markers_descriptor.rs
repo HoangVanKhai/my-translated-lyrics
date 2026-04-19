@@ -31,7 +31,7 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 ///
 /// # Per-line markers
 ///
-/// A VTT cue, opened by a timestamp in a `lyrics.*.txt` file, may
+/// A cue in a `lyrics.*.txt` file, opened by a timestamp, may
 /// contain continuation lines that carry their own markers instead
 /// of inheriting the marker of the line that opened the block. The
 /// cue then combines renderings from different markers in a single
@@ -43,7 +43,7 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 ///              cre: <credit role>  <credit name>
 /// ```
 ///
-/// The two lines appear in the same rendered cue but are produced by
+/// The two lines appear in the same cue but are produced by
 /// different renderers. A cue whose lines all share one renderer
 /// should continue to omit markers on continuation lines so that
 /// inheritance applies.
