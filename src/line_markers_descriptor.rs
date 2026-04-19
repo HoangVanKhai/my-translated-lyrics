@@ -7,12 +7,27 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 /// Parsed contents of a `line-markers.toml` file.
 ///
 /// A _cue_ is a short token (for example `LTY`, `cre`, `ttl`, `LRC`)
-/// written at the start of a line in the song's lyric text files that
-/// produces output when the line is rendered into VTT. Every cue the
-/// song uses is listed in [`cues`]; cues that additionally map to a
-/// styled wrapping element also appear in [`voices`] or [`classes`].
-/// Control keywords such as `clr` and `eov` produce no output and are
-/// handled by the generator directly; they are not represented here.
+/// that appears at the start of a line in the song's lyric text files
+/// and controls how the line is rendered into VTT. The [`cues`] field
+/// holds the exhaustive inventory of cues the song uses. Cues whose
+/// rendering wraps the line in a single `<v ...>...</v>` element
+/// additionally appear in [`voices`], and cues whose rendering wraps
+/// the line in a single `<c.className>...</c>` element additionally
+/// appear in [`classes`].
+///
+/// Cues with more complex rendering appear only in [`cues`]:
+///
+/// * `cre` decomposes into multiple class-wrapped segments
+///   (`creditRole`, `creditName`, `creditSpecial`) driven by the
+///   column layout and the bracketing convention in the source text;
+/// * `LRC` emits plain unwrapped text.
+///
+/// Their behavior is inferred from the source line and, where
+/// relevant, from `credits.yaml`.
+///
+/// Universal control keywords such as `clr` and `eov` produce no
+/// output and are handled by the generator directly; they are not
+/// represented in this struct.
 ///
 /// [`cues`]: Self::cues
 /// [`voices`]: Self::voices
@@ -20,25 +35,18 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 #[derive(Default, Deserialize, Serialize)]
 pub struct LineMarkersDesc {
     /// Exhaustive inventory of cues used by this song. A future
-    /// generator will reject lines in `lyrics.*.txt` whose leading
-    /// token is not in this list, and will warn on entries declared
-    /// here that never appear in the `.txt` files.
+    /// generator will use this list to validate the leading tokens of
+    /// `lyrics.*.txt` lines, rejecting unknown cues and warning on
+    /// declared cues that never appear.
     #[serde(default)]
     pub cues: Vec<String>,
-    /// Cues that map to `<v ...>...</v>` voice elements in the
-    /// generated VTT. Each entry records the voice name per language,
-    /// emitted as the inner text of the `<v>` element.
+    /// Cues that wrap the line in `<v ...>...</v>`. Each entry gives
+    /// the voice name per language, emitted as the inner text of the
+    /// `<v>` element.
     #[serde(default)]
     pub voices: BTreeMap<String, BTreeMap<Language, String>>,
-    /// Cues that map to `<c.className>...</c>` wrapping the whole
-    /// line. The value is the class name applied to the wrapping
-    /// element.
-    ///
-    /// Cues such as `cre`, whose output decomposes into multiple inner
-    /// classes (`creditRole`, `creditName`, `creditSpecial`) driven by
-    /// the column layout and the bracketing convention in the source
-    /// text, are not represented here. Their behavior is inferred from
-    /// `credits.yaml` and the source line itself.
+    /// Cues that wrap the line in `<c.className>...</c>`. The value
+    /// is the class name applied to the wrapping element.
     #[serde(default)]
     pub classes: BTreeMap<String, String>,
 }
