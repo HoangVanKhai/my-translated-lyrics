@@ -4,5 +4,7 @@ cues = [
   "LRC",
 ]
 
+credits = ["cre"]
+
 [classes]
 ttl = "title"

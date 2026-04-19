@@ -9,6 +9,8 @@ cues = [
   "Y+L",
 ]
 
+credits = ["cre"]
+
 [voices]
 LTY = { vi = "Lạc Thiên Y", zh = "洛天依" }
 lty = { vi = "Lạc Thiên Y (thoại)", zh = "洛天依（念白）" }

@@ -9,23 +9,21 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 /// A _cue_ is a short token (for example `LTY`, `cre`, `ttl`, `LRC`)
 /// that appears at the start of a line in the song's lyric text files
 /// and controls how the line is rendered into VTT. The [`cues`] field
-/// holds the exhaustive inventory of cues the song uses. Cues whose
-/// rendering wraps the line in a single `<v ...>...</v>` element
-/// additionally appear in [`voices`], and cues whose rendering wraps
-/// the line in a single `<c.className>...</c>` element additionally
-/// appear in [`classes`].
+/// holds the exhaustive inventory of cues the song uses. Each cue in
+/// [`cues`] falls into one of four categories:
 ///
-/// A cue that appears in [`cues`] but in neither [`voices`] nor
-/// [`classes`] falls into one of two cases:
-///
-/// * the generator has a hardcoded rendering for that specific cue.
-///   For example, `cre` decomposes into multiple class-wrapped
-///   segments (`creditRole`, `creditName`, `creditSpecial`) driven by
-///   the column layout and the bracketing convention in the source
-///   text, with validation against `credits.yaml`.
-/// * otherwise, the cue's content is emitted as plain unwrapped text.
-///   For example, `LRC` in a song that does not map it to a voice or
-///   class falls into this case.
+/// * declared in [`voices`] — wraps the line in `<v ...>...</v>`,
+///   with the voice name given per language;
+/// * declared in [`classes`] — wraps the line in
+///   `<c.className>...</c>`, with the class name given as the mapped
+///   value;
+/// * declared in [`credits`] — invokes the credit-block renderer,
+///   which splits the line into `<c.creditRole>` and `<c.creditName>`
+///   (or `<c.creditSpecial>` for bracket-wrapped entries) segments
+///   based on the column layout of the source text and validates each
+///   segment against `credits.yaml`;
+/// * declared only in [`cues`] — emits the line content as plain
+///   unwrapped text.
 ///
 /// Universal control keywords such as `clr` and `eov` produce no
 /// output and are handled by the generator directly; they are not
@@ -34,6 +32,7 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 /// [`cues`]: Self::cues
 /// [`voices`]: Self::voices
 /// [`classes`]: Self::classes
+/// [`credits`]: Self::credits
 #[derive(Default, Deserialize, Serialize)]
 pub struct LineMarkersDesc {
     /// Exhaustive inventory of cues used by this song. A future
@@ -51,4 +50,10 @@ pub struct LineMarkersDesc {
     /// is the class name applied to the wrapping element.
     #[serde(default)]
     pub classes: BTreeMap<String, String>,
+    /// Cues that invoke the credit-block renderer, which splits the
+    /// line into per-column `<c.creditRole>` and `<c.creditName>` (or
+    /// `<c.creditSpecial>` for bracket-wrapped entries) segments and
+    /// validates each segment against `credits.yaml`.
+    #[serde(default)]
+    pub credits: Vec<String>,
 }
