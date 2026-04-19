@@ -51,7 +51,7 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 /// The per-song `make-subtitles.js` generators under `sources/` do
 /// not yet support per-line markers. Each script parses one marker
 /// per cue and appends continuation-line content to that cue's
-/// payload without redispatching. A song that mixes markers within
+/// payload without re-dispatching. A song that mixes markers within
 /// a cue will need its `make-subtitles.js` updated accordingly
 /// before it can be generated.
 ///
