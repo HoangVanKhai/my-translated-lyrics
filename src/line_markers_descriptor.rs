@@ -25,12 +25,12 @@ pub struct LineMarkersDesc {
     /// declared here that never appear in the `.txt` files.
     #[serde(default)]
     pub cues: Vec<String>,
-    /// Prefix codes that map to `<v …>…</v>` voice elements in the
+    /// Prefix codes that map to `<v ...>...</v>` voice elements in the
     /// generated VTT. Each entry records the voice name per language,
     /// emitted as the inner text of the `<v>` element.
     #[serde(default)]
     pub voices: BTreeMap<String, BTreeMap<Language, String>>,
-    /// Prefix codes that map to `<c.className>…</c>` wrapping the whole
+    /// Prefix codes that map to `<c.className>...</c>` wrapping the whole
     /// line. The value is the class name applied to the wrapping
     /// element.
     ///
