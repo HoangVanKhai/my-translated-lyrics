@@ -12,22 +12,41 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 /// holds the exhaustive inventory of cues the song uses. Each cue in
 /// [`cues`] falls into one of four categories:
 ///
-/// * declared in [`voices`] — wraps the line in `<v ...>...</v>`,
-///   with the voice name given per language;
-/// * declared in [`classes`] — wraps the line in
+/// * Cues declared in [`voices`] wrap the line in `<v ...>...</v>`,
+///   with the voice name given per language.
+/// * Cues declared in [`classes`] wrap the line in
 ///   `<c.className>...</c>`, with the class name given as the mapped
-///   value;
-/// * declared in [`credits`] — invokes the credit-block renderer,
-///   which splits the line into `<c.creditRole>` and `<c.creditName>`
-///   (or `<c.creditSpecial>` for bracket-wrapped entries) segments
-///   based on the column layout of the source text and validates each
-///   segment against `credits.yaml`;
-/// * declared only in [`cues`] — emits the line content as plain
+///   value.
+/// * Cues declared in [`credits`] invoke the credit-block renderer.
+///   The renderer splits the line by column layout into
+///   `<c.creditRole>` and `<c.creditName>` segments and validates
+///   each against `credits.yaml`. Names wrapped in brackets in the
+///   source become `<c.creditSpecial>` instead of `<c.creditName>`.
+/// * Cues declared only in [`cues`] emit the line content as plain
 ///   unwrapped text.
 ///
 /// Universal control keywords such as `clr` and `eov` produce no
-/// output and are handled by the generator directly; they are not
+/// output and are handled by the generator directly. They are not
 /// represented in this struct.
+///
+/// # Mixed-kind cues
+///
+/// A single timed cue in a `lyrics.*.txt` file may combine lines of
+/// different kinds. When a continuation line carries its own cue
+/// token, that token dispatches its own renderer for the line
+/// instead of inheriting from the line that opened the block. The
+/// convention was introduced for Cloudside Dreams, whose title and
+/// opening credit share one timed block:
+///
+/// ```text
+/// 00:00:10.080 ttl: Vân Biên Mộng Thoại
+///              cre: Điều phối sản xuất âm nhạc  WOVOP
+/// ```
+///
+/// The two lines appear in the same rendered cue but are produced by
+/// different renderers. A cue whose lines all share one renderer
+/// should continue to omit prefixes on continuation lines so that
+/// inheritance applies.
 ///
 /// [`cues`]: Self::cues
 /// [`voices`]: Self::voices
@@ -50,10 +69,11 @@ pub struct LineMarkersDesc {
     /// is the class name applied to the wrapping element.
     #[serde(default)]
     pub classes: BTreeMap<String, String>,
-    /// Cues that invoke the credit-block renderer, which splits the
-    /// line into per-column `<c.creditRole>` and `<c.creditName>` (or
-    /// `<c.creditSpecial>` for bracket-wrapped entries) segments and
-    /// validates each segment against `credits.yaml`.
+    /// Cues that invoke the credit-block renderer. Columns of the
+    /// line become `<c.creditRole>` and `<c.creditName>` segments,
+    /// each validated against `credits.yaml`. Names wrapped in
+    /// brackets in the source become `<c.creditSpecial>` instead of
+    /// `<c.creditName>`.
     #[serde(default)]
     pub credits: Vec<String>,
 }

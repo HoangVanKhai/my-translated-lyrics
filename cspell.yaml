@@ -60,15 +60,21 @@ overrides:
     words:
       - WEBVTT
   - filename: '**/*.rs'
+    language: en,vi
     words:
+      - Biên
+      - Cloudside
       - Feng
       - hardlink
       - maplit
+      - Mộng
       - rsplit
       - saphyr
+      - Thoại
       - Tianyi
       - Touhou
       - WEBVTT
+      - WOVOP
       - Yuezheng
   - filename: '**/*.md'
     words:
