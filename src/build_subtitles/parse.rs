@@ -70,7 +70,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
 
         match split_timestamp(trimmed) {
             Some((timestamp_str, rest)) => {
-                let start = Milliseconds::parse_source(timestamp_str).map_err(|source| {
+                let start = timestamp_str.parse::<Milliseconds>().map_err(|source| {
                     ParseLyricsError::InvalidTimestamp {
                         line_number,
                         raw: timestamp_str.to_string(),
@@ -226,21 +226,14 @@ pub enum ParseLyricsError {
         #[error(not(source))]
         content: String,
     },
-    #[display(
-        "events out of order: {previous} precedes {next}",
-        previous = previous.source_fmt(),
-        next = next.source_fmt(),
-    )]
+    #[display("events out of order: {previous} precedes {next}")]
     OutOfOrder {
         #[error(not(source))]
         previous: Milliseconds,
         #[error(not(source))]
         next: Milliseconds,
     },
-    #[display(
-        "cue at {start} has no following cue or `clr`",
-        start = start.source_fmt(),
-    )]
+    #[display("cue at {start} has no following cue or `clr`")]
     UnclosedCue {
         #[error(not(source))]
         start: Milliseconds,
@@ -250,35 +243,36 @@ pub enum ParseLyricsError {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use text_block_macros::text_block_fnl;
 
     #[test]
     fn parses_simple_sequence() {
-        let input = "\
-00:00.000 ttl: Hello
-00:02.000 LRC: world
-00:04.000 clr
-";
+        let input = text_block_fnl! {
+            "00:00.000 ttl: Hello"
+            "00:02.000 LRC: world"
+            "00:04.000 clr"
+        };
         let cues = parse_lyrics(input).unwrap();
         assert_eq!(cues.len(), 2);
-        assert_eq!(cues[0].start, Milliseconds(0));
-        assert_eq!(cues[0].end, Milliseconds(2_000));
+        assert_eq!(cues[0].start, Milliseconds::new(0, 0, 0));
+        assert_eq!(cues[0].end, Milliseconds::new(0, 2, 0));
         assert_eq!(cues[0].marker.as_deref(), Some("ttl"));
         assert_eq!(cues[0].text, "Hello");
-        assert_eq!(cues[1].start, Milliseconds(2_000));
-        assert_eq!(cues[1].end, Milliseconds(4_000));
+        assert_eq!(cues[1].start, Milliseconds::new(0, 2, 0));
+        assert_eq!(cues[1].end, Milliseconds::new(0, 4, 0));
         assert_eq!(cues[1].marker.as_deref(), Some("LRC"));
         assert_eq!(cues[1].text, "world");
     }
 
     #[test]
     fn comments_and_blank_lines_are_skipped() {
-        let input = "\
-# this is ignored
-
-00:00.000 ttl: Hello
-# still ignored
-00:02.000 clr
-";
+        let input = text_block_fnl! {
+            "# this is ignored"
+            ""
+            "00:00.000 ttl: Hello"
+            "# still ignored"
+            "00:02.000 clr"
+        };
         let cues = parse_lyrics(input).unwrap();
         assert_eq!(cues.len(), 1);
         assert_eq!(cues[0].text, "Hello");
@@ -286,12 +280,12 @@ mod tests {
 
     #[test]
     fn continuation_lines_append_to_current_cue() {
-        let input = "\
-00:00.000 cre: first line
-            second line
-            third line
-00:05.000 clr
-";
+        let input = text_block_fnl! {
+            "00:00.000 cre: first line"
+            "            second line"
+            "            third line"
+            "00:05.000 clr"
+        };
         let cues = parse_lyrics(input).unwrap();
         assert_eq!(cues.len(), 1);
         assert_eq!(cues[0].text, "first line\nsecond line\nthird line");
@@ -299,23 +293,23 @@ mod tests {
 
     #[test]
     fn eov_marker_does_not_produce_a_cue() {
-        let input = "\
-00:00.000 ttl: Hello
-00:02.000 clr
-
-00:05.000 eov
-";
+        let input = text_block_fnl! {
+            "00:00.000 ttl: Hello"
+            "00:02.000 clr"
+            ""
+            "00:05.000 eov"
+        };
         let cues = parse_lyrics(input).unwrap();
         assert_eq!(cues.len(), 1);
-        assert_eq!(cues[0].end, Milliseconds(2_000));
+        assert_eq!(cues[0].end, Milliseconds::new(0, 2, 0));
     }
 
     #[test]
     fn line_without_marker_has_no_marker() {
-        let input = "\
-00:00.000 Plain text without marker
-00:02.000 clr
-";
+        let input = text_block_fnl! {
+            "00:00.000 Plain text without marker"
+            "00:02.000 clr"
+        };
         let cues = parse_lyrics(input).unwrap();
         assert_eq!(cues[0].marker, None);
         assert_eq!(cues[0].text, "Plain text without marker");
@@ -323,14 +317,14 @@ mod tests {
 
     #[test]
     fn cue_ends_at_next_cue_when_no_clr() {
-        let input = "\
-00:00.000 ttl: A
-00:01.000 ttl: B
-00:02.000 clr
-";
+        let input = text_block_fnl! {
+            "00:00.000 ttl: A"
+            "00:01.000 ttl: B"
+            "00:02.000 clr"
+        };
         let cues = parse_lyrics(input).unwrap();
-        assert_eq!(cues[0].end, Milliseconds(1_000));
-        assert_eq!(cues[1].end, Milliseconds(2_000));
+        assert_eq!(cues[0].end, Milliseconds::new(0, 1, 0));
+        assert_eq!(cues[1].end, Milliseconds::new(0, 2, 0));
     }
 
     #[test]
@@ -344,11 +338,11 @@ mod tests {
 
     #[test]
     fn rejects_out_of_order_events() {
-        let input = "\
-00:02.000 ttl: A
-00:01.000 ttl: B
-00:03.000 clr
-";
+        let input = text_block_fnl! {
+            "00:02.000 ttl: A"
+            "00:01.000 ttl: B"
+            "00:03.000 clr"
+        };
         assert!(matches!(
             parse_lyrics(input),
             Err(ParseLyricsError::OutOfOrder { .. }),

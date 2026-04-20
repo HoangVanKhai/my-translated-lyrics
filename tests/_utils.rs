@@ -6,7 +6,9 @@ use pipe_trait::Pipe;
 use rand::{RngExt, distr::Alphanumeric, rng};
 use std::env::temp_dir;
 use std::ffi::OsString;
-use std::fs::{create_dir, create_dir_all, read_dir, read_to_string, write as write_file};
+use std::fs::{
+    create_dir, create_dir_all, read_dir, read_to_string, remove_dir_all, write as write_file,
+};
 use std::iter::once;
 use std::path::PathBuf;
 use std::process::Command;
@@ -42,7 +44,7 @@ impl Temp {
 impl Drop for Temp {
     fn drop(&mut self) {
         let path = &self.0;
-        if let Err(error) = std::fs::remove_dir_all(path) {
+        if let Err(error) = remove_dir_all(path) {
             eprintln!("warning: Failed to delete {path:?}: {error}");
         }
     }

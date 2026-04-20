@@ -39,35 +39,15 @@ pub const END_OF_VIDEO_MARKER: &str = "eov";
 /// * Markers absent from [`voices`], [`classes`], and [`credits`]
 ///   emit the line content as plain unwrapped text.
 ///
+/// Presentation styles, that is, colors, bolding, and italics, are
+/// not carried in this struct. They are derived from the class name
+/// or the voice marker name by a central table maintained in
+/// [`crate::build_subtitles::styles`], so that the repository's
+/// shared palette stays consistent across every song.
+///
 /// Universal control keywords such as `clr` and `eov` produce no
 /// output and are handled by the generator directly. They are not
 /// represented in this struct.
-///
-/// # Per-line markers
-///
-/// A cue in a `lyrics.*.txt` file, opened by a timestamp, may
-/// contain continuation lines that carry their own markers instead
-/// of inheriting the marker of the line that opened the block. The
-/// cue then combines renderings from different markers in a single
-/// timed output. For example, a cue whose first line is a song title
-/// and whose second line is an opening credit is written as:
-///
-/// ```text
-/// 00:00:10.080 ttl: <song title>
-///              cre: <credit role>  <credit name>
-/// ```
-///
-/// The two lines appear in the same cue but are produced by
-/// different renderers. A cue whose lines all share one renderer
-/// should continue to omit markers on continuation lines so that
-/// inheritance applies.
-///
-/// The per-song `make-subtitles.js` generators under `sources/` do
-/// not yet support per-line markers. Each script parses one marker
-/// per cue and appends continuation-line content to that cue's
-/// payload without re-dispatching. A song that mixes markers within
-/// a cue will need its `make-subtitles.js` updated accordingly
-/// before it can be generated.
 ///
 /// [`markers`]: Self::markers
 /// [`voices`]: Self::voices
@@ -97,33 +77,4 @@ pub struct LineMarkersDesc {
     /// `<c.creditName>`.
     #[serde(default)]
     pub credits: Vec<String>,
-    /// Optional presentation styles for markers. The key is a marker
-    /// name that appears in [`markers`]; the value describes the
-    /// color and text decoration that the subtitle renderer applies
-    /// to that marker's content. Markers without a style entry
-    /// render without color or decoration.
-    ///
-    /// SRT output uses inline `<font color="...">`, `<b>`, and `<i>`
-    /// tags driven by this table. VTT output uses CSS rules in the
-    /// `STYLE` block, keyed by the voice or class selector that
-    /// corresponds to the marker.
-    ///
-    /// [`markers`]: Self::markers
-    #[serde(default)]
-    pub styles: BTreeMap<String, Style>,
-}
-
-/// Styling for a single marker.
-#[derive(Default, Deserialize, Serialize, Clone, Debug, PartialEq, Eq)]
-pub struct Style {
-    /// Optional `#RRGGBB` foreground color. When absent the text
-    /// inherits the ambient cue color.
-    #[serde(default)]
-    pub color: Option<String>,
-    /// Render the marker's content in italics.
-    #[serde(default)]
-    pub italic: bool,
-    /// Render the marker's content in bold.
-    #[serde(default)]
-    pub bold: bool,
 }

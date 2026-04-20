@@ -31,7 +31,7 @@ pub struct CreditPair {
     /// first character of the name region. Typically a run of spaces,
     /// a single `:` or `：`, or an ideographic space.
     pub separator: String,
-    /// Decomposed name region, where `【...】` highlights and known
+    /// Decomposed name region, where bracketed highlights and known
     /// credited names are promoted to structural segments.
     pub name_segments: Vec<NameSegment>,
 }
@@ -43,7 +43,9 @@ pub enum NameSegment {
     Plain(String),
     /// A recognized credit name.
     Name(String),
-    /// A `【...】` highlight used to emphasize a studio or release.
+    /// A bracketed highlight used to emphasize a studio or release.
+    /// The inner bytes include the surrounding brackets so the
+    /// renderer can reproduce them verbatim.
     Special(String),
 }
 
@@ -81,11 +83,10 @@ impl CreditsVocabulary {
     /// match the longest role label from the vocabulary; whatever
     /// follows the role, up to the next role match or the end of the
     /// line, is the role's associated name region. Name regions are
-    /// further scanned for known names and `【...】` highlight runs.
+    /// further scanned for known names and bracketed highlight runs.
     pub fn parse_line(&self, line: &str) -> Result<ParsedCreditLine, ParseCreditError> {
         let mut pairs: Vec<CreditPair> = Vec::new();
-        let bytes = line.as_bytes();
-        let length = bytes.len();
+        let length = line.len();
         let mut cursor = count_leading_whitespace(line);
 
         while cursor < length {
@@ -110,8 +111,10 @@ impl CreditsVocabulary {
                 if self.match_role_at(suffix).is_some() {
                     break;
                 }
-                let step = char_len_at(bytes, name_end);
-                name_end += step;
+                let Some(next_char) = suffix.chars().next() else {
+                    break;
+                };
+                name_end += next_char.len_utf8();
             }
             let trimmed_name_end = trim_end_separator(&line[name_start..name_end]) + name_start;
             let name_region = &line[name_start..trimmed_name_end];
@@ -131,23 +134,18 @@ impl CreditsVocabulary {
     }
 
     fn match_role_at<'a>(&'a self, suffix: &str) -> Option<&'a str> {
-        for role in &self.roles {
-            let role_bytes = role.as_bytes();
-            if suffix.as_bytes().starts_with(role_bytes) {
-                let following = &suffix[role.len()..];
-                if is_role_boundary(following) {
-                    return Some(role);
-                }
-            }
-        }
-        None
+        self.roles
+            .iter()
+            .find(|role| {
+                suffix.starts_with(role.as_str()) && is_role_boundary(&suffix[role.len()..])
+            })
+            .map(String::as_str)
     }
 
     fn parse_name_region(&self, region: &str) -> Vec<NameSegment> {
         let mut segments: Vec<NameSegment> = Vec::new();
         let mut buffer = String::new();
-        let bytes = region.as_bytes();
-        let length = bytes.len();
+        let length = region.len();
         let mut cursor = 0;
 
         let flush = |buffer: &mut String, segments: &mut Vec<NameSegment>| {
@@ -174,7 +172,10 @@ impl CreditsVocabulary {
                 continue;
             }
 
-            let step = char_len_at(bytes, cursor);
+            let Some(next_char) = suffix.chars().next() else {
+                break;
+            };
+            let step = next_char.len_utf8();
             buffer.push_str(&region[cursor..cursor + step]);
             cursor += step;
         }
@@ -186,7 +187,7 @@ impl CreditsVocabulary {
     fn match_name_at<'a>(&'a self, suffix: &str) -> Option<&'a str> {
         self.names
             .iter()
-            .find(|name| suffix.as_bytes().starts_with(name.as_bytes()))
+            .find(|name| suffix.starts_with(name.as_str()))
             .map(String::as_str)
     }
 }
@@ -210,14 +211,9 @@ where
 
 fn count_separator_bytes(input: &str) -> usize {
     let mut cursor = 0;
-    while cursor < input.len() {
-        let char_end = char_len_at(input.as_bytes(), cursor);
-        let char_str = &input[cursor..cursor + char_end];
-        if char_str == ":"
-            || char_str == "\u{FF1A}"
-            || char_str.chars().all(|ch| ch.is_whitespace())
-        {
-            cursor += char_end;
+    for ch in input.chars() {
+        if ch == ':' || ch == '\u{FF1A}' || ch.is_whitespace() {
+            cursor += ch.len_utf8();
         } else {
             break;
         }
@@ -227,11 +223,9 @@ fn count_separator_bytes(input: &str) -> usize {
 
 fn count_leading_whitespace(input: &str) -> usize {
     let mut cursor = 0;
-    while cursor < input.len() {
-        let char_end = char_len_at(input.as_bytes(), cursor);
-        let char_str = &input[cursor..cursor + char_end];
-        if char_str.chars().all(|ch| ch.is_whitespace()) {
-            cursor += char_end;
+    for ch in input.chars() {
+        if ch.is_whitespace() {
+            cursor += ch.len_utf8();
         } else {
             break;
         }
@@ -240,19 +234,10 @@ fn count_leading_whitespace(input: &str) -> usize {
 }
 
 fn trim_end_separator(input: &str) -> usize {
-    let bytes = input.as_bytes();
-    let mut end = bytes.len();
-    while end > 0 {
-        let mut char_start = end - 1;
-        while char_start > 0 && (bytes[char_start] & 0xC0) == 0x80 {
-            char_start -= 1;
-        }
-        let char_str = &input[char_start..end];
-        if char_str == ":"
-            || char_str == "\u{FF1A}"
-            || char_str.chars().all(|ch| ch.is_whitespace())
-        {
-            end = char_start;
+    let mut end = input.len();
+    for (offset, ch) in input.char_indices().rev() {
+        if ch == ':' || ch == '\u{FF1A}' || ch.is_whitespace() {
+            end = offset;
         } else {
             break;
         }
@@ -261,34 +246,30 @@ fn trim_end_separator(input: &str) -> usize {
 }
 
 fn is_role_boundary(following: &str) -> bool {
-    if following.is_empty() {
-        return true;
-    }
     let Some(first) = following.chars().next() else {
         return true;
     };
     first.is_whitespace() || first == ':' || first == '\u{FF1A}'
 }
 
+/// Detects a bracketed highlight that opens at `suffix[0]`. Supports
+/// the Chinese `【...】` pair, ASCII parentheses, and ASCII square
+/// brackets; each bracket type must be closed by its matching
+/// counterpart. Returns the length in bytes of the entire bracketed
+/// span, including the open and close characters, when a match is
+/// found.
 fn match_special_at(suffix: &str) -> Option<usize> {
-    if !suffix.starts_with('\u{3010}') {
-        return None;
-    }
-    let open_len = '\u{3010}'.len_utf8();
+    let first = suffix.chars().next()?;
+    let close = match first {
+        '\u{3010}' => '\u{3011}',
+        '(' => ')',
+        '[' => ']',
+        _ => return None,
+    };
+    let open_len = first.len_utf8();
     let rest = &suffix[open_len..];
-    let close_offset = rest.find('\u{3011}')?;
-    Some(open_len + close_offset + '\u{3011}'.len_utf8())
-}
-
-fn char_len_at(bytes: &[u8], offset: usize) -> usize {
-    let first = bytes[offset];
-    match first {
-        0x00..=0x7F => 1,
-        0xC0..=0xDF => 2,
-        0xE0..=0xEF => 3,
-        0xF0..=0xF7 => 4,
-        _ => 1,
-    }
+    let close_offset = rest.find(close)?;
+    Some(open_len + close_offset + close.len_utf8())
 }
 
 #[derive(Debug, Display, Error)]
@@ -310,6 +291,13 @@ mod tests {
     use super::*;
     use maplit::btreemap;
 
+    /// Generic Chinese fixture characters that exercise the multi-byte
+    /// scanning paths without naming any real performer or studio.
+    const ROLE_ALPHA: &str = "示例角色甲";
+    const ROLE_BETA: &str = "示例角色乙";
+    const NAME_ALPHA: &str = "示例姓名甲";
+    const NAME_BETA: &str = "示例姓名乙";
+
     fn make_vocab(roles: &[&str], names: &[&str]) -> CreditsVocabulary {
         let descriptor = CreditsDesc {
             credit_roles: roles
@@ -326,70 +314,105 @@ mod tests {
 
     #[test]
     fn splits_two_space_separated_line() {
-        let vocab = make_vocab(
-            &["演唱", "作曲", "作词", "编曲"],
-            &["洛天依", "乐正绫", "雨观"],
-        );
-        let parsed = vocab.parse_line("演唱  洛天依  乐正绫").unwrap();
+        let vocab = make_vocab(&[ROLE_ALPHA], &[NAME_ALPHA, NAME_BETA]);
+        let parsed = vocab
+            .parse_line(&format!("{ROLE_ALPHA}  {NAME_ALPHA}  {NAME_BETA}"))
+            .unwrap();
         assert_eq!(parsed.pairs.len(), 1);
-        assert_eq!(parsed.pairs[0].role, "演唱");
+        assert_eq!(parsed.pairs[0].role, ROLE_ALPHA);
         assert_eq!(parsed.pairs[0].separator, "  ");
         assert_eq!(
             parsed.pairs[0].name_segments,
             vec![
-                NameSegment::Name("洛天依".to_string()),
+                NameSegment::Name(NAME_ALPHA.to_string()),
                 NameSegment::Plain("  ".to_string()),
-                NameSegment::Name("乐正绫".to_string()),
+                NameSegment::Name(NAME_BETA.to_string()),
             ],
         );
     }
 
     #[test]
     fn splits_ideographic_colon_separated_line() {
-        let vocab = make_vocab(
-            &["作词", "编曲", "VSINGER"],
-            &["雨観", "雨观", "洛天依X楽正绫"],
-        );
+        let vocab = make_vocab(&[ROLE_ALPHA, ROLE_BETA], &[NAME_ALPHA, NAME_BETA]);
         let parsed = vocab
-            .parse_line("作词：雨観\u{3000}编曲：雨观\u{3000}VSINGER：洛天依X楽正绫")
+            .parse_line(&format!(
+                "{ROLE_ALPHA}\u{FF1A}{NAME_ALPHA}\u{3000}{ROLE_BETA}\u{FF1A}{NAME_BETA}"
+            ))
             .unwrap();
-        assert_eq!(parsed.pairs.len(), 3);
-        assert_eq!(parsed.pairs[0].role, "作词");
+        assert_eq!(parsed.pairs.len(), 2);
+        assert_eq!(parsed.pairs[0].role, ROLE_ALPHA);
         assert_eq!(parsed.pairs[0].separator, "\u{FF1A}");
         assert_eq!(
             parsed.pairs[0].name_segments,
-            vec![NameSegment::Name("雨観".to_string())],
+            vec![NameSegment::Name(NAME_ALPHA.to_string())],
         );
-        assert_eq!(parsed.pairs[2].role, "VSINGER");
+        assert_eq!(parsed.pairs[1].role, ROLE_BETA);
+        assert_eq!(
+            parsed.pairs[1].name_segments,
+            vec![NameSegment::Name(NAME_BETA.to_string())],
+        );
     }
 
     #[test]
-    fn recognizes_special_highlight() {
-        let vocab = make_vocab(&["视频"], &["Ａ影羌", "良月十八"]);
-        let parsed = vocab.parse_line("视频  Ａ影羌【璇玑坊Studio】").unwrap();
-        assert_eq!(parsed.pairs.len(), 1);
+    fn recognizes_lenticular_highlight() {
+        let vocab = make_vocab(&[ROLE_ALPHA], &[NAME_ALPHA]);
+        let parsed = vocab
+            .parse_line(&format!("{ROLE_ALPHA}  {NAME_ALPHA}【示例标签】"))
+            .unwrap();
         assert_eq!(
             parsed.pairs[0].name_segments,
             vec![
-                NameSegment::Name("Ａ影羌".to_string()),
-                NameSegment::Special("【璇玑坊Studio】".to_string()),
+                NameSegment::Name(NAME_ALPHA.to_string()),
+                NameSegment::Special("【示例标签】".to_string()),
+            ],
+        );
+    }
+
+    #[test]
+    fn recognizes_parenthesized_highlight() {
+        let vocab = make_vocab(&[ROLE_ALPHA], &[NAME_ALPHA]);
+        let parsed = vocab
+            .parse_line(&format!("{ROLE_ALPHA}  {NAME_ALPHA}(example-tag)"))
+            .unwrap();
+        assert_eq!(
+            parsed.pairs[0].name_segments,
+            vec![
+                NameSegment::Name(NAME_ALPHA.to_string()),
+                NameSegment::Special("(example-tag)".to_string()),
+            ],
+        );
+    }
+
+    #[test]
+    fn recognizes_square_bracketed_highlight() {
+        let vocab = make_vocab(&[ROLE_ALPHA], &[NAME_ALPHA]);
+        let parsed = vocab
+            .parse_line(&format!("{ROLE_ALPHA}  {NAME_ALPHA}[example-tag]"))
+            .unwrap();
+        assert_eq!(
+            parsed.pairs[0].name_segments,
+            vec![
+                NameSegment::Name(NAME_ALPHA.to_string()),
+                NameSegment::Special("[example-tag]".to_string()),
             ],
         );
     }
 
     #[test]
     fn unknown_leading_text_errors() {
-        let vocab = make_vocab(&["演唱"], &["洛天依"]);
+        let vocab = make_vocab(&[ROLE_ALPHA], &[NAME_ALPHA]);
         assert!(matches!(
-            vocab.parse_line("unknown  洛天依"),
+            vocab.parse_line(&format!("unknown-prefix  {NAME_ALPHA}")),
             Err(ParseCreditError::UnknownRole { .. }),
         ));
     }
 
     #[test]
     fn longer_role_wins_over_shorter_role_prefix() {
-        let vocab = make_vocab(&["演", "演唱"], &["洛天依"]);
-        let parsed = vocab.parse_line("演唱  洛天依").unwrap();
-        assert_eq!(parsed.pairs[0].role, "演唱");
+        let vocab = make_vocab(&["示例", ROLE_ALPHA], &[NAME_ALPHA]);
+        let parsed = vocab
+            .parse_line(&format!("{ROLE_ALPHA}  {NAME_ALPHA}"))
+            .unwrap();
+        assert_eq!(parsed.pairs[0].role, ROLE_ALPHA);
     }
 }

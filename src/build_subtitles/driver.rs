@@ -217,13 +217,8 @@ pub fn load_song(song_dir: &Path) -> Result<Song, BuildError> {
 pub fn main() -> ExitCode {
     let args = Args::parse();
 
-    let song_dirs: Vec<PathBuf> = match read_dir(&args.sources) {
-        Ok(iter) => iter
-            .filter_map(|entry| entry.ok())
-            .filter(|entry| entry.file_type().map(|ft| ft.is_dir()).unwrap_or(false))
-            .map(|entry| entry.path())
-            .sorted()
-            .collect(),
+    let entries = match read_dir(&args.sources) {
+        Ok(iter) => iter,
         Err(error) => {
             eprintln!(
                 "error: Cannot read sources directory {path:?}: {error}",
@@ -232,6 +227,11 @@ pub fn main() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
+    let song_dirs = entries
+        .filter_map(Result::ok)
+        .filter(|entry| entry.file_type().map(|ft| ft.is_dir()).unwrap_or(false))
+        .map(|entry| entry.path())
+        .sorted();
 
     let mut total_written = 0usize;
     for song_dir in song_dirs {

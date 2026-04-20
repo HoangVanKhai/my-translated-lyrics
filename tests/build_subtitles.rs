@@ -1,5 +1,6 @@
+use itertools::Itertools;
 use pretty_assertions::assert_eq;
-use std::fs::{read_dir, read_to_string};
+use std::fs::{create_dir_all, read_dir, read_to_string, remove_dir_all};
 use std::path::{Path, PathBuf};
 use translated_lyrics::build_subtitles::{load_song, render_song_to_disk};
 
@@ -16,12 +17,11 @@ fn dist_is_up_to_date_with_sources() {
     let scratch_dir = tempdir_in_manifest(manifest_dir, "build-subtitles-test");
 
     let mut compared_paths: Vec<PathBuf> = Vec::new();
-    let mut entries: Vec<_> = read_dir(&sources_dir)
+    let entries = read_dir(&sources_dir)
         .unwrap()
         .map(Result::unwrap)
         .filter(|entry| entry.file_type().unwrap().is_dir())
-        .collect();
-    entries.sort_by_key(|entry| entry.file_name());
+        .sorted_by_key(|entry| entry.file_name());
 
     for entry in entries {
         let song_dir = entry.path();
@@ -53,7 +53,7 @@ fn dist_is_up_to_date_with_sources() {
         "no songs were rendered; is sources/ empty?",
     );
 
-    std::fs::remove_dir_all(&scratch_dir).ok();
+    remove_dir_all(&scratch_dir).ok();
 }
 
 fn tempdir_in_manifest(manifest_dir: &Path, prefix: &str) -> PathBuf {
@@ -65,7 +65,7 @@ fn tempdir_in_manifest(manifest_dir: &Path, prefix: &str) -> PathBuf {
     let path = manifest_dir
         .join("target")
         .join(format!("{prefix}-{nanos}"));
-    std::fs::create_dir_all(&path).unwrap();
+    create_dir_all(&path).unwrap();
     path
 }
 

@@ -13,6 +13,7 @@ pub mod credits_parse;
 pub mod parse;
 pub mod render_srt;
 pub mod render_vtt;
+pub mod styles;
 
 mod driver;
 

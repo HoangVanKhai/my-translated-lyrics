@@ -14,9 +14,10 @@ use super::credits_parse::{
     CreditPair, CreditsVocabulary, NameSegment, ParseCreditError, ParsedCreditLine,
 };
 use super::parse::SubtitleCue;
+use super::styles::{Style, class_style, voice_style};
 use crate::credits_descriptor::CreditsDesc;
-use crate::line_markers_descriptor::{LineMarkersDesc, Style};
-use crate::timestamp::Milliseconds;
+use crate::line_markers_descriptor::LineMarkersDesc;
+use crate::timestamp::{Milliseconds, VttTime};
 use crate::video_descriptor::Language;
 use core::fmt::Write;
 use derive_more::{Display, Error};
@@ -28,12 +29,24 @@ const CLASS_CREDIT_NAME: &str = "creditName";
 /// Built-in class name for a `【...】` highlight inside a credit name.
 const CLASS_CREDIT_SPECIAL: &str = "creditSpecial";
 
-/// Fixed color for the credit role class.
-const CREDIT_ROLE_COLOR: &str = "#AAAA22";
-/// Fixed color for the credit name class.
-const CREDIT_NAME_COLOR: &str = "#AAAAAA";
-/// Fixed color for the credit highlight class.
-const CREDIT_SPECIAL_COLOR: &str = "#55ABCD";
+/// Fixed style for the credit role class.
+const CREDIT_ROLE_STYLE: Style = Style {
+    color: Some("#AAAA22"),
+    italic: false,
+    bold: false,
+};
+/// Fixed style for the credit name class.
+const CREDIT_NAME_STYLE: Style = Style {
+    color: Some("#AAAAAA"),
+    italic: false,
+    bold: false,
+};
+/// Fixed style for the credit highlight class.
+const CREDIT_SPECIAL_STYLE: Style = Style {
+    color: Some("#55ABCD"),
+    italic: false,
+    bold: false,
+};
 
 /// Renders all cues for a single language into a complete `.vtt` file.
 pub fn render_file(
@@ -60,8 +73,8 @@ pub fn render_file(
         writeln!(
             output,
             "{start} --> {end}",
-            start = rendering.start.vtt_fmt(),
-            end = rendering.end.vtt_fmt(),
+            start = VttTime(rendering.start),
+            end = VttTime(rendering.end),
         )
         .expect("writing to String is infallible");
         output.push_str(&rendering.content);
@@ -252,52 +265,28 @@ fn write_style_block(
         else {
             continue;
         };
-        let style = markers.styles.get(marker_name);
-        write_voice_rule(output, voice_name, style);
+        let style = voice_style(marker_name);
+        write_voice_rule(output, voice_name, style.as_ref());
     }
 
     if features.used_credit_role {
-        write_class_rule(
-            output,
-            CLASS_CREDIT_ROLE,
-            &Style {
-                color: Some(CREDIT_ROLE_COLOR.to_string()),
-                italic: false,
-                bold: false,
-            },
-        );
+        write_class_rule(output, CLASS_CREDIT_ROLE, &CREDIT_ROLE_STYLE);
     }
     if features.used_credit_name {
-        write_class_rule(
-            output,
-            CLASS_CREDIT_NAME,
-            &Style {
-                color: Some(CREDIT_NAME_COLOR.to_string()),
-                italic: false,
-                bold: false,
-            },
-        );
+        write_class_rule(output, CLASS_CREDIT_NAME, &CREDIT_NAME_STYLE);
     }
     if features.used_credit_special {
-        write_class_rule(
-            output,
-            CLASS_CREDIT_SPECIAL,
-            &Style {
-                color: Some(CREDIT_SPECIAL_COLOR.to_string()),
-                italic: false,
-                bold: false,
-            },
-        );
+        write_class_rule(output, CLASS_CREDIT_SPECIAL, &CREDIT_SPECIAL_STYLE);
     }
 
     for marker_name in &markers.markers {
         let Some(class_name) = markers.classes.get(marker_name) else {
             continue;
         };
-        let Some(style) = markers.styles.get(marker_name) else {
+        let Some(style) = class_style(class_name) else {
             continue;
         };
-        write_class_rule(output, class_name, style);
+        write_class_rule(output, class_name, &style);
     }
 }
 
@@ -317,7 +306,7 @@ fn write_class_rule(output: &mut String, class_name: &str, style: &Style) {
 }
 
 fn write_style_body(output: &mut String, style: &Style) {
-    if let Some(color) = &style.color {
+    if let Some(color) = style.color {
         writeln!(output, "  color: {color};").expect("writing to String is infallible");
     }
     if style.italic {
@@ -331,10 +320,7 @@ fn write_style_body(output: &mut String, style: &Style) {
 #[derive(Debug, Display, Error)]
 #[non_exhaustive]
 pub enum RenderVttError {
-    #[display(
-        "cue at {start} failed to render as a credit line: {source}",
-        start = start.source_fmt(),
-    )]
+    #[display("cue at {start} failed to render as a credit line: {source}")]
     Credits {
         #[error(not(source))]
         start: Milliseconds,

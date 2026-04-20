@@ -2,19 +2,20 @@
 //!
 //! SRT has no concept of voices or classes, so presentation metadata
 //! is expressed as inline HTML-like tags. For each cue this renderer
-//! looks up the marker's style in [`LineMarkersDesc::styles`] and
-//! wraps the text in `<font color="...">`, `<i>`, and/or `<b>` tags as
-//! required. Credit lines follow the same structural parsing as in
-//! the VTT renderer but render each role and name with a hard-coded
-//! palette because SRT has no central style definition.
+//! looks up the marker's style in the central [`super::styles`] table
+//! and wraps the text in `<font color="...">`, `<i>`, and/or `<b>`
+//! tags as required. Credit lines follow the same structural parsing
+//! as in the VTT renderer and render each role and name with a
+//! hard-coded palette because SRT has no central style definition.
 
 use super::credits_parse::{
     CreditPair, CreditsVocabulary, NameSegment, ParseCreditError, ParsedCreditLine,
 };
 use super::parse::SubtitleCue;
+use super::styles::{Style, class_style, voice_style};
 use crate::credits_descriptor::CreditsDesc;
-use crate::line_markers_descriptor::{LineMarkersDesc, Style};
-use crate::timestamp::Milliseconds;
+use crate::line_markers_descriptor::LineMarkersDesc;
+use crate::timestamp::{Milliseconds, SrtTime};
 use crate::video_descriptor::Language;
 use core::fmt::Write;
 use derive_more::{Display, Error};
@@ -38,8 +39,8 @@ pub fn render_file(
         writeln!(
             output,
             "{start} --> {end}",
-            start = cue.start.srt_fmt(),
-            end = cue.end.srt_fmt(),
+            start = SrtTime(cue.start),
+            end = SrtTime(cue.end),
         )
         .expect("writing to String is infallible");
         let body = render_cue_body(cue, markers, &vocabulary)?;
@@ -76,8 +77,19 @@ fn render_cue_body(
     }
 
     let text = cue.text.clone();
-    let style = marker.and_then(|marker_name| markers.styles.get(marker_name));
-    Ok(wrap_with_style(&text, style))
+    let style = marker.and_then(|marker_name| resolve_style(marker_name, markers));
+    Ok(wrap_with_style(&text, style.as_ref()))
+}
+
+/// Looks up the SRT style for a marker by consulting the hardcoded
+/// voice table first and then the class table. Markers that are not
+/// registered in either table render as plain text.
+fn resolve_style(marker_name: &str, markers: &LineMarkersDesc) -> Option<Style> {
+    if let Some(style) = voice_style(marker_name) {
+        return Some(style);
+    }
+    let class_name = markers.classes.get(marker_name)?;
+    class_style(class_name)
 }
 
 fn wrap_with_style(text: &str, style: Option<&Style>) -> String {
@@ -86,7 +98,7 @@ fn wrap_with_style(text: &str, style: Option<&Style>) -> String {
     };
 
     let mut wrapped = text.to_string();
-    if let Some(color) = &style.color {
+    if let Some(color) = style.color {
         wrapped = format!("<font color=\"{color}\">{wrapped}</font>");
     }
     if style.italic {
@@ -148,10 +160,7 @@ fn render_separator_for_output(raw: &str) -> String {
 #[derive(Debug, Display, Error)]
 #[non_exhaustive]
 pub enum RenderSrtError {
-    #[display(
-        "cue at {start} failed to render as a credit line: {source}",
-        start = start.source_fmt(),
-    )]
+    #[display("cue at {start} failed to render as a credit line: {source}")]
     Credits {
         #[error(not(source))]
         start: Milliseconds,
