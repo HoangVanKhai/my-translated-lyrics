@@ -10,10 +10,12 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 pub const CLEAR_MARKER: &str = "clr";
 
 /// Built-in marker name for the end-of-video sentinel. Lines that
-/// start with this marker are ignored entirely; they neither open a
-/// cue nor close a previously opened one. They only exist to record
-/// when the final cue should close in the rare case a song has no
-/// following `clr`.
+/// start with this marker are ignored entirely by the parser: they
+/// open no cue and close no cue. The marker exists as a convention
+/// so that source files can record, for human readers, the point at
+/// which no further subtitle activity occurs. Every cue must still
+/// be closed by a following cue or by a `clr` marker; reaching an
+/// `eov` line with an open cue is not treated as a cue boundary.
 pub const END_OF_VIDEO_MARKER: &str = "eov";
 
 /// Parsed contents of a `line-markers.toml` file.

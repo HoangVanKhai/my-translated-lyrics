@@ -8,10 +8,10 @@ pub struct Milliseconds(pub u64);
 
 impl Milliseconds {
     /// Parses the `MM:SS.mmm` form that opens each cue in
-    /// `lyrics.*.txt`. The minutes and milliseconds fields may carry
-    /// more than their nominal number of digits; in particular a cue
-    /// may reach `60:00.000` or beyond when a song is longer than an
-    /// hour.
+    /// `lyrics.*.txt`. The caller is expected to have extracted
+    /// exactly the 9-byte prefix `DD:DD.DDD` beforehand; songs longer
+    /// than 99 minutes would require widening both this parser and
+    /// the tokenizer in [`crate::build_subtitles::parse`].
     pub fn parse_source(input: &str) -> Result<Self, ParseTimestampError> {
         let (minutes_part, seconds_part) = input
             .split_once(':')

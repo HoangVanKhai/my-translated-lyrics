@@ -191,27 +191,6 @@ impl CreditsVocabulary {
     }
 }
 
-/// Determines the rendered separator between a role tag and its name
-/// tag based on the original source separator.
-///
-/// If the source separator is a pure run of ASCII spaces or tabs, the
-/// same bytes are reproduced verbatim; this preserves songs such as
-/// FarewellToJianghu that separate the role from the first name by
-/// exactly two spaces. Any other separator, such as a full-width
-/// colon or an ideographic space, collapses to a single ASCII space.
-pub fn render_separator(raw: &str) -> &'static str {
-    let is_ascii_spaces = !raw.is_empty() && raw.chars().all(|ch| ch == ' ' || ch == '\t');
-    if is_ascii_spaces {
-        // SAFETY: the caller typically writes the raw string directly,
-        // but this helper exists to signal the policy. Callers that
-        // need the preserved run read [`CreditPair::separator`]
-        // directly.
-        ""
-    } else {
-        " "
-    }
-}
-
 fn deduplicate_longest_first<Iter, Item>(values: Iter) -> Vec<String>
 where
     Iter: IntoIterator<Item = Item>,
@@ -412,17 +391,5 @@ mod tests {
         let vocab = make_vocab(&["演", "演唱"], &["洛天依"]);
         let parsed = vocab.parse_line("演唱  洛天依").unwrap();
         assert_eq!(parsed.pairs[0].role, "演唱");
-    }
-
-    #[test]
-    fn render_separator_preserves_ascii_spaces() {
-        assert_eq!(render_separator("  "), "");
-        assert_eq!(render_separator(" "), "");
-    }
-
-    #[test]
-    fn render_separator_collapses_non_ascii() {
-        assert_eq!(render_separator("\u{FF1A}"), " ");
-        assert_eq!(render_separator("\u{3000}"), " ");
     }
 }
