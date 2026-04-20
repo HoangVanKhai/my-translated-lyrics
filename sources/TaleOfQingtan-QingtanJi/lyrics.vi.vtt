@@ -34,8 +34,8 @@ STYLE
   font-weight: bold;
 }
 ::cue(c.expo) {
-  font-style: italic;
   color: #CCCCCC;
+  font-style: italic;
 }
 
 00:00:03.120 --> 00:00:05.600
