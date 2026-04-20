@@ -142,38 +142,40 @@ impl CreditsVocabulary {
 
     fn parse_name_region(&self, region: &str) -> Vec<NameSegment> {
         let mut segments: Vec<NameSegment> = Vec::new();
-        let mut buffer = String::new();
         let mut rest = region;
-
-        let flush = |buffer: &mut String, segments: &mut Vec<NameSegment>| {
-            if !buffer.is_empty() {
-                segments.push(NameSegment::Plain(std::mem::take(buffer)));
-            }
-        };
 
         while !rest.is_empty() {
             if let Some((special, next_rest)) = take_special(rest) {
-                flush(&mut buffer, &mut segments);
                 segments.push(NameSegment::Special(special.to_string()));
                 rest = next_rest;
                 continue;
             }
             if let Some((name, next_rest)) = self.take_name(rest) {
-                flush(&mut buffer, &mut segments);
                 segments.push(NameSegment::Name(name.to_string()));
                 rest = next_rest;
                 continue;
             }
-            let Some(next_char) = rest.chars().next() else {
-                break;
-            };
-            let step = next_char.len_utf8();
-            buffer.push_str(&rest[..step]);
-            rest = &rest[step..];
+            let (plain, next_rest) = self.take_plain_run(rest);
+            segments.push(NameSegment::Plain(plain.to_string()));
+            rest = next_rest;
         }
 
-        flush(&mut buffer, &mut segments);
         segments
+    }
+
+    fn take_plain_run<'a>(&self, input: &'a str) -> (&'a str, &'a str) {
+        let mut cursor = 0;
+        while cursor < input.len() {
+            let suffix = &input[cursor..];
+            if take_special(suffix).is_some() || self.take_name(suffix).is_some() {
+                break;
+            }
+            let Some(next_char) = suffix.chars().next() else {
+                break;
+            };
+            cursor += next_char.len_utf8();
+        }
+        input.split_at(cursor)
     }
 }
 
