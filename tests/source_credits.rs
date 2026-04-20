@@ -20,7 +20,7 @@ fn source_credits_descriptors() {
     let entries = sources_dir
         .pipe(read_dir)
         .unwrap()
-        .map(Result::unwrap)
+        .map(Result::<DirEntry, _>::unwrap)
         .sorted_by_key(DirEntry::file_name);
 
     for entry in entries {
