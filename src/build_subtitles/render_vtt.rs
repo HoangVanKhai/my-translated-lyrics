@@ -126,14 +126,12 @@ fn render_cue(
     vocabulary: &CreditsVocabulary,
     language: &Language,
 ) -> Result<CueRendering, RenderVttError> {
-    let marker = cue.marker.as_deref();
+    let marker = cue.marker.as_str();
     let mut used_credit_role = false;
     let mut used_credit_name = false;
     let mut used_credit_special = false;
 
-    let inner = if let Some(marker) = marker
-        && markers.credits.iter().any(|entry| entry == marker)
-    {
+    let inner = if markers.credits.iter().any(|entry| entry == marker) {
         let mut rendered_lines: Vec<String> = Vec::new();
         for line in cue.text.lines() {
             let trimmed = line.trim_start();
@@ -152,20 +150,16 @@ fn render_cue(
             ));
         }
         rendered_lines.join("\n")
-    } else if let Some(marker) = marker
-        && let Some(class_name) = markers.classes.get(marker)
-    {
+    } else if let Some(class_name) = markers.classes.get(marker) {
         format!("<c.{class_name}>{text}</c>", text = cue.text)
     } else {
         cue.text.clone()
     };
 
-    let voice_name = marker.and_then(|marker_name| {
-        markers
-            .voices
-            .get(marker_name)
-            .and_then(|by_language| by_language.get(language))
-    });
+    let voice_name = markers
+        .voices
+        .get(marker)
+        .and_then(|by_language| by_language.get(language));
 
     let content = match voice_name {
         Some(voice_name) => format!("<v {voice_name}>{inner}</v>"),

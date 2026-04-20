@@ -79,74 +79,71 @@ impl CreditsVocabulary {
 
     /// Parses a single credit line into ordered role-name pairs.
     ///
-    /// The scan advances left to right. At each position it tries to
-    /// match the longest role label from the vocabulary; whatever
-    /// follows the role, up to the next role match or the end of the
-    /// line, is the role's associated name region. Name regions are
-    /// further scanned for known names and bracketed highlight runs.
+    /// The scan advances left to right by composing small
+    /// `(consumed, rest)` parsers in the style popularized by `nom` and
+    /// Parsec. At each position the scanner tries to match the longest
+    /// role label from the vocabulary; whatever follows the role, up
+    /// to the next role match or the end of the line, is the role's
+    /// associated name region. Name regions are further scanned for
+    /// known names and bracketed highlight runs.
     pub fn parse_line(&self, line: &str) -> Result<ParsedCreditLine, ParseCreditError> {
         let mut pairs: Vec<CreditPair> = Vec::new();
-        let length = line.len();
-        let mut cursor = count_leading_whitespace(line);
+        let (_, mut rest) = take_leading_whitespace(line);
 
-        while cursor < length {
-            let Some(role) = self.match_role_at(&line[cursor..]) else {
-                return Err(ParseCreditError::UnknownRole {
-                    line: line.to_string(),
-                    offset: cursor,
-                });
-            };
-            let role_start = cursor;
-            let role_end = role_start + role.len();
-            cursor = role_end;
-
-            let sep_start = cursor;
-            let sep_end = sep_start + count_separator_bytes(&line[cursor..]);
-            cursor = sep_end;
-
-            let name_start = cursor;
-            let mut name_end = name_start;
-            while name_end < length {
-                let suffix = &line[name_end..];
-                if self.match_role_at(suffix).is_some() {
-                    break;
-                }
-                let Some(next_char) = suffix.chars().next() else {
-                    break;
-                };
-                name_end += next_char.len_utf8();
-            }
-            let trimmed_name_end = trim_end_separator(&line[name_start..name_end]) + name_start;
-            let name_region = &line[name_start..trimmed_name_end];
+        while !rest.is_empty() {
+            let (role, after_role) =
+                self.take_role(rest)
+                    .ok_or_else(|| ParseCreditError::UnknownRole {
+                        line: line.to_string(),
+                        offset: line.len() - rest.len(),
+                    })?;
+            let (separator, after_separator) = take_separator(after_role);
+            let (raw_name_region, after_name) = self.take_until_role(after_separator);
+            let name_region = trim_end_separator(raw_name_region);
             let name_segments = self.parse_name_region(name_region);
 
             pairs.push(CreditPair {
-                role: line[role_start..role_end].to_string(),
-                separator: line[sep_start..sep_end].to_string(),
+                role: role.to_string(),
+                separator: separator.to_string(),
                 name_segments,
             });
 
-            cursor = name_end;
-            cursor += count_separator_bytes(&line[cursor..]);
+            let (_, after_trailing) = take_separator(after_name);
+            rest = after_trailing;
         }
 
         Ok(ParsedCreditLine { pairs })
     }
 
-    fn match_role_at<'a>(&'a self, suffix: &str) -> Option<&'a str> {
-        self.roles
+    fn take_role<'a>(&self, input: &'a str) -> Option<(&'a str, &'a str)> {
+        self.roles.iter().find_map(|role| {
+            let rest = input.strip_prefix(role.as_str())?;
+            is_role_boundary(rest).then(|| input.split_at(role.len()))
+        })
+    }
+
+    fn take_name<'a>(&self, input: &'a str) -> Option<(&'a str, &'a str)> {
+        self.names
             .iter()
-            .find(|role| {
-                suffix.starts_with(role.as_str()) && is_role_boundary(&suffix[role.len()..])
-            })
-            .map(String::as_str)
+            .find(|name| input.starts_with(name.as_str()))
+            .map(|name| input.split_at(name.len()))
+    }
+
+    fn take_until_role<'a>(&self, input: &'a str) -> (&'a str, &'a str) {
+        let mut cursor = 0;
+        while cursor < input.len() && self.take_role(&input[cursor..]).is_none() {
+            let Some(next_char) = input[cursor..].chars().next() else {
+                break;
+            };
+            cursor += next_char.len_utf8();
+        }
+        input.split_at(cursor)
     }
 
     fn parse_name_region(&self, region: &str) -> Vec<NameSegment> {
         let mut segments: Vec<NameSegment> = Vec::new();
         let mut buffer = String::new();
-        let length = region.len();
-        let mut cursor = 0;
+        let mut rest = region;
 
         let flush = |buffer: &mut String, segments: &mut Vec<NameSegment>| {
             if !buffer.is_empty() {
@@ -154,41 +151,29 @@ impl CreditsVocabulary {
             }
         };
 
-        while cursor < length {
-            let suffix = &region[cursor..];
-
-            if let Some(special_len) = match_special_at(suffix) {
+        while !rest.is_empty() {
+            if let Some((special, next_rest)) = take_special(rest) {
                 flush(&mut buffer, &mut segments);
-                let special = &region[cursor..cursor + special_len];
                 segments.push(NameSegment::Special(special.to_string()));
-                cursor += special_len;
+                rest = next_rest;
                 continue;
             }
-
-            if let Some(name) = self.match_name_at(suffix) {
+            if let Some((name, next_rest)) = self.take_name(rest) {
                 flush(&mut buffer, &mut segments);
                 segments.push(NameSegment::Name(name.to_string()));
-                cursor += name.len();
+                rest = next_rest;
                 continue;
             }
-
-            let Some(next_char) = suffix.chars().next() else {
+            let Some(next_char) = rest.chars().next() else {
                 break;
             };
             let step = next_char.len_utf8();
-            buffer.push_str(&region[cursor..cursor + step]);
-            cursor += step;
+            buffer.push_str(&rest[..step]);
+            rest = &rest[step..];
         }
 
         flush(&mut buffer, &mut segments);
         segments
-    }
-
-    fn match_name_at<'a>(&'a self, suffix: &str) -> Option<&'a str> {
-        self.names
-            .iter()
-            .find(|name| suffix.starts_with(name.as_str()))
-            .map(String::as_str)
     }
 }
 
@@ -209,57 +194,61 @@ where
     collected
 }
 
-fn count_separator_bytes(input: &str) -> usize {
-    let mut cursor = 0;
-    for ch in input.chars() {
-        if ch == ':' || ch == '：' || ch.is_whitespace() {
-            cursor += ch.len_utf8();
-        } else {
-            break;
-        }
-    }
-    cursor
+/// Consumes any leading run of separator characters (ASCII or
+/// full-width colon, or any whitespace including the ideographic space)
+/// and returns the `(consumed, remaining)` split.
+fn take_separator(input: &str) -> (&str, &str) {
+    let cursor = input
+        .char_indices()
+        .find(|(_, ch)| !is_separator_char(*ch))
+        .map(|(offset, _)| offset)
+        .unwrap_or(input.len());
+    input.split_at(cursor)
 }
 
-fn count_leading_whitespace(input: &str) -> usize {
-    let mut cursor = 0;
-    for ch in input.chars() {
-        if ch.is_whitespace() {
-            cursor += ch.len_utf8();
-        } else {
-            break;
-        }
-    }
-    cursor
+/// Consumes any leading run of whitespace and returns the
+/// `(consumed, remaining)` split.
+fn take_leading_whitespace(input: &str) -> (&str, &str) {
+    let cursor = input
+        .char_indices()
+        .find(|(_, ch)| !ch.is_whitespace())
+        .map(|(offset, _)| offset)
+        .unwrap_or(input.len());
+    input.split_at(cursor)
 }
 
-fn trim_end_separator(input: &str) -> usize {
-    let mut end = input.len();
-    for (offset, ch) in input.char_indices().rev() {
-        if ch == ':' || ch == '：' || ch.is_whitespace() {
-            end = offset;
-        } else {
-            break;
-        }
-    }
-    end
+/// Trims a trailing run of separator characters from the end of a
+/// slice, returning the slice up to the first non-separator character
+/// when read from the right.
+fn trim_end_separator(input: &str) -> &str {
+    let end = input
+        .char_indices()
+        .rev()
+        .find(|(_, ch)| !is_separator_char(*ch))
+        .map(|(offset, ch)| offset + ch.len_utf8())
+        .unwrap_or(0);
+    &input[..end]
+}
+
+fn is_separator_char(ch: char) -> bool {
+    ch == ':' || ch == '：' || ch.is_whitespace()
 }
 
 fn is_role_boundary(following: &str) -> bool {
-    let Some(first) = following.chars().next() else {
-        return true;
-    };
-    first.is_whitespace() || first == ':' || first == '：'
+    match following.chars().next() {
+        Some(ch) => is_separator_char(ch),
+        None => true,
+    }
 }
 
-/// Detects a bracketed highlight that opens at `suffix[0]`. Supports
+/// Consumes a bracketed highlight that opens at `input[0]`. Supports
 /// the Chinese `【...】` pair, ASCII parentheses, and ASCII square
 /// brackets; each bracket type must be closed by its matching
-/// counterpart. Returns the length in bytes of the entire bracketed
-/// span, including the open and close characters, when a match is
-/// found.
-fn match_special_at(suffix: &str) -> Option<usize> {
-    let first = suffix.chars().next()?;
+/// counterpart. Returns the `(bracket_span, remaining)` split where
+/// `bracket_span` covers the opening bracket, its contents, and the
+/// matching closing bracket.
+fn take_special(input: &str) -> Option<(&str, &str)> {
+    let first = input.chars().next()?;
     let close = match first {
         '【' => '】',
         '(' => ')',
@@ -267,9 +256,9 @@ fn match_special_at(suffix: &str) -> Option<usize> {
         _ => return None,
     };
     let open_len = first.len_utf8();
-    let rest = &suffix[open_len..];
-    let close_offset = rest.find(close)?;
-    Some(open_len + close_offset + close.len_utf8())
+    let close_offset = input[open_len..].find(close)?;
+    let end = open_len + close_offset + close.len_utf8();
+    Some(input.split_at(end))
 }
 
 #[derive(Debug, Display, Error)]

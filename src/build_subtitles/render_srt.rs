@@ -56,11 +56,9 @@ fn render_cue_body(
     markers: &LineMarkersDesc,
     vocabulary: &CreditsVocabulary,
 ) -> Result<String, RenderSrtError> {
-    let marker = cue.marker.as_deref();
+    let marker = cue.marker.as_str();
 
-    if let Some(marker) = marker
-        && markers.credits.iter().any(|entry| entry == marker)
-    {
+    if markers.credits.iter().any(|entry| entry == marker) {
         let mut rendered_lines: Vec<String> = Vec::new();
         for line in cue.text.lines() {
             let trimmed = line.trim_start();
@@ -76,9 +74,8 @@ fn render_cue_body(
         return Ok(rendered_lines.join("\n"));
     }
 
-    let text = cue.text.clone();
-    let style = marker.and_then(|marker_name| resolve_style(marker_name, markers));
-    Ok(wrap_with_style(&text, style.as_ref()))
+    let style = resolve_style(marker, markers);
+    Ok(wrap_with_style(&cue.text, style.as_ref()))
 }
 
 /// Looks up the SRT style for a marker by consulting the hardcoded

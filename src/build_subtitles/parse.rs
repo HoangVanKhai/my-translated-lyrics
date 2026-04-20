@@ -19,10 +19,11 @@ use derive_more::{Display, Error};
 pub struct SubtitleCue {
     pub start: Milliseconds,
     pub end: Milliseconds,
-    /// The leading marker token, if the cue-opening line declared one
-    /// (for example `ttl` in `ttl: 《Song》`). `None` means the line
-    /// carried no marker and renders as plain text.
-    pub marker: Option<String>,
+    /// The leading marker token that the cue-opening line declared, for
+    /// example `ttl` in `ttl: 《Song》`. Every cue-opening line in the
+    /// source format carries a marker; lines that appear to lack one
+    /// cause [`ParseLyricsError::MissingMarker`].
+    pub marker: String,
     /// Cue text, with line breaks preserved between the opening line
     /// and any continuation lines.
     pub text: String,
@@ -34,7 +35,7 @@ pub struct SubtitleCue {
 enum Event {
     Cue {
         start: Milliseconds,
-        marker: Option<String>,
+        marker: String,
         text: String,
     },
     Clear {
@@ -92,7 +93,11 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                     continue;
                 }
 
-                let (marker, text) = split_marker(rest);
+                let (marker, text) =
+                    split_marker(rest).ok_or_else(|| ParseLyricsError::MissingMarker {
+                        line_number,
+                        content: rest.to_string(),
+                    })?;
                 if text.is_empty() {
                     last_cue_index = None;
                     continue;
@@ -100,7 +105,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
 
                 let event = Event::Cue {
                     start,
-                    marker: marker.map(str::to_string),
+                    marker: marker.to_string(),
                     text: text.to_string(),
                 };
                 events.push(event);
@@ -196,18 +201,18 @@ fn split_timestamp(line: &str) -> Option<(&str, &str)> {
     Some((timestamp, rest_trim_start))
 }
 
-/// Splits a line body like `marker: text` into `(Some(marker),
-/// text)`. Returns `(None, line)` when the line carries no marker.
-fn split_marker(body: &str) -> (Option<&str>, &str) {
-    let Some((head, tail)) = body.split_once(':') else {
-        return (None, body.trim());
-    };
+/// Splits a line body like `marker: text` into its two halves. Returns
+/// `None` when the line has no `:` separator or when the marker half
+/// is empty; the caller reports this as [`ParseLyricsError::MissingMarker`]
+/// because every cue-opening line in the source format is expected to
+/// carry a marker.
+fn split_marker(body: &str) -> Option<(&str, &str)> {
+    let (head, tail) = body.split_once(':')?;
     let marker = head.trim();
-    let text = tail.trim();
     if marker.is_empty() {
-        return (None, text);
+        return None;
     }
-    (Some(marker), text)
+    Some((marker, tail.trim()))
 }
 
 #[derive(Debug, Display, Error)]
@@ -221,6 +226,13 @@ pub enum ParseLyricsError {
     },
     #[display("line {line_number}: continuation text {content:?} before any cue")]
     StrayContinuation {
+        #[error(not(source))]
+        line_number: usize,
+        #[error(not(source))]
+        content: String,
+    },
+    #[display("line {line_number}: cue body {content:?} carries no marker")]
+    MissingMarker {
         #[error(not(source))]
         line_number: usize,
         #[error(not(source))]
@@ -256,11 +268,11 @@ mod tests {
         assert_eq!(cues.len(), 2);
         assert_eq!(cues[0].start, Milliseconds::new(0, 0, 0));
         assert_eq!(cues[0].end, Milliseconds::new(0, 2, 0));
-        assert_eq!(cues[0].marker.as_deref(), Some("ttl"));
+        assert_eq!(cues[0].marker, "ttl");
         assert_eq!(cues[0].text, "Hello");
         assert_eq!(cues[1].start, Milliseconds::new(0, 2, 0));
         assert_eq!(cues[1].end, Milliseconds::new(0, 4, 0));
-        assert_eq!(cues[1].marker.as_deref(), Some("LRC"));
+        assert_eq!(cues[1].marker, "LRC");
         assert_eq!(cues[1].text, "world");
     }
 
@@ -305,14 +317,15 @@ mod tests {
     }
 
     #[test]
-    fn line_without_marker_has_no_marker() {
+    fn rejects_cue_line_without_marker() {
         let input = text_block_fnl! {
             "00:00.000 Plain text without marker"
             "00:02.000 clr"
         };
-        let cues = parse_lyrics(input).unwrap();
-        assert_eq!(cues[0].marker, None);
-        assert_eq!(cues[0].text, "Plain text without marker");
+        assert!(matches!(
+            parse_lyrics(input),
+            Err(ParseLyricsError::MissingMarker { .. }),
+        ));
     }
 
     #[test]
