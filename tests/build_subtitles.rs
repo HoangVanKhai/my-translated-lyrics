@@ -1,6 +1,9 @@
+pub mod _utils;
+pub use _utils::*;
+
 use itertools::Itertools;
 use pretty_assertions::assert_eq;
-use std::fs::{create_dir_all, read_dir, read_to_string, remove_dir_all};
+use std::fs::{read_dir, read_to_string};
 use std::path::{Path, PathBuf};
 use translated_lyrics::build_subtitles::{load_song, render_song_to_disk};
 
@@ -14,15 +17,15 @@ fn dist_is_up_to_date_with_sources() {
     let manifest_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
     let sources_dir = manifest_dir.join("sources");
     let dist_dir = manifest_dir.join("dist");
-    let scratch_dir = tempdir_in_manifest(manifest_dir, "build-subtitles-test");
+    let scratch_dir = Temp::new_dir();
 
-    let mut compared_paths: Vec<PathBuf> = Vec::new();
     let entries = read_dir(&sources_dir)
         .unwrap()
         .map(Result::unwrap)
         .filter(|entry| entry.file_type().unwrap().is_dir())
         .sorted_by_key(|entry| entry.file_name());
 
+    let mut compared_paths: Vec<PathBuf> = Vec::new();
     for entry in entries {
         let song_dir = entry.path();
         if !has_lyrics_txt(&song_dir) {
@@ -57,21 +60,6 @@ fn dist_is_up_to_date_with_sources() {
         !compared_paths.is_empty(),
         "no songs were rendered; is sources/ empty?",
     );
-
-    remove_dir_all(&scratch_dir).ok();
-}
-
-fn tempdir_in_manifest(manifest_dir: &Path, prefix: &str) -> PathBuf {
-    use std::time::{SystemTime, UNIX_EPOCH};
-    let nanos = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("current time must be after the Unix epoch")
-        .as_nanos();
-    let path = manifest_dir
-        .join("target")
-        .join(format!("{prefix}-{nanos}"));
-    create_dir_all(&path).unwrap();
-    path
 }
 
 fn has_lyrics_txt(song_dir: &Path) -> bool {

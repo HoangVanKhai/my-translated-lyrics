@@ -217,7 +217,7 @@ fn render_credit_pair(
     let separator = render_separator_for_output(&pair.separator);
     output.push_str(&separator);
 
-    output.push_str(&format!("<c.{CLASS_CREDIT_NAME}>"));
+    write!(output, "<c.{CLASS_CREDIT_NAME}>").expect("writing to String is infallible");
     for segment in &pair.name_segments {
         match segment {
             NameSegment::Plain(text) => output.push_str(text),

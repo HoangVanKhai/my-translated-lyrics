@@ -212,7 +212,7 @@ where
 fn count_separator_bytes(input: &str) -> usize {
     let mut cursor = 0;
     for ch in input.chars() {
-        if ch == ':' || ch == '\u{FF1A}' || ch.is_whitespace() {
+        if ch == ':' || ch == '：' || ch.is_whitespace() {
             cursor += ch.len_utf8();
         } else {
             break;
@@ -236,7 +236,7 @@ fn count_leading_whitespace(input: &str) -> usize {
 fn trim_end_separator(input: &str) -> usize {
     let mut end = input.len();
     for (offset, ch) in input.char_indices().rev() {
-        if ch == ':' || ch == '\u{FF1A}' || ch.is_whitespace() {
+        if ch == ':' || ch == '：' || ch.is_whitespace() {
             end = offset;
         } else {
             break;
@@ -249,7 +249,7 @@ fn is_role_boundary(following: &str) -> bool {
     let Some(first) = following.chars().next() else {
         return true;
     };
-    first.is_whitespace() || first == ':' || first == '\u{FF1A}'
+    first.is_whitespace() || first == ':' || first == '：'
 }
 
 /// Detects a bracketed highlight that opens at `suffix[0]`. Supports
@@ -261,7 +261,7 @@ fn is_role_boundary(following: &str) -> bool {
 fn match_special_at(suffix: &str) -> Option<usize> {
     let first = suffix.chars().next()?;
     let close = match first {
-        '\u{3010}' => '\u{3011}',
+        '【' => '】',
         '(' => ')',
         '[' => ']',
         _ => return None,
@@ -291,8 +291,6 @@ mod tests {
     use super::*;
     use maplit::btreemap;
 
-    /// Generic Chinese fixture characters that exercise the multi-byte
-    /// scanning paths without naming any real performer or studio.
     const ROLE_ALPHA: &str = "示例角色甲";
     const ROLE_BETA: &str = "示例角色乙";
     const NAME_ALPHA: &str = "示例姓名甲";
@@ -336,12 +334,12 @@ mod tests {
         let vocab = make_vocab(&[ROLE_ALPHA, ROLE_BETA], &[NAME_ALPHA, NAME_BETA]);
         let parsed = vocab
             .parse_line(&format!(
-                "{ROLE_ALPHA}\u{FF1A}{NAME_ALPHA}\u{3000}{ROLE_BETA}\u{FF1A}{NAME_BETA}"
+                "{ROLE_ALPHA}：{NAME_ALPHA}\u{3000}{ROLE_BETA}：{NAME_BETA}"
             ))
             .unwrap();
         assert_eq!(parsed.pairs.len(), 2);
         assert_eq!(parsed.pairs[0].role, ROLE_ALPHA);
-        assert_eq!(parsed.pairs[0].separator, "\u{FF1A}");
+        assert_eq!(parsed.pairs[0].separator, "：");
         assert_eq!(
             parsed.pairs[0].name_segments,
             vec![NameSegment::Name(NAME_ALPHA.to_string())],
