@@ -1,11 +1,11 @@
 use core::fmt;
 use core::num::ParseIntError;
 use core::str::FromStr;
-use derive_more::{Display, Error, Into};
+use derive_more::{Display, Error};
 
 /// Duration in milliseconds from the start of the video. Cues use it
 /// for start and end times and for ordering comparisons.
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Into)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct Milliseconds(u64);
 
 impl Milliseconds {
