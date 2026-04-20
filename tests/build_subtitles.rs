@@ -3,6 +3,7 @@ pub use _utils::*;
 
 use itertools::Itertools;
 use pretty_assertions::assert_eq;
+use std::collections::BTreeSet;
 use std::fs::{read_dir, read_to_string};
 use std::path::{Path, PathBuf};
 use translated_lyrics::build_subtitles::{load_song, render_song_to_disk};
@@ -10,8 +11,9 @@ use translated_lyrics::build_subtitles::{load_song, render_song_to_disk};
 /// Exhaustively re-renders each song directory in `sources/` and
 /// compares the generated `.srt` and `.vtt` files against the checked-in
 /// copies under `dist/`. This guards against silent drift between the
-/// source lyrics text files and the rendered subtitle artifacts. When
-/// the test fails, follow its instruction to regenerate `dist/`.
+/// source lyrics text files and the rendered subtitle artifacts and
+/// against stale artifacts left behind in `dist/`. When the test fails,
+/// follow its instruction to regenerate `dist/`.
 #[test]
 fn dist_is_up_to_date_with_sources() {
     let manifest_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -25,12 +27,20 @@ fn dist_is_up_to_date_with_sources() {
         .filter(|entry| entry.file_type().unwrap().is_dir())
         .sorted_by_key(|entry| entry.file_name());
 
-    let mut compared_paths: Vec<PathBuf> = Vec::new();
+    let mut expected_dist_files: BTreeSet<PathBuf> = BTreeSet::new();
+    let mut rendered_song_names: BTreeSet<String> = BTreeSet::new();
     for entry in entries {
         let song_dir = entry.path();
         if !has_lyrics_txt(&song_dir) {
             continue;
         }
+        rendered_song_names.insert(
+            song_dir
+                .file_name()
+                .and_then(|name| name.to_str())
+                .expect("song directory must have a valid UTF-8 name")
+                .to_string(),
+        );
         let song = load_song(&song_dir).expect("load song");
         let written =
             render_song_to_disk(&song, &scratch_dir, true).expect("render song to scratch");
@@ -52,13 +62,22 @@ fn dist_is_up_to_date_with_sources() {
                 "{} drifted from dist. Regenerate with `cargo run --bin build-subtitles -- sources dist --execute`.",
                 relative.display(),
             );
-            compared_paths.push(expected_path);
+            expected_dist_files.insert(expected_path);
         }
     }
 
     assert!(
-        !compared_paths.is_empty(),
+        !expected_dist_files.is_empty(),
         "no songs were rendered; is sources/ empty?",
+    );
+
+    let actual_dist_files: BTreeSet<PathBuf> = rendered_song_names
+        .iter()
+        .flat_map(|song_name| collect_subtitle_files(&dist_dir.join(song_name)))
+        .collect();
+    assert_eq!(
+        actual_dist_files, expected_dist_files,
+        "dist/ contains stale subtitle artifacts that the generator no longer produces. Regenerate with `cargo run --bin build-subtitles -- sources dist --execute`.",
     );
 }
 
@@ -73,4 +92,26 @@ fn has_lyrics_txt(song_dir: &Path) -> bool {
             .map(|name| name.starts_with("lyrics.") && name.ends_with(".txt"))
             .unwrap_or(false)
     })
+}
+
+fn collect_subtitle_files(root: &Path) -> BTreeSet<PathBuf> {
+    let mut collected = BTreeSet::new();
+    let Ok(entries) = read_dir(root) else {
+        return collected;
+    };
+    for entry in entries.filter_map(Result::ok) {
+        let path = entry.path();
+        let file_type = entry.file_type().unwrap();
+        if file_type.is_dir() {
+            collected.extend(collect_subtitle_files(&path));
+        } else if file_type.is_file()
+            && path
+                .extension()
+                .and_then(|ext| ext.to_str())
+                .is_some_and(|ext| ext == "srt" || ext == "vtt")
+        {
+            collected.insert(path);
+        }
+    }
+    collected
 }
