@@ -23,6 +23,8 @@
 //!   it matches the data authored that way today.
 
 use crate::video_descriptor::Language;
+use core::fmt;
+use derive_more::{Display, Error};
 
 /// A structural role/name pair extracted from one credit line.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -44,9 +46,54 @@ pub enum NameSegment {
     /// Plain text that did not match a highlight.
     Plain(String),
     /// A `【...】` highlight used to emphasize a studio or release.
-    /// The inner bytes include the surrounding brackets so the
-    /// renderer can reproduce them verbatim.
-    Special(String),
+    Special(Bracketed),
+}
+
+/// A string that is guaranteed to open with `【`, close with `】`,
+/// and contain no further bracket characters in between. The type
+/// is the only way an external caller can construct a value for
+/// [`NameSegment::Special`], which guards the invariant that the
+/// renderers reproduce the brackets verbatim.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Bracketed(String);
+
+impl Bracketed {
+    /// Wraps `source` if and only if it is shaped `【`, some content
+    /// that contains neither `【` nor `】`, then `】`.
+    pub fn new(source: String) -> Result<Self, InvalidBracketed> {
+        let Some(without_open) = source.strip_prefix('【') else {
+            return Err(InvalidBracketed::MissingOpen);
+        };
+        let Some(content) = without_open.strip_suffix('】') else {
+            return Err(InvalidBracketed::MissingClose);
+        };
+        if content.contains('【') || content.contains('】') {
+            return Err(InvalidBracketed::NestedBracket);
+        }
+        Ok(Bracketed(source))
+    }
+
+    /// The bracketed text, including the surrounding `【` and `】`.
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl fmt::Display for Bracketed {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+#[derive(Debug, Display, Error)]
+#[non_exhaustive]
+pub enum InvalidBracketed {
+    #[display("bracketed string must start with `【`")]
+    MissingOpen,
+    #[display("bracketed string must end with `】`")]
+    MissingClose,
+    #[display("bracketed string must not contain `【` or `】` between its brackets")]
+    NestedBracket,
 }
 
 /// Parses a credit line into ordered role-name pairs following the
@@ -177,7 +224,7 @@ fn wrap_specials(input: &str) -> Vec<NameSegment> {
     while !rest.is_empty() {
         if let Some((special, next_rest)) = take_special(rest) {
             flush(&mut plain, &mut segments);
-            segments.push(NameSegment::Special(special.to_string()));
+            segments.push(NameSegment::Special(special));
             rest = next_rest;
             continue;
         }
@@ -196,7 +243,7 @@ fn wrap_specials(input: &str) -> Vec<NameSegment> {
 /// `【` nor `】` may appear inside the brackets; if a second `【`
 /// is encountered before the closing `】`, the original opener is
 /// reported as ordinary text rather than a highlight.
-fn take_special(input: &str) -> Option<(&str, &str)> {
+fn take_special(input: &str) -> Option<(Bracketed, &str)> {
     let rest = input.strip_prefix('【')?;
     let terminator = rest
         .char_indices()
@@ -205,7 +252,8 @@ fn take_special(input: &str) -> Option<(&str, &str)> {
         return None;
     }
     let end = '【'.len_utf8() + terminator.0 + '】'.len_utf8();
-    Some(input.split_at(end))
+    let bracketed = Bracketed(input[..end].to_string());
+    Some((bracketed, &input[end..]))
 }
 
 #[cfg(test)]
@@ -279,6 +327,10 @@ mod tests {
         );
     }
 
+    fn bracketed(source: &str) -> Bracketed {
+        Bracketed::new(source.to_string()).expect("test fixture must be a valid bracketed string")
+    }
+
     #[test]
     fn recognizes_lenticular_highlight() {
         let parsed = parse_credit_line("role-a  name-a【label-a】", &Language::Vietnamese);
@@ -288,7 +340,7 @@ mod tests {
             parsed[0].name_segments,
             vec![
                 NameSegment::Plain("name-a".into()),
-                NameSegment::Special("【label-a】".into()),
+                NameSegment::Special(bracketed("【label-a】")),
             ],
         );
     }
@@ -304,11 +356,29 @@ mod tests {
         assert_eq!(
             parsed[0].name_segments,
             vec![
-                NameSegment::Special("【label-a】".into()),
+                NameSegment::Special(bracketed("【label-a】")),
                 NameSegment::Plain("name-a ".into()),
-                NameSegment::Special("【label-b】".into()),
+                NameSegment::Special(bracketed("【label-b】")),
                 NameSegment::Plain("name-b".into()),
             ],
         );
+    }
+
+    #[test]
+    fn bracketed_rejects_missing_or_nested_brackets() {
+        assert!(matches!(
+            Bracketed::new("no brackets".to_string()),
+            Err(InvalidBracketed::MissingOpen),
+        ));
+        assert!(matches!(
+            Bracketed::new("【open only".to_string()),
+            Err(InvalidBracketed::MissingClose),
+        ));
+        assert!(matches!(
+            Bracketed::new("【a【b】c】".to_string()),
+            Err(InvalidBracketed::NestedBracket),
+        ));
+        let good = Bracketed::new("【good】".to_string()).unwrap();
+        assert_eq!(good.as_str(), "【good】");
     }
 }
