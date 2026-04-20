@@ -11,12 +11,16 @@
 //! Two cell conventions are recognized:
 //!
 //! * **Colon-separated.** At least one cell contains `:` or `：`.
-//!   Each cell becomes its own role-name pair; cells that happen
-//!   to lack a colon fall through as plain name-only entries.
+//!   `split_cells` produces the cells according to the
+//!   language-specific separator rule above, and each cell becomes
+//!   its own role-name pair. Cells that happen to lack a colon
+//!   fall through as plain name-only entries.
 //! * **First-cell-is-role.** The line contains no `:` or `：` at
-//!   all. The first cell becomes the role, and the remainder of
-//!   the line (verbatim, including its internal space runs)
-//!   becomes the name.
+//!   all. The first run of two or more ASCII spaces splits the
+//!   line into a role prefix and a name suffix. The name suffix
+//!   stays verbatim, including any internal space runs. This
+//!   convention uses ASCII spacing regardless of language because
+//!   it matches the data authored that way today.
 
 use crate::video_descriptor::Language;
 
@@ -114,9 +118,14 @@ fn find_first_space_run(line: &str, min_run: usize) -> Option<(&str, &str, &str)
 }
 
 fn split_cells<'a>(line: &'a str, language: &Language) -> Vec<&'a str> {
+    let (sep, min_run) = cell_separator_rule(language);
+    split_on_char_run(line, sep, min_run)
+}
+
+fn cell_separator_rule(language: &Language) -> (char, usize) {
     match language {
-        Language::Chinese => split_on_char_run(line, '\u{3000}', 1),
-        _ => split_on_char_run(line, ' ', 2),
+        Language::Chinese => ('\u{3000}', 1),
+        _ => (' ', 2),
     }
 }
 
@@ -245,20 +254,22 @@ mod tests {
     }
 
     #[test]
-    fn first_cell_is_role_without_colons() {
-        let parsed = parse_credit_line("role-a  name-a  name-b", &Language::Chinese);
-        assert_eq!(parsed.len(), 1);
-        assert_eq!(parsed[0].role.as_deref(), Some("role-a"));
-        assert_eq!(parsed[0].separator, "  ");
-        assert_eq!(
-            parsed[0].name_segments,
-            vec![NameSegment::Plain("name-a  name-b".into())],
-        );
+    fn first_cell_is_role_without_colons_uses_ascii_split() {
+        for language in [Language::Vietnamese, Language::Chinese] {
+            let parsed = parse_credit_line("role-a  name-a  name-b", &language);
+            assert_eq!(parsed.len(), 1);
+            assert_eq!(parsed[0].role.as_deref(), Some("role-a"));
+            assert_eq!(parsed[0].separator, "  ");
+            assert_eq!(
+                parsed[0].name_segments,
+                vec![NameSegment::Plain("name-a  name-b".into())],
+            );
+        }
     }
 
     #[test]
     fn tolerates_runs_wider_than_two_spaces() {
-        let parsed = parse_credit_line("role-a   name-a", &Language::Chinese);
+        let parsed = parse_credit_line("role-a   name-a", &Language::Vietnamese);
         assert_eq!(parsed.len(), 1);
         assert_eq!(parsed[0].role.as_deref(), Some("role-a"));
         assert_eq!(parsed[0].separator, "   ");
@@ -270,7 +281,7 @@ mod tests {
 
     #[test]
     fn recognizes_lenticular_highlight() {
-        let parsed = parse_credit_line("role-a  name-a【label-a】", &Language::Chinese);
+        let parsed = parse_credit_line("role-a  name-a【label-a】", &Language::Vietnamese);
         assert_eq!(parsed.len(), 1);
         assert_eq!(parsed[0].role.as_deref(), Some("role-a"));
         assert_eq!(
@@ -286,7 +297,7 @@ mod tests {
     fn multiple_highlights_interleave_with_plain_text() {
         let parsed = parse_credit_line(
             "role-a  【label-a】name-a 【label-b】name-b",
-            &Language::Chinese,
+            &Language::Vietnamese,
         );
         assert_eq!(parsed.len(), 1);
         assert_eq!(parsed[0].role.as_deref(), Some("role-a"));

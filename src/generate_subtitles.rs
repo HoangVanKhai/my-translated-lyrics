@@ -1,11 +1,13 @@
-//! Build subtitle files from the structured lyrics sources.
+//! Generate subtitle files from the structured lyrics sources.
 //!
-//! This module implements the `generate-subtitles` binary. For each song
-//! directory in `sources/`, it reads the video descriptor, the
-//! line-marker descriptor, the credits descriptor, and the per-language
-//! `lyrics.{lang}.txt` files. It parses the text files into cues,
-//! renders each cue through the marker-aware VTT and SRT emitters, and
-//! writes the result to the corresponding `dist/` directory.
+//! This module implements the `generate-subtitles` binary. For each
+//! song directory in `sources/`, it reads the video descriptor, the
+//! line-marker descriptor, and the per-language `lyrics.{lang}.txt`
+//! files. It parses the text files into cues, renders each cue
+//! through the marker-aware VTT and SRT emitters, and writes the
+//! result to the corresponding `dist/` directory. `credits.yaml`
+//! remains part of every song directory as descriptive data, but it
+//! is not consulted by the generator.
 //!
 //! The entry point [`main`] is called from `cli/generate_subtitles.rs`.
 

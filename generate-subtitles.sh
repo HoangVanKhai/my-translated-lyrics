@@ -6,7 +6,7 @@ bin_name=generate-subtitles
 
 (
   cd "$project_dir"
-  cargo build --bin=$bin_name
+  cargo build --bin="$bin_name"
 )
 
 "$project_dir/target/debug/$bin_name" "$@"

@@ -33,9 +33,9 @@ pub const END_OF_VIDEO_MARKER: &str = "eov";
 ///   value.
 /// * Markers declared in [`credits`] invoke the credit-block
 ///   renderer. The renderer splits the line by column layout into
-///   `<c.creditRole>` and `<c.creditName>` segments and validates
-///   each against `credits.yaml`. Names wrapped in brackets in the
-///   source become `<c.creditSpecial>` instead of `<c.creditName>`.
+///   `<c.creditRole>` and `<c.creditName>` segments. Names wrapped
+///   in `【...】` in the source become `<c.creditSpecial>` instead
+///   of `<c.creditName>`.
 /// * Markers absent from [`voices`], [`classes`], and [`credits`]
 ///   emit the line content as plain unwrapped text.
 ///
@@ -71,10 +71,9 @@ pub struct LineMarkersDesc {
     #[serde(default)]
     pub classes: BTreeMap<String, String>,
     /// Markers that invoke the credit-block renderer. Columns of the
-    /// line become `<c.creditRole>` and `<c.creditName>` segments,
-    /// each validated against `credits.yaml`. Names wrapped in
-    /// brackets in the source become `<c.creditSpecial>` instead of
-    /// `<c.creditName>`.
+    /// line become `<c.creditRole>` and `<c.creditName>` segments.
+    /// Names wrapped in `【...】` in the source become
+    /// `<c.creditSpecial>` instead of `<c.creditName>`.
     #[serde(default)]
     pub credits: Vec<String>,
 }
