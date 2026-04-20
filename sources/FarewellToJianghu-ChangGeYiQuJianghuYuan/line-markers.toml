@@ -8,3 +8,7 @@ credits = ["cre"]
 
 [classes]
 ttl = "title"
+
+[styles.ttl]
+color = "#FFD966"
+bold = true

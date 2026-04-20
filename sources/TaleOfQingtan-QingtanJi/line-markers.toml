@@ -21,3 +21,28 @@ yzl = { vi = "Nhạc Chính Lăng (thoại)", zh = "乐正绫（念白）" }
 [classes]
 ttl = "title"
 txt = "expo"
+
+[styles.ttl]
+color = "#FFD966"
+bold = true
+
+[styles.txt]
+color = "#CCCCCC"
+italic = true
+
+[styles.LTY]
+color = "#66CCFF"
+
+[styles.lty]
+color = "#66CCFF"
+italic = true
+
+[styles.YZL]
+color = "#EE0000"
+
+[styles.yzl]
+color = "#EE0000"
+italic = true
+
+[styles."Y+L"]
+color = "#9966CC"

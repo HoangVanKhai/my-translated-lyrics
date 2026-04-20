@@ -11,6 +11,10 @@ path = "cli/install_local_lyrics.rs"
 name = "lyrics-ai-instructions"
 path = "cli/ai_instructions.rs"
 
+[[bin]]
+name = "build-subtitles"
+path = "cli/build_subtitles.rs"
+
 [dependencies]
 clap = { version = "4.6.0", features = ["derive"] }
 derive_more = { version = "2.1.1", features = ["as_ref", "deref", "display", "error", "into"] }
@@ -18,6 +22,7 @@ itertools = "0.14.0"
 pipe-trait = "0.4.0"
 reflink = "0.1.3"
 serde = { version = "1.0.228", features = ["derive"] }
+serde-saphyr = "0.0.23"
 strum = { version = "0.28.0", features = ["derive"] }
 toml = "1.1.2"
 
@@ -27,5 +32,4 @@ into-sorted = "0.0.3"
 maplit = "1.0.2"
 pretty_assertions = "1.4.1"
 rand = "0.10.0"
-serde-saphyr = "0.0.23"
 text-block-macros = "0.2.0"

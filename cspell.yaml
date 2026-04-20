@@ -9,8 +9,6 @@ ignorePaths:
   - 'cspell.yaml'
   - 'drafts/**/*.js'
   - 'drafts/**/*.json'
-  - 'sources/**/*.js'
-  - 'sources/**/*.json'
   - 'LICENSE.md'
   - 'package.json'
   - 'pnpm-lock.yaml'
@@ -61,13 +59,17 @@ overrides:
       - WEBVTT
   - filename: '**/*.rs'
     words:
+      - btreemap
       - Feng
       - hardlink
+      - Jianghu
       - maplit
+      - RRGGBB
       - rsplit
       - saphyr
       - Tianyi
       - Touhou
+      - VSINGER
       - WEBVTT
       - Yuezheng
   - filename: '**/*.md'

@@ -4,6 +4,18 @@ use std::collections::BTreeMap;
 
 pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 
+/// Built-in marker name for cue clearing. Lines that start with this
+/// marker cause the previously opened cue to end at the `clr`
+/// timestamp and produce no visible text of their own.
+pub const CLEAR_MARKER: &str = "clr";
+
+/// Built-in marker name for the end-of-video sentinel. Lines that
+/// start with this marker are ignored entirely; they neither open a
+/// cue nor close a previously opened one. They only exist to record
+/// when the final cue should close in the rare case a song has no
+/// following `clr`.
+pub const END_OF_VIDEO_MARKER: &str = "eov";
+
 /// Parsed contents of a `line-markers.toml` file.
 ///
 /// A _marker_ is a short token (for example `LTY`, `cre`, `ttl`, `LRC`)
@@ -83,4 +95,33 @@ pub struct LineMarkersDesc {
     /// `<c.creditName>`.
     #[serde(default)]
     pub credits: Vec<String>,
+    /// Optional presentation styles for markers. The key is a marker
+    /// name that appears in [`markers`]; the value describes the
+    /// color and text decoration that the subtitle renderer applies
+    /// to that marker's content. Markers without a style entry
+    /// render without color or decoration.
+    ///
+    /// SRT output uses inline `<font color="...">`, `<b>`, and `<i>`
+    /// tags driven by this table. VTT output uses CSS rules in the
+    /// `STYLE` block, keyed by the voice or class selector that
+    /// corresponds to the marker.
+    ///
+    /// [`markers`]: Self::markers
+    #[serde(default)]
+    pub styles: BTreeMap<String, Style>,
+}
+
+/// Styling for a single marker.
+#[derive(Default, Deserialize, Serialize, Clone, Debug, PartialEq, Eq)]
+pub struct Style {
+    /// Optional `#RRGGBB` foreground color. When absent the text
+    /// inherits the ambient cue color.
+    #[serde(default)]
+    pub color: Option<String>,
+    /// Render the marker's content in italics.
+    #[serde(default)]
+    pub italic: bool,
+    /// Render the marker's content in bold.
+    #[serde(default)]
+    pub bold: bool,
 }
