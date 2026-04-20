@@ -4,8 +4,7 @@ use std::fs::{DirEntry, read_dir, read_to_string};
 use std::path::Path;
 use translated_lyrics::line_markers_descriptor::{LINE_MARKERS_CONFIG_FILE_NAME, LineMarkersDesc};
 
-/// Every `sources/*/line-markers.toml` must parse as a valid
-/// [`LineMarkersDesc`].
+/// Every `sources/*/line-markers.toml` must parse as a valid [`LineMarkersDesc`].
 #[test]
 fn source_line_markers_descriptors() {
     let sources_dir = env!("CARGO_MANIFEST_DIR").pipe(Path::new).join("sources");

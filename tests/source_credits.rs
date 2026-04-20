@@ -6,8 +6,8 @@ use std::fs::{DirEntry, read_dir, read_to_string};
 use std::path::Path;
 use translated_lyrics::credits_descriptor::{CREDITS_CONFIG_FILE_NAME, CreditsDesc};
 
-/// Each `sources/*/credits.yaml` must parse as a valid [`CreditsDesc`]
-/// whose `credit-roles` and `credit-names` are in natural sorted order.
+/// Each `sources/*/credits.yaml` must parse as a valid [`CreditsDesc`] whose
+/// `credit-roles` and `credit-names` are in natural sorted order.
 #[test]
 fn source_credits_descriptors() {
     let sources_dir = env!("CARGO_MANIFEST_DIR").pipe(Path::new).join("sources");
