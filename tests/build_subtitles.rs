@@ -37,7 +37,12 @@ fn dist_is_up_to_date_with_sources() {
                 .expect("generated path must be inside scratch dir");
             let expected_path = dist_dir.join(relative);
             let generated = read_to_string(generated_path).unwrap();
-            let expected = read_to_string(&expected_path).unwrap_or_default();
+            let expected = read_to_string(&expected_path).unwrap_or_else(|error| {
+                panic!(
+                    "expected dist artifact {} is missing ({error}). Regenerate with `cargo run --bin build-subtitles -- sources dist --execute`.",
+                    expected_path.display(),
+                )
+            });
             assert_eq!(
                 generated,
                 expected,

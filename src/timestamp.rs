@@ -12,6 +12,11 @@ impl Milliseconds {
     /// Builds a `Milliseconds` from an already-decomposed
     /// `MM:SS.mmm` triple. Tests and the string parser both use this
     /// constructor to avoid opaque literals such as `Milliseconds(2_960)`.
+    /// The components are not range-checked; any overflow from
+    /// `seconds >= 60` or `milliseconds >= 1_000` is folded into the
+    /// resulting total via plain arithmetic, so callers that need
+    /// strict validation should perform it before calling this
+    /// constructor.
     pub const fn new(minutes: u64, seconds: u64, milliseconds: u64) -> Self {
         Milliseconds(minutes * 60_000 + seconds * 1_000 + milliseconds)
     }
@@ -22,7 +27,7 @@ impl FromStr for Milliseconds {
 
     /// Parses the `MM:SS.mmm` form that opens each cue in
     /// `lyrics.*.txt`. The caller is expected to have extracted the
-    /// 9-byte prefix `DD:DD.DDD` beforehand. Songs longer than 99
+    /// 9-byte `MM:SS.mmm` prefix beforehand. Songs longer than 99
     /// minutes would require widening both this parser and the
     /// tokenizer in [`crate::build_subtitles::parse`].
     fn from_str(input: &str) -> Result<Self, Self::Err> {

@@ -226,7 +226,7 @@ pub enum ParseLyricsError {
         #[error(not(source))]
         content: String,
     },
-    #[display("events out of order: {previous} precedes {next}")]
+    #[display("events out of order: cue at {previous} is followed by an earlier cue at {next}")]
     OutOfOrder {
         #[error(not(source))]
         previous: Milliseconds,
