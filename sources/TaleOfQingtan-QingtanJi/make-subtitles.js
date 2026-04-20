@@ -405,8 +405,8 @@ function generateVtt(cues, speakerMap, languageCode, colorMap) {
   vtt += '}\n'
 
   vtt += '::cue(c.expo) {\n'
-  vtt += '  font-style: italic;\n'
   vtt += '  color: #CCCCCC;\n'
+  vtt += '  font-style: italic;\n'
   vtt += '}\n'
 
   vtt += '\n'
