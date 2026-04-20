@@ -1,6 +1,8 @@
 import:
   - '@cspell/dict-vi-vn/cspell-ext.json'
 ignorePaths:
+  - '**/credits.yaml'
+  - '**/line-markers.toml'
   - '**/video.toml'
   - 'Cargo.lock'
   - 'Cargo.toml'
@@ -63,6 +65,7 @@ overrides:
       - hardlink
       - maplit
       - rsplit
+      - saphyr
       - Tianyi
       - Touhou
       - WEBVTT
