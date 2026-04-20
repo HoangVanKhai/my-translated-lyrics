@@ -1,12 +1,13 @@
 //! Structural parser for credit blocks.
 //!
-//! The per-song `make-subtitles.js` generators used fragile heuristics
-//! such as "split by two spaces" or "split by `\u3000`" to locate the
-//! boundaries between role and name cells in a credit line. Those
-//! heuristics break as soon as a role or a name contains the separator
-//! character. This module replaces them with an explicit longest-match
-//! scan against the role and name vocabularies declared in
-//! `credits.yaml`. The parser returns structural pairs of role and
+//! Credit lines separate role and name cells with either a run of
+//! whitespace (typically two ASCII spaces or one ideographic space) or
+//! a colon (`:` or `：`). A cell's own text may contain the same
+//! characters, so splitting purely on whitespace or punctuation breaks
+//! as soon as a role or a name happens to contain the separator. This
+//! module replaces that heuristic approach with an explicit
+//! longest-match scan against the role and name vocabularies declared
+//! in `credits.yaml`. The parser returns structural pairs of role and
 //! name region, preserving the original inter-cell bytes so the
 //! downstream renderers can decide whether to reproduce the source
 //! whitespace verbatim or collapse punctuation like `：` and `\u3000`
