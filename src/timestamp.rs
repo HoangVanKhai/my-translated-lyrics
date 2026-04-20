@@ -29,7 +29,7 @@ impl FromStr for Milliseconds {
     /// `lyrics.*.txt`. The caller is expected to have extracted the
     /// 9-byte `MM:SS.mmm` prefix beforehand. Songs longer than 99
     /// minutes would require widening both this parser and the
-    /// tokenizer in [`crate::build_subtitles::parse`].
+    /// tokenizer in [`crate::generate_subtitles::parse`].
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         let (minutes_part, seconds_part) = input
             .split_once(':')

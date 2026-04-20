@@ -42,7 +42,7 @@ pub const END_OF_VIDEO_MARKER: &str = "eov";
 /// Presentation styles, that is, colors, bolding, and italics, are
 /// not carried in this struct. They are derived from the class name
 /// or the voice marker name by a central table maintained in
-/// [`crate::build_subtitles::styles`], so that the repository's
+/// [`crate::generate_subtitles::styles`], so that the repository's
 /// shared palette stays consistent across every song.
 ///
 /// Universal control keywords such as `clr` and `eov` produce no

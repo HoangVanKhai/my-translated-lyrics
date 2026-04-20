@@ -1,4 +1,4 @@
-//! Driver for the `build-subtitles` binary.
+//! Driver for the `generate-subtitles` binary.
 //!
 //! The driver walks the source directory, loads each song's descriptor
 //! files and per-language lyrics, renders them, and writes the output
@@ -7,9 +7,8 @@
 //! `install-local-lyrics`'s `--execute` flag opts into the actual write.
 
 use super::parse::{ParseLyricsError, SubtitleCue, parse_lyrics};
-use super::render_srt::{RenderSrtError, render_file as render_srt_file};
-use super::render_vtt::{RenderVttError, render_file as render_vtt_file};
-use crate::credits_descriptor::{CREDITS_CONFIG_FILE_NAME, CreditsDesc};
+use super::render_srt::render_file as render_srt_file;
+use super::render_vtt::render_file as render_vtt_file;
 use crate::line_markers_descriptor::{LINE_MARKERS_CONFIG_FILE_NAME, LineMarkersDesc};
 use crate::video_descriptor::{Language, VIDEO_CONFIG_FILE_NAME, VideoDesc};
 use clap::Parser;
@@ -54,7 +53,6 @@ pub struct Song {
     pub source_dir: PathBuf,
     pub video: VideoDesc,
     pub markers: LineMarkersDesc,
-    pub credits: CreditsDesc,
     pub languages: Vec<LanguageBundle>,
 }
 
@@ -66,10 +64,10 @@ pub fn render_song_to_disk(
     song: &Song,
     dist_dir: &Path,
     execute: bool,
-) -> Result<Vec<PathBuf>, BuildError> {
+) -> Result<Vec<PathBuf>, GenerateError> {
     let destination_dir = dist_dir.join(&song.directory_name);
     if execute {
-        create_dir_all(&destination_dir).map_err(|source| BuildError::CreateDir {
+        create_dir_all(&destination_dir).map_err(|source| GenerateError::CreateDir {
             path: destination_dir.clone(),
             source,
         })?;
@@ -77,18 +75,8 @@ pub fn render_song_to_disk(
 
     let mut written: Vec<PathBuf> = Vec::with_capacity(song.languages.len() * 2);
     for bundle in &song.languages {
-        let vtt = render_vtt_file(&bundle.cues, &song.markers, &song.credits, &bundle.language)
-            .map_err(|source| BuildError::RenderVtt {
-                song: song.directory_name.clone(),
-                language: bundle.language.clone(),
-                source,
-            })?;
-        let srt = render_srt_file(&bundle.cues, &song.markers, &song.credits, &bundle.language)
-            .map_err(|source| BuildError::RenderSrt {
-                song: song.directory_name.clone(),
-                language: bundle.language.clone(),
-                source,
-            })?;
+        let vtt = render_vtt_file(&bundle.cues, &song.markers, &bundle.language);
+        let srt = render_srt_file(&bundle.cues, &song.markers, &bundle.language);
         let vtt_path = destination_dir.join(format!("lyrics.{lang}.vtt", lang = bundle.language));
         let srt_path = destination_dir.join(format!("lyrics.{lang}.srt", lang = bundle.language));
         write_subtitle(&vtt_path, &vtt, execute)?;
@@ -99,12 +87,12 @@ pub fn render_song_to_disk(
     Ok(written)
 }
 
-fn write_subtitle(path: &Path, content: &str, execute: bool) -> Result<(), BuildError> {
+fn write_subtitle(path: &Path, content: &str, execute: bool) -> Result<(), GenerateError> {
     eprintln!("write {path:?}");
     if !execute {
         return Ok(());
     }
-    write_file(path, content).map_err(|source| BuildError::WriteFile {
+    write_file(path, content).map_err(|source| GenerateError::WriteFile {
         path: path.to_path_buf(),
         source,
     })
@@ -112,22 +100,22 @@ fn write_subtitle(path: &Path, content: &str, execute: bool) -> Result<(), Build
 
 /// Loads all source artifacts for a single song into memory and parses
 /// each cue list.
-pub fn load_song(song_dir: &Path) -> Result<Song, BuildError> {
+pub fn load_song(song_dir: &Path) -> Result<Song, GenerateError> {
     let directory_name = song_dir
         .file_name()
         .and_then(|name| name.to_str())
-        .ok_or_else(|| BuildError::NonUtf8Path {
+        .ok_or_else(|| GenerateError::NonUtf8Path {
             path: song_dir.to_path_buf(),
         })?
         .to_string();
 
     let video_path = song_dir.join(VIDEO_CONFIG_FILE_NAME);
-    let video_content = read_to_string(&video_path).map_err(|source| BuildError::ReadFile {
+    let video_content = read_to_string(&video_path).map_err(|source| GenerateError::ReadFile {
         path: video_path.clone(),
         source,
     })?;
     let video: VideoDesc =
-        toml::from_str(&video_content).map_err(|source| BuildError::ParseVideoDesc {
+        toml::from_str(&video_content).map_err(|source| GenerateError::ParseVideoDesc {
             path: video_path.clone(),
             source,
         })?;
@@ -135,11 +123,11 @@ pub fn load_song(song_dir: &Path) -> Result<Song, BuildError> {
     let markers_path = song_dir.join(LINE_MARKERS_CONFIG_FILE_NAME);
     let markers: LineMarkersDesc = if markers_path.exists() {
         let markers_content =
-            read_to_string(&markers_path).map_err(|source| BuildError::ReadFile {
+            read_to_string(&markers_path).map_err(|source| GenerateError::ReadFile {
                 path: markers_path.clone(),
                 source,
             })?;
-        toml::from_str(&markers_content).map_err(|source| BuildError::ParseLineMarkers {
+        toml::from_str(&markers_content).map_err(|source| GenerateError::ParseLineMarkers {
             path: markers_path.clone(),
             source,
         })?
@@ -147,28 +135,13 @@ pub fn load_song(song_dir: &Path) -> Result<Song, BuildError> {
         LineMarkersDesc::default()
     };
 
-    let credits_path = song_dir.join(CREDITS_CONFIG_FILE_NAME);
-    let credits: CreditsDesc = if credits_path.exists() {
-        let credits_content =
-            read_to_string(&credits_path).map_err(|source| BuildError::ReadFile {
-                path: credits_path.clone(),
-                source,
-            })?;
-        serde_saphyr::from_str(&credits_content).map_err(|source| BuildError::ParseCredits {
-            path: credits_path.clone(),
-            source: source.to_string(),
-        })?
-    } else {
-        CreditsDesc::default()
-    };
-
     let mut languages: BTreeMap<Language, LanguageBundle> = BTreeMap::new();
-    let entries = read_dir(song_dir).map_err(|source| BuildError::ReadDir {
+    let entries = read_dir(song_dir).map_err(|source| GenerateError::ReadDir {
         path: song_dir.to_path_buf(),
         source,
     })?;
     for entry in entries {
-        let entry = entry.map_err(|source| BuildError::ReadDir {
+        let entry = entry.map_err(|source| GenerateError::ReadDir {
             path: song_dir.to_path_buf(),
             source,
         })?;
@@ -186,11 +159,11 @@ pub fn load_song(song_dir: &Path) -> Result<Song, BuildError> {
             continue;
         };
         let lyrics_path = entry.path();
-        let content = read_to_string(&lyrics_path).map_err(|source| BuildError::ReadFile {
+        let content = read_to_string(&lyrics_path).map_err(|source| GenerateError::ReadFile {
             path: lyrics_path.clone(),
             source,
         })?;
-        let cues = parse_lyrics(&content).map_err(|source| BuildError::ParseLyrics {
+        let cues = parse_lyrics(&content).map_err(|source| GenerateError::ParseLyrics {
             path: lyrics_path.clone(),
             source,
         })?;
@@ -209,7 +182,6 @@ pub fn load_song(song_dir: &Path) -> Result<Song, BuildError> {
         source_dir: song_dir.to_path_buf(),
         video,
         markers,
-        credits,
         languages: languages.into_values().collect(),
     })
 }
@@ -280,7 +252,7 @@ pub fn main() -> ExitCode {
 
 #[derive(Debug, Display, Error)]
 #[non_exhaustive]
-pub enum BuildError {
+pub enum GenerateError {
     #[display("cannot read {path:?}: {source}")]
     ReadFile { path: PathBuf, source: io::Error },
     #[display("cannot read directory {path:?}: {source}")]
@@ -307,32 +279,9 @@ pub enum BuildError {
         source: toml::de::Error,
     },
     #[display("failed to parse {path:?}: {source}")]
-    ParseCredits {
-        #[error(not(source))]
-        path: PathBuf,
-        #[error(not(source))]
-        source: String,
-    },
-    #[display("failed to parse {path:?}: {source}")]
     ParseLyrics {
         #[error(not(source))]
         path: PathBuf,
         source: ParseLyricsError,
-    },
-    #[display("failed to render {song}.{language}.vtt: {source}")]
-    RenderVtt {
-        #[error(not(source))]
-        song: String,
-        #[error(not(source))]
-        language: Language,
-        source: RenderVttError,
-    },
-    #[display("failed to render {song}.{language}.srt: {source}")]
-    RenderSrt {
-        #[error(not(source))]
-        song: String,
-        #[error(not(source))]
-        language: Language,
-        source: RenderSrtError,
     },
 }

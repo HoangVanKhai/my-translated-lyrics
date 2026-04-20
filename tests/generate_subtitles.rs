@@ -6,7 +6,7 @@ use pretty_assertions::assert_eq;
 use std::collections::BTreeSet;
 use std::fs::{read_dir, read_to_string};
 use std::path::{Path, PathBuf};
-use translated_lyrics::build_subtitles::{load_song, render_song_to_disk};
+use translated_lyrics::generate_subtitles::{load_song, render_song_to_disk};
 
 /// Exhaustively re-renders each song directory in `sources/` and
 /// compares the generated `.srt` and `.vtt` files against the checked-in
@@ -52,14 +52,14 @@ fn dist_is_up_to_date_with_sources() {
             let generated = read_to_string(generated_path).unwrap();
             let expected = read_to_string(&expected_path).unwrap_or_else(|error| {
                 panic!(
-                    "expected dist artifact {} is missing ({error}). Regenerate with `cargo run --bin build-subtitles -- sources dist --execute`.",
+                    "expected dist artifact {} is missing ({error}). Regenerate with `cargo run --bin generate-subtitles -- sources dist --execute`.",
                     expected_path.display(),
                 )
             });
             assert_eq!(
                 generated,
                 expected,
-                "{} drifted from dist. Regenerate with `cargo run --bin build-subtitles -- sources dist --execute`.",
+                "{} drifted from dist. Regenerate with `cargo run --bin generate-subtitles -- sources dist --execute`.",
                 relative.display(),
             );
             expected_dist_files.insert(expected_path);
@@ -77,7 +77,7 @@ fn dist_is_up_to_date_with_sources() {
         .collect();
     assert_eq!(
         actual_dist_files, expected_dist_files,
-        "dist/ contains stale subtitle artifacts that the generator no longer produces. Regenerate with `cargo run --bin build-subtitles -- sources dist --execute`.",
+        "dist/ contains stale subtitle artifacts that the generator no longer produces. Regenerate with `cargo run --bin generate-subtitles -- sources dist --execute`.",
     );
 }
 
