@@ -293,10 +293,10 @@ fn write_style_block(
         let Some(class_name) = markers.classes.get(marker_name) else {
             continue;
         };
-        let Some(style) = class_style(class_name) else {
+        let Some(style) = class_style(class_name.as_str()) else {
             continue;
         };
-        write_class_rule(output, class_name, &style);
+        write_class_rule(output, class_name.as_str(), &style);
     }
 }
 

@@ -84,7 +84,7 @@ fn resolve_style(marker_name: &str, markers: &LineMarkersDesc) -> Option<Style> 
         return Some(style);
     }
     let class_name = markers.classes.get(marker_name)?;
-    class_style(class_name)
+    class_style(class_name.as_str())
 }
 
 fn wrap_with_style(text: &str, style: Option<&Style>) -> String {
