@@ -36,7 +36,7 @@ use super::parse::SubtitleCue;
 use super::styles::{Style, class_style, voice_style};
 use crate::credits_descriptor::CreditsDesc;
 use crate::line_markers_descriptor::LineMarkersDesc;
-use crate::timestamp::{Milliseconds, VttTime};
+use crate::timestamp::{Timestamp, VttTime};
 use crate::video_descriptor::Language;
 use core::fmt::Write;
 use derive_more::{Display, Error};
@@ -131,8 +131,8 @@ impl Features {
 }
 
 struct CueRendering {
-    start: Milliseconds,
-    end: Milliseconds,
+    start: Timestamp,
+    end: Timestamp,
     content: String,
     used_credit_role: bool,
     used_credit_name: bool,
@@ -333,7 +333,7 @@ pub enum RenderVttError {
     #[display("cue at {start} failed to render as a credit line: {source}")]
     Credits {
         #[error(not(source))]
-        start: Milliseconds,
+        start: Timestamp,
         source: ParseCreditError,
     },
 }

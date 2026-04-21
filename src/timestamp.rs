@@ -3,19 +3,22 @@ use core::num::ParseIntError;
 use core::str::FromStr;
 use derive_more::{Display, Error};
 
-/// Duration in milliseconds from the start of the video. Cues use it
-/// for start and end times and for ordering comparisons.
+/// A point in time inside the video, measured as milliseconds from
+/// `00:00.000`. Cues use it for start and end positions and for
+/// ordering comparisons. The millisecond resolution is an internal
+/// implementation detail; callers compose and destructure via the
+/// minute / second / millisecond API surface.
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
-pub struct Milliseconds(u64);
+pub struct Timestamp(u64);
 
-impl Milliseconds {
-    /// Composes a `Milliseconds` total from minutes, seconds, and
+impl Timestamp {
+    /// Composes a `Timestamp` total from minutes, seconds, and
     /// milliseconds components. The result is
     /// `minutes * 60_000 + seconds * 1_000 + milliseconds`, so this
     /// constructor doubles as a single-unit conversion:
-    /// `Milliseconds::new(n, 0, 0)` yields `n` minutes,
-    /// `Milliseconds::new(0, n, 0)` yields `n` seconds, and
-    /// `Milliseconds::new(0, 0, n)` yields `n` milliseconds.
+    /// `Timestamp::new(n, 0, 0)` yields `n` minutes,
+    /// `Timestamp::new(0, n, 0)` yields `n` seconds, and
+    /// `Timestamp::new(0, 0, n)` yields `n` milliseconds.
     ///
     /// The components are intentionally not range-checked. Supporting
     /// the single-unit patterns above requires the same arithmetic
@@ -25,11 +28,11 @@ impl Milliseconds {
     /// must perform it before calling `new`; the [`FromStr`] impl
     /// does so for `MM:SS.mmm` source strings.
     pub const fn new(minutes: u64, seconds: u64, milliseconds: u64) -> Self {
-        Milliseconds(minutes * 60_000 + seconds * 1_000 + milliseconds)
+        Timestamp(minutes * 60_000 + seconds * 1_000 + milliseconds)
     }
 }
 
-impl FromStr for Milliseconds {
+impl FromStr for Timestamp {
     type Err = ParseTimestampError;
 
     /// Parses the `MM:SS.mmm` form that opens each cue in
@@ -78,16 +81,16 @@ impl FromStr for Milliseconds {
                 value: milliseconds,
             });
         }
-        Ok(Milliseconds::new(minutes, seconds, milliseconds))
+        Ok(Timestamp::new(minutes, seconds, milliseconds))
     }
 }
 
-/// Renders `Milliseconds` in the `MM:SS.mmm` source format. Error
+/// Renders `Timestamp` in the `MM:SS.mmm` source format. Error
 /// messages that quote a timestamp use this implementation so the
 /// output matches the form the source file used.
-impl fmt::Display for Milliseconds {
+impl fmt::Display for Timestamp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Milliseconds(total) = *self;
+        let Timestamp(total) = *self;
         write!(
             f,
             "{minutes:02}:{seconds:02}.{milliseconds:03}",
@@ -101,20 +104,20 @@ impl fmt::Display for Milliseconds {
 /// `Debug` reuses `Display` so panic messages and assertion failures
 /// quote timestamps in the same `MM:SS.mmm` shape as the rest of the
 /// pipeline.
-impl fmt::Debug for Milliseconds {
+impl fmt::Debug for Timestamp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self, f)
     }
 }
 
-/// Thin wrapper around [`Milliseconds`] that renders in the SubRip
+/// Thin wrapper around [`Timestamp`] that renders in the SubRip
 /// `HH:MM:SS,mmm` format.
 #[derive(Clone, Copy)]
-pub struct SrtTime(pub Milliseconds);
+pub struct SrtTime(pub Timestamp);
 
 impl fmt::Display for SrtTime {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Milliseconds(total) = self.0;
+        let Timestamp(total) = self.0;
         write!(
             f,
             "{hours:02}:{minutes:02}:{seconds:02},{milliseconds:03}",
@@ -126,14 +129,14 @@ impl fmt::Display for SrtTime {
     }
 }
 
-/// Thin wrapper around [`Milliseconds`] that renders in the WebVTT
+/// Thin wrapper around [`Timestamp`] that renders in the WebVTT
 /// `HH:MM:SS.mmm` format.
 #[derive(Clone, Copy)]
-pub struct VttTime(pub Milliseconds);
+pub struct VttTime(pub Timestamp);
 
 impl fmt::Display for VttTime {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Milliseconds(total) = self.0;
+        let Timestamp(total) = self.0;
         write!(
             f,
             "{hours:02}:{minutes:02}:{seconds:02}.{milliseconds:03}",
@@ -189,24 +192,24 @@ mod tests {
     #[test]
     fn parses_basic_timestamp() {
         assert_eq!(
-            "00:02.960".parse::<Milliseconds>().unwrap(),
-            Milliseconds::new(0, 2, 960),
+            "00:02.960".parse::<Timestamp>().unwrap(),
+            Timestamp::new(0, 2, 960),
         );
     }
 
     #[test]
     fn new_composes_weighted_components() {
-        assert_eq!(Milliseconds::new(0, 0, 1), Milliseconds::new(0, 0, 1));
-        assert_eq!(Milliseconds::new(0, 1, 0), Milliseconds::new(0, 0, 1_000));
-        assert_eq!(Milliseconds::new(1, 0, 0), Milliseconds::new(0, 60, 0));
-        assert_eq!(Milliseconds::new(0, 0, 2_500), Milliseconds::new(0, 2, 500));
+        assert_eq!(Timestamp::new(0, 0, 1), Timestamp::new(0, 0, 1));
+        assert_eq!(Timestamp::new(0, 1, 0), Timestamp::new(0, 0, 1_000));
+        assert_eq!(Timestamp::new(1, 0, 0), Timestamp::new(0, 60, 0));
+        assert_eq!(Timestamp::new(0, 0, 2_500), Timestamp::new(0, 2, 500));
     }
 
     #[test]
     fn parses_timestamp_with_high_minutes() {
         assert_eq!(
-            "01:59.715".parse::<Milliseconds>().unwrap(),
-            Milliseconds::new(1, 59, 715),
+            "01:59.715".parse::<Timestamp>().unwrap(),
+            Timestamp::new(1, 59, 715),
         );
     }
 
@@ -214,7 +217,7 @@ mod tests {
     fn display_round_trips() {
         let cases = ["00:02.960", "01:59.715", "02:07.075", "04:46.000"];
         for input in cases {
-            let value: Milliseconds = input.parse().unwrap();
+            let value: Timestamp = input.parse().unwrap();
             assert_eq!(value.to_string(), input);
         }
     }
@@ -222,7 +225,7 @@ mod tests {
     #[test]
     fn srt_time_uses_comma() {
         assert_eq!(
-            SrtTime(Milliseconds::new(0, 2, 960)).to_string(),
+            SrtTime(Timestamp::new(0, 2, 960)).to_string(),
             "00:00:02,960",
         );
     }
@@ -230,14 +233,14 @@ mod tests {
     #[test]
     fn vtt_time_uses_dot() {
         assert_eq!(
-            VttTime(Milliseconds::new(0, 2, 960)).to_string(),
+            VttTime(Timestamp::new(0, 2, 960)).to_string(),
             "00:00:02.960",
         );
     }
 
     #[test]
     fn hour_boundary() {
-        let value = Milliseconds::new(61, 2, 15);
+        let value = Timestamp::new(61, 2, 15);
         assert_eq!(SrtTime(value).to_string(), "01:01:02,015");
         assert_eq!(VttTime(value).to_string(), "01:01:02.015");
     }
@@ -245,7 +248,7 @@ mod tests {
     #[test]
     fn rejects_missing_colon() {
         assert!(matches!(
-            "0002.960".parse::<Milliseconds>(),
+            "0002.960".parse::<Timestamp>(),
             Err(ParseTimestampError::MissingColon),
         ));
     }
@@ -253,7 +256,7 @@ mod tests {
     #[test]
     fn rejects_missing_dot() {
         assert!(matches!(
-            "00:02".parse::<Milliseconds>(),
+            "00:02".parse::<Timestamp>(),
             Err(ParseTimestampError::MissingDot),
         ));
     }
@@ -261,11 +264,11 @@ mod tests {
     #[test]
     fn rejects_seconds_out_of_range() {
         assert!(matches!(
-            "00:60.000".parse::<Milliseconds>(),
+            "00:60.000".parse::<Timestamp>(),
             Err(ParseTimestampError::SecondsOutOfRange { value: 60 }),
         ));
         assert!(matches!(
-            "00:99.000".parse::<Milliseconds>(),
+            "00:99.000".parse::<Timestamp>(),
             Err(ParseTimestampError::SecondsOutOfRange { value: 99 }),
         ));
     }
@@ -273,7 +276,7 @@ mod tests {
     #[test]
     fn rejects_milliseconds_out_of_range() {
         assert!(matches!(
-            "00:00.1000".parse::<Milliseconds>(),
+            "00:00.1000".parse::<Timestamp>(),
             Err(ParseTimestampError::MillisecondsOutOfRange { value: 1000 }),
         ));
     }

@@ -15,7 +15,7 @@ use super::parse::SubtitleCue;
 use super::styles::{Style, class_style, voice_style};
 use crate::credits_descriptor::CreditsDesc;
 use crate::line_markers_descriptor::LineMarkersDesc;
-use crate::timestamp::{Milliseconds, SrtTime};
+use crate::timestamp::{SrtTime, Timestamp};
 use crate::video_descriptor::Language;
 use core::fmt::Write;
 use derive_more::{Display, Error};
@@ -159,7 +159,7 @@ pub enum RenderSrtError {
     #[display("cue at {start} failed to render as a credit line: {source}")]
     Credits {
         #[error(not(source))]
-        start: Milliseconds,
+        start: Timestamp,
         source: ParseCreditError,
     },
 }

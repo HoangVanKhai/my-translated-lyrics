@@ -11,14 +11,14 @@
 //! [`END_OF_VIDEO_MARKER`]: crate::line_markers_descriptor::END_OF_VIDEO_MARKER
 
 use crate::line_markers_descriptor::{CLEAR_MARKER, END_OF_VIDEO_MARKER};
-use crate::timestamp::{Milliseconds, ParseTimestampError};
+use crate::timestamp::{ParseTimestampError, Timestamp};
 use derive_more::{Display, Error};
 
 /// A subtitle cue with a resolved end time, ready for rendering.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SubtitleCue {
-    pub start: Milliseconds,
-    pub end: Milliseconds,
+    pub start: Timestamp,
+    pub end: Timestamp,
     /// The leading marker token that the cue-opening line declared, for
     /// example `ttl` in `ttl: 《Song》`. Every cue-opening line in the
     /// source format carries a marker; lines that appear to lack one
@@ -34,17 +34,17 @@ pub struct SubtitleCue {
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Event {
     Cue {
-        start: Milliseconds,
+        start: Timestamp,
         marker: String,
         text: String,
     },
     Clear {
-        start: Milliseconds,
+        start: Timestamp,
     },
 }
 
 impl Event {
-    fn start(&self) -> Milliseconds {
+    fn start(&self) -> Timestamp {
         match self {
             Event::Cue { start, .. } => *start,
             Event::Clear { start } => *start,
@@ -71,7 +71,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
 
         match split_timestamp(trimmed) {
             Some((timestamp_str, rest)) => {
-                let start = timestamp_str.parse::<Milliseconds>().map_err(|source| {
+                let start = timestamp_str.parse::<Timestamp>().map_err(|source| {
                     ParseLyricsError::InvalidTimestamp {
                         line_number,
                         raw: timestamp_str.to_string(),
@@ -255,14 +255,14 @@ pub enum ParseLyricsError {
     #[display("events out of order: cue at {previous} is followed by an earlier cue at {next}")]
     OutOfOrder {
         #[error(not(source))]
-        previous: Milliseconds,
+        previous: Timestamp,
         #[error(not(source))]
-        next: Milliseconds,
+        next: Timestamp,
     },
     #[display("cue at {start} has no following cue or `clr`")]
     UnclosedCue {
         #[error(not(source))]
-        start: Milliseconds,
+        start: Timestamp,
     },
 }
 
@@ -280,12 +280,12 @@ mod tests {
         };
         let cues = parse_lyrics(input).unwrap();
         assert_eq!(cues.len(), 2);
-        assert_eq!(cues[0].start, Milliseconds::new(0, 0, 0));
-        assert_eq!(cues[0].end, Milliseconds::new(0, 2, 0));
+        assert_eq!(cues[0].start, Timestamp::new(0, 0, 0));
+        assert_eq!(cues[0].end, Timestamp::new(0, 2, 0));
         assert_eq!(cues[0].marker, "ttl");
         assert_eq!(cues[0].text, "Hello");
-        assert_eq!(cues[1].start, Milliseconds::new(0, 2, 0));
-        assert_eq!(cues[1].end, Milliseconds::new(0, 4, 0));
+        assert_eq!(cues[1].start, Timestamp::new(0, 2, 0));
+        assert_eq!(cues[1].end, Timestamp::new(0, 4, 0));
         assert_eq!(cues[1].marker, "LRC");
         assert_eq!(cues[1].text, "world");
     }
@@ -326,7 +326,7 @@ mod tests {
         };
         let cues = parse_lyrics(input).unwrap();
         assert_eq!(cues.len(), 1);
-        assert_eq!(cues[0].end, Milliseconds::new(0, 2, 0));
+        assert_eq!(cues[0].end, Timestamp::new(0, 2, 0));
     }
 
     #[test]
@@ -367,7 +367,7 @@ mod tests {
         };
         let cues = parse_lyrics(input).unwrap();
         assert_eq!(cues.len(), 1);
-        assert_eq!(cues[0].end, Milliseconds::new(0, 2, 0));
+        assert_eq!(cues[0].end, Timestamp::new(0, 2, 0));
     }
 
     #[test]
@@ -390,8 +390,8 @@ mod tests {
             "00:02.000 clr"
         };
         let cues = parse_lyrics(input).unwrap();
-        assert_eq!(cues[0].end, Milliseconds::new(0, 1, 0));
-        assert_eq!(cues[1].end, Milliseconds::new(0, 2, 0));
+        assert_eq!(cues[0].end, Timestamp::new(0, 1, 0));
+        assert_eq!(cues[1].end, Timestamp::new(0, 2, 0));
     }
 
     #[test]
