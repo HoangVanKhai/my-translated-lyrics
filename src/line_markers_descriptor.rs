@@ -20,65 +20,32 @@ pub const END_OF_VIDEO_MARKER: &str = "eov";
 
 /// Parsed contents of a `line-markers.toml` file.
 ///
-/// A _marker_ is a short token (for example `LTY`, `cre`, `ttl`, `LRC`)
-/// that appears at the start of a line in the song's lyric text files
-/// and controls how the line is rendered into VTT. The [`markers`]
-/// field holds the exhaustive inventory of markers the song uses.
-/// Each marker in [`markers`] falls into one of four categories:
-///
-/// * Markers declared in [`voices`] wrap the line in `<v ...>...</v>`,
-///   with the voice name given per language.
-/// * Markers declared in [`classes`] wrap the line in
-///   `<c.className>...</c>`, with the class name given as the mapped
-///   value.
-/// * Markers declared in [`credits`] invoke the credit-block
-///   renderer. The renderer uses the `credit-roles` list from
-///   `credits.yaml` as a role vocabulary, tags each recognized role
-///   as `<c.creditRole>` and the following name region as
-///   `<c.creditName>`, and fails the render if a credit line
-///   contains an unknown role. Names wrapped in `【...】`, `[...]`,
-///   or `(...)` in the source become `<c.creditSpecial>` instead
-///   of `<c.creditName>`.
-/// * Markers absent from [`voices`], [`classes`], and [`credits`]
-///   emit the line content as plain unwrapped text.
-///
-/// Presentation styles, that is, colors, bolding, and italics, are
-/// not carried in this struct. They are derived from the class name
-/// or the voice marker name by a central table maintained in
-/// [`crate::generate_subtitles::styles`], so that the repository's
-/// shared palette stays consistent across every song.
-///
-/// Universal control keywords such as `clr` and `eov` produce no
-/// output and are handled by the generator directly. They are not
-/// represented in this struct.
-///
-/// [`markers`]: Self::markers
-/// [`voices`]: Self::voices
-/// [`classes`]: Self::classes
-/// [`credits`]: Self::credits
+/// A _marker_ is the short token (for example `LTY`, `cre`, `ttl`,
+/// `LRC`) at the start of each line in a song's `lyrics.*.txt`
+/// files. This descriptor catalogs every marker the song uses and
+/// groups them by the rendering role they play — voice, named
+/// class, credit block, or plain pass-through. The groups are
+/// consumed by [`crate::generate_subtitles`] and its submodules;
+/// see [`crate::generate_subtitles::render_vtt`] for how each group
+/// is wrapped in the output and
+/// [`crate::generate_subtitles::styles`] for the shared presentation
+/// palette.
 #[derive(Default, Deserialize, Serialize)]
 pub struct LineMarkersDesc {
-    /// Exhaustive inventory of markers used by this song. A future
-    /// generator will use this list to validate the leading tokens of
-    /// `lyrics.*.txt` lines, rejecting unknown markers and warning on
-    /// declared markers that never appear.
+    /// Exhaustive inventory of markers used by this song, in the
+    /// order the style block should emit per-marker rules.
     #[serde(default)]
     pub markers: Vec<String>,
-    /// Markers that wrap the line in `<v ...>...</v>`. Each entry
-    /// gives the voice name per language, emitted as the inner text
-    /// of the `<v>` element.
+    /// Markers that name a voice. Each value maps a language code to
+    /// the voice name to emit for that language.
     #[serde(default)]
     pub voices: BTreeMap<String, BTreeMap<Language, String>>,
-    /// Markers that wrap the line in `<c.className>...</c>`. The
-    /// value is the class name applied to the wrapping element.
+    /// Markers that name a class. The mapped value is the class name
+    /// applied to the wrapping element.
     #[serde(default)]
     pub classes: BTreeMap<String, String>,
-    /// Markers that invoke the credit-block renderer. Columns of the
-    /// line become `<c.creditRole>` and `<c.creditName>` segments;
-    /// role spans are located by looking up the line against the
-    /// `credit-roles` list from `credits.yaml`. Names wrapped in
-    /// `【...】`, `[...]`, or `(...)` in the source become
-    /// `<c.creditSpecial>` instead of `<c.creditName>`.
+    /// Markers that open a credit block. The cue body is parsed
+    /// line-by-line with the song's `credits.yaml` vocabulary.
     #[serde(default)]
     pub credits: Vec<String>,
 }

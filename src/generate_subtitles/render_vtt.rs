@@ -8,7 +8,26 @@
 //! `creditName`, and `creditSpecial`, are emitted conditionally based
 //! on what the cue bodies actually reference: songs without a credits
 //! marker omit the role and name rules, and songs whose credits do
-//! not use any `【...】` highlight omit the `creditSpecial` rule.
+//! not use any bracketed highlight omit the `creditSpecial` rule.
+//!
+//! Each cue's body is wrapped according to the role its marker plays
+//! in the descriptor:
+//!
+//! * Markers in [`LineMarkersDesc::voices`] wrap the line in
+//!   `<v voice-name>...</v>`, with the voice name looked up per
+//!   language.
+//! * Markers in [`LineMarkersDesc::classes`] wrap the line in
+//!   `<c.className>...</c>`, with the class name read from the map.
+//! * Markers in [`LineMarkersDesc::credits`] go through the credit
+//!   parser in [`super::credits_parse`] and emit one
+//!   `<c.creditRole>role</c> <c.creditName>name</c>` pair per
+//!   recognized cell.
+//! * Any other marker emits the cue text unwrapped.
+//!
+//! [`LineMarkersDesc`]: crate::line_markers_descriptor::LineMarkersDesc
+//! [`LineMarkersDesc::voices`]: crate::line_markers_descriptor::LineMarkersDesc::voices
+//! [`LineMarkersDesc::classes`]: crate::line_markers_descriptor::LineMarkersDesc::classes
+//! [`LineMarkersDesc::credits`]: crate::line_markers_descriptor::LineMarkersDesc::credits
 
 use super::credits_parse::{
     CreditPair, CreditsVocabulary, NameSegment, ParseCreditError, parse_credit_line,
