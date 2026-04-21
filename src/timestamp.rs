@@ -9,14 +9,21 @@ use derive_more::{Display, Error};
 pub struct Milliseconds(u64);
 
 impl Milliseconds {
-    /// Builds a `Milliseconds` from an already-decomposed
-    /// `MM:SS.mmm` triple. Tests and the string parser both use this
-    /// constructor to avoid opaque literals such as `Milliseconds(2_960)`.
-    /// The components are not range-checked; any overflow from
-    /// `seconds >= 60` or `milliseconds >= 1_000` is folded into the
-    /// resulting total via plain arithmetic, so callers that need
-    /// strict validation should perform it before calling this
-    /// constructor.
+    /// Composes a `Milliseconds` total from minutes, seconds, and
+    /// milliseconds components. The result is
+    /// `minutes * 60_000 + seconds * 1_000 + milliseconds`, so this
+    /// constructor doubles as a single-unit conversion:
+    /// `Milliseconds::new(n, 0, 0)` yields `n` minutes,
+    /// `Milliseconds::new(0, n, 0)` yields `n` seconds, and
+    /// `Milliseconds::new(0, 0, n)` yields `n` milliseconds.
+    ///
+    /// The components are intentionally not range-checked. Supporting
+    /// the single-unit patterns above requires the same arithmetic
+    /// that would normalize an out-of-range cue component, and that
+    /// same arithmetic falls out of the composition naturally.
+    /// Callers that need strict `SS < 60` / `mmm < 1_000` validation
+    /// must perform it before calling `new`; the [`FromStr`] impl
+    /// does so for `MM:SS.mmm` source strings.
     pub const fn new(minutes: u64, seconds: u64, milliseconds: u64) -> Self {
         Milliseconds(minutes * 60_000 + seconds * 1_000 + milliseconds)
     }
@@ -185,6 +192,14 @@ mod tests {
             "00:02.960".parse::<Milliseconds>().unwrap(),
             Milliseconds::new(0, 2, 960),
         );
+    }
+
+    #[test]
+    fn new_composes_weighted_components() {
+        assert_eq!(Milliseconds::new(0, 0, 1), Milliseconds::new(0, 0, 1));
+        assert_eq!(Milliseconds::new(0, 1, 0), Milliseconds::new(0, 0, 1_000));
+        assert_eq!(Milliseconds::new(1, 0, 0), Milliseconds::new(0, 60, 0));
+        assert_eq!(Milliseconds::new(0, 0, 2_500), Milliseconds::new(0, 2, 500));
     }
 
     #[test]
