@@ -224,7 +224,7 @@ fn render_credit_pair(
         role = pair.role,
     )
     .expect("writing to String is infallible");
-    output.push_str(&render_separator_for_output(&pair.separator));
+    append_separator_for_output(output, &pair.separator);
     write!(output, "<c.{CLASS_CREDIT_NAME}>").expect("writing to String is infallible");
     write_name_segments(output, &pair.name_segments, used_special);
     output.push_str("</c>");
@@ -234,11 +234,11 @@ fn render_credit_pair(
 /// the name tag so that Jianghu's two-space gutter survives the
 /// round-trip; other separators such as `：` or `\u{3000}` collapse
 /// to a single ASCII space.
-fn render_separator_for_output(raw: &str) -> String {
+fn append_separator_for_output(output: &mut String, raw: &str) {
     if !raw.is_empty() && raw.chars().all(|ch| ch == ' ' || ch == '\t') {
-        raw.to_string()
+        output.push_str(raw);
     } else {
-        " ".to_string()
+        output.push(' ');
     }
 }
 

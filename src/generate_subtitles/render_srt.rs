@@ -123,7 +123,7 @@ fn render_credit_pair(output: &mut String, pair: &CreditPair) {
         role = pair.role,
     )
     .expect("writing to String is infallible");
-    output.push_str(&render_separator_for_output(&pair.separator));
+    append_separator_for_output(output, &pair.separator);
     write!(output, "<font color=\"{CREDIT_NAME_COLOR}\">")
         .expect("writing to String is infallible");
     write_name_segments(output, &pair.name_segments);
@@ -145,11 +145,11 @@ fn write_name_segments(output: &mut String, segments: &[NameSegment]) {
     }
 }
 
-fn render_separator_for_output(raw: &str) -> String {
+fn append_separator_for_output(output: &mut String, raw: &str) {
     if !raw.is_empty() && raw.chars().all(|ch| ch == ' ' || ch == '\t') {
-        raw.to_string()
+        output.push_str(raw);
     } else {
-        " ".to_string()
+        output.push(' ');
     }
 }
 

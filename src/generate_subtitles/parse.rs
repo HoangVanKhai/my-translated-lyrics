@@ -179,10 +179,8 @@ fn resolve_cues(events: Vec<Event>) -> Result<Vec<SubtitleCue>, ParseLyricsError
         };
 
         let end = events
-            .iter()
-            .skip(index + 1)
+            .get(index + 1)
             .map(Event::start)
-            .next()
             .ok_or(ParseLyricsError::UnclosedCue(*start))?;
 
         cues.push(SubtitleCue {
