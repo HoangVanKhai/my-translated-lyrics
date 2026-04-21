@@ -129,6 +129,43 @@ fn unix_path_logic() { /* uses hardcoded unix paths but no unix-only types */ }
 fn unix_only_types() { /* uses OsStrExt which only exists on unix */ }
 ```
 
+### Test Module Imports
+
+Test modules appear in two shapes. An inline module lives in the same file as the code under test, introduced by `#[cfg(test)] mod tests { ... }`. An external module lives in a sibling file, declared with `#[cfg(test)] mod tests;` next to a companion `src/<module>/tests.rs`. The rules below apply identically to both; the choice between inline and external placement does not affect the import style.
+
+#### Prefer an explicit brace list over `use super::*;`
+
+Tests should declare which symbols they use. A glob hides the surface area of the module under test, silently absorbs newly added items, and breaks grep for callers of any given symbol.
+
+```rust
+// Good: each symbol under test is named.
+use super::{CollectionName, ParseCollectionNameError, VideoTitle};
+
+// Avoid: pulls every public item from the parent, including items
+// the test never references.
+use super::*;
+```
+
+A glob is acceptable only when a module intentionally re-exports its own payload for consumers, for example `use super::prelude::*;` where `prelude` is a deliberate internal API. In that case the glob targets the prelude rather than the parent itself.
+
+#### Import each item from its canonical path
+
+When a test needs a symbol that does not live in its direct parent module, import it from the module that defines it rather than through a name the parent happens to bring into its own scope with `use` or `pub use`. In Rust, a plain `use` does not re-export; it introduces a binding in the parent's namespace that a child module can still reference through `super::`. A `pub use` additionally exposes the binding to outside callers. Both forms are fragile dependencies for a test: the canonical path remains valid regardless of how the parent reorganizes its own imports, while the indirect path breaks the moment the parent reshapes its own `use` statements.
+
+```rust
+// In `src/foo/tests.rs`, when `SomeType` is defined in `crate::bar`:
+
+// Good: canonical path, stable across parent refactors.
+use crate::bar::SomeType;
+
+// Avoid: relies on `src/foo.rs` containing `use crate::bar::SomeType;`
+// at the top of the file. Removing or renaming that line in the
+// parent silently breaks the test's import.
+use super::SomeType;
+```
+
+This rule applies whether the parent's binding is a private `use` or a `pub use`, because either kind is often an incidental import rather than part of the module's public contract.
+
 ### Using `pipe-trait`
 
 This codebase uses the [`pipe-trait`](https://docs.rs/pipe-trait) crate for method-chaining through unary functions, keeping code in a natural left-to-right reading order. Import it as `use pipe_trait::Pipe;`.
