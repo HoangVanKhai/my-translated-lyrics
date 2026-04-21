@@ -198,6 +198,42 @@ let output = cmd.output().expect("spawn my-tool");
 
 Available `.with_*` methods mirror every standard builder method: `with_arg`, `with_args`, `with_env`, `with_envs`, `with_env_remove`, `with_env_clear`, `with_current_dir`, `with_stdin`, `with_stdout`, `with_stderr`.
 
+### Unicode Escape Codes
+
+Write Unicode characters in string literals as the literal glyph whenever the character is visible in a monospaced editor. The `\u{…}` escape sequence is reserved for characters whose visual form is absent or ambiguous. Every other character belongs in the source as itself, including ASCII, CJK characters, Latin letters with diacritics, accented Cyrillic, Arabic-Indic digits, full-width digits, and full-width punctuation.
+
+Writing a visible character as an escape code has no benefit. It makes the source line harder to read at the call site, harder to search for with the literal character, and indistinguishable at a glance from legitimate escapes for invisible characters. Reviewers learn to skim past `\u{…}` sequences, and that habit lets the genuinely invisible ones slip through.
+
+#### When to keep the escape
+
+Use `\u{…}` only for characters whose glyph is absent, ambiguous, or easily confused with something else. Add an explanatory comment when the context does not make the escape's purpose obvious. Examples:
+
+- `\u{3000}` IDEOGRAPHIC SPACE, which renders as blank space and is visually indistinguishable from the regular `\u{0020}` SPACE.
+- `\u{200B}` ZERO WIDTH SPACE and other zero-width characters.
+- Combining marks written on their own, outside a grapheme that makes their purpose clear.
+- Control characters in the range `\u{0000}` through `\u{001F}`, the delete character `\u{007F}`, and the C1 control block.
+
+#### Examples
+
+| Category | Wrong | Right |
+| --- | --- | --- |
+| Full-width digit | `"\u{FF10}\u{FF10}:00.000"` | `"００:00.000"` |
+| Full-width colon | `"role\u{FF1A}name"` | `"role：name"` |
+| Ideographic space | `"role\u{FF1A}name\u{3000}role\u{FF1A}name"` | `"role：name\u{3000}role：name"` |
+| ASCII digit or letter | `"\u{0030}\u{0031}"` | `"01"` |
+
+The ideographic space row illustrates the rule in isolation. The full-width colons switch to their literal glyphs because they are visible, while the ideographic space stays escaped because its glyph is not.
+
+#### Editor note
+
+Some editors and some chat-style interfaces silently re-escape pasted Unicode characters on save or on copy. When that happens, do not try to type the glyph back in by hand. Use a command-line replacement instead, for example:
+
+```sh
+perl -CSD -i -pe 's/\\u\{FF10\}/\x{ff10}/g' path/to/file
+```
+
+So far this behavior has only been observed with [Claude Code Web](https://claude.ai/code/).
+
 ## Setup
 
 Install the required Rust toolchain and components before running any checks:
