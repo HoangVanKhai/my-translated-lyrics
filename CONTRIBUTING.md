@@ -200,13 +200,13 @@ Available `.with_*` methods mirror every standard builder method: `with_arg`, `w
 
 ### Unicode Escape Codes
 
-Write Unicode characters in string literals as the literal glyph whenever the character is visible in a monospaced editor. The `\u{…}` escape sequence is reserved for characters whose visual form is absent or ambiguous. Every other character belongs in the source as itself, including ASCII, CJK characters, Latin letters with diacritics, accented Cyrillic, Arabic-Indic digits, full-width digits, and full-width punctuation.
+Write Unicode characters in string literals as the literal glyph whenever the character is visible in a monospaced editor. The `\u{...}` escape sequence is reserved for characters whose visual form is absent or ambiguous. Every other character belongs in the source as itself, including ASCII, CJK characters, Latin letters with diacritics, accented Cyrillic, Arabic-Indic digits, full-width digits, and full-width punctuation.
 
-Writing a visible character as an escape code has no benefit. It makes the source line harder to read at the call site, harder to search for with the literal character, and indistinguishable at a glance from legitimate escapes for invisible characters. Reviewers learn to skim past `\u{…}` sequences, and that habit lets the genuinely invisible ones slip through.
+Writing a visible character as an escape code has no benefit. It makes the source line harder to read at the call site, harder to search for with the literal character, and indistinguishable at a glance from legitimate escapes for invisible characters. Reviewers learn to skim past `\u{...}` sequences, and that habit lets the genuinely invisible ones slip through.
 
 #### When to keep the escape
 
-Use `\u{…}` only for characters whose glyph is absent, ambiguous, or easily confused with something else. Add an explanatory comment when the context does not make the escape's purpose obvious. Examples:
+Use `\u{...}` only for characters whose glyph is absent, ambiguous, or easily confused with something else. Add an explanatory comment when the context does not make the escape's purpose obvious. Examples:
 
 - `\u{3000}` IDEOGRAPHIC SPACE, which renders as blank space and is visually indistinguishable from the regular `\u{0020}` SPACE.
 - `\u{200B}` ZERO WIDTH SPACE and other zero-width characters.
