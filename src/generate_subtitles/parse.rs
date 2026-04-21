@@ -76,7 +76,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
         }
 
         let header = match Timestamp::take(trimmed) {
-            Ok(Some((start, after_prefix))) => {
+            Ok((start, after_prefix)) => {
                 let body = after_prefix.trim_start();
                 if body.len() == after_prefix.len() {
                     return Err(ParseLyricsError::MissingSeparatorAfterTimestamp {
@@ -86,7 +86,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                 }
                 Some((start, body))
             }
-            Ok(None) => None,
+            Err(TakeTimestampError::ShapeMismatch) => None,
             Err(source) => {
                 return Err(ParseLyricsError::InvalidTimestamp {
                     line_number,

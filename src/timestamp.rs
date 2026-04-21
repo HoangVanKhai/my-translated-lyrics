@@ -33,24 +33,25 @@ impl Timestamp {
     /// from `input` and returns the parsed `Timestamp` along with the
     /// unconsumed tail. Follows the parse-don't-validate pattern:
     ///
-    /// - `Ok(Some((ts, tail)))` — the prefix matched the shape and
-    ///   every component fits its range. `tail` is `input` past the
-    ///   nine consumed characters, untouched.
-    /// - `Ok(None)` — the first nine characters of `input` do not
-    ///   form an `MM:SS.mmm` shape (too short, wrong punctuation, or
-    ///   a non-digit where a digit is required). Callers typically
-    ///   treat this as "no timestamp here" and route the line
-    ///   elsewhere.
-    /// - `Err(_)` — the prefix has timestamp shape but a component
-    ///   is out of range (currently only `seconds >= 60`; three-digit
-    ///   milliseconds can never exceed 999, and two-digit minutes
-    ///   are uncapped by design). The error carries a copy of the
-    ///   offending 9-character prefix for diagnostics.
+    /// - `Ok((ts, tail))` — the prefix matched the shape and every
+    ///   component fits its range. `tail` is `input` past the nine
+    ///   consumed characters, untouched.
+    /// - `Err(TakeTimestampError::ShapeMismatch)` — the first nine
+    ///   characters of `input` do not form an `MM:SS.mmm` shape (too
+    ///   short, wrong punctuation, or a non-digit where a digit is
+    ///   required). Callers typically treat this as "no timestamp
+    ///   here" and route the line elsewhere.
+    /// - `Err(TakeTimestampError::SecondsOutOfRange { … })` — the
+    ///   prefix has timestamp shape but the seconds component
+    ///   exceeds 59. Three-digit milliseconds can never exceed 999,
+    ///   and two-digit minutes are uncapped by design. The error
+    ///   carries a copy of the offending 9-character prefix for
+    ///   diagnostics.
     ///
     /// The caller is responsible for anything past the prefix: if
     /// the cue format requires whitespace between the timestamp and
     /// the body, the caller inspects `tail` for it.
-    pub fn take(input: &str) -> Result<Option<(Self, &str)>, TakeTimestampError> {
+    pub fn take(input: &str) -> Result<(Self, &str), TakeTimestampError> {
         let digit = |next: Option<char>| -> Option<u8> {
             next.filter(char::is_ascii_digit)
                 .map(u8::try_from)
@@ -60,48 +61,47 @@ impl Timestamp {
 
         let mut chars = input.chars();
         let Some(tens_min) = digit(chars.next()) else {
-            return Ok(None);
+            return Err(TakeTimestampError::ShapeMismatch);
         };
         let Some(ones_min) = digit(chars.next()) else {
-            return Ok(None);
+            return Err(TakeTimestampError::ShapeMismatch);
         };
         if !matches!(chars.next(), Some(':')) {
-            return Ok(None);
+            return Err(TakeTimestampError::ShapeMismatch);
         }
         let Some(tens_sec) = digit(chars.next()) else {
-            return Ok(None);
+            return Err(TakeTimestampError::ShapeMismatch);
         };
         let Some(ones_sec) = digit(chars.next()) else {
-            return Ok(None);
+            return Err(TakeTimestampError::ShapeMismatch);
         };
         if !matches!(chars.next(), Some('.')) {
-            return Ok(None);
+            return Err(TakeTimestampError::ShapeMismatch);
         }
         let Some(hundreds_ms) = digit(chars.next()) else {
-            return Ok(None);
+            return Err(TakeTimestampError::ShapeMismatch);
         };
         let Some(tens_ms) = digit(chars.next()) else {
-            return Ok(None);
+            return Err(TakeTimestampError::ShapeMismatch);
         };
         let Some(ones_ms) = digit(chars.next()) else {
-            return Ok(None);
+            return Err(TakeTimestampError::ShapeMismatch);
         };
 
         let seconds = u64::from(tens_sec) * 10 + u64::from(ones_sec);
         if seconds >= 60 {
-            return Err(ParseTimestampError::SecondsOutOfRange {
+            return Err(TakeTimestampError::SecondsOutOfRange {
                 raw: input[..9].to_string(),
                 value: seconds,
-            }
-            .into());
+            });
         }
         let minutes = u64::from(tens_min) * 10 + u64::from(ones_min);
         let milliseconds =
             u64::from(hundreds_ms) * 100 + u64::from(tens_ms) * 10 + u64::from(ones_ms);
-        Ok(Some((
+        Ok((
             Timestamp::new(minutes, seconds, milliseconds),
             chars.as_str(),
-        )))
+        ))
     }
 }
 
@@ -185,25 +185,24 @@ pub enum ParseTimestampError {
 /// Kept distinct from [`ParseTimestampError`] so that each type can
 /// accumulate its own variants over time: [`ParseTimestampError`]
 /// describes ways an `MM:SS.mmm` string fails to denote a valid
-/// timestamp value, while [`TakeTimestampError`] describes ways the
-/// `take` combinator fails to produce a `Timestamp` from the start
-/// of its input. Today the only `take`-level failure wraps a
-/// [`ParseTimestampError`]; future variants for shape-mismatch
-/// diagnostics would land here rather than in
-/// [`ParseTimestampError`].
+/// timestamp value (used by any future `FromStr`-style parser),
+/// while [`TakeTimestampError`] describes ways the `take` combinator
+/// fails to produce a `Timestamp` from the start of its input.
 #[derive(Debug, Display, Error)]
 #[non_exhaustive]
 pub enum TakeTimestampError {
-    /// The input opened with an `MM:SS.mmm` shape but a component
-    /// failed validation.
-    #[display("{_0}")]
-    Invalid(ParseTimestampError),
-}
-
-impl From<ParseTimestampError> for TakeTimestampError {
-    fn from(source: ParseTimestampError) -> Self {
-        TakeTimestampError::Invalid(source)
-    }
+    /// The input does not begin with an `MM:SS.mmm` shape.
+    #[display("input does not begin with an MM:SS.mmm timestamp")]
+    ShapeMismatch,
+    /// The input begins with an `MM:SS.mmm` shape but the seconds
+    /// component is out of range.
+    #[display("invalid timestamp {raw:?}: seconds component {value} must be less than 60")]
+    SecondsOutOfRange {
+        #[error(not(source))]
+        raw: String,
+        #[error(not(source))]
+        value: u64,
+    },
 }
 
 #[cfg(test)]
@@ -212,14 +211,14 @@ mod tests {
 
     #[test]
     fn takes_basic_timestamp_with_tail() {
-        let (ts, tail) = Timestamp::take("00:02.960 hello").unwrap().unwrap();
+        let (ts, tail) = Timestamp::take("00:02.960 hello").unwrap();
         assert_eq!(ts, Timestamp::new(0, 2, 960));
         assert_eq!(tail, " hello");
     }
 
     #[test]
     fn takes_timestamp_at_exact_length() {
-        let (ts, tail) = Timestamp::take("01:59.715").unwrap().unwrap();
+        let (ts, tail) = Timestamp::take("01:59.715").unwrap();
         assert_eq!(ts, Timestamp::new(1, 59, 715));
         assert_eq!(tail, "");
     }
@@ -236,7 +235,7 @@ mod tests {
     fn display_round_trips() {
         let cases = ["00:02.960", "01:59.715", "02:07.075", "04:46.000"];
         for input in cases {
-            let (value, tail) = Timestamp::take(input).unwrap().unwrap();
+            let (value, tail) = Timestamp::take(input).unwrap();
             assert_eq!(tail, "");
             assert_eq!(value.to_string(), input);
         }
@@ -266,22 +265,37 @@ mod tests {
     }
 
     #[test]
-    fn shape_mismatch_returns_ok_none() {
+    fn shape_mismatch_reports_error() {
         // Missing colon.
-        assert!(matches!(Timestamp::take("0002.960"), Ok(None)));
+        assert!(matches!(
+            Timestamp::take("0002.960"),
+            Err(TakeTimestampError::ShapeMismatch),
+        ));
         // Missing dot.
-        assert!(matches!(Timestamp::take("00:02"), Ok(None)));
+        assert!(matches!(
+            Timestamp::take("00:02"),
+            Err(TakeTimestampError::ShapeMismatch),
+        ));
         // Fewer than three millisecond digits.
-        assert!(matches!(Timestamp::take("00:02.96"), Ok(None)));
+        assert!(matches!(
+            Timestamp::take("00:02.96"),
+            Err(TakeTimestampError::ShapeMismatch),
+        ));
         // Empty input.
-        assert!(matches!(Timestamp::take(""), Ok(None)));
+        assert!(matches!(
+            Timestamp::take(""),
+            Err(TakeTimestampError::ShapeMismatch),
+        ));
         // Non-digit where a digit is required.
-        assert!(matches!(Timestamp::take("ab:cd.efg"), Ok(None)));
+        assert!(matches!(
+            Timestamp::take("ab:cd.efg"),
+            Err(TakeTimestampError::ShapeMismatch),
+        ));
     }
 
     #[test]
     fn rejects_seconds_out_of_range() {
-        let Err(TakeTimestampError::Invalid(ParseTimestampError::SecondsOutOfRange { raw, value })) =
+        let Err(TakeTimestampError::SecondsOutOfRange { raw, value }) =
             Timestamp::take("00:60.000")
         else {
             panic!("expected SecondsOutOfRange");
@@ -289,7 +303,7 @@ mod tests {
         assert_eq!(raw, "00:60.000");
         assert_eq!(value, 60);
 
-        let Err(TakeTimestampError::Invalid(ParseTimestampError::SecondsOutOfRange { raw, value })) =
+        let Err(TakeTimestampError::SecondsOutOfRange { raw, value }) =
             Timestamp::take("00:99.000trailing")
         else {
             panic!("expected SecondsOutOfRange");
