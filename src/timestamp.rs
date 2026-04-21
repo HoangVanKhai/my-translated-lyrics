@@ -44,12 +44,18 @@ impl Timestamp {
     /// - `Err(_)` — the prefix has timestamp shape but a component
     ///   is out of range (currently only `seconds >= 60`; three-digit
     ///   milliseconds can never exceed 999, and two-digit minutes
-    ///   are uncapped by design).
+    ///   are uncapped by design). The error carries a copy of the
+    ///   offending 9-character prefix for diagnostics.
     ///
     /// The caller is responsible for anything past the prefix: if
     /// the cue format requires whitespace between the timestamp and
     /// the body, the caller inspects `tail` for it.
     pub fn take(input: &str) -> Result<Option<(Self, &str)>, ParseTimestampError> {
+        let digit = |next: Option<char>| -> Option<u8> {
+            let ch = next.filter(char::is_ascii_digit)?;
+            Some((ch as u8) - b'0')
+        };
+
         let mut chars = input.chars();
         let Some(tens_min) = digit(chars.next()) else {
             return Ok(None);
@@ -81,7 +87,10 @@ impl Timestamp {
 
         let seconds = u64::from(tens_sec) * 10 + u64::from(ones_sec);
         if seconds >= 60 {
-            return Err(ParseTimestampError::SecondsOutOfRange { value: seconds });
+            return Err(ParseTimestampError::SecondsOutOfRange {
+                raw: input[..9].to_string(),
+                value: seconds,
+            });
         }
         let minutes = u64::from(tens_min) * 10 + u64::from(ones_min);
         let milliseconds =
@@ -91,14 +100,6 @@ impl Timestamp {
             chars.as_str(),
         )))
     }
-}
-
-/// Extracts the digit value (0..10) from a character if that
-/// character is an ASCII digit, propagating `None` for end-of-input
-/// or non-digit.
-fn digit(next: Option<char>) -> Option<u8> {
-    let ch = next.filter(char::is_ascii_digit)?;
-    Some((ch as u8) - b'0')
 }
 
 /// Renders `Timestamp` in the `MM:SS.mmm` source format. Error
@@ -167,8 +168,10 @@ impl fmt::Display for VttTime {
 #[derive(Debug, Display, Error)]
 #[non_exhaustive]
 pub enum ParseTimestampError {
-    #[display("seconds component {value} is out of range 0..60")]
+    #[display("invalid timestamp {raw:?}: seconds component {value} is out of range 0..60")]
     SecondsOutOfRange {
+        #[error(not(source))]
+        raw: String,
         #[error(not(source))]
         value: u64,
     },
@@ -249,13 +252,20 @@ mod tests {
 
     #[test]
     fn rejects_seconds_out_of_range() {
-        assert!(matches!(
-            Timestamp::take("00:60.000"),
-            Err(ParseTimestampError::SecondsOutOfRange { value: 60 }),
-        ));
-        assert!(matches!(
-            Timestamp::take("00:99.000"),
-            Err(ParseTimestampError::SecondsOutOfRange { value: 99 }),
-        ));
+        let Err(ParseTimestampError::SecondsOutOfRange { raw, value }) =
+            Timestamp::take("00:60.000")
+        else {
+            panic!("expected SecondsOutOfRange");
+        };
+        assert_eq!(raw, "00:60.000");
+        assert_eq!(value, 60);
+
+        let Err(ParseTimestampError::SecondsOutOfRange { raw, value }) =
+            Timestamp::take("00:99.000trailing")
+        else {
+            panic!("expected SecondsOutOfRange");
+        };
+        assert_eq!(raw, "00:99.000");
+        assert_eq!(value, 99);
     }
 }

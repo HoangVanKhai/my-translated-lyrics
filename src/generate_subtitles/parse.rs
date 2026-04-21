@@ -90,7 +90,6 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
             Err(source) => {
                 return Err(ParseLyricsError::InvalidTimestamp {
                     line_number,
-                    raw: trimmed[..9].to_string(),
                     source,
                 });
             }
@@ -209,10 +208,10 @@ fn split_marker(body: &str) -> Option<(&str, &str)> {
 #[derive(Debug, Display, Error)]
 #[non_exhaustive]
 pub enum ParseLyricsError {
-    #[display("line {line_number}: invalid timestamp {raw:?}: {source}")]
+    #[display("line {line_number}: {source}")]
     InvalidTimestamp {
+        #[error(not(source))]
         line_number: usize,
-        raw: String,
         source: ParseTimestampError,
     },
     #[display("line {line_number}: continuation text {content:?} before any cue")]
