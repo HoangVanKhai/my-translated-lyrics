@@ -30,6 +30,12 @@ impl FromStr for Milliseconds {
     /// 9-byte `MM:SS.mmm` prefix beforehand. Songs longer than 99
     /// minutes would require widening both this parser and the
     /// tokenizer in [`crate::generate_subtitles::parse`].
+    ///
+    /// Seconds must satisfy `0 <= SS < 60` and milliseconds
+    /// `0 <= mmm < 1_000`. Out-of-range components raise
+    /// [`ParseTimestampError::SecondsOutOfRange`] or
+    /// [`ParseTimestampError::MillisecondsOutOfRange`] rather than
+    /// being folded silently into the total.
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         let (minutes_part, seconds_part) = input
             .split_once(':')
@@ -51,12 +57,20 @@ impl FromStr for Milliseconds {
                     value: seconds_part.to_string(),
                     source,
                 })?;
+        if seconds >= 60 {
+            return Err(ParseTimestampError::SecondsOutOfRange { value: seconds });
+        }
         let milliseconds = milliseconds_part.parse::<u64>().map_err(|source| {
             ParseTimestampError::InvalidMilliseconds {
                 value: milliseconds_part.to_string(),
                 source,
             }
         })?;
+        if milliseconds >= 1_000 {
+            return Err(ParseTimestampError::MillisecondsOutOfRange {
+                value: milliseconds,
+            });
+        }
         Ok(Milliseconds::new(minutes, seconds, milliseconds))
     }
 }
@@ -149,6 +163,16 @@ pub enum ParseTimestampError {
         value: String,
         source: ParseIntError,
     },
+    #[display("seconds component {value} is out of range 0..60")]
+    SecondsOutOfRange {
+        #[error(not(source))]
+        value: u64,
+    },
+    #[display("milliseconds component {value} is out of range 0..1000")]
+    MillisecondsOutOfRange {
+        #[error(not(source))]
+        value: u64,
+    },
 }
 
 #[cfg(test)]
@@ -216,6 +240,26 @@ mod tests {
         assert!(matches!(
             "00:02".parse::<Milliseconds>(),
             Err(ParseTimestampError::MissingDot),
+        ));
+    }
+
+    #[test]
+    fn rejects_seconds_out_of_range() {
+        assert!(matches!(
+            "00:60.000".parse::<Milliseconds>(),
+            Err(ParseTimestampError::SecondsOutOfRange { value: 60 }),
+        ));
+        assert!(matches!(
+            "00:99.000".parse::<Milliseconds>(),
+            Err(ParseTimestampError::SecondsOutOfRange { value: 99 }),
+        ));
+    }
+
+    #[test]
+    fn rejects_milliseconds_out_of_range() {
+        assert!(matches!(
+            "00:00.1000".parse::<Milliseconds>(),
+            Err(ParseTimestampError::MillisecondsOutOfRange { value: 1000 }),
         ));
     }
 }

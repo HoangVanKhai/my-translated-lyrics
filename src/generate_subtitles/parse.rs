@@ -79,15 +79,14 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                     }
                 })?;
                 let rest = rest.trim();
+                let first_token = rest.split_whitespace().next().unwrap_or("");
 
-                if rest == END_OF_VIDEO_MARKER
-                    || rest.starts_with(&format!("{END_OF_VIDEO_MARKER} "))
-                {
+                if first_token == END_OF_VIDEO_MARKER {
                     last_cue_index = None;
                     continue;
                 }
 
-                if rest == CLEAR_MARKER || rest.starts_with(&format!("{CLEAR_MARKER} ")) {
+                if first_token == CLEAR_MARKER {
                     events.push(Event::Clear { start });
                     last_cue_index = None;
                     continue;
@@ -301,6 +300,18 @@ mod tests {
         let cues = parse_lyrics(input).unwrap();
         assert_eq!(cues.len(), 1);
         assert_eq!(cues[0].text, "first line\nsecond line\nthird line");
+    }
+
+    #[test]
+    fn control_markers_tolerate_any_trailing_whitespace() {
+        let input = text_block_fnl! {
+            "00:00.000 ttl: Hello"
+            "00:02.000 clr\tdescription after tab"
+            "00:05.000 eov\tend of video"
+        };
+        let cues = parse_lyrics(input).unwrap();
+        assert_eq!(cues.len(), 1);
+        assert_eq!(cues[0].end, Milliseconds::new(0, 2, 0));
     }
 
     #[test]
