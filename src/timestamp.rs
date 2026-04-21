@@ -50,7 +50,7 @@ impl Timestamp {
     /// The caller is responsible for anything past the prefix: if
     /// the cue format requires whitespace between the timestamp and
     /// the body, the caller inspects `tail` for it.
-    pub fn take(input: &str) -> Result<Option<(Self, &str)>, ParseTimestampError> {
+    pub fn take(input: &str) -> Result<Option<(Self, &str)>, TakeTimestampError> {
         let digit = |next: Option<char>| -> Option<u8> {
             let ch = next.filter(char::is_ascii_digit)?;
             Some((ch as u8) - b'0')
@@ -90,7 +90,8 @@ impl Timestamp {
             return Err(ParseTimestampError::SecondsOutOfRange {
                 raw: input[..9].to_string(),
                 value: seconds,
-            });
+            }
+            .into());
         }
         let minutes = u64::from(tens_min) * 10 + u64::from(ones_min);
         let milliseconds =
@@ -177,6 +178,32 @@ pub enum ParseTimestampError {
     },
 }
 
+/// Reasons [`Timestamp::take`] can fail.
+///
+/// Kept distinct from [`ParseTimestampError`] so that each type can
+/// accumulate its own variants over time: [`ParseTimestampError`]
+/// describes ways an `MM:SS.mmm` string fails to denote a valid
+/// timestamp value, while [`TakeTimestampError`] describes ways the
+/// `take` combinator fails to produce a `Timestamp` from the start
+/// of its input. Today the only `take`-level failure wraps a
+/// [`ParseTimestampError`]; future variants for shape-mismatch
+/// diagnostics would land here rather than in
+/// [`ParseTimestampError`].
+#[derive(Debug, Display, Error)]
+#[non_exhaustive]
+pub enum TakeTimestampError {
+    /// The input opened with an `MM:SS.mmm` shape but a component
+    /// failed validation.
+    #[display("{_0}")]
+    Invalid(ParseTimestampError),
+}
+
+impl From<ParseTimestampError> for TakeTimestampError {
+    fn from(source: ParseTimestampError) -> Self {
+        TakeTimestampError::Invalid(source)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -252,7 +279,7 @@ mod tests {
 
     #[test]
     fn rejects_seconds_out_of_range() {
-        let Err(ParseTimestampError::SecondsOutOfRange { raw, value }) =
+        let Err(TakeTimestampError::Invalid(ParseTimestampError::SecondsOutOfRange { raw, value })) =
             Timestamp::take("00:60.000")
         else {
             panic!("expected SecondsOutOfRange");
@@ -260,7 +287,7 @@ mod tests {
         assert_eq!(raw, "00:60.000");
         assert_eq!(value, 60);
 
-        let Err(ParseTimestampError::SecondsOutOfRange { raw, value }) =
+        let Err(TakeTimestampError::Invalid(ParseTimestampError::SecondsOutOfRange { raw, value })) =
             Timestamp::take("00:99.000trailing")
         else {
             panic!("expected SecondsOutOfRange");

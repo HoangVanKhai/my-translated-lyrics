@@ -11,7 +11,7 @@
 //! [`END_OF_VIDEO_MARKER`]: crate::line_markers_descriptor::END_OF_VIDEO_MARKER
 
 use crate::line_markers_descriptor::{CLEAR_MARKER, END_OF_VIDEO_MARKER};
-use crate::timestamp::{ParseTimestampError, Timestamp};
+use crate::timestamp::{TakeTimestampError, Timestamp};
 use derive_more::{Display, Error};
 
 /// A subtitle cue with a resolved end time, ready for rendering.
@@ -212,7 +212,7 @@ pub enum ParseLyricsError {
     InvalidTimestamp {
         #[error(not(source))]
         line_number: usize,
-        source: ParseTimestampError,
+        source: TakeTimestampError,
     },
     #[display("line {line_number}: continuation text {content:?} before any cue")]
     StrayContinuation {
