@@ -255,7 +255,7 @@ pub struct ExtraTextAfterControlMarker {
 
 /// Payload for [`ParseLyricsError::OutOfOrder`].
 #[derive(Debug, Display, Clone, PartialEq, Eq)]
-#[display("events out of order: cue at {previous} is followed by an earlier cue at {next}")]
+#[display("events out of order: event at {previous} is followed by an earlier event at {next}")]
 pub struct OutOfOrder {
     pub previous: Timestamp,
     pub next: Timestamp,

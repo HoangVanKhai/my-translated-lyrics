@@ -378,7 +378,7 @@ pub struct ParseLyrics {
 
 /// Payload for [`GenerateError::RenderVtt`].
 #[derive(Debug, Display, Clone, PartialEq, Eq)]
-#[display("failed to render {song}.{language}.vtt: {cause}")]
+#[display("failed to render {song}/lyrics.{language}.vtt: {cause}")]
 pub struct RenderVtt {
     pub song: String,
     pub language: Language,
@@ -387,7 +387,7 @@ pub struct RenderVtt {
 
 /// Payload for [`GenerateError::RenderSrt`].
 #[derive(Debug, Display, Clone, PartialEq, Eq)]
-#[display("failed to render {song}.{language}.srt: {cause}")]
+#[display("failed to render {song}/lyrics.{language}.srt: {cause}")]
 pub struct RenderSrt {
     pub song: String,
     pub language: Language,
