@@ -53,11 +53,9 @@ impl Timestamp {
     /// the body, the caller inspects `tail` for it.
     pub fn take(input: &str) -> Result<(Self, &str), TakeTimestampError> {
         let digit = |next: char| -> Option<u8> {
-            next.is_ascii_digit()
-                .then_some(next)
+            next.to_digit(10)
                 .map(u8::try_from)
                 .and_then(Result::<u8, _>::ok)
-                .map(|c| c - b'0')
         };
 
         let mut chars = input.chars();
