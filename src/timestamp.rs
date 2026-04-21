@@ -168,7 +168,7 @@ impl fmt::Display for VttTime {
 #[derive(Debug, Display, Error)]
 #[non_exhaustive]
 pub enum ParseTimestampError {
-    #[display("invalid timestamp {raw:?}: seconds component {value} is out of range 0..60")]
+    #[display("invalid timestamp {raw:?}: seconds component {value} must be less than 60")]
     SecondsOutOfRange {
         #[error(not(source))]
         raw: String,

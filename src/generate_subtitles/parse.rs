@@ -79,12 +79,12 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
             Ok(Some((start, after_prefix))) => {
                 let body = after_prefix.trim_start();
                 if body.len() == after_prefix.len() {
-                    // No whitespace separated the timestamp from the
-                    // body; treat the line as a continuation.
-                    None
-                } else {
-                    Some((start, body))
+                    return Err(ParseLyricsError::MissingSeparatorAfterTimestamp {
+                        line_number,
+                        content: trimmed.to_string(),
+                    });
                 }
+                Some((start, body))
             }
             Ok(None) => None,
             Err(source) => {
@@ -228,6 +228,13 @@ pub enum ParseLyricsError {
         #[error(not(source))]
         content: String,
     },
+    #[display("line {line_number}: timestamp in {content:?} is not followed by whitespace")]
+    MissingSeparatorAfterTimestamp {
+        #[error(not(source))]
+        line_number: usize,
+        #[error(not(source))]
+        content: String,
+    },
     #[display(
         "line {line_number}: control marker {marker:?} must stand alone but is followed by {trailing:?}"
     )]
@@ -366,6 +373,19 @@ mod tests {
         assert!(matches!(
             parse_lyrics(input),
             Err(ParseLyricsError::MissingMarker { .. }),
+        ));
+    }
+
+    #[test]
+    fn rejects_timestamp_without_separator_after_prefix() {
+        let input = text_block_fnl! {
+            "00:00.000 ttl: Hello"
+            "00:02.000ttl: no space after timestamp"
+            "00:05.000 clr"
+        };
+        assert!(matches!(
+            parse_lyrics(input),
+            Err(ParseLyricsError::MissingSeparatorAfterTimestamp { .. }),
         ));
     }
 
