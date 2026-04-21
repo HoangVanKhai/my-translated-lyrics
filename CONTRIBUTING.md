@@ -18,6 +18,14 @@ type(scope): lowercase description
 - **Breaking changes:** append `!` before the colon (e.g. `feat(cli)!: remove deprecated flag`)
 - **Code identifiers** in descriptions should be wrapped in backticks (e.g. `` chore(deps): update `rand` ``)
 
+### Pull Request Titles
+
+Pull request titles must follow the same Conventional Commits format as commit messages, using the same `type(scope): lowercase description` pattern. The title of a squash-merged pull request becomes the commit message on the default branch, so the same rules apply.
+
+### Merge Commits
+
+A merge commit message must also follow the Conventional Commits format. Always supply an explicit message when running `git merge`, for example `git merge --no-ff -m "chore(merge): integrate feature branch" feature-branch`, rather than accepting the default `Merge branch '…'` message that Git generates. This rule is especially important for AI agents, which tend to run `git merge` without reviewing or overriding the default commit message.
+
 ## Code Style
 
 Automated tools enforce formatting (`cargo fmt`) and linting (`cargo clippy --all-targets`). The following conventions are **not** enforced by those tools and must be followed manually.

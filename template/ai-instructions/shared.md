@@ -5,6 +5,8 @@ Read and follow the CONTRIBUTING.md file in this repository for all code style c
 ## Quick Reference
 
 - Commit format: Conventional Commits. Pattern: `type(scope): lowercase description`. The scope is optional.
+- Pull request titles follow the same Conventional Commits convention as commit messages, using the `type(scope): lowercase description` pattern.
+- Merge commit messages follow the same Conventional Commits convention. When running `git merge`, always supply an explicit message with `-m "type(scope): lowercase description"` rather than accepting Git's default `Merge branch '…'` text.
 - Write documentation, comments, and other prose for ease of understanding first. Prefer a formal tone when it does not hurt clarity, and use complete sentences. Avoid mid-sentence breaks introduced by em dashes or long parenthetical clauses. Em dashes are a reliable symptom of loose phrasing; when one appears, restructure the surrounding sentence so each clause stands on its own rather than swapping the em dash for another punctuation mark.
 - Use descriptive names for variables and closure parameters. Single letters are permitted only in these cases: (1) conventional names like `n` for count or `f` for formatter; (2) comparison closures like `|a, b|`; (3) trivial single-expression closures; (4) fold accumulators; (5) index variables `i`/`j`/`k` in short closures or index-based loops; and (6) test fixtures with identical roles. Single letters are never permitted in multi-line functions or closures.
 - Use `pipe-trait` to chain through unary functions such as constructors, `Some`, `Ok`, and free functions. Use it to flatten nested calls and to continue method chains. Do not use it for simple standalone calls; prefer `foo(value)` over `value.pipe(foo)`.
