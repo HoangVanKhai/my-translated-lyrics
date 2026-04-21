@@ -198,6 +198,30 @@ let output = cmd.output().expect("spawn my-tool");
 
 Available `.with_*` methods mirror every standard builder method: `with_arg`, `with_args`, `with_env`, `with_envs`, `with_env_remove`, `with_env_clear`, `with_current_dir`, `with_stdin`, `with_stdout`, `with_stderr`.
 
+## Unit Tests
+
+Unit-test modules live in a dedicated external file alongside the module under test rather than in a long inline `mod tests { ... }` block. The parent module wires up the external file at its end with the standard declaration:
+
+```rust
+#[cfg(test)]
+mod tests;
+```
+
+The existing sibling pair `src/video_descriptor.rs` and `src/video_descriptor/tests.rs` illustrates this layout.
+
+### When the inline form is acceptable
+
+There is nothing wrong with `mod tests { ... }` by itself. The inline form is reserved for modules that have a single small test, where the block does not noticeably extend the length of the parent. The problem that this convention addresses is a long inline block that extends the length of the main module and makes it harder to traverse. Use the number of lines as the deciding factor: once the inline tests grow long enough to get in the way of reading the rest of the module, move them into an external file.
+
+### Where the external file sits
+
+For each parent source file, the external tests file sits in a directory named after the parent, using the same path regardless of whether the parent has any other submodules. Concretely:
+
+- For `src/foo.rs`, the tests file is `src/foo/tests.rs`.
+- For `src/foo/bar.rs`, the tests file is `src/foo/bar/tests.rs`.
+
+Do not flatten the tests into a sibling file such as `src/foo_tests.rs`, and do not skip the intermediate directory when the parent currently has no other submodules.
+
 ## Setup
 
 Install the required Rust toolchain and components before running any checks:

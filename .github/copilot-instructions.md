@@ -14,6 +14,7 @@ Read and follow the CONTRIBUTING.md file in this repository for all code style c
 - Prefer `where` clauses when a type has multiple trait bounds.
 - Minimize `unwrap()` in non-test code. Use proper error handling instead.
 - Prefer `#[cfg_attr(..., ignore = "reason")]` over `#[cfg(...)]` when skipping tests. Use `#[cfg]` on tests only when the code cannot compile under the condition, such as when it references types or functions that do not exist on other platforms.
+- Place unit-test modules in a dedicated external file and wire it up with `#[cfg(test)] mod tests;` at the end of the parent, rather than a long inline `mod tests { ... }` block. For `src/foo.rs` the tests file is `src/foo/tests.rs`, and for `src/foo/bar.rs` it is `src/foo/bar/tests.rs`. Use this layout even when the parent has no other submodules. Reserve the inline form for modules with a single small test whose length does not noticeably extend the parent.
 - Install the toolchain before running tests: `rustup toolchain install "$(< rust-toolchain)" && rustup component add --toolchain "$(< rust-toolchain)" rustfmt clippy`.
 - Validate changes with `cargo fmt -- --check && cargo clippy --all-targets && cargo test`.
 - **Always run the full Rust test suite** (`cargo fmt -- --check && cargo clippy --all-targets && cargo test`) before every commit. This rule applies to all changes, including documentation changes, comment edits, and config updates.
