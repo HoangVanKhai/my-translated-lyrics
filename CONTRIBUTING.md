@@ -18,6 +18,14 @@ type(scope): lowercase description
 - **Breaking changes:** append `!` before the colon (e.g. `feat(cli)!: remove deprecated flag`)
 - **Code identifiers** in descriptions should be wrapped in backticks (e.g. `` chore(deps): update `rand` ``)
 
+### Pull Request Titles
+
+Pull request titles must follow the same Conventional Commits format as commit messages, using the same `type(scope): lowercase description` pattern. The title of a squash-merged pull request becomes the commit message on the default branch, so the same rules apply.
+
+### Merge Commits
+
+A merge commit message must also follow the Conventional Commits format. Whenever `git merge` creates a merge commit, such as during a non-fast-forward merge, always supply an explicit message rather than accepting the default `Merge branch '…'` text that Git generates. For example, use `git merge --no-ff -m "chore(merge): integrate feature branch" feature-branch`. This rule is especially important for AI agents, which tend to run `git merge` without reviewing or overriding the default commit message.
+
 ## Code Style
 
 Automated tools enforce formatting (`cargo fmt`) and linting (`cargo clippy --all-targets`). The following conventions are **not** enforced by those tools and must be followed manually.
@@ -121,6 +129,43 @@ fn unix_path_logic() { /* uses hardcoded unix paths but no unix-only types */ }
 fn unix_only_types() { /* uses OsStrExt which only exists on unix */ }
 ```
 
+### Test Module Imports
+
+Test modules appear in two shapes. An inline module lives in the same file as the code under test, introduced by `#[cfg(test)] mod tests { ... }`. An external module lives in a sibling file, declared with `#[cfg(test)] mod tests;` next to a companion `src/<module>/tests.rs`. The rules below apply identically to both; the choice between inline and external placement does not affect the import style.
+
+#### Prefer an explicit brace list over `use super::*;`
+
+Tests should declare which symbols they use. A glob hides the surface area of the module under test, silently absorbs newly added items, and breaks grep for callers of any given symbol.
+
+```rust
+// Good: each symbol under test is named.
+use super::{CollectionName, ParseCollectionNameError, VideoTitle};
+
+// Avoid: pulls every public item from the parent, including items
+// the test never references.
+use super::*;
+```
+
+A glob is acceptable only when a module intentionally re-exports its own payload for consumers, for example `use super::prelude::*;` where `prelude` is a deliberate internal API. In that case the glob targets the prelude rather than the parent itself.
+
+#### Import each item from its canonical path
+
+When a test needs a symbol that does not live in its direct parent module, import it from the module that defines it rather than through a name the parent happens to bring into its own scope with `use` or `pub use`. In Rust, a plain `use` does not re-export; it introduces a binding in the parent's namespace that a child module can still reference through `super::`. A `pub use` additionally exposes the binding to outside callers. Both forms are fragile dependencies for a test: the canonical path remains valid regardless of how the parent reorganizes its own imports, while the indirect path breaks the moment the parent reshapes its own `use` statements.
+
+```rust
+// In `src/foo/tests.rs`, when `SomeType` is defined in `crate::bar`:
+
+// Good: canonical path, stable across parent refactors.
+use crate::bar::SomeType;
+
+// Avoid: relies on `src/foo.rs` containing `use crate::bar::SomeType;`
+// at the top of the file. Removing or renaming that line in the
+// parent silently breaks the test's import.
+use super::SomeType;
+```
+
+This rule applies whether the parent's binding is a private `use` or a `pub use`, because either kind is often an incidental import rather than part of the module's public contract.
+
 ### Using `pipe-trait`
 
 This codebase uses the [`pipe-trait`](https://docs.rs/pipe-trait) crate for method-chaining through unary functions, keeping code in a natural left-to-right reading order. Import it as `use pipe_trait::Pipe;`.
@@ -189,6 +234,62 @@ let output = cmd.output().expect("spawn my-tool");
 ```
 
 Available `.with_*` methods mirror every standard builder method: `with_arg`, `with_args`, `with_env`, `with_envs`, `with_env_remove`, `with_env_clear`, `with_current_dir`, `with_stdin`, `with_stdout`, `with_stderr`.
+
+### Unicode Escape Codes
+
+Write Unicode characters in string literals as the literal glyph whenever the character is visible in a monospaced editor. The `\u{...}` escape sequence is reserved for characters whose visual form is absent, ambiguous, or easily confused with something else. Every other character belongs in the source as itself, including ASCII, CJK characters, Latin letters with diacritics, accented Cyrillic, Arabic-Indic digits, full-width digits, and full-width punctuation.
+
+Writing a visible character as an escape code has no benefit. It makes the source line harder to read at the call site, harder to search for with the literal character, and indistinguishable at a glance from legitimate escapes for invisible characters. Reviewers learn to skim past `\u{...}` sequences, and that habit lets the genuinely invisible ones slip through.
+
+#### When to keep the escape
+
+Use `\u{...}` only for characters whose glyph is absent, ambiguous, or easily confused with something else. Prefer Rust's named escapes such as `\n`, `\t`, `\r`, and `\0` when they exist, and fall back to `\u{...}` for the remaining cases. Add an explanatory comment when the context does not make the escape's purpose obvious. Examples:
+
+- `\u{3000}` IDEOGRAPHIC SPACE, which renders as blank space and is visually indistinguishable from the regular `\u{0020}` SPACE.
+- `\u{200B}` ZERO WIDTH SPACE and other zero-width characters.
+- Combining marks written on their own, outside a grapheme that makes their purpose clear.
+- Control characters in the range `\u{0000}` through `\u{001F}`, the delete character `\u{007F}`, and the range `\u{0080}` through `\u{009F}`.
+
+#### Examples
+
+- **Full-width digit.** Write `"００:00.000"` rather than `"\u{FF10}\u{FF10}:00.000"`.
+- **Full-width colon.** Write `"role：name"` rather than `"role\u{FF1A}name"`.
+- **Ideographic space.** Write `"role：name\u{3000}role：name"` rather than `"role\u{FF1A}name\u{3000}role\u{FF1A}name"`. The full-width colons switch to their literal glyphs because they are visible, while the ideographic space stays escaped because its glyph is not.
+- **ASCII digit or letter.** Write `"01"` rather than `"\u{0030}\u{0031}"`.
+
+#### Editor note
+
+Some editors and some chat-style interfaces silently re-escape pasted Unicode characters on save or on copy. When that happens, do not try to type the glyph back in by hand. Use a command-line replacement instead, for example:
+
+```sh
+perl -CSD -i -pe 's/\\u\{ff10\}/\x{ff10}/gi' path/to/file
+```
+
+So far this behavior has only been observed with [Claude Code Web](https://claude.ai/code/).
+
+## Unit Tests
+
+A unit-test module may either sit inline as `mod tests { ... }` in its parent or live in a dedicated external `tests` submodule. The inline form is appropriate for short test modules; once the block grows long enough to noticeably extend the length of the parent and get in the way of reading the rest of the module, move the tests into an external file.
+
+### When the inline form is acceptable
+
+There is nothing wrong with `mod tests { ... }` by itself. Reserve the inline form for modules whose entire test suite fits in a small number of lines, so that the block does not noticeably extend the length of the parent. The problem that this convention addresses is a long inline block that extends the length of the main module and makes it harder to traverse. Use the number of lines as the deciding factor: once the inline tests grow long enough to get in the way of reading the rest of the module, move them into an external file.
+
+### Where the external file sits
+
+When the tests live externally, the parent declares them at the end of the file with the standard declaration:
+
+```rust
+#[cfg(test)]
+mod tests;
+```
+
+The external file itself sits in a directory named after the parent, using the same path regardless of whether the parent has any other submodules. Concretely:
+
+- For `src/foo.rs`, the tests file is `src/foo/tests.rs`.
+- For `src/foo/bar.rs`, the tests file is `src/foo/bar/tests.rs`.
+
+Do not flatten the tests into a sibling file such as `src/foo_tests.rs`, and do not skip the intermediate directory when the parent currently has no other submodules. The existing sibling pair `src/video_descriptor.rs` and `src/video_descriptor/tests.rs` illustrates this layout.
 
 ## Setup
 
