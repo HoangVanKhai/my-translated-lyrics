@@ -64,6 +64,7 @@ impl Timestamp {
             .next()
             .and_then(digit)
             .ok_or(TakeTimestampError::ShapeMismatch)?;
+        let minutes = u64::from(tens_min) * 10 + u64::from(ones_min);
 
         chars
             .next()
@@ -78,6 +79,7 @@ impl Timestamp {
             .next()
             .and_then(digit)
             .ok_or(TakeTimestampError::ShapeMismatch)?;
+        let seconds = u64::from(tens_sec) * 10 + u64::from(ones_sec);
 
         chars
             .next()
@@ -96,17 +98,15 @@ impl Timestamp {
             .next()
             .and_then(digit)
             .ok_or(TakeTimestampError::ShapeMismatch)?;
+        let milliseconds =
+            u64::from(hundreds_ms) * 100 + u64::from(tens_ms) * 10 + u64::from(ones_ms);
 
-        let seconds = u64::from(tens_sec) * 10 + u64::from(ones_sec);
         if seconds >= 60 {
             return Err(TakeTimestampError::SecondsOutOfRange {
                 raw: input[..9].to_string(),
                 value: seconds,
             });
         }
-        let minutes = u64::from(tens_min) * 10 + u64::from(ones_min);
-        let milliseconds =
-            u64::from(hundreds_ms) * 100 + u64::from(tens_ms) * 10 + u64::from(ones_ms);
         Ok((
             Timestamp::new(minutes, seconds, milliseconds),
             chars.as_str(),
