@@ -1,6 +1,4 @@
 use core::fmt;
-use core::num::ParseIntError;
-use core::str::FromStr;
 use derive_more::{Display, Error};
 
 /// A point in time inside the video, measured as milliseconds from
@@ -25,64 +23,82 @@ impl Timestamp {
     /// that would normalize an out-of-range cue component, and that
     /// same arithmetic falls out of the composition naturally.
     /// Callers that need strict `SS < 60` / `mmm < 1_000` validation
-    /// must perform it before calling `new`; the [`FromStr`] impl
-    /// does so for `MM:SS.mmm` source strings.
+    /// must perform it before calling `new`; [`Timestamp::take`] does
+    /// so for `MM:SS.mmm` source strings.
     pub const fn new(minutes: u64, seconds: u64, milliseconds: u64) -> Self {
         Timestamp(minutes * 60_000 + seconds * 1_000 + milliseconds)
     }
-}
 
-impl FromStr for Timestamp {
-    type Err = ParseTimestampError;
-
-    /// Parses the `MM:SS.mmm` form that opens each cue in
-    /// `lyrics.*.txt`. The caller is expected to have extracted the
-    /// 9-byte `MM:SS.mmm` prefix beforehand. Songs longer than 99
-    /// minutes would require widening both this parser and the
-    /// tokenizer in [`crate::generate_subtitles::parse`].
+    /// Consumes a leading `MM:SS.mmm` prefix (9 ASCII characters)
+    /// from `input` and returns the parsed `Timestamp` along with the
+    /// unconsumed tail. Follows the parse-don't-validate pattern:
     ///
-    /// Seconds must satisfy `0 <= SS < 60` and milliseconds
-    /// `0 <= mmm < 1_000`. Out-of-range components raise
-    /// [`ParseTimestampError::SecondsOutOfRange`] or
-    /// [`ParseTimestampError::MillisecondsOutOfRange`] rather than
-    /// being folded silently into the total.
-    fn from_str(input: &str) -> Result<Self, Self::Err> {
-        let (minutes_part, seconds_part) = input
-            .split_once(':')
-            .ok_or(ParseTimestampError::MissingColon)?;
-        let (seconds_part, milliseconds_part) = seconds_part
-            .split_once('.')
-            .ok_or(ParseTimestampError::MissingDot)?;
-        let minutes =
-            minutes_part
-                .parse::<u64>()
-                .map_err(|source| ParseTimestampError::InvalidMinutes {
-                    value: minutes_part.to_string(),
-                    source,
-                })?;
-        let seconds =
-            seconds_part
-                .parse::<u64>()
-                .map_err(|source| ParseTimestampError::InvalidSeconds {
-                    value: seconds_part.to_string(),
-                    source,
-                })?;
+    /// - `Ok(Some((ts, tail)))` — the prefix matched the shape and
+    ///   every component fits its range. `tail` is `input` past the
+    ///   nine consumed characters, untouched.
+    /// - `Ok(None)` — the first nine characters of `input` do not
+    ///   form an `MM:SS.mmm` shape (too short, wrong punctuation, or
+    ///   a non-digit where a digit is required). Callers typically
+    ///   treat this as "no timestamp here" and route the line
+    ///   elsewhere.
+    /// - `Err(_)` — the prefix has timestamp shape but a component
+    ///   is out of range (currently only `seconds >= 60`; three-digit
+    ///   milliseconds can never exceed 999, and two-digit minutes
+    ///   are uncapped by design).
+    ///
+    /// The caller is responsible for anything past the prefix: if
+    /// the cue format requires whitespace between the timestamp and
+    /// the body, the caller inspects `tail` for it.
+    pub fn take(input: &str) -> Result<Option<(Self, &str)>, ParseTimestampError> {
+        let mut chars = input.chars();
+        let Some(tens_min) = digit(chars.next()) else {
+            return Ok(None);
+        };
+        let Some(ones_min) = digit(chars.next()) else {
+            return Ok(None);
+        };
+        if !matches!(chars.next(), Some(':')) {
+            return Ok(None);
+        }
+        let Some(tens_sec) = digit(chars.next()) else {
+            return Ok(None);
+        };
+        let Some(ones_sec) = digit(chars.next()) else {
+            return Ok(None);
+        };
+        if !matches!(chars.next(), Some('.')) {
+            return Ok(None);
+        }
+        let Some(hundreds_ms) = digit(chars.next()) else {
+            return Ok(None);
+        };
+        let Some(tens_ms) = digit(chars.next()) else {
+            return Ok(None);
+        };
+        let Some(ones_ms) = digit(chars.next()) else {
+            return Ok(None);
+        };
+
+        let seconds = u64::from(tens_sec) * 10 + u64::from(ones_sec);
         if seconds >= 60 {
             return Err(ParseTimestampError::SecondsOutOfRange { value: seconds });
         }
-        let milliseconds = milliseconds_part.parse::<u64>().map_err(|source| {
-            ParseTimestampError::InvalidMilliseconds {
-                value: milliseconds_part.to_string(),
-                source,
-            }
-        })?;
-        if milliseconds >= 1_000 {
-            return Err(ParseTimestampError::MillisecondsOutOfRange {
-                value: milliseconds,
-            });
-        }
-        Ok(Timestamp::new(minutes, seconds, milliseconds))
+        let minutes = u64::from(tens_min) * 10 + u64::from(ones_min);
+        let milliseconds =
+            u64::from(hundreds_ms) * 100 + u64::from(tens_ms) * 10 + u64::from(ones_ms);
+        Ok(Some((
+            Timestamp::new(minutes, seconds, milliseconds),
+            chars.as_str(),
+        )))
     }
+}
+
+/// Extracts the digit value (0..10) from a character if that
+/// character is an ASCII digit, propagating `None` for end-of-input
+/// or non-digit.
+fn digit(next: Option<char>) -> Option<u8> {
+    let ch = next.filter(char::is_ascii_digit)?;
+    Some((ch as u8) - b'0')
 }
 
 /// Renders `Timestamp` in the `MM:SS.mmm` source format. Error
@@ -151,35 +167,8 @@ impl fmt::Display for VttTime {
 #[derive(Debug, Display, Error)]
 #[non_exhaustive]
 pub enum ParseTimestampError {
-    #[display("timestamp is missing ':' between minutes and seconds")]
-    MissingColon,
-    #[display("timestamp is missing '.' between seconds and milliseconds")]
-    MissingDot,
-    #[display("invalid minutes component {value:?}: {source}")]
-    InvalidMinutes {
-        #[error(not(source))]
-        value: String,
-        source: ParseIntError,
-    },
-    #[display("invalid seconds component {value:?}: {source}")]
-    InvalidSeconds {
-        #[error(not(source))]
-        value: String,
-        source: ParseIntError,
-    },
-    #[display("invalid milliseconds component {value:?}: {source}")]
-    InvalidMilliseconds {
-        #[error(not(source))]
-        value: String,
-        source: ParseIntError,
-    },
     #[display("seconds component {value} is out of range 0..60")]
     SecondsOutOfRange {
-        #[error(not(source))]
-        value: u64,
-    },
-    #[display("milliseconds component {value} is out of range 0..1000")]
-    MillisecondsOutOfRange {
         #[error(not(source))]
         value: u64,
     },
@@ -190,11 +179,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parses_basic_timestamp() {
-        assert_eq!(
-            "00:02.960".parse::<Timestamp>().unwrap(),
-            Timestamp::new(0, 2, 960),
-        );
+    fn takes_basic_timestamp_with_tail() {
+        let (ts, tail) = Timestamp::take("00:02.960 hello").unwrap().unwrap();
+        assert_eq!(ts, Timestamp::new(0, 2, 960));
+        assert_eq!(tail, " hello");
+    }
+
+    #[test]
+    fn takes_timestamp_at_exact_length() {
+        let (ts, tail) = Timestamp::take("01:59.715").unwrap().unwrap();
+        assert_eq!(ts, Timestamp::new(1, 59, 715));
+        assert_eq!(tail, "");
     }
 
     #[test]
@@ -206,18 +201,11 @@ mod tests {
     }
 
     #[test]
-    fn parses_timestamp_with_high_minutes() {
-        assert_eq!(
-            "01:59.715".parse::<Timestamp>().unwrap(),
-            Timestamp::new(1, 59, 715),
-        );
-    }
-
-    #[test]
     fn display_round_trips() {
         let cases = ["00:02.960", "01:59.715", "02:07.075", "04:46.000"];
         for input in cases {
-            let value: Timestamp = input.parse().unwrap();
+            let (value, tail) = Timestamp::take(input).unwrap().unwrap();
+            assert_eq!(tail, "");
             assert_eq!(value.to_string(), input);
         }
     }
@@ -246,38 +234,28 @@ mod tests {
     }
 
     #[test]
-    fn rejects_missing_colon() {
-        assert!(matches!(
-            "0002.960".parse::<Timestamp>(),
-            Err(ParseTimestampError::MissingColon),
-        ));
-    }
-
-    #[test]
-    fn rejects_missing_dot() {
-        assert!(matches!(
-            "00:02".parse::<Timestamp>(),
-            Err(ParseTimestampError::MissingDot),
-        ));
+    fn shape_mismatch_returns_ok_none() {
+        // Missing colon.
+        assert!(matches!(Timestamp::take("0002.960"), Ok(None)));
+        // Missing dot.
+        assert!(matches!(Timestamp::take("00:02"), Ok(None)));
+        // Fewer than three millisecond digits.
+        assert!(matches!(Timestamp::take("00:02.96"), Ok(None)));
+        // Empty input.
+        assert!(matches!(Timestamp::take(""), Ok(None)));
+        // Non-digit where a digit is required.
+        assert!(matches!(Timestamp::take("ab:cd.efg"), Ok(None)));
     }
 
     #[test]
     fn rejects_seconds_out_of_range() {
         assert!(matches!(
-            "00:60.000".parse::<Timestamp>(),
+            Timestamp::take("00:60.000"),
             Err(ParseTimestampError::SecondsOutOfRange { value: 60 }),
         ));
         assert!(matches!(
-            "00:99.000".parse::<Timestamp>(),
+            Timestamp::take("00:99.000"),
             Err(ParseTimestampError::SecondsOutOfRange { value: 99 }),
-        ));
-    }
-
-    #[test]
-    fn rejects_milliseconds_out_of_range() {
-        assert!(matches!(
-            "00:00.1000".parse::<Timestamp>(),
-            Err(ParseTimestampError::MillisecondsOutOfRange { value: 1000 }),
         ));
     }
 }

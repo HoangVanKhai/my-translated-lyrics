@@ -75,24 +75,37 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
             continue;
         }
 
-        match split_timestamp(trimmed) {
-            Some((timestamp_str, rest)) => {
-                let start = timestamp_str.parse::<Timestamp>().map_err(|source| {
-                    ParseLyricsError::InvalidTimestamp {
-                        line_number,
-                        raw: timestamp_str.to_string(),
-                        source,
-                    }
-                })?;
-                let rest = rest.trim();
-                let first_token = rest.split_whitespace().next().unwrap_or("");
+        let header = match Timestamp::take(trimmed) {
+            Ok(Some((start, after_prefix))) => {
+                let body = after_prefix.trim_start();
+                if body.len() == after_prefix.len() {
+                    // No whitespace separated the timestamp from the
+                    // body; treat the line as a continuation.
+                    None
+                } else {
+                    Some((start, body))
+                }
+            }
+            Ok(None) => None,
+            Err(source) => {
+                return Err(ParseLyricsError::InvalidTimestamp {
+                    line_number,
+                    raw: trimmed[..9].to_string(),
+                    source,
+                });
+            }
+        };
+
+        match header {
+            Some((start, body)) => {
+                let first_token = body.split_whitespace().next().unwrap_or("");
 
                 if first_token == END_OF_VIDEO_MARKER || first_token == CLEAR_MARKER {
-                    if rest.len() > first_token.len() {
+                    if body.len() > first_token.len() {
                         return Err(ParseLyricsError::ExtraTextAfterControlMarker {
                             line_number,
                             marker: first_token.to_string(),
-                            trailing: rest[first_token.len()..].trim_start().to_string(),
+                            trailing: body[first_token.len()..].trim_start().to_string(),
                         });
                     }
                     if first_token == CLEAR_MARKER {
@@ -103,9 +116,9 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                 }
 
                 let (marker, text) =
-                    split_marker(rest).ok_or_else(|| ParseLyricsError::MissingMarker {
+                    split_marker(body).ok_or_else(|| ParseLyricsError::MissingMarker {
                         line_number,
-                        content: rest.to_string(),
+                        content: body.to_string(),
                     })?;
                 if text.is_empty() {
                     last_cue_index = None;
@@ -177,37 +190,6 @@ fn resolve_cues(events: Vec<Event>) -> Result<Vec<SubtitleCue>, ParseLyricsError
     }
 
     Ok(cues)
-}
-
-/// Splits a line into a timestamp prefix and the remainder. Returns
-/// `None` when the line does not start with an `MM:SS.mmm` timestamp.
-fn split_timestamp(line: &str) -> Option<(&str, &str)> {
-    let bytes = line.as_bytes();
-    if bytes.len() < 9 {
-        return None;
-    }
-    if !bytes[0].is_ascii_digit() || !bytes[1].is_ascii_digit() {
-        return None;
-    }
-    if bytes[2] != b':' {
-        return None;
-    }
-    if !bytes[3].is_ascii_digit() || !bytes[4].is_ascii_digit() {
-        return None;
-    }
-    if bytes[5] != b'.' {
-        return None;
-    }
-    if !bytes[6].is_ascii_digit() || !bytes[7].is_ascii_digit() || !bytes[8].is_ascii_digit() {
-        return None;
-    }
-    let timestamp = &line[..9];
-    let rest = &line[9..];
-    let rest_trim_start = rest.trim_start();
-    if rest.len() == rest_trim_start.len() {
-        return None;
-    }
-    Some((timestamp, rest_trim_start))
 }
 
 /// Splits a line body like `marker: text` into its two halves. Returns
