@@ -294,16 +294,16 @@ mod tests {
 
     #[test]
     fn rejects_seconds_out_of_range() {
-        let Err(TakeTimestampError::SecondsOutOfRange { raw, value }) =
-            Timestamp::take("00:60.000")
+        let TakeTimestampError::SecondsOutOfRange { raw, value } =
+            Timestamp::take("00:60.000").unwrap_err()
         else {
             panic!("expected SecondsOutOfRange");
         };
         assert_eq!(raw, "00:60.000");
         assert_eq!(value, 60);
 
-        let Err(TakeTimestampError::SecondsOutOfRange { raw, value }) =
-            Timestamp::take("00:99.000trailing")
+        let TakeTimestampError::SecondsOutOfRange { raw, value } =
+            Timestamp::take("00:99.000trailing").unwrap_err()
         else {
             panic!("expected SecondsOutOfRange");
         };
