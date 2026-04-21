@@ -61,11 +61,11 @@ fn shape_mismatch_rejects_non_ascii_unicode_digits() {
     // `MM:SS.mmm` source format is ASCII-only, and slicing the
     // input by byte index would panic mid-character.
     assert!(matches!(
-        Timestamp::take("\u{FF10}\u{FF10}:00.000"),
+        Timestamp::take("００:00.000"),
         Err(TakeTimestampError::ShapeMismatch),
     ));
     assert!(matches!(
-        Timestamp::take("\u{0660}\u{0660}:00.000"),
+        Timestamp::take("٠٠:00.000"),
         Err(TakeTimestampError::ShapeMismatch),
     ));
 }
