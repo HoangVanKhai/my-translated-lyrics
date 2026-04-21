@@ -200,7 +200,7 @@ Available `.with_*` methods mirror every standard builder method: `with_arg`, `w
 
 ## Unit Tests
 
-Unit-test modules live in a dedicated external file alongside the module under test rather than in a long inline `mod tests { ... }` block. The parent module wires up the external file at its end with the standard declaration:
+Unit-test modules live in a dedicated external file alongside the module under test rather than in a long inline `mod tests { ... }` block. The parent module declares the external `tests` module at the end of the file with the standard declaration:
 
 ```rust
 #[cfg(test)]
