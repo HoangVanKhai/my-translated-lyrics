@@ -211,7 +211,7 @@ Use `\u{...}` only for characters whose glyph is absent, ambiguous, or easily co
 - `\u{3000}` IDEOGRAPHIC SPACE, which renders as blank space and is visually indistinguishable from the regular `\u{0020}` SPACE.
 - `\u{200B}` ZERO WIDTH SPACE and other zero-width characters.
 - Combining marks written on their own, outside a grapheme that makes their purpose clear.
-- Control characters in the range `\u{0000}` through `\u{001F}`, the delete character `\u{007F}`, and the C1 control block.
+- Control characters in the range `\u{0000}` through `\u{001F}`, the delete character `\u{007F}`, and the range `\u{0080}` through `\u{009F}`.
 
 #### Examples
 
