@@ -75,9 +75,15 @@ fn dist_is_up_to_date_with_sources() {
         .iter()
         .flat_map(|song_name| collect_subtitle_files(&dist_dir.join(song_name)))
         .collect();
-    assert_eq!(
-        actual_dist_files, expected_dist_files,
-        "dist/ contains stale subtitle artifacts that the generator no longer produces. Regenerate with `cargo run --bin generate-subtitles -- sources dist --execute`.",
+    let stale: Vec<&PathBuf> = actual_dist_files.difference(&expected_dist_files).collect();
+    assert!(
+        stale.is_empty(),
+        "dist/ contains stale subtitle artifacts that the generator no longer produces: {stale:#?}. The generator does not remove files it no longer writes; delete them manually, then rerun `cargo run --bin generate-subtitles -- sources dist --execute` to verify.",
+    );
+    let missing: Vec<&PathBuf> = expected_dist_files.difference(&actual_dist_files).collect();
+    assert!(
+        missing.is_empty(),
+        "dist/ is missing subtitle artifacts the generator just wrote: {missing:#?}. Regenerate with `cargo run --bin generate-subtitles -- sources dist --execute`.",
     );
 }
 

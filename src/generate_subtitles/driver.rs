@@ -182,10 +182,14 @@ pub fn load_song(song_dir: &Path) -> Result<Song, GenerateError> {
         else {
             continue;
         };
-        let Ok(language) = middle.parse::<Language>() else {
-            continue;
-        };
         let lyrics_path = entry.path();
+        let language =
+            middle
+                .parse::<Language>()
+                .map_err(|_| GenerateError::UnrecognizedLanguage {
+                    path: lyrics_path.clone(),
+                    code: middle.to_string(),
+                })?;
         let content = read_to_string(&lyrics_path).map_err(|source| GenerateError::ReadFile {
             path: lyrics_path.clone(),
             source,
@@ -293,6 +297,13 @@ pub enum GenerateError {
     NonUtf8Path {
         #[error(not(source))]
         path: PathBuf,
+    },
+    #[display("lyrics file {path:?} has unrecognized language code {code:?}")]
+    UnrecognizedLanguage {
+        #[error(not(source))]
+        path: PathBuf,
+        #[error(not(source))]
+        code: String,
     },
     #[display("failed to parse {path:?}: {source}")]
     ParseVideoDesc {
