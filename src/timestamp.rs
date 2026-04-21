@@ -106,6 +106,7 @@ impl Timestamp {
                 value: seconds,
             });
         }
+
         Ok((
             Timestamp::new(minutes, seconds, milliseconds),
             chars.as_str(),
