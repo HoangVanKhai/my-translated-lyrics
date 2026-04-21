@@ -45,7 +45,8 @@ use derive_more::{Display, Error};
 const CLASS_CREDIT_ROLE: &str = "creditRole";
 /// Built-in class name for the name cell of a credit line.
 const CLASS_CREDIT_NAME: &str = "creditName";
-/// Built-in class name for a `【...】` highlight inside a credit name.
+/// Built-in class name for a bracketed highlight (`【...】`, `[...]`,
+/// or `(...)`) inside a credit name.
 const CLASS_CREDIT_SPECIAL: &str = "creditSpecial";
 
 /// Fixed style for the credit role class.
@@ -107,8 +108,8 @@ pub fn render_file(
 /// to emit. Voice and class rules are always emitted for every entry
 /// in the line-markers descriptor; the credit styles are emitted
 /// conditionally because the `creditSpecial` class, in particular,
-/// appears only when a song's credits list includes a `【...】`
-/// highlight.
+/// appears only when a song's credits list includes a bracketed
+/// highlight (`【...】`, `[...]`, or `(...)`).
 #[derive(Debug, Default)]
 struct Features {
     used_credit_role: bool,

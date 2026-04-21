@@ -90,7 +90,7 @@ fn voice_name_rejects_empty() {
 
 #[test]
 fn voice_name_rejects_webvtt_and_css_meta_characters() {
-    for ch in ['<', '>', '"', '\\', ']'] {
+    for ch in ['<', '>', '"', '\\'] {
         let source = format!("bad{ch}name");
         assert_eq!(
             VoiceName::new(source).unwrap_err(),

@@ -120,7 +120,7 @@ fn is_class_name_continue(ch: char) -> bool {
 /// escaping.
 ///
 /// The permitted shape is any non-empty string whose characters are
-/// none of `<`, `>`, `"`, `\`, `]`, `U+2028`, `U+2029`, and which
+/// none of `<`, `>`, `"`, `\`, `U+2028`, `U+2029`, and which
 /// contains no ASCII or Unicode control character. This keeps CJK,
 /// accented Latin, and embedded spaces — the three shapes that
 /// already appear in `sources/*/line-markers.toml` — while rejecting
@@ -170,7 +170,7 @@ impl Serialize for VoiceName {
 }
 
 fn is_forbidden_voice_char(ch: char) -> bool {
-    matches!(ch, '<' | '>' | '"' | '\\' | ']' | '\u{2028}' | '\u{2029}') || ch.is_control()
+    matches!(ch, '<' | '>' | '"' | '\\' | '\u{2028}' | '\u{2029}') || ch.is_control()
 }
 
 #[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
@@ -179,7 +179,7 @@ pub enum InvalidVoiceName {
     #[display("voice name must not be empty")]
     Empty,
     #[display(
-        "voice name must not contain {_0:?}; `<`, `>`, `\"`, `\\`, `]`, line separators, and control characters are reserved by WebVTT and CSS"
+        "voice name must not contain {_0:?}; `<`, `>`, `\"`, `\\`, line separators, and control characters are reserved by WebVTT and CSS"
     )]
     ForbiddenCharacter(#[error(not(source))] char),
 }

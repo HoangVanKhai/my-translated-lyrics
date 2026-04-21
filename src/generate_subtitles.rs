@@ -10,7 +10,7 @@
 //! The credit-line parser uses the `credit-roles` list in
 //! `credits.yaml` as its role vocabulary; a credit line whose first
 //! non-whitespace token is not a known role fails the render with
-//! [`generate_subtitles::credits_parse::ParseCreditError`].
+//! [`credits_parse::ParseCreditError`].
 //!
 //! The entry point [`main`] is called from `cli/generate_subtitles.rs`.
 
