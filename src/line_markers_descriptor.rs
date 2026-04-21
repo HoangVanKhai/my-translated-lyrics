@@ -41,7 +41,7 @@ pub struct LineMarkersDesc {
     /// Markers that name a voice. Each value maps a language code to
     /// the voice name to emit for that language.
     #[serde(default)]
-    pub voices: BTreeMap<String, BTreeMap<Language, String>>,
+    pub voices: BTreeMap<String, BTreeMap<Language, VoiceName>>,
     /// Markers that name a class. The mapped value is the class name
     /// applied to the wrapping element.
     #[serde(default)]
@@ -113,6 +113,75 @@ fn is_class_name_start(ch: char) -> bool {
 
 fn is_class_name_continue(ch: char) -> bool {
     ch.is_ascii_alphanumeric() || ch == '-' || ch == '_'
+}
+
+/// A speaker label that is safe to splat into a WebVTT `<v {name}>`
+/// tag and a `::cue(v[voice="{name}"])` attribute selector without
+/// escaping.
+///
+/// The permitted shape is any non-empty string whose characters are
+/// none of `<`, `>`, `"`, `\`, `]`, `U+2028`, `U+2029`, and which
+/// contains no ASCII or Unicode control character. This keeps CJK,
+/// accented Latin, and embedded spaces — the three shapes that
+/// already appear in `sources/*/line-markers.toml` — while rejecting
+/// every character that would terminate the HTML-like cue tag or
+/// the CSS attribute string.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct VoiceName(String);
+
+impl VoiceName {
+    /// Wraps `source` if and only if it satisfies the voice-name
+    /// shape above.
+    pub fn new(source: String) -> Result<Self, InvalidVoiceName> {
+        if source.is_empty() {
+            return Err(InvalidVoiceName::Empty);
+        }
+        for ch in source.chars() {
+            if is_forbidden_voice_char(ch) {
+                return Err(InvalidVoiceName::ForbiddenCharacter(ch));
+            }
+        }
+        Ok(VoiceName(source))
+    }
+
+    /// The underlying voice-name text.
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl fmt::Display for VoiceName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl<'de> Deserialize<'de> for VoiceName {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let source = String::deserialize(deserializer)?;
+        VoiceName::new(source).map_err(serde::de::Error::custom)
+    }
+}
+
+impl Serialize for VoiceName {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.0.serialize(serializer)
+    }
+}
+
+fn is_forbidden_voice_char(ch: char) -> bool {
+    matches!(ch, '<' | '>' | '"' | '\\' | ']' | '\u{2028}' | '\u{2029}') || ch.is_control()
+}
+
+#[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum InvalidVoiceName {
+    #[display("voice name must not be empty")]
+    Empty,
+    #[display(
+        "voice name must not contain {_0:?}; `<`, `>`, `\"`, `\\`, `]`, line separators, and control characters are reserved by WebVTT and CSS"
+    )]
+    ForbiddenCharacter(#[error(not(source))] char),
 }
 
 #[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
@@ -192,5 +261,51 @@ mod tests {
             CssClassName::new("bad\"name".to_string()).unwrap_err(),
             InvalidCssClassName::InvalidCharacter('"'),
         );
+    }
+
+    #[test]
+    fn voice_name_accepts_cjk_latin_and_embedded_space() {
+        assert_eq!(
+            VoiceName::new("名字一".to_string()).unwrap().as_str(),
+            "名字一",
+        );
+        assert_eq!(
+            VoiceName::new("Voz Ñ".to_string()).unwrap().as_str(),
+            "Voz Ñ",
+        );
+        assert_eq!(
+            VoiceName::new("voice-a".to_string()).unwrap().as_str(),
+            "voice-a",
+        );
+    }
+
+    #[test]
+    fn voice_name_rejects_empty() {
+        assert_eq!(
+            VoiceName::new(String::new()).unwrap_err(),
+            InvalidVoiceName::Empty,
+        );
+    }
+
+    #[test]
+    fn voice_name_rejects_webvtt_and_css_meta_characters() {
+        for ch in ['<', '>', '"', '\\', ']'] {
+            let source = format!("bad{ch}name");
+            assert_eq!(
+                VoiceName::new(source).unwrap_err(),
+                InvalidVoiceName::ForbiddenCharacter(ch),
+            );
+        }
+    }
+
+    #[test]
+    fn voice_name_rejects_control_and_line_separator_characters() {
+        for ch in ['\n', '\r', '\t', '\u{2028}', '\u{2029}'] {
+            let source = format!("bad{ch}name");
+            assert_eq!(
+                VoiceName::new(source).unwrap_err(),
+                InvalidVoiceName::ForbiddenCharacter(ch),
+            );
+        }
     }
 }

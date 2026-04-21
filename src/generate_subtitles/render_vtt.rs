@@ -35,7 +35,7 @@ use super::credits_parse::{
 use super::parse::SubtitleCue;
 use super::styles::{Style, class_style, voice_style};
 use crate::credits_descriptor::CreditsDesc;
-use crate::line_markers_descriptor::LineMarkersDesc;
+use crate::line_markers_descriptor::{LineMarkersDesc, VoiceName};
 use crate::timestamp::{Timestamp, VttTime};
 use crate::video_descriptor::Language;
 use core::fmt::Write;
@@ -300,7 +300,7 @@ fn write_style_block(
     }
 }
 
-fn write_voice_rule(output: &mut String, voice_name: &str, style: Option<&Style>) {
+fn write_voice_rule(output: &mut String, voice_name: &VoiceName, style: Option<&Style>) {
     writeln!(output, "::cue(v[voice=\"{voice_name}\"]) {{")
         .expect("writing to String is infallible");
     if let Some(style) = style {
