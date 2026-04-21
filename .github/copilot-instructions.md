@@ -5,6 +5,8 @@ Read and follow the CONTRIBUTING.md file in this repository for all code style c
 ## Quick Reference
 
 - Commit format: Conventional Commits. Pattern: `type(scope): lowercase description`. The scope is optional.
+- Pull request titles must follow the same Conventional Commits convention as commit messages, using the `type(scope): lowercase description` pattern.
+- Merge commit messages must also follow the Conventional Commits convention. Whenever `git merge` creates a merge commit, such as during a non-fast-forward merge, supply an explicit message with `-m "type(scope): lowercase description"` rather than accepting Git's default `Merge branch '…'` text.
 - Write documentation, comments, and other prose for ease of understanding first. Prefer a formal tone when it does not hurt clarity, and use complete sentences. Avoid mid-sentence breaks introduced by em dashes or long parenthetical clauses. Em dashes are a reliable symptom of loose phrasing; when one appears, restructure the surrounding sentence so each clause stands on its own rather than swapping the em dash for another punctuation mark.
 - Use descriptive names for variables and closure parameters. Single letters are permitted only in these cases: (1) conventional names like `n` for count or `f` for formatter; (2) comparison closures like `|a, b|`; (3) trivial single-expression closures; (4) fold accumulators; (5) index variables `i`/`j`/`k` in short closures or index-based loops; and (6) test fixtures with identical roles. Single letters are never permitted in multi-line functions or closures.
 - Use `pipe-trait` to chain through unary functions such as constructors, `Some`, `Ok`, and free functions. Use it to flatten nested calls and to continue method chains. Do not use it for simple standalone calls; prefer `foo(value)` over `value.pipe(foo)`.
@@ -19,5 +21,4 @@ Read and follow the CONTRIBUTING.md file in this repository for all code style c
 - Run the CSpell spell check when a change may introduce new words: `pnpm install --frozen-lockfile && pnpm exec cspell lint --gitignore '**'`.
 - When the user provides a diff to apply, run `git apply` rather than interpreting each hunk manually. When a diff is provided for context or discussion, respond accordingly.
 - The `gh` (GitHub CLI) is not installed. Do not attempt to use it.
-- Format pull request titles using the Conventional Commits convention, matching the same `type(scope): lowercase description` pattern specified for commit messages.
 - After completing a task, rewrite the pull request description so that it summarizes the totality of the pull request's changes in their final state. Do not leave the description as a running bullet list of checkboxes or AI task updates.
