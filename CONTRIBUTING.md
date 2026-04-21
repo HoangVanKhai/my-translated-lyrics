@@ -243,7 +243,7 @@ Writing a visible character as an escape code has no benefit. It makes the sourc
 
 #### When to keep the escape
 
-Use `\u{...}` only for characters whose glyph is absent, ambiguous, or easily confused with something else. Add an explanatory comment when the context does not make the escape's purpose obvious. Examples:
+Use `\u{...}` only for characters whose glyph is absent, ambiguous, or easily confused with something else. Prefer Rust's named escapes such as `\n`, `\t`, `\r`, and `\0` when they exist, and fall back to `\u{...}` for the remaining cases. Add an explanatory comment when the context does not make the escape's purpose obvious. Examples:
 
 - `\u{3000}` IDEOGRAPHIC SPACE, which renders as blank space and is visually indistinguishable from the regular `\u{0020}` SPACE.
 - `\u{200B}` ZERO WIDTH SPACE and other zero-width characters.
