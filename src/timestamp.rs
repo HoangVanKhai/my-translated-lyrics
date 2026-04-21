@@ -52,11 +52,7 @@ impl Timestamp {
     /// the cue format requires whitespace between the timestamp and
     /// the body, the caller inspects `tail` for it.
     pub fn take(input: &str) -> Result<(Self, &str), TakeTimestampError> {
-        let digit = |next: char| -> Option<u8> {
-            next.to_digit(10)
-                .map(u8::try_from)
-                .and_then(Result::<u8, _>::ok)
-        };
+        let digit = |next: char| -> Option<u8> { next.to_digit(10).map(|value| value as u8) };
 
         let mut chars = input.chars();
         let tens_min = chars
