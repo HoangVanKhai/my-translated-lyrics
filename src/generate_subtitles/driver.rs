@@ -7,8 +7,9 @@
 //! `install-local-lyrics`'s `--execute` flag opts into the actual write.
 
 use super::parse::{ParseLyricsError, SubtitleCue, parse_lyrics};
-use super::render_srt::render_file as render_srt_file;
-use super::render_vtt::render_file as render_vtt_file;
+use super::render_srt::{RenderSrtError, render_file as render_srt_file};
+use super::render_vtt::{RenderVttError, render_file as render_vtt_file};
+use crate::credits_descriptor::{CREDITS_CONFIG_FILE_NAME, CreditsDesc};
 use crate::line_markers_descriptor::{LINE_MARKERS_CONFIG_FILE_NAME, LineMarkersDesc};
 use crate::video_descriptor::{Language, VIDEO_CONFIG_FILE_NAME, VideoDesc};
 use clap::Parser;
@@ -53,6 +54,7 @@ pub struct Song {
     pub source_dir: PathBuf,
     pub video: VideoDesc,
     pub markers: LineMarkersDesc,
+    pub credits: CreditsDesc,
     pub languages: Vec<LanguageBundle>,
 }
 
@@ -75,8 +77,18 @@ pub fn render_song_to_disk(
 
     let mut written: Vec<PathBuf> = Vec::with_capacity(song.languages.len() * 2);
     for bundle in &song.languages {
-        let vtt = render_vtt_file(&bundle.cues, &song.markers, &bundle.language);
-        let srt = render_srt_file(&bundle.cues, &song.markers, &bundle.language);
+        let vtt = render_vtt_file(&bundle.cues, &song.markers, &song.credits, &bundle.language)
+            .map_err(|source| GenerateError::RenderVtt {
+                song: song.directory_name.clone(),
+                language: bundle.language.clone(),
+                source,
+            })?;
+        let srt = render_srt_file(&bundle.cues, &song.markers, &song.credits, &bundle.language)
+            .map_err(|source| GenerateError::RenderSrt {
+                song: song.directory_name.clone(),
+                language: bundle.language.clone(),
+                source,
+            })?;
         let vtt_path = destination_dir.join(format!("lyrics.{lang}.vtt", lang = bundle.language));
         let srt_path = destination_dir.join(format!("lyrics.{lang}.srt", lang = bundle.language));
         write_subtitle(&vtt_path, &vtt, execute)?;
@@ -135,6 +147,21 @@ pub fn load_song(song_dir: &Path) -> Result<Song, GenerateError> {
         LineMarkersDesc::default()
     };
 
+    let credits_path = song_dir.join(CREDITS_CONFIG_FILE_NAME);
+    let credits: CreditsDesc = if credits_path.exists() {
+        let credits_content =
+            read_to_string(&credits_path).map_err(|source| GenerateError::ReadFile {
+                path: credits_path.clone(),
+                source,
+            })?;
+        serde_saphyr::from_str(&credits_content).map_err(|source| GenerateError::ParseCredits {
+            path: credits_path.clone(),
+            source: source.to_string(),
+        })?
+    } else {
+        CreditsDesc::default()
+    };
+
     let mut languages: BTreeMap<Language, LanguageBundle> = BTreeMap::new();
     let entries = read_dir(song_dir).map_err(|source| GenerateError::ReadDir {
         path: song_dir.to_path_buf(),
@@ -182,6 +209,7 @@ pub fn load_song(song_dir: &Path) -> Result<Song, GenerateError> {
         source_dir: song_dir.to_path_buf(),
         video,
         markers,
+        credits,
         languages: languages.into_values().collect(),
     })
 }
@@ -279,9 +307,32 @@ pub enum GenerateError {
         source: toml::de::Error,
     },
     #[display("failed to parse {path:?}: {source}")]
+    ParseCredits {
+        #[error(not(source))]
+        path: PathBuf,
+        #[error(not(source))]
+        source: String,
+    },
+    #[display("failed to parse {path:?}: {source}")]
     ParseLyrics {
         #[error(not(source))]
         path: PathBuf,
         source: ParseLyricsError,
+    },
+    #[display("failed to render {song}.{language}.vtt: {source}")]
+    RenderVtt {
+        #[error(not(source))]
+        song: String,
+        #[error(not(source))]
+        language: Language,
+        source: RenderVttError,
+    },
+    #[display("failed to render {song}.{language}.srt: {source}")]
+    RenderSrt {
+        #[error(not(source))]
+        song: String,
+        #[error(not(source))]
+        language: Language,
+        source: RenderSrtError,
     },
 }

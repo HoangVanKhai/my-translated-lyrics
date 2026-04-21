@@ -32,9 +32,12 @@ pub const END_OF_VIDEO_MARKER: &str = "eov";
 ///   `<c.className>...</c>`, with the class name given as the mapped
 ///   value.
 /// * Markers declared in [`credits`] invoke the credit-block
-///   renderer. The renderer splits the line by column layout into
-///   `<c.creditRole>` and `<c.creditName>` segments. Names wrapped
-///   in `【...】` in the source become `<c.creditSpecial>` instead
+///   renderer. The renderer uses the `credit-roles` list from
+///   `credits.yaml` as a role vocabulary, tags each recognized role
+///   as `<c.creditRole>` and the following name region as
+///   `<c.creditName>`, and fails the render if a credit line
+///   contains an unknown role. Names wrapped in `【...】`, `[...]`,
+///   or `(...)` in the source become `<c.creditSpecial>` instead
 ///   of `<c.creditName>`.
 /// * Markers absent from [`voices`], [`classes`], and [`credits`]
 ///   emit the line content as plain unwrapped text.
@@ -71,8 +74,10 @@ pub struct LineMarkersDesc {
     #[serde(default)]
     pub classes: BTreeMap<String, String>,
     /// Markers that invoke the credit-block renderer. Columns of the
-    /// line become `<c.creditRole>` and `<c.creditName>` segments.
-    /// Names wrapped in `【...】` in the source become
+    /// line become `<c.creditRole>` and `<c.creditName>` segments;
+    /// role spans are located by looking up the line against the
+    /// `credit-roles` list from `credits.yaml`. Names wrapped in
+    /// `【...】`, `[...]`, or `(...)` in the source become
     /// `<c.creditSpecial>` instead of `<c.creditName>`.
     #[serde(default)]
     pub credits: Vec<String>,

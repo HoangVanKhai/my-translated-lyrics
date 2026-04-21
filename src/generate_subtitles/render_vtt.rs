@@ -10,13 +10,17 @@
 //! marker omit the role and name rules, and songs whose credits do
 //! not use any `【...】` highlight omit the `creditSpecial` rule.
 
-use super::credits_parse::{CreditPair, NameSegment, parse_credit_line};
+use super::credits_parse::{
+    CreditPair, CreditsVocabulary, NameSegment, ParseCreditError, parse_credit_line,
+};
 use super::parse::SubtitleCue;
 use super::styles::{Style, class_style, voice_style};
+use crate::credits_descriptor::CreditsDesc;
 use crate::line_markers_descriptor::LineMarkersDesc;
 use crate::timestamp::{Milliseconds, VttTime};
 use crate::video_descriptor::Language;
 use core::fmt::Write;
+use derive_more::{Display, Error};
 
 /// Built-in class name for the role cell of a credit line.
 const CLASS_CREDIT_ROLE: &str = "creditRole";
@@ -45,11 +49,18 @@ const CREDIT_SPECIAL_STYLE: Style = Style {
 };
 
 /// Renders all cues for a single language into a complete `.vtt` file.
-pub fn render_file(cues: &[SubtitleCue], markers: &LineMarkersDesc, language: &Language) -> String {
+pub fn render_file(
+    cues: &[SubtitleCue],
+    markers: &LineMarkersDesc,
+    credits: &CreditsDesc,
+    language: &Language,
+) -> Result<String, RenderVttError> {
+    let vocabulary = CreditsVocabulary::from_descriptor(credits, language);
+
     let mut cue_renderings: Vec<CueRendering> = Vec::with_capacity(cues.len());
     let mut features = Features::default();
     for cue in cues {
-        let rendering = render_cue(cue, markers, language);
+        let rendering = render_cue(cue, markers, &vocabulary, language)?;
         features.record(&rendering);
         cue_renderings.push(rendering);
     }
@@ -70,7 +81,7 @@ pub fn render_file(cues: &[SubtitleCue], markers: &LineMarkersDesc, language: &L
         output.push_str("\n\n");
     }
     let trimmed = output.trim_end().to_string();
-    format!("{trimmed}\n")
+    Ok(format!("{trimmed}\n"))
 }
 
 /// Aggregated flags used to decide which built-in credit style rules
@@ -109,7 +120,12 @@ struct CueRendering {
     used_credit_special: bool,
 }
 
-fn render_cue(cue: &SubtitleCue, markers: &LineMarkersDesc, language: &Language) -> CueRendering {
+fn render_cue(
+    cue: &SubtitleCue,
+    markers: &LineMarkersDesc,
+    vocabulary: &CreditsVocabulary,
+    language: &Language,
+) -> Result<CueRendering, RenderVttError> {
     let marker = cue.marker.as_str();
     let mut used_credit_role = false;
     let mut used_credit_name = false;
@@ -118,7 +134,12 @@ fn render_cue(cue: &SubtitleCue, markers: &LineMarkersDesc, language: &Language)
     let inner = if markers.credits.iter().any(|entry| entry == marker) {
         let mut rendered_lines: Vec<String> = Vec::new();
         for line in cue.text.lines() {
-            let pairs = parse_credit_line(line.trim_start(), language);
+            let pairs = parse_credit_line(line.trim_start(), vocabulary).map_err(|source| {
+                RenderVttError::Credits {
+                    start: cue.start,
+                    source,
+                }
+            })?;
             rendered_lines.push(render_credit_line(
                 &pairs,
                 &mut used_credit_role,
@@ -143,14 +164,14 @@ fn render_cue(cue: &SubtitleCue, markers: &LineMarkersDesc, language: &Language)
         None => inner,
     };
 
-    CueRendering {
+    Ok(CueRendering {
         start: cue.start,
         end: cue.end,
         content,
         used_credit_role,
         used_credit_name,
         used_credit_special,
-    }
+    })
 }
 
 fn render_credit_line(
@@ -176,17 +197,29 @@ fn render_credit_pair(
     used_name: &mut bool,
     used_special: &mut bool,
 ) {
-    if let Some(role) = &pair.role {
-        *used_role = true;
-        *used_name = true;
-        write!(output, "<c.{CLASS_CREDIT_ROLE}>{role}</c>")
-            .expect("writing to String is infallible");
-        output.push_str(&pair.separator);
-        write!(output, "<c.{CLASS_CREDIT_NAME}>").expect("writing to String is infallible");
-        write_name_segments(output, &pair.name_segments, used_special);
-        output.push_str("</c>");
+    *used_role = true;
+    *used_name = true;
+    write!(
+        output,
+        "<c.{CLASS_CREDIT_ROLE}>{role}</c>",
+        role = pair.role,
+    )
+    .expect("writing to String is infallible");
+    output.push_str(&render_separator_for_output(&pair.separator));
+    write!(output, "<c.{CLASS_CREDIT_NAME}>").expect("writing to String is infallible");
+    write_name_segments(output, &pair.name_segments, used_special);
+    output.push_str("</c>");
+}
+
+/// Reproduces ASCII space/tab runs verbatim between the role tag and
+/// the name tag so that Jianghu's two-space gutter survives the
+/// round-trip; other separators such as `：` or `\u{3000}` collapse
+/// to a single ASCII space.
+fn render_separator_for_output(raw: &str) -> String {
+    if !raw.is_empty() && raw.chars().all(|ch| ch == ' ' || ch == '\t') {
+        raw.to_string()
     } else {
-        write_name_segments(output, &pair.name_segments, used_special);
+        " ".to_string()
     }
 }
 
@@ -273,4 +306,15 @@ fn write_style_body(output: &mut String, style: &Style) {
     if style.bold {
         output.push_str("  font-weight: bold;\n");
     }
+}
+
+#[derive(Debug, Display, Error)]
+#[non_exhaustive]
+pub enum RenderVttError {
+    #[display("cue at {start} failed to render as a credit line: {source}")]
+    Credits {
+        #[error(not(source))]
+        start: Milliseconds,
+        source: ParseCreditError,
+    },
 }

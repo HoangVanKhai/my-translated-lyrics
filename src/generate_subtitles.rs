@@ -2,12 +2,15 @@
 //!
 //! This module implements the `generate-subtitles` binary. For each
 //! song directory in `sources/`, it reads the video descriptor, the
-//! line-marker descriptor, and the per-language `lyrics.{lang}.txt`
-//! files. It parses the text files into cues, renders each cue
-//! through the marker-aware VTT and SRT emitters, and writes the
-//! result to the corresponding `dist/` directory. `credits.yaml`
-//! remains part of every song directory as descriptive data, but it
-//! is not consulted by the generator.
+//! line-marker descriptor, the credits descriptor, and the per-language
+//! `lyrics.{lang}.txt` files. It parses the text files into cues,
+//! renders each cue through the marker-aware VTT and SRT emitters, and
+//! writes the result to the corresponding `dist/` directory.
+//!
+//! The credit-line parser uses the `credit-roles` list in
+//! `credits.yaml` as its role vocabulary; a credit line whose first
+//! non-whitespace token is not a known role fails the render with
+//! [`generate_subtitles::credits_parse::ParseCreditError`].
 //!
 //! The entry point [`main`] is called from `cli/generate_subtitles.rs`.
 

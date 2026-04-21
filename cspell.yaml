@@ -62,6 +62,7 @@ overrides:
       - btreemap
       - Feng
       - hardlink
+      - Jianghu
       - maplit
       - peekable
       - rsplit

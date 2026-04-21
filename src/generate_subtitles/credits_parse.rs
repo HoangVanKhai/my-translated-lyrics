@@ -1,41 +1,33 @@
-//! Credit-line segmentation.
+//! Vocabulary-driven credit-line parser.
 //!
-//! Credit blocks separate one role cell from the next by a run of
-//! whitespace whose width is language-specific. For ASCII-spaced
-//! data a run of two or more ASCII spaces marks a cell boundary.
-//! For Chinese data authored with the ideographic space (`\u{3000}`)
-//! a run of one or more ideographic spaces marks the same boundary.
-//! Within a cell an optional `:` or `：` separates role from name,
-//! and `【...】` runs inside a name become structural highlights.
+//! The parser takes the role vocabulary for one language from the
+//! song's `credits.yaml` and walks the line left to right, matching
+//! the longest registered role at every cursor position. The bytes
+//! between a role match and the next role match (or end of line)
+//! form the associated name region, and name regions are scanned
+//! for bracketed highlight runs that become
+//! [`NameSegment::Special`] values; anything else becomes
+//! [`NameSegment::Plain`].
 //!
-//! Two cell conventions are recognized:
-//!
-//! * **Colon-separated.** At least one cell contains `:` or `：`.
-//!   `split_cells` produces the cells according to the
-//!   language-specific separator rule above, and each cell becomes
-//!   its own role-name pair. Cells that happen to lack a colon
-//!   fall through as plain name-only entries.
-//! * **First-cell-is-role.** The line contains no `:` or `：` at
-//!   all. The first run of two or more ASCII spaces splits the
-//!   line into a role prefix and a name suffix. The name suffix
-//!   stays verbatim, including any internal space runs. This
-//!   convention uses ASCII spacing regardless of language because
-//!   it matches the data authored that way today.
+//! A credit line whose first non-whitespace token is not a known
+//! role raises [`ParseCreditError::UnknownRole`]. This lets the
+//! integration tests catch typos such as `作詞` vs `作词` before
+//! they ever reach `dist/`.
 
+use crate::credits_descriptor::CreditsDesc;
 use crate::video_descriptor::Language;
 use core::fmt;
 use derive_more::{Display, Error};
+use std::collections::BTreeSet;
 
 /// A structural role/name pair extracted from one credit line.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CreditPair {
-    /// Role cell, or `None` when a colon-convention cell has no
-    /// colon-separated role.
-    pub role: Option<String>,
+    /// The role cell, exactly as it appeared in the source line.
+    pub role: String,
     /// Literal bytes to emit between the role tag and the name tag.
-    /// Empty when `role` is `None`.
     pub separator: String,
-    /// Decomposed name region, with `【...】` highlights promoted
+    /// Decomposed name region, with bracketed highlights promoted
     /// to structural segments.
     pub name_segments: Vec<NameSegment>,
 }
@@ -45,35 +37,44 @@ pub struct CreditPair {
 pub enum NameSegment {
     /// Plain text that did not match a highlight.
     Plain(String),
-    /// A `【...】` highlight used to emphasize a studio or release.
+    /// A bracketed highlight such as `【studio】`, `[note]`, or
+    /// `(remark)`.
     Special(Bracketed),
 }
 
-/// A string that is guaranteed to open with `【`, close with `】`,
-/// and contain no further bracket characters in between. The type
-/// is the only way an external caller can construct a value for
-/// [`NameSegment::Special`], which guards the invariant that the
-/// renderers reproduce the brackets verbatim.
+/// A string that is guaranteed to open with a recognized bracket,
+/// close with its matching counterpart, and contain no further
+/// bracket characters in between. The type can only be obtained via
+/// [`Bracketed::take`], which follows the parse-don't-validate
+/// pattern: it consumes a prefix of the input and returns both the
+/// parsed value and the remaining unparsed tail.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Bracketed(String);
 
 impl Bracketed {
-    /// Wraps `source` if and only if it is shaped `【`, some content
-    /// that contains neither `【` nor `】`, then `】`.
-    pub fn new(source: String) -> Result<Self, InvalidBracketed> {
-        let Some(without_open) = source.strip_prefix('【') else {
-            return Err(InvalidBracketed::MissingOpen);
-        };
-        let Some(content) = without_open.strip_suffix('】') else {
-            return Err(InvalidBracketed::MissingClose);
-        };
-        if content.contains('【') || content.contains('】') {
-            return Err(InvalidBracketed::NestedBracket);
+    /// Consumes a leading bracketed span. The three recognized
+    /// pairs are `【...】`, `[...]`, and `(...)`. The bytes between
+    /// the opening and closing characters must contain none of
+    /// those six characters; if another bracket is encountered
+    /// before the matching close, no value is produced and the
+    /// caller is free to re-interpret the input as ordinary text.
+    pub fn take(input: &str) -> Option<(Self, &str)> {
+        let mut chars = input.char_indices();
+        let (_, open) = chars.next()?;
+        let close = matching_close(open)?;
+        for (offset, ch) in chars {
+            if ch == close {
+                let end = offset + ch.len_utf8();
+                return Some((Bracketed(input[..end].to_string()), &input[end..]));
+            }
+            if is_bracket_char(ch) {
+                return None;
+            }
         }
-        Ok(Bracketed(source))
+        None
     }
 
-    /// The bracketed text, including the surrounding `【` and `】`.
+    /// The bracketed text, including the surrounding brackets.
     pub fn as_str(&self) -> &str {
         &self.0
     }
@@ -85,135 +86,100 @@ impl fmt::Display for Bracketed {
     }
 }
 
-#[derive(Debug, Display, Error)]
-#[non_exhaustive]
-pub enum InvalidBracketed {
-    #[display("bracketed string must start with `【`")]
-    MissingOpen,
-    #[display("bracketed string must end with `】`")]
-    MissingClose,
-    #[display("bracketed string must not contain `【` or `】` between its brackets")]
-    NestedBracket,
-}
-
-/// Parses a credit line into ordered role-name pairs following the
-/// per-language split rule described in the module docs.
-pub fn parse_credit_line(line: &str, language: &Language) -> Vec<CreditPair> {
-    if line.contains(':') || line.contains('：') {
-        split_cells(line, language)
-            .into_iter()
-            .map(parse_colon_cell)
-            .collect()
-    } else {
-        parse_role_plus_rest(line).into_iter().collect()
+fn matching_close(open: char) -> Option<char> {
+    match open {
+        '【' => Some('】'),
+        '[' => Some(']'),
+        '(' => Some(')'),
+        _ => None,
     }
 }
 
-fn parse_colon_cell(cell: &str) -> CreditPair {
-    for (offset, ch) in cell.char_indices() {
-        if ch == ':' || ch == '：' {
-            let role = cell[..offset].trim();
-            let name = cell[offset + ch.len_utf8()..].trim();
-            if !role.is_empty() && !name.is_empty() {
-                return CreditPair {
-                    role: Some(role.to_string()),
-                    separator: " ".to_string(),
-                    name_segments: wrap_specials(name),
-                };
-            }
+fn is_bracket_char(ch: char) -> bool {
+    matches!(ch, '【' | '】' | '[' | ']' | '(' | ')')
+}
+
+/// The role vocabulary for one language, built from `credits.yaml`
+/// and reused across every credit cue in the song.
+pub struct CreditsVocabulary {
+    roles: Vec<String>,
+}
+
+impl CreditsVocabulary {
+    /// Collects the language-specific labels from the
+    /// [`credit-roles`] list in the descriptor and sorts them by
+    /// descending length so the parser matches the longest role
+    /// that still fits at the current cursor position.
+    ///
+    /// [`credit-roles`]: CreditsDesc::credit_roles
+    pub fn from_descriptor(descriptor: &CreditsDesc, language: &Language) -> Self {
+        let roles = deduplicate_longest_first(
+            descriptor
+                .credit_roles
+                .iter()
+                .filter_map(|entry| entry.get(language)),
+        );
+        CreditsVocabulary { roles }
+    }
+
+    fn take_role<'a>(&self, input: &'a str) -> Option<(&'a str, &'a str)> {
+        self.roles.iter().find_map(|role| {
+            let rest = input.strip_prefix(role.as_str())?;
+            is_role_boundary(rest).then(|| input.split_at(role.len()))
+        })
+    }
+
+    fn take_until_role<'a>(&self, input: &'a str) -> (&'a str, &'a str) {
+        let mut cursor = 0;
+        while cursor < input.len() && self.take_role(&input[cursor..]).is_none() {
+            let Some(next_char) = input[cursor..].chars().next() else {
+                break;
+            };
+            cursor += next_char.len_utf8();
         }
-    }
-    CreditPair {
-        role: None,
-        separator: String::new(),
-        name_segments: wrap_specials(cell.trim()),
+        input.split_at(cursor)
     }
 }
 
-fn parse_role_plus_rest(line: &str) -> Option<CreditPair> {
-    let (role, separator, rest) = find_first_space_run(line, 2)?;
-    let role = role.trim();
-    if role.is_empty() || rest.is_empty() {
-        return None;
+/// Parses a credit line into ordered role-name pairs using the
+/// provided vocabulary. See the module docs for the algorithm.
+pub fn parse_credit_line(
+    line: &str,
+    vocabulary: &CreditsVocabulary,
+) -> Result<Vec<CreditPair>, ParseCreditError> {
+    let mut pairs: Vec<CreditPair> = Vec::new();
+    let (_, mut rest) = take_leading_whitespace(line);
+
+    while !rest.is_empty() {
+        let (role, after_role) =
+            vocabulary
+                .take_role(rest)
+                .ok_or_else(|| ParseCreditError::UnknownRole {
+                    line: line.to_string(),
+                    offset: line.len() - rest.len(),
+                })?;
+        let (separator, after_separator) = take_cell_separator(after_role);
+        let (raw_name_region, after_name) = vocabulary.take_until_role(after_separator);
+        let name_region = trim_end_separator(raw_name_region);
+        let name_segments = parse_name_region(name_region);
+
+        pairs.push(CreditPair {
+            role: role.to_string(),
+            separator: separator.to_string(),
+            name_segments,
+        });
+
+        let (_, after_trailing) = take_cell_separator(after_name);
+        rest = after_trailing;
     }
-    Some(CreditPair {
-        role: Some(role.to_string()),
-        separator: separator.to_string(),
-        name_segments: wrap_specials(rest),
-    })
+
+    Ok(pairs)
 }
 
-/// Locates the first run of `min_run` or more ASCII spaces and
-/// returns the slice before, the run itself, and the slice after.
-fn find_first_space_run(line: &str, min_run: usize) -> Option<(&str, &str, &str)> {
-    let bytes = line.as_bytes();
-    let mut cursor = 0;
-    while cursor < bytes.len() {
-        if bytes[cursor] == b' ' {
-            let start = cursor;
-            while cursor < bytes.len() && bytes[cursor] == b' ' {
-                cursor += 1;
-            }
-            if cursor - start >= min_run {
-                return Some((&line[..start], &line[start..cursor], &line[cursor..]));
-            }
-        } else {
-            cursor += 1;
-        }
-    }
-    None
-}
-
-fn split_cells<'a>(line: &'a str, language: &Language) -> Vec<&'a str> {
-    let (sep, min_run) = cell_separator_rule(language);
-    split_on_char_run(line, sep, min_run)
-}
-
-fn cell_separator_rule(language: &Language) -> (char, usize) {
-    match language {
-        Language::Chinese => ('\u{3000}', 1),
-        _ => (' ', 2),
-    }
-}
-
-fn split_on_char_run(line: &str, sep: char, min_run: usize) -> Vec<&str> {
-    let mut cells = Vec::new();
-    let mut cell_start = 0;
-    let mut iter = line.char_indices().peekable();
-    while let Some(&(offset, ch)) = iter.peek() {
-        if ch == sep {
-            let run_start = offset;
-            let mut run_len = 0;
-            while let Some(&(_, next_ch)) = iter.peek() {
-                if next_ch != sep {
-                    break;
-                }
-                iter.next();
-                run_len += 1;
-            }
-            if run_len >= min_run {
-                let run_end = iter.peek().map(|&(offset, _)| offset).unwrap_or(line.len());
-                let cell = line[cell_start..run_start].trim();
-                if !cell.is_empty() {
-                    cells.push(cell);
-                }
-                cell_start = run_end;
-            }
-        } else {
-            iter.next();
-        }
-    }
-    let last = line[cell_start..].trim();
-    if !last.is_empty() {
-        cells.push(last);
-    }
-    cells
-}
-
-fn wrap_specials(input: &str) -> Vec<NameSegment> {
+fn parse_name_region(region: &str) -> Vec<NameSegment> {
     let mut segments: Vec<NameSegment> = Vec::new();
     let mut plain = String::new();
-    let mut rest = input;
+    let mut rest = region;
 
     let flush = |plain: &mut String, segments: &mut Vec<NameSegment>| {
         if !plain.is_empty() {
@@ -222,9 +188,9 @@ fn wrap_specials(input: &str) -> Vec<NameSegment> {
     };
 
     while !rest.is_empty() {
-        if let Some((special, next_rest)) = take_special(rest) {
+        if let Some((bracketed, next_rest)) = Bracketed::take(rest) {
             flush(&mut plain, &mut segments);
-            segments.push(NameSegment::Special(special));
+            segments.push(NameSegment::Special(bracketed));
             rest = next_rest;
             continue;
         }
@@ -239,87 +205,140 @@ fn wrap_specials(input: &str) -> Vec<NameSegment> {
     segments
 }
 
-/// Consumes a `【...】` highlight that opens at `input[0]`. Neither
-/// `【` nor `】` may appear inside the brackets; if a second `【`
-/// is encountered before the closing `】`, the original opener is
-/// reported as ordinary text rather than a highlight.
-fn take_special(input: &str) -> Option<(Bracketed, &str)> {
-    let rest = input.strip_prefix('【')?;
-    let terminator = rest
-        .char_indices()
-        .find(|(_, ch)| *ch == '】' || *ch == '【')?;
-    if terminator.1 != '】' {
-        return None;
+fn deduplicate_longest_first<Iter, Item>(values: Iter) -> Vec<String>
+where
+    Iter: IntoIterator<Item = Item>,
+    Item: AsRef<str>,
+{
+    let mut seen: BTreeSet<String> = BTreeSet::new();
+    let mut collected: Vec<String> = Vec::new();
+    for value in values {
+        let owned = value.as_ref().to_string();
+        if seen.insert(owned.clone()) {
+            collected.push(owned);
+        }
     }
-    let end = '【'.len_utf8() + terminator.0 + '】'.len_utf8();
-    let bracketed = Bracketed(input[..end].to_string());
-    Some((bracketed, &input[end..]))
+    collected.sort_by(|a, b| b.len().cmp(&a.len()).then_with(|| a.cmp(b)));
+    collected
+}
+
+fn take_leading_whitespace(input: &str) -> (&str, &str) {
+    let cursor = input
+        .char_indices()
+        .find(|(_, ch)| !ch.is_whitespace())
+        .map(|(offset, _)| offset)
+        .unwrap_or(input.len());
+    input.split_at(cursor)
+}
+
+fn take_cell_separator(input: &str) -> (&str, &str) {
+    let cursor = input
+        .char_indices()
+        .find(|(_, ch)| !is_separator_char(*ch))
+        .map(|(offset, _)| offset)
+        .unwrap_or(input.len());
+    input.split_at(cursor)
+}
+
+fn trim_end_separator(input: &str) -> &str {
+    let end = input
+        .char_indices()
+        .rev()
+        .find(|(_, ch)| !is_separator_char(*ch))
+        .map(|(offset, ch)| offset + ch.len_utf8())
+        .unwrap_or(0);
+    &input[..end]
+}
+
+fn is_separator_char(ch: char) -> bool {
+    ch == ':' || ch == '：' || ch.is_whitespace()
+}
+
+fn is_role_boundary(following: &str) -> bool {
+    match following.chars().next() {
+        Some(ch) => is_separator_char(ch),
+        None => true,
+    }
+}
+
+#[derive(Debug, Display, Error)]
+#[non_exhaustive]
+pub enum ParseCreditError {
+    #[display(
+        "credit line {line:?} contains unrecognized text at byte offset {offset}; expected a known credit role from `credits.yaml`"
+    )]
+    UnknownRole {
+        #[error(not(source))]
+        line: String,
+        #[error(not(source))]
+        offset: usize,
+    },
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use maplit::btreemap;
+
+    fn vocabulary(roles: &[&str]) -> CreditsVocabulary {
+        let descriptor = CreditsDesc {
+            credit_roles: roles
+                .iter()
+                .map(|role| btreemap! { Language::Vietnamese => role.to_string() })
+                .collect(),
+            credit_names: Vec::new(),
+        };
+        CreditsVocabulary::from_descriptor(&descriptor, &Language::Vietnamese)
+    }
+
+    fn bracketed(source: &str) -> Bracketed {
+        let (value, rest) =
+            Bracketed::take(source).expect("test fixture must be a valid bracketed prefix");
+        assert!(
+            rest.is_empty(),
+            "test fixture must not carry trailing bytes past the closing bracket",
+        );
+        value
+    }
 
     #[test]
-    fn chinese_splits_on_ideographic_space_and_colons() {
+    fn colon_separated_line_yields_one_pair_per_cell() {
+        let v = vocabulary(&["role-a", "role-b", "role-c"]);
         let parsed = parse_credit_line(
             "role-a：name-a\u{3000}role-b：name-b\u{3000}role-c：name-c",
-            &Language::Chinese,
-        );
+            &v,
+        )
+        .unwrap();
         assert_eq!(parsed.len(), 3);
-        assert_eq!(parsed[0].role.as_deref(), Some("role-a"));
-        assert_eq!(parsed[0].separator, " ");
+        assert_eq!(parsed[0].role, "role-a");
+        assert_eq!(parsed[0].separator, "：");
         assert_eq!(
             parsed[0].name_segments,
             vec![NameSegment::Plain("name-a".into())],
         );
-        assert_eq!(parsed[1].role.as_deref(), Some("role-b"));
-        assert_eq!(parsed[2].role.as_deref(), Some("role-c"));
+        assert_eq!(parsed[1].role, "role-b");
+        assert_eq!(parsed[2].role, "role-c");
     }
 
     #[test]
-    fn vietnamese_splits_on_two_or_more_ascii_spaces_and_colons() {
-        let parsed = parse_credit_line("role-a: name-a    role-b: name-b", &Language::Vietnamese);
-        assert_eq!(parsed.len(), 2);
-        assert_eq!(parsed[0].role.as_deref(), Some("role-a"));
+    fn two_space_separated_line_yields_one_pair_with_embedded_spaces() {
+        let v = vocabulary(&["role-a"]);
+        let parsed = parse_credit_line("role-a  name-a  name-b", &v).unwrap();
+        assert_eq!(parsed.len(), 1);
+        assert_eq!(parsed[0].role, "role-a");
+        assert_eq!(parsed[0].separator, "  ");
         assert_eq!(
             parsed[0].name_segments,
-            vec![NameSegment::Plain("name-a".into())],
+            vec![NameSegment::Plain("name-a  name-b".into())],
         );
-        assert_eq!(parsed[1].role.as_deref(), Some("role-b"));
-    }
-
-    #[test]
-    fn splits_on_three_or_more_ascii_spaces() {
-        let parsed = parse_credit_line("role-a: name-a   role-b: name-b", &Language::Vietnamese);
-        assert_eq!(parsed.len(), 2);
-        assert_eq!(parsed[0].role.as_deref(), Some("role-a"));
-        assert_eq!(
-            parsed[0].name_segments,
-            vec![NameSegment::Plain("name-a".into())],
-        );
-        assert_eq!(parsed[1].role.as_deref(), Some("role-b"));
-    }
-
-    #[test]
-    fn first_cell_is_role_without_colons_uses_ascii_split() {
-        for language in [Language::Vietnamese, Language::Chinese] {
-            let parsed = parse_credit_line("role-a  name-a  name-b", &language);
-            assert_eq!(parsed.len(), 1);
-            assert_eq!(parsed[0].role.as_deref(), Some("role-a"));
-            assert_eq!(parsed[0].separator, "  ");
-            assert_eq!(
-                parsed[0].name_segments,
-                vec![NameSegment::Plain("name-a  name-b".into())],
-            );
-        }
     }
 
     #[test]
     fn tolerates_runs_wider_than_two_spaces() {
-        let parsed = parse_credit_line("role-a   name-a", &Language::Vietnamese);
+        let v = vocabulary(&["role-a"]);
+        let parsed = parse_credit_line("role-a   name-a", &v).unwrap();
         assert_eq!(parsed.len(), 1);
-        assert_eq!(parsed[0].role.as_deref(), Some("role-a"));
+        assert_eq!(parsed[0].role, "role-a");
         assert_eq!(parsed[0].separator, "   ");
         assert_eq!(
             parsed[0].name_segments,
@@ -327,15 +346,27 @@ mod tests {
         );
     }
 
-    fn bracketed(source: &str) -> Bracketed {
-        Bracketed::new(source.to_string()).expect("test fixture must be a valid bracketed string")
+    #[test]
+    fn longer_role_wins_over_shorter_prefix() {
+        let v = vocabulary(&["role", "role-a"]);
+        let parsed = parse_credit_line("role-a  name-a", &v).unwrap();
+        assert_eq!(parsed[0].role, "role-a");
+    }
+
+    #[test]
+    fn unknown_leading_text_errors() {
+        let v = vocabulary(&["role-a"]);
+        assert!(matches!(
+            parse_credit_line("unknown  name-a", &v),
+            Err(ParseCreditError::UnknownRole { .. }),
+        ));
     }
 
     #[test]
     fn recognizes_lenticular_highlight() {
-        let parsed = parse_credit_line("role-a  name-a【label-a】", &Language::Vietnamese);
+        let v = vocabulary(&["role-a"]);
+        let parsed = parse_credit_line("role-a  name-a【label-a】", &v).unwrap();
         assert_eq!(parsed.len(), 1);
-        assert_eq!(parsed[0].role.as_deref(), Some("role-a"));
         assert_eq!(
             parsed[0].name_segments,
             vec![
@@ -347,12 +378,8 @@ mod tests {
 
     #[test]
     fn multiple_highlights_interleave_with_plain_text() {
-        let parsed = parse_credit_line(
-            "role-a  【label-a】name-a 【label-b】name-b",
-            &Language::Vietnamese,
-        );
-        assert_eq!(parsed.len(), 1);
-        assert_eq!(parsed[0].role.as_deref(), Some("role-a"));
+        let v = vocabulary(&["role-a"]);
+        let parsed = parse_credit_line("role-a  【label-a】name-a 【label-b】name-b", &v).unwrap();
         assert_eq!(
             parsed[0].name_segments,
             vec![
@@ -365,20 +392,28 @@ mod tests {
     }
 
     #[test]
-    fn bracketed_rejects_missing_or_nested_brackets() {
-        assert!(matches!(
-            Bracketed::new("no brackets".to_string()),
-            Err(InvalidBracketed::MissingOpen),
-        ));
-        assert!(matches!(
-            Bracketed::new("【open only".to_string()),
-            Err(InvalidBracketed::MissingClose),
-        ));
-        assert!(matches!(
-            Bracketed::new("【a【b】c】".to_string()),
-            Err(InvalidBracketed::NestedBracket),
-        ));
-        let good = Bracketed::new("【good】".to_string()).unwrap();
-        assert_eq!(good.as_str(), "【good】");
+    fn bracketed_accepts_three_pair_kinds() {
+        let (lenticular, rest) = Bracketed::take("【gold】tail").unwrap();
+        assert_eq!(lenticular.as_str(), "【gold】");
+        assert_eq!(rest, "tail");
+
+        let (square, rest) = Bracketed::take("[silver]tail").unwrap();
+        assert_eq!(square.as_str(), "[silver]");
+        assert_eq!(rest, "tail");
+
+        let (round, rest) = Bracketed::take("(bronze)tail").unwrap();
+        assert_eq!(round.as_str(), "(bronze)");
+        assert_eq!(rest, "tail");
+    }
+
+    #[test]
+    fn bracketed_rejects_non_bracket_prefix_and_nested_or_unclosed_brackets() {
+        assert!(Bracketed::take("no bracket").is_none());
+        assert!(Bracketed::take("【open only").is_none());
+        assert!(Bracketed::take("[open only").is_none());
+        assert!(Bracketed::take("(open only").is_none());
+        assert!(Bracketed::take("【a【b】c】").is_none());
+        assert!(Bracketed::take("[mismatch】").is_none());
+        assert!(Bracketed::take("(also [nested])").is_none());
     }
 }
