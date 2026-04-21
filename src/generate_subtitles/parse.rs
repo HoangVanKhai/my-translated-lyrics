@@ -17,7 +17,13 @@ use derive_more::{Display, Error};
 /// A subtitle cue with a resolved end time, ready for rendering.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SubtitleCue {
+    /// Timestamp at which the cue begins to display. Read directly
+    /// from the `MM:SS.mmm` prefix on the cue-opening line.
     pub start: Timestamp,
+    /// Timestamp at which the cue stops displaying. Taken from the
+    /// timestamp of the next event in the source file, whether that
+    /// is the next cue or a `clr` sentinel; `parse_lyrics` fails with
+    /// [`ParseLyricsError::UnclosedCue`] if no such event exists.
     pub end: Timestamp,
     /// The leading marker token that the cue-opening line declared, for
     /// example `ttl` in `ttl: 《Song》`. Every cue-opening line in the
