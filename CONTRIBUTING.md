@@ -215,14 +215,10 @@ Use `\u{...}` only for characters whose glyph is absent, ambiguous, or easily co
 
 #### Examples
 
-| Category | Wrong | Right |
-| --- | --- | --- |
-| Full-width digit | `"\u{FF10}\u{FF10}:00.000"` | `"００:00.000"` |
-| Full-width colon | `"role\u{FF1A}name"` | `"role：name"` |
-| Ideographic space | `"role\u{FF1A}name\u{3000}role\u{FF1A}name"` | `"role：name\u{3000}role：name"` |
-| ASCII digit or letter | `"\u{0030}\u{0031}"` | `"01"` |
-
-The ideographic space row illustrates the rule in isolation. The full-width colons switch to their literal glyphs because they are visible, while the ideographic space stays escaped because its glyph is not.
+- **Full-width digit.** Write `"００:00.000"` rather than `"\u{FF10}\u{FF10}:00.000"`.
+- **Full-width colon.** Write `"role：name"` rather than `"role\u{FF1A}name"`.
+- **Ideographic space.** Write `"role：name\u{3000}role：name"` rather than `"role\u{FF1A}name\u{3000}role\u{FF1A}name"`. The full-width colons switch to their literal glyphs because they are visible, while the ideographic space stays escaped because its glyph is not.
+- **ASCII digit or letter.** Write `"01"` rather than `"\u{0030}\u{0031}"`.
 
 #### Editor note
 
