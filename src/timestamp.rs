@@ -56,50 +56,49 @@ impl Timestamp {
 
         let mut chars = input.chars();
 
-        let tens_min = chars
+        let tens = chars
             .next()
             .and_then(digit)
             .ok_or(TakeTimestampError::ShapeMismatch)?;
-        let ones_min = chars
+        let ones = chars
             .next()
             .and_then(digit)
             .ok_or(TakeTimestampError::ShapeMismatch)?;
-        let minutes = u64::from(tens_min) * 10 + u64::from(ones_min);
+        let minutes = u64::from(tens) * 10 + u64::from(ones);
 
         chars
             .next()
             .filter(|&c| c == ':')
             .ok_or(TakeTimestampError::ShapeMismatch)?;
 
-        let tens_sec = chars
+        let tens = chars
             .next()
             .and_then(digit)
             .ok_or(TakeTimestampError::ShapeMismatch)?;
-        let ones_sec = chars
+        let ones = chars
             .next()
             .and_then(digit)
             .ok_or(TakeTimestampError::ShapeMismatch)?;
-        let seconds = u64::from(tens_sec) * 10 + u64::from(ones_sec);
+        let seconds = u64::from(tens) * 10 + u64::from(ones);
 
         chars
             .next()
             .filter(|&c| c == '.')
             .ok_or(TakeTimestampError::ShapeMismatch)?;
 
-        let hundreds_ms = chars
+        let hundreds = chars
             .next()
             .and_then(digit)
             .ok_or(TakeTimestampError::ShapeMismatch)?;
-        let tens_ms = chars
+        let tens = chars
             .next()
             .and_then(digit)
             .ok_or(TakeTimestampError::ShapeMismatch)?;
-        let ones_ms = chars
+        let ones = chars
             .next()
             .and_then(digit)
             .ok_or(TakeTimestampError::ShapeMismatch)?;
-        let milliseconds =
-            u64::from(hundreds_ms) * 100 + u64::from(tens_ms) * 10 + u64::from(ones_ms);
+        let milliseconds = u64::from(hundreds) * 100 + u64::from(tens) * 10 + u64::from(ones);
 
         if seconds >= 60 {
             return Err(TakeTimestampError::SecondsOutOfRange {
