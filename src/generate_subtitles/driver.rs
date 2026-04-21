@@ -299,50 +299,37 @@ pub enum GenerateError {
         path: PathBuf,
     },
     #[display("lyrics file {path:?} has unrecognized language code {code:?}")]
-    UnrecognizedLanguage {
-        #[error(not(source))]
-        path: PathBuf,
-        #[error(not(source))]
-        code: String,
-    },
+    UnrecognizedLanguage { path: PathBuf, code: String },
     #[display("failed to parse {path:?}: {source}")]
     ParseVideoDesc {
-        #[error(not(source))]
         path: PathBuf,
         source: toml::de::Error,
     },
     #[display("failed to parse {path:?}: {source}")]
     ParseLineMarkers {
-        #[error(not(source))]
         path: PathBuf,
         source: toml::de::Error,
     },
     #[display("failed to parse {path:?}: {source}")]
     ParseCredits {
-        #[error(not(source))]
         path: PathBuf,
         #[error(not(source))]
         source: String,
     },
     #[display("failed to parse {path:?}: {source}")]
     ParseLyrics {
-        #[error(not(source))]
         path: PathBuf,
         source: ParseLyricsError,
     },
     #[display("failed to render {song}.{language}.vtt: {source}")]
     RenderVtt {
-        #[error(not(source))]
         song: String,
-        #[error(not(source))]
         language: Language,
         source: RenderVttError,
     },
     #[display("failed to render {song}.{language}.srt: {source}")]
     RenderSrt {
-        #[error(not(source))]
         song: String,
-        #[error(not(source))]
         language: Language,
         source: RenderSrtError,
     },

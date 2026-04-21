@@ -210,47 +210,26 @@ fn split_marker(body: &str) -> Option<(&str, &str)> {
 pub enum ParseLyricsError {
     #[display("line {line_number}: {source}")]
     InvalidTimestamp {
-        #[error(not(source))]
         line_number: usize,
         source: TakeTimestampError,
     },
     #[display("line {line_number}: continuation text {content:?} before any cue")]
-    StrayContinuation {
-        #[error(not(source))]
-        line_number: usize,
-        #[error(not(source))]
-        content: String,
-    },
+    StrayContinuation { line_number: usize, content: String },
     #[display("line {line_number}: cue body {content:?} carries no marker")]
-    MissingMarker {
-        #[error(not(source))]
-        line_number: usize,
-        #[error(not(source))]
-        content: String,
-    },
+    MissingMarker { line_number: usize, content: String },
     #[display("line {line_number}: timestamp in {content:?} is not followed by whitespace")]
-    MissingSeparatorAfterTimestamp {
-        #[error(not(source))]
-        line_number: usize,
-        #[error(not(source))]
-        content: String,
-    },
+    MissingSeparatorAfterTimestamp { line_number: usize, content: String },
     #[display(
         "line {line_number}: control marker {marker:?} must stand alone but is followed by {trailing:?}"
     )]
     ExtraTextAfterControlMarker {
-        #[error(not(source))]
         line_number: usize,
-        #[error(not(source))]
         marker: String,
-        #[error(not(source))]
         trailing: String,
     },
     #[display("events out of order: cue at {previous} is followed by an earlier cue at {next}")]
     OutOfOrder {
-        #[error(not(source))]
         previous: Timestamp,
-        #[error(not(source))]
         next: Timestamp,
     },
     #[display("cue at {start} has no following cue or `clr`")]

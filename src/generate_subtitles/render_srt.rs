@@ -158,7 +158,6 @@ fn render_separator_for_output(raw: &str) -> String {
 pub enum RenderSrtError {
     #[display("cue at {start} failed to render as a credit line: {source}")]
     Credits {
-        #[error(not(source))]
         start: Timestamp,
         source: ParseCreditError,
     },

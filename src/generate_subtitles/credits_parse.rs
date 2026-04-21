@@ -267,12 +267,7 @@ pub enum ParseCreditError {
     #[display(
         "credit line {line:?} contains unrecognized text at byte offset {offset}; expected a known credit role from `credits.yaml`"
     )]
-    UnknownRole {
-        #[error(not(source))]
-        line: String,
-        #[error(not(source))]
-        offset: usize,
-    },
+    UnknownRole { line: String, offset: usize },
 }
 
 #[cfg(test)]

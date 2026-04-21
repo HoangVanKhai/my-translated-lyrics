@@ -181,12 +181,7 @@ impl fmt::Display for VttTime {
 #[non_exhaustive]
 pub enum ParseTimestampError {
     #[display("invalid timestamp {raw:?}: seconds component {value} must be less than 60")]
-    SecondsOutOfRange {
-        #[error(not(source))]
-        raw: String,
-        #[error(not(source))]
-        value: u64,
-    },
+    SecondsOutOfRange { raw: String, value: u64 },
 }
 
 /// Reasons [`Timestamp::take`] can fail.
@@ -206,12 +201,7 @@ pub enum TakeTimestampError {
     /// The input begins with an `MM:SS.mmm` shape but the seconds
     /// component is out of range.
     #[display("invalid timestamp {raw:?}: seconds component {value} must be less than 60")]
-    SecondsOutOfRange {
-        #[error(not(source))]
-        raw: String,
-        #[error(not(source))]
-        value: u64,
-    },
+    SecondsOutOfRange { raw: String, value: u64 },
 }
 
 #[cfg(test)]

@@ -332,7 +332,6 @@ fn write_style_body(output: &mut String, style: &Style) {
 pub enum RenderVttError {
     #[display("cue at {start} failed to render as a credit line: {source}")]
     Credits {
-        #[error(not(source))]
         start: Timestamp,
         source: ParseCreditError,
     },
