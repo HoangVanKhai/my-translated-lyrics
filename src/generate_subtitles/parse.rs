@@ -81,13 +81,17 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                 let rest = rest.trim();
                 let first_token = rest.split_whitespace().next().unwrap_or("");
 
-                if first_token == END_OF_VIDEO_MARKER {
-                    last_cue_index = None;
-                    continue;
-                }
-
-                if first_token == CLEAR_MARKER {
-                    events.push(Event::Clear { start });
+                if first_token == END_OF_VIDEO_MARKER || first_token == CLEAR_MARKER {
+                    if rest.len() > first_token.len() {
+                        return Err(ParseLyricsError::ExtraTextAfterControlMarker {
+                            line_number,
+                            marker: first_token.to_string(),
+                            trailing: rest[first_token.len()..].trim_start().to_string(),
+                        });
+                    }
+                    if first_token == CLEAR_MARKER {
+                        events.push(Event::Clear { start });
+                    }
                     last_cue_index = None;
                     continue;
                 }
@@ -237,6 +241,17 @@ pub enum ParseLyricsError {
         #[error(not(source))]
         content: String,
     },
+    #[display(
+        "line {line_number}: control marker {marker:?} must stand alone but is followed by {trailing:?}"
+    )]
+    ExtraTextAfterControlMarker {
+        #[error(not(source))]
+        line_number: usize,
+        #[error(not(source))]
+        marker: String,
+        #[error(not(source))]
+        trailing: String,
+    },
     #[display("events out of order: cue at {previous} is followed by an earlier cue at {next}")]
     OutOfOrder {
         #[error(not(source))]
@@ -303,15 +318,43 @@ mod tests {
     }
 
     #[test]
-    fn control_markers_tolerate_any_trailing_whitespace() {
+    fn control_markers_accept_trailing_whitespace_only() {
         let input = text_block_fnl! {
             "00:00.000 ttl: Hello"
-            "00:02.000 clr\tdescription after tab"
-            "00:05.000 eov\tend of video"
+            "00:02.000 clr \t "
+            "00:05.000 eov\t"
         };
         let cues = parse_lyrics(input).unwrap();
         assert_eq!(cues.len(), 1);
         assert_eq!(cues[0].end, Milliseconds::new(0, 2, 0));
+    }
+
+    #[test]
+    fn control_markers_reject_trailing_text() {
+        let clr_input = text_block_fnl! {
+            "00:00.000 ttl: Hello"
+            "00:02.000 clr some trailing text"
+        };
+        assert!(matches!(
+            parse_lyrics(clr_input),
+            Err(ParseLyricsError::ExtraTextAfterControlMarker {
+                marker,
+                ..
+            }) if marker == "clr",
+        ));
+
+        let eov_input = text_block_fnl! {
+            "00:00.000 ttl: Hello"
+            "00:02.000 clr"
+            "00:05.000 eov\tend of video"
+        };
+        assert!(matches!(
+            parse_lyrics(eov_input),
+            Err(ParseLyricsError::ExtraTextAfterControlMarker {
+                marker,
+                ..
+            }) if marker == "eov",
+        ));
     }
 
     #[test]
