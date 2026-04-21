@@ -237,7 +237,7 @@ Available `.with_*` methods mirror every standard builder method: `with_arg`, `w
 
 ### Unicode Escape Codes
 
-Write Unicode characters in string literals as the literal glyph whenever the character is visible in a monospaced editor. The `\u{...}` escape sequence is reserved for characters whose visual form is absent or ambiguous. Every other character belongs in the source as itself, including ASCII, CJK characters, Latin letters with diacritics, accented Cyrillic, Arabic-Indic digits, full-width digits, and full-width punctuation.
+Write Unicode characters in string literals as the literal glyph whenever the character is visible in a monospaced editor. The `\u{...}` escape sequence is reserved for characters whose visual form is absent, ambiguous, or easily confused with something else. Every other character belongs in the source as itself, including ASCII, CJK characters, Latin letters with diacritics, accented Cyrillic, Arabic-Indic digits, full-width digits, and full-width punctuation.
 
 Writing a visible character as an escape code has no benefit. It makes the source line harder to read at the call site, harder to search for with the literal character, and indistinguishable at a glance from legitimate escapes for invisible characters. Reviewers learn to skim past `\u{...}` sequences, and that habit lets the genuinely invisible ones slip through.
 
@@ -262,7 +262,7 @@ Use `\u{...}` only for characters whose glyph is absent, ambiguous, or easily co
 Some editors and some chat-style interfaces silently re-escape pasted Unicode characters on save or on copy. When that happens, do not try to type the glyph back in by hand. Use a command-line replacement instead, for example:
 
 ```sh
-perl -CSD -i -pe 's/\\u\{FF10\}/\x{ff10}/g' path/to/file
+perl -CSD -i -pe 's/\\u\{ff10\}/\x{ff10}/gi' path/to/file
 ```
 
 So far this behavior has only been observed with [Claude Code Web](https://claude.ai/code/).
