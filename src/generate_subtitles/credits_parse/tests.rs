@@ -1,4 +1,6 @@
-use super::*;
+use super::{Bracketed, CreditsVocabulary, NameSegment, ParseCreditError, parse_credit_line};
+use crate::credits_descriptor::CreditsDesc;
+use crate::video_descriptor::Language;
 use maplit::btreemap;
 
 fn vocabulary(roles: &[&str]) -> CreditsVocabulary {

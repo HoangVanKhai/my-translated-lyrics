@@ -1,4 +1,4 @@
-use super::*;
+use super::{CssClassName, InvalidCssClassName, InvalidVoiceName, VoiceName};
 
 #[test]
 fn accepts_simple_ascii_names() {

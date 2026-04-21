@@ -1,4 +1,5 @@
-use super::*;
+use super::{ExtraTextAfterControlMarker, ParseLyricsError, parse_lyrics};
+use crate::timestamp::Timestamp;
 use text_block_macros::text_block_fnl;
 
 #[test]
