@@ -150,7 +150,7 @@ A glob is acceptable only when a module intentionally re-exports its own payload
 
 #### Import each item from its canonical path
 
-When a test needs a symbol that does not live in its direct parent module, import it from the module that defines it rather than through a re-export the parent happens to make. The canonical path remains valid regardless of how the parent reorganizes its own imports; the indirect path breaks the moment the parent reshapes its own `use` statements.
+When a test needs a symbol that does not live in its direct parent module, import it from the module that defines it rather than through a name the parent happens to bring into its own scope with `use` or `pub use`. In Rust, a plain `use` does not re-export; it introduces a binding in the parent's namespace that a child module can still reference through `super::`. A `pub use` additionally exposes the binding to outside callers. Both forms are fragile dependencies for a test: the canonical path remains valid regardless of how the parent reorganizes its own imports, while the indirect path breaks the moment the parent reshapes its own `use` statements.
 
 ```rust
 // In `src/foo/tests.rs`, when `SomeType` is defined in `crate::bar`:
@@ -164,7 +164,7 @@ use crate::bar::SomeType;
 use super::SomeType;
 ```
 
-This rule applies even when the parent currently re-exports the item, because such re-exports are often incidental rather than part of the module's public contract.
+This rule applies whether the parent's binding is a private `use` or a `pub use`, because either kind is often an incidental import rather than part of the module's public contract.
 
 ### Using `pipe-trait`
 
