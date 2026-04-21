@@ -52,41 +52,51 @@ impl Timestamp {
     /// the cue format requires whitespace between the timestamp and
     /// the body, the caller inspects `tail` for it.
     pub fn take(input: &str) -> Result<(Self, &str), TakeTimestampError> {
-        let digit = |next: Option<char>| -> Option<u8> {
-            next.filter(char::is_ascii_digit)
+        let digit = |next: char| -> Option<u8> {
+            next.is_ascii_digit()
+                .then_some(next)
                 .map(u8::try_from)
                 .and_then(Result::<u8, _>::ok)
                 .map(|c| c - b'0')
         };
 
         let mut chars = input.chars();
-        let Some(tens_min) = digit(chars.next()) else {
-            return Err(TakeTimestampError::ShapeMismatch);
-        };
-        let Some(ones_min) = digit(chars.next()) else {
-            return Err(TakeTimestampError::ShapeMismatch);
-        };
-        if !matches!(chars.next(), Some(':')) {
-            return Err(TakeTimestampError::ShapeMismatch);
-        }
-        let Some(tens_sec) = digit(chars.next()) else {
-            return Err(TakeTimestampError::ShapeMismatch);
-        };
-        let Some(ones_sec) = digit(chars.next()) else {
-            return Err(TakeTimestampError::ShapeMismatch);
-        };
-        if !matches!(chars.next(), Some('.')) {
-            return Err(TakeTimestampError::ShapeMismatch);
-        }
-        let Some(hundreds_ms) = digit(chars.next()) else {
-            return Err(TakeTimestampError::ShapeMismatch);
-        };
-        let Some(tens_ms) = digit(chars.next()) else {
-            return Err(TakeTimestampError::ShapeMismatch);
-        };
-        let Some(ones_ms) = digit(chars.next()) else {
-            return Err(TakeTimestampError::ShapeMismatch);
-        };
+        let tens_min = chars
+            .next()
+            .and_then(digit)
+            .ok_or(TakeTimestampError::ShapeMismatch)?;
+        let ones_min = chars
+            .next()
+            .and_then(digit)
+            .ok_or(TakeTimestampError::ShapeMismatch)?;
+        chars
+            .next()
+            .filter(|&c| c == ':')
+            .ok_or(TakeTimestampError::ShapeMismatch)?;
+        let tens_sec = chars
+            .next()
+            .and_then(digit)
+            .ok_or(TakeTimestampError::ShapeMismatch)?;
+        let ones_sec = chars
+            .next()
+            .and_then(digit)
+            .ok_or(TakeTimestampError::ShapeMismatch)?;
+        chars
+            .next()
+            .filter(|&c| c == '.')
+            .ok_or(TakeTimestampError::ShapeMismatch)?;
+        let hundreds_ms = chars
+            .next()
+            .and_then(digit)
+            .ok_or(TakeTimestampError::ShapeMismatch)?;
+        let tens_ms = chars
+            .next()
+            .and_then(digit)
+            .ok_or(TakeTimestampError::ShapeMismatch)?;
+        let ones_ms = chars
+            .next()
+            .and_then(digit)
+            .ok_or(TakeTimestampError::ShapeMismatch)?;
 
         let seconds = u64::from(tens_sec) * 10 + u64::from(ones_sec);
         if seconds >= 60 {
