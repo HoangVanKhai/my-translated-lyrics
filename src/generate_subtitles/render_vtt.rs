@@ -153,11 +153,11 @@ fn render_cue(
     let inner = if markers.credits.iter().any(|entry| entry == marker) {
         let mut rendered_lines: Vec<String> = Vec::new();
         for line in cue.text.lines() {
-            let pairs = parse_credit_line(line.trim_start(), vocabulary).map_err(|source| {
-                RenderVttError::Credits {
+            let pairs = parse_credit_line(line.trim_start(), vocabulary).map_err(|cause| {
+                RenderVttError::Credits(Credits {
                     start: cue.start,
-                    source,
-                }
+                    cause,
+                })
             })?;
             rendered_lines.push(render_credit_line(
                 &pairs,
@@ -327,12 +327,17 @@ fn write_style_body(output: &mut String, style: &Style) {
     }
 }
 
-#[derive(Debug, Display, Error)]
+/// Payload for [`RenderVttError::Credits`].
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display("cue at {start} failed to render as a credit line: {cause}")]
+pub struct Credits {
+    pub start: Timestamp,
+    pub cause: ParseCreditError,
+}
+
+#[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum RenderVttError {
-    #[display("cue at {start} failed to render as a credit line: {source}")]
-    Credits {
-        start: Timestamp,
-        source: ParseCreditError,
-    },
+    #[display("{_0}")]
+    Credits(#[error(not(source))] Credits),
 }

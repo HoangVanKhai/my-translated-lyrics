@@ -151,13 +151,12 @@ pub fn parse_credit_line(
     let (_, mut rest) = take_leading_whitespace(line);
 
     while !rest.is_empty() {
-        let (role, after_role) =
-            vocabulary
-                .take_role(rest)
-                .ok_or_else(|| ParseCreditError::UnknownRole {
-                    line: line.to_string(),
-                    offset: line.len() - rest.len(),
-                })?;
+        let (role, after_role) = vocabulary.take_role(rest).ok_or_else(|| {
+            ParseCreditError::UnknownRole(UnknownRole {
+                line: line.to_string(),
+                offset: line.len() - rest.len(),
+            })
+        })?;
         let (separator, after_separator) = take_cell_separator(after_role);
         let (raw_name_region, after_name) = vocabulary.take_until_role(after_separator);
         let name_region = trim_end_separator(raw_name_region);
@@ -261,13 +260,23 @@ fn is_role_boundary(following: &str) -> bool {
     }
 }
 
-#[derive(Debug, Display, Error)]
+/// Payload for an unknown-role error. Describes a credit line
+/// whose cursor rests on text that does not match any known role
+/// from `credits.yaml`.
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display(
+    "credit line {line:?} contains unrecognized text at byte offset {offset}; expected a known credit role from `credits.yaml`"
+)]
+pub struct UnknownRole {
+    pub line: String,
+    pub offset: usize,
+}
+
+#[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum ParseCreditError {
-    #[display(
-        "credit line {line:?} contains unrecognized text at byte offset {offset}; expected a known credit role from `credits.yaml`"
-    )]
-    UnknownRole { line: String, offset: usize },
+    #[display("{_0}")]
+    UnknownRole(#[error(not(source))] UnknownRole),
 }
 
 #[cfg(test)]
@@ -353,7 +362,7 @@ mod tests {
         let v = vocabulary(&["role-a"]);
         assert!(matches!(
             parse_credit_line("unknown  name-a", &v),
-            Err(ParseCreditError::UnknownRole { .. }),
+            Err(ParseCreditError::UnknownRole(_)),
         ));
     }
 

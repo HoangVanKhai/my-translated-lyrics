@@ -101,10 +101,10 @@ impl Timestamp {
         let milliseconds = u64::from(hundreds) * 100 + u64::from(tens) * 10 + u64::from(ones);
 
         if seconds >= 60 {
-            return Err(TakeTimestampError::SecondsOutOfRange {
+            return Err(TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
                 raw: input[..9].to_string(),
                 value: seconds,
-            });
+            }));
         }
 
         Ok((
@@ -177,11 +177,20 @@ impl fmt::Display for VttTime {
     }
 }
 
-#[derive(Debug, Display, Error)]
+/// Payload for a seconds-out-of-range error. Describes an
+/// `MM:SS.mmm` prefix whose seconds component exceeds 59.
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display("invalid timestamp {raw:?}: seconds component {value} must be less than 60")]
+pub struct SecondsOutOfRange {
+    pub raw: String,
+    pub value: u64,
+}
+
+#[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum ParseTimestampError {
-    #[display("invalid timestamp {raw:?}: seconds component {value} must be less than 60")]
-    SecondsOutOfRange { raw: String, value: u64 },
+    #[display("{_0}")]
+    SecondsOutOfRange(#[error(not(source))] SecondsOutOfRange),
 }
 
 /// Reasons [`Timestamp::take`] can fail.
@@ -192,7 +201,7 @@ pub enum ParseTimestampError {
 /// timestamp value (used by any future `FromStr`-style parser),
 /// while [`TakeTimestampError`] describes ways the `take` combinator
 /// fails to produce a `Timestamp` from the start of its input.
-#[derive(Debug, Display, Error)]
+#[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum TakeTimestampError {
     /// The input does not begin with an `MM:SS.mmm` shape.
@@ -200,8 +209,8 @@ pub enum TakeTimestampError {
     ShapeMismatch,
     /// The input begins with an `MM:SS.mmm` shape but the seconds
     /// component is out of range.
-    #[display("invalid timestamp {raw:?}: seconds component {value} must be less than 60")]
-    SecondsOutOfRange { raw: String, value: u64 },
+    #[display("{_0}")]
+    SecondsOutOfRange(#[error(not(source))] SecondsOutOfRange),
 }
 
 #[cfg(test)]
@@ -294,20 +303,19 @@ mod tests {
 
     #[test]
     fn rejects_seconds_out_of_range() {
-        let TakeTimestampError::SecondsOutOfRange { raw, value } =
-            Timestamp::take("00:60.000").unwrap_err()
-        else {
-            panic!("expected SecondsOutOfRange");
-        };
-        assert_eq!(raw, "00:60.000");
-        assert_eq!(value, 60);
-
-        let TakeTimestampError::SecondsOutOfRange { raw, value } =
-            Timestamp::take("00:99.000trailing").unwrap_err()
-        else {
-            panic!("expected SecondsOutOfRange");
-        };
-        assert_eq!(raw, "00:99.000");
-        assert_eq!(value, 99);
+        assert_eq!(
+            Timestamp::take("00:60.000").unwrap_err(),
+            TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
+                raw: "00:60.000".to_string(),
+                value: 60,
+            }),
+        );
+        assert_eq!(
+            Timestamp::take("00:99.000trailing").unwrap_err(),
+            TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
+                raw: "00:99.000".to_string(),
+                value: 99,
+            }),
+        );
     }
 }

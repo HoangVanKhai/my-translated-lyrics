@@ -72,11 +72,11 @@ impl CssClassName {
             return Err(InvalidCssClassName::Empty);
         };
         if !is_class_name_start(first) {
-            return Err(InvalidCssClassName::InvalidLeadingCharacter { character: first });
+            return Err(InvalidCssClassName::InvalidLeadingCharacter(first));
         }
         for ch in chars {
             if !is_class_name_continue(ch) {
-                return Err(InvalidCssClassName::InvalidCharacter { character: ch });
+                return Err(InvalidCssClassName::InvalidCharacter(ch));
             }
         }
         Ok(CssClassName(source))
@@ -115,23 +115,15 @@ fn is_class_name_continue(ch: char) -> bool {
     ch.is_ascii_alphanumeric() || ch == '-' || ch == '_'
 }
 
-#[derive(Debug, Display, Error)]
+#[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum InvalidCssClassName {
     #[display("class name must not be empty")]
     Empty,
-    #[display("class name must begin with an ASCII letter or `_`, got {character:?}")]
-    InvalidLeadingCharacter {
-        #[error(not(source))]
-        character: char,
-    },
-    #[display(
-        "class name must contain only ASCII letters, digits, `-`, and `_`, got {character:?}"
-    )]
-    InvalidCharacter {
-        #[error(not(source))]
-        character: char,
-    },
+    #[display("class name must begin with an ASCII letter or `_`, got {_0:?}")]
+    InvalidLeadingCharacter(#[error(not(source))] char),
+    #[display("class name must contain only ASCII letters, digits, `-`, and `_`, got {_0:?}")]
+    InvalidCharacter(#[error(not(source))] char),
 }
 
 #[cfg(test)]
@@ -172,33 +164,33 @@ mod tests {
 
     #[test]
     fn rejects_leading_digit_hyphen_or_non_ascii() {
-        assert!(matches!(
-            CssClassName::new("1name".to_string()),
-            Err(InvalidCssClassName::InvalidLeadingCharacter { character: '1' }),
-        ));
-        assert!(matches!(
-            CssClassName::new("-name".to_string()),
-            Err(InvalidCssClassName::InvalidLeadingCharacter { character: '-' }),
-        ));
+        assert_eq!(
+            CssClassName::new("1name".to_string()).unwrap_err(),
+            InvalidCssClassName::InvalidLeadingCharacter('1'),
+        );
+        assert_eq!(
+            CssClassName::new("-name".to_string()).unwrap_err(),
+            InvalidCssClassName::InvalidLeadingCharacter('-'),
+        );
         assert!(matches!(
             CssClassName::new("名字".to_string()),
-            Err(InvalidCssClassName::InvalidLeadingCharacter { .. }),
+            Err(InvalidCssClassName::InvalidLeadingCharacter(_)),
         ));
     }
 
     #[test]
     fn rejects_unsafe_continue_characters() {
-        assert!(matches!(
-            CssClassName::new("bad name".to_string()),
-            Err(InvalidCssClassName::InvalidCharacter { character: ' ' }),
-        ));
-        assert!(matches!(
-            CssClassName::new("bad.name".to_string()),
-            Err(InvalidCssClassName::InvalidCharacter { character: '.' }),
-        ));
-        assert!(matches!(
-            CssClassName::new("bad\"name".to_string()),
-            Err(InvalidCssClassName::InvalidCharacter { character: '"' }),
-        ));
+        assert_eq!(
+            CssClassName::new("bad name".to_string()).unwrap_err(),
+            InvalidCssClassName::InvalidCharacter(' '),
+        );
+        assert_eq!(
+            CssClassName::new("bad.name".to_string()).unwrap_err(),
+            InvalidCssClassName::InvalidCharacter('.'),
+        );
+        assert_eq!(
+            CssClassName::new("bad\"name".to_string()).unwrap_err(),
+            InvalidCssClassName::InvalidCharacter('"'),
+        );
     }
 }

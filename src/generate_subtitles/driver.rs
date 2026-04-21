@@ -69,25 +69,31 @@ pub fn render_song_to_disk(
 ) -> Result<Vec<PathBuf>, GenerateError> {
     let destination_dir = dist_dir.join(&song.directory_name);
     if execute {
-        create_dir_all(&destination_dir).map_err(|source| GenerateError::CreateDir {
-            path: destination_dir.clone(),
-            source,
+        create_dir_all(&destination_dir).map_err(|cause| {
+            GenerateError::CreateDir(CreateDir {
+                path: destination_dir.clone(),
+                cause,
+            })
         })?;
     }
 
     let mut written: Vec<PathBuf> = Vec::with_capacity(song.languages.len() * 2);
     for bundle in &song.languages {
         let vtt = render_vtt_file(&bundle.cues, &song.markers, &song.credits, &bundle.language)
-            .map_err(|source| GenerateError::RenderVtt {
-                song: song.directory_name.clone(),
-                language: bundle.language.clone(),
-                source,
+            .map_err(|cause| {
+                GenerateError::RenderVtt(RenderVtt {
+                    song: song.directory_name.clone(),
+                    language: bundle.language.clone(),
+                    cause,
+                })
             })?;
         let srt = render_srt_file(&bundle.cues, &song.markers, &song.credits, &bundle.language)
-            .map_err(|source| GenerateError::RenderSrt {
-                song: song.directory_name.clone(),
-                language: bundle.language.clone(),
-                source,
+            .map_err(|cause| {
+                GenerateError::RenderSrt(RenderSrt {
+                    song: song.directory_name.clone(),
+                    language: bundle.language.clone(),
+                    cause,
+                })
             })?;
         let vtt_path = destination_dir.join(format!("lyrics.{lang}.vtt", lang = bundle.language));
         let srt_path = destination_dir.join(format!("lyrics.{lang}.srt", lang = bundle.language));
@@ -104,9 +110,11 @@ fn write_subtitle(path: &Path, content: &str, execute: bool) -> Result<(), Gener
     if !execute {
         return Ok(());
     }
-    write_file(path, content).map_err(|source| GenerateError::WriteFile {
-        path: path.to_path_buf(),
-        source,
+    write_file(path, content).map_err(|cause| {
+        GenerateError::WriteFile(WriteFile {
+            path: path.to_path_buf(),
+            cause,
+        })
     })
 }
 
@@ -116,32 +124,36 @@ pub fn load_song(song_dir: &Path) -> Result<Song, GenerateError> {
     let directory_name = song_dir
         .file_name()
         .and_then(|name| name.to_str())
-        .ok_or_else(|| GenerateError::NonUtf8Path {
-            path: song_dir.to_path_buf(),
-        })?
+        .ok_or_else(|| GenerateError::NonUtf8Path(song_dir.to_path_buf()))?
         .to_string();
 
     let video_path = song_dir.join(VIDEO_CONFIG_FILE_NAME);
-    let video_content = read_to_string(&video_path).map_err(|source| GenerateError::ReadFile {
-        path: video_path.clone(),
-        source,
-    })?;
-    let video: VideoDesc =
-        toml::from_str(&video_content).map_err(|source| GenerateError::ParseVideoDesc {
+    let video_content = read_to_string(&video_path).map_err(|cause| {
+        GenerateError::ReadFile(ReadFile {
             path: video_path.clone(),
-            source,
-        })?;
+            cause,
+        })
+    })?;
+    let video: VideoDesc = toml::from_str(&video_content).map_err(|cause| {
+        GenerateError::ParseVideoDesc(ParseVideoDesc {
+            path: video_path.clone(),
+            cause,
+        })
+    })?;
 
     let markers_path = song_dir.join(LINE_MARKERS_CONFIG_FILE_NAME);
     let markers: LineMarkersDesc = if markers_path.exists() {
-        let markers_content =
-            read_to_string(&markers_path).map_err(|source| GenerateError::ReadFile {
+        let markers_content = read_to_string(&markers_path).map_err(|cause| {
+            GenerateError::ReadFile(ReadFile {
                 path: markers_path.clone(),
-                source,
-            })?;
-        toml::from_str(&markers_content).map_err(|source| GenerateError::ParseLineMarkers {
-            path: markers_path.clone(),
-            source,
+                cause,
+            })
+        })?;
+        toml::from_str(&markers_content).map_err(|cause| {
+            GenerateError::ParseLineMarkers(ParseLineMarkers {
+                path: markers_path.clone(),
+                cause,
+            })
         })?
     } else {
         LineMarkersDesc::default()
@@ -149,28 +161,35 @@ pub fn load_song(song_dir: &Path) -> Result<Song, GenerateError> {
 
     let credits_path = song_dir.join(CREDITS_CONFIG_FILE_NAME);
     let credits: CreditsDesc = if credits_path.exists() {
-        let credits_content =
-            read_to_string(&credits_path).map_err(|source| GenerateError::ReadFile {
+        let credits_content = read_to_string(&credits_path).map_err(|cause| {
+            GenerateError::ReadFile(ReadFile {
                 path: credits_path.clone(),
-                source,
-            })?;
-        serde_saphyr::from_str(&credits_content).map_err(|source| GenerateError::ParseCredits {
-            path: credits_path.clone(),
-            source: source.to_string(),
+                cause,
+            })
+        })?;
+        serde_saphyr::from_str(&credits_content).map_err(|cause| {
+            GenerateError::ParseCredits(ParseCredits {
+                path: credits_path.clone(),
+                cause: cause.to_string(),
+            })
         })?
     } else {
         CreditsDesc::default()
     };
 
     let mut languages: BTreeMap<Language, LanguageBundle> = BTreeMap::new();
-    let entries = read_dir(song_dir).map_err(|source| GenerateError::ReadDir {
-        path: song_dir.to_path_buf(),
-        source,
+    let entries = read_dir(song_dir).map_err(|cause| {
+        GenerateError::ReadDir(ReadDir {
+            path: song_dir.to_path_buf(),
+            cause,
+        })
     })?;
     for entry in entries {
-        let entry = entry.map_err(|source| GenerateError::ReadDir {
-            path: song_dir.to_path_buf(),
-            source,
+        let entry = entry.map_err(|cause| {
+            GenerateError::ReadDir(ReadDir {
+                path: song_dir.to_path_buf(),
+                cause,
+            })
         })?;
         let file_name = entry.file_name();
         let Some(file_name) = file_name.to_str() else {
@@ -183,20 +202,23 @@ pub fn load_song(song_dir: &Path) -> Result<Song, GenerateError> {
             continue;
         };
         let lyrics_path = entry.path();
-        let language =
-            middle
-                .parse::<Language>()
-                .map_err(|_| GenerateError::UnrecognizedLanguage {
-                    path: lyrics_path.clone(),
-                    code: middle.to_string(),
-                })?;
-        let content = read_to_string(&lyrics_path).map_err(|source| GenerateError::ReadFile {
-            path: lyrics_path.clone(),
-            source,
+        let language = middle.parse::<Language>().map_err(|_| {
+            GenerateError::UnrecognizedLanguage(UnrecognizedLanguage {
+                path: lyrics_path.clone(),
+                code: middle.to_string(),
+            })
         })?;
-        let cues = parse_lyrics(&content).map_err(|source| GenerateError::ParseLyrics {
-            path: lyrics_path.clone(),
-            source,
+        let content = read_to_string(&lyrics_path).map_err(|cause| {
+            GenerateError::ReadFile(ReadFile {
+                path: lyrics_path.clone(),
+                cause,
+            })
+        })?;
+        let cues = parse_lyrics(&content).map_err(|cause| {
+            GenerateError::ParseLyrics(ParseLyrics {
+                path: lyrics_path.clone(),
+                cause,
+            })
         })?;
         languages.insert(
             language.clone(),
@@ -282,55 +304,121 @@ pub fn main() -> ExitCode {
     ExitCode::SUCCESS
 }
 
+/// Payload for [`GenerateError::ReadFile`].
+#[derive(Debug, Display)]
+#[display("cannot read {path:?}: {cause}")]
+pub struct ReadFile {
+    pub path: PathBuf,
+    pub cause: io::Error,
+}
+
+/// Payload for [`GenerateError::ReadDir`].
+#[derive(Debug, Display)]
+#[display("cannot read directory {path:?}: {cause}")]
+pub struct ReadDir {
+    pub path: PathBuf,
+    pub cause: io::Error,
+}
+
+/// Payload for [`GenerateError::CreateDir`].
+#[derive(Debug, Display)]
+#[display("cannot create directory {path:?}: {cause}")]
+pub struct CreateDir {
+    pub path: PathBuf,
+    pub cause: io::Error,
+}
+
+/// Payload for [`GenerateError::WriteFile`].
+#[derive(Debug, Display)]
+#[display("cannot write {path:?}: {cause}")]
+pub struct WriteFile {
+    pub path: PathBuf,
+    pub cause: io::Error,
+}
+
+/// Payload for [`GenerateError::UnrecognizedLanguage`].
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display("lyrics file {path:?} has unrecognized language code {code:?}")]
+pub struct UnrecognizedLanguage {
+    pub path: PathBuf,
+    pub code: String,
+}
+
+/// Payload for [`GenerateError::ParseVideoDesc`].
+#[derive(Debug, Display)]
+#[display("failed to parse {path:?}: {cause}")]
+pub struct ParseVideoDesc {
+    pub path: PathBuf,
+    pub cause: toml::de::Error,
+}
+
+/// Payload for [`GenerateError::ParseLineMarkers`].
+#[derive(Debug, Display)]
+#[display("failed to parse {path:?}: {cause}")]
+pub struct ParseLineMarkers {
+    pub path: PathBuf,
+    pub cause: toml::de::Error,
+}
+
+/// Payload for [`GenerateError::ParseCredits`].
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display("failed to parse {path:?}: {cause}")]
+pub struct ParseCredits {
+    pub path: PathBuf,
+    pub cause: String,
+}
+
+/// Payload for [`GenerateError::ParseLyrics`].
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display("failed to parse {path:?}: {cause}")]
+pub struct ParseLyrics {
+    pub path: PathBuf,
+    pub cause: ParseLyricsError,
+}
+
+/// Payload for [`GenerateError::RenderVtt`].
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display("failed to render {song}.{language}.vtt: {cause}")]
+pub struct RenderVtt {
+    pub song: String,
+    pub language: Language,
+    pub cause: RenderVttError,
+}
+
+/// Payload for [`GenerateError::RenderSrt`].
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display("failed to render {song}.{language}.srt: {cause}")]
+pub struct RenderSrt {
+    pub song: String,
+    pub language: Language,
+    pub cause: RenderSrtError,
+}
+
 #[derive(Debug, Display, Error)]
 #[non_exhaustive]
 pub enum GenerateError {
-    #[display("cannot read {path:?}: {source}")]
-    ReadFile { path: PathBuf, source: io::Error },
-    #[display("cannot read directory {path:?}: {source}")]
-    ReadDir { path: PathBuf, source: io::Error },
-    #[display("cannot create directory {path:?}: {source}")]
-    CreateDir { path: PathBuf, source: io::Error },
-    #[display("cannot write {path:?}: {source}")]
-    WriteFile { path: PathBuf, source: io::Error },
-    #[display("path is not valid UTF-8: {path:?}")]
-    NonUtf8Path {
-        #[error(not(source))]
-        path: PathBuf,
-    },
-    #[display("lyrics file {path:?} has unrecognized language code {code:?}")]
-    UnrecognizedLanguage { path: PathBuf, code: String },
-    #[display("failed to parse {path:?}: {source}")]
-    ParseVideoDesc {
-        path: PathBuf,
-        source: toml::de::Error,
-    },
-    #[display("failed to parse {path:?}: {source}")]
-    ParseLineMarkers {
-        path: PathBuf,
-        source: toml::de::Error,
-    },
-    #[display("failed to parse {path:?}: {source}")]
-    ParseCredits {
-        path: PathBuf,
-        #[error(not(source))]
-        source: String,
-    },
-    #[display("failed to parse {path:?}: {source}")]
-    ParseLyrics {
-        path: PathBuf,
-        source: ParseLyricsError,
-    },
-    #[display("failed to render {song}.{language}.vtt: {source}")]
-    RenderVtt {
-        song: String,
-        language: Language,
-        source: RenderVttError,
-    },
-    #[display("failed to render {song}.{language}.srt: {source}")]
-    RenderSrt {
-        song: String,
-        language: Language,
-        source: RenderSrtError,
-    },
+    #[display("{_0}")]
+    ReadFile(#[error(not(source))] ReadFile),
+    #[display("{_0}")]
+    ReadDir(#[error(not(source))] ReadDir),
+    #[display("{_0}")]
+    CreateDir(#[error(not(source))] CreateDir),
+    #[display("{_0}")]
+    WriteFile(#[error(not(source))] WriteFile),
+    #[display("path is not valid UTF-8: {_0:?}")]
+    NonUtf8Path(#[error(not(source))] PathBuf),
+    #[display("{_0}")]
+    UnrecognizedLanguage(#[error(not(source))] UnrecognizedLanguage),
+    #[display("{_0}")]
+    ParseVideoDesc(#[error(not(source))] ParseVideoDesc),
+    #[display("{_0}")]
+    ParseLineMarkers(#[error(not(source))] ParseLineMarkers),
+    #[display("{_0}")]
+    ParseCredits(#[error(not(source))] ParseCredits),
+    #[display("{_0}")]
+    ParseLyrics(#[error(not(source))] ParseLyrics),
+    #[display("{_0}")]
+    RenderVtt(#[error(not(source))] RenderVtt),
+    #[display("{_0}")]
+    RenderSrt(#[error(not(source))] RenderSrt),
 }

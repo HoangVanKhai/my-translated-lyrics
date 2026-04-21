@@ -79,19 +79,21 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
             Ok((start, after_prefix)) => {
                 let body = after_prefix.trim_start();
                 if body.len() == after_prefix.len() {
-                    return Err(ParseLyricsError::MissingSeparatorAfterTimestamp {
-                        line_number,
-                        content: trimmed.to_string(),
-                    });
+                    return Err(ParseLyricsError::MissingSeparatorAfterTimestamp(
+                        MissingSeparatorAfterTimestamp {
+                            line_number,
+                            content: trimmed.to_string(),
+                        },
+                    ));
                 }
                 Some((start, body))
             }
             Err(TakeTimestampError::ShapeMismatch) => None,
-            Err(source) => {
-                return Err(ParseLyricsError::InvalidTimestamp {
+            Err(cause) => {
+                return Err(ParseLyricsError::InvalidTimestamp(InvalidTimestamp {
                     line_number,
-                    source,
-                });
+                    cause,
+                }));
             }
         };
 
@@ -101,11 +103,13 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
 
                 if first_token == END_OF_VIDEO_MARKER || first_token == CLEAR_MARKER {
                     if body.len() > first_token.len() {
-                        return Err(ParseLyricsError::ExtraTextAfterControlMarker {
-                            line_number,
-                            marker: first_token.to_string(),
-                            trailing: body[first_token.len()..].trim_start().to_string(),
-                        });
+                        return Err(ParseLyricsError::ExtraTextAfterControlMarker(
+                            ExtraTextAfterControlMarker {
+                                line_number,
+                                marker: first_token.to_string(),
+                                trailing: body[first_token.len()..].trim_start().to_string(),
+                            },
+                        ));
                     }
                     if first_token == CLEAR_MARKER {
                         events.push(Event::Clear { start });
@@ -114,11 +118,12 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                     continue;
                 }
 
-                let (marker, text) =
-                    split_marker(body).ok_or_else(|| ParseLyricsError::MissingMarker {
+                let (marker, text) = split_marker(body).ok_or_else(|| {
+                    ParseLyricsError::MissingMarker(MissingMarker {
                         line_number,
                         content: body.to_string(),
-                    })?;
+                    })
+                })?;
                 if text.is_empty() {
                     last_cue_index = None;
                     continue;
@@ -134,10 +139,10 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
             }
             None => {
                 let Some(cue_index) = last_cue_index else {
-                    return Err(ParseLyricsError::StrayContinuation {
+                    return Err(ParseLyricsError::StrayContinuation(StrayContinuation {
                         line_number,
                         content: trimmed.to_string(),
-                    });
+                    }));
                 };
                 if let Event::Cue { text, .. } = &mut events[cue_index] {
                     text.push('\n');
@@ -153,7 +158,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
         let previous = window[0].start();
         let next = window[1].start();
         if next < previous {
-            return Err(ParseLyricsError::OutOfOrder { previous, next });
+            return Err(ParseLyricsError::OutOfOrder(OutOfOrder { previous, next }));
         }
     }
 
@@ -178,7 +183,7 @@ fn resolve_cues(events: Vec<Event>) -> Result<Vec<SubtitleCue>, ParseLyricsError
             .skip(index + 1)
             .map(Event::start)
             .next()
-            .ok_or(ParseLyricsError::UnclosedCue { start: *start })?;
+            .ok_or(ParseLyricsError::UnclosedCue(*start))?;
 
         cues.push(SubtitleCue {
             start: *start,
@@ -205,38 +210,76 @@ fn split_marker(body: &str) -> Option<(&str, &str)> {
     Some((marker, tail.trim()))
 }
 
-#[derive(Debug, Display, Error)]
+/// Payload for [`ParseLyricsError::InvalidTimestamp`]. Wraps the
+/// underlying [`TakeTimestampError`] and pairs it with the source
+/// line number.
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display("line {line_number}: {cause}")]
+pub struct InvalidTimestamp {
+    pub line_number: usize,
+    pub cause: TakeTimestampError,
+}
+
+/// Payload for [`ParseLyricsError::StrayContinuation`].
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display("line {line_number}: continuation text {content:?} before any cue")]
+pub struct StrayContinuation {
+    pub line_number: usize,
+    pub content: String,
+}
+
+/// Payload for [`ParseLyricsError::MissingMarker`].
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display("line {line_number}: cue body {content:?} carries no marker")]
+pub struct MissingMarker {
+    pub line_number: usize,
+    pub content: String,
+}
+
+/// Payload for [`ParseLyricsError::MissingSeparatorAfterTimestamp`].
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display("line {line_number}: timestamp in {content:?} is not followed by whitespace")]
+pub struct MissingSeparatorAfterTimestamp {
+    pub line_number: usize,
+    pub content: String,
+}
+
+/// Payload for [`ParseLyricsError::ExtraTextAfterControlMarker`].
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display(
+    "line {line_number}: control marker {marker:?} must stand alone but is followed by {trailing:?}"
+)]
+pub struct ExtraTextAfterControlMarker {
+    pub line_number: usize,
+    pub marker: String,
+    pub trailing: String,
+}
+
+/// Payload for [`ParseLyricsError::OutOfOrder`].
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display("events out of order: cue at {previous} is followed by an earlier cue at {next}")]
+pub struct OutOfOrder {
+    pub previous: Timestamp,
+    pub next: Timestamp,
+}
+
+#[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum ParseLyricsError {
-    #[display("line {line_number}: {source}")]
-    InvalidTimestamp {
-        line_number: usize,
-        source: TakeTimestampError,
-    },
-    #[display("line {line_number}: continuation text {content:?} before any cue")]
-    StrayContinuation { line_number: usize, content: String },
-    #[display("line {line_number}: cue body {content:?} carries no marker")]
-    MissingMarker { line_number: usize, content: String },
-    #[display("line {line_number}: timestamp in {content:?} is not followed by whitespace")]
-    MissingSeparatorAfterTimestamp { line_number: usize, content: String },
-    #[display(
-        "line {line_number}: control marker {marker:?} must stand alone but is followed by {trailing:?}"
-    )]
-    ExtraTextAfterControlMarker {
-        line_number: usize,
-        marker: String,
-        trailing: String,
-    },
-    #[display("events out of order: cue at {previous} is followed by an earlier cue at {next}")]
-    OutOfOrder {
-        previous: Timestamp,
-        next: Timestamp,
-    },
-    #[display("cue at {start} has no following cue or `clr`")]
-    UnclosedCue {
-        #[error(not(source))]
-        start: Timestamp,
-    },
+    #[display("{_0}")]
+    InvalidTimestamp(#[error(not(source))] InvalidTimestamp),
+    #[display("{_0}")]
+    StrayContinuation(#[error(not(source))] StrayContinuation),
+    #[display("{_0}")]
+    MissingMarker(#[error(not(source))] MissingMarker),
+    #[display("{_0}")]
+    MissingSeparatorAfterTimestamp(#[error(not(source))] MissingSeparatorAfterTimestamp),
+    #[display("{_0}")]
+    ExtraTextAfterControlMarker(#[error(not(source))] ExtraTextAfterControlMarker),
+    #[display("{_0}")]
+    OutOfOrder(#[error(not(source))] OutOfOrder),
+    #[display("cue at {_0} has no following cue or `clr`")]
+    UnclosedCue(#[error(not(source))] Timestamp),
 }
 
 #[cfg(test)]
@@ -310,10 +353,9 @@ mod tests {
         };
         assert!(matches!(
             parse_lyrics(clr_input),
-            Err(ParseLyricsError::ExtraTextAfterControlMarker {
-                marker,
-                ..
-            }) if marker == "clr",
+            Err(ParseLyricsError::ExtraTextAfterControlMarker(
+                ExtraTextAfterControlMarker { marker, .. },
+            )) if marker == "clr",
         ));
 
         let eov_input = text_block_fnl! {
@@ -323,10 +365,9 @@ mod tests {
         };
         assert!(matches!(
             parse_lyrics(eov_input),
-            Err(ParseLyricsError::ExtraTextAfterControlMarker {
-                marker,
-                ..
-            }) if marker == "eov",
+            Err(ParseLyricsError::ExtraTextAfterControlMarker(
+                ExtraTextAfterControlMarker { marker, .. },
+            )) if marker == "eov",
         ));
     }
 
@@ -351,7 +392,7 @@ mod tests {
         };
         assert!(matches!(
             parse_lyrics(input),
-            Err(ParseLyricsError::MissingMarker { .. }),
+            Err(ParseLyricsError::MissingMarker(_)),
         ));
     }
 
@@ -364,7 +405,7 @@ mod tests {
         };
         assert!(matches!(
             parse_lyrics(input),
-            Err(ParseLyricsError::MissingSeparatorAfterTimestamp { .. }),
+            Err(ParseLyricsError::MissingSeparatorAfterTimestamp(_)),
         ));
     }
 
@@ -385,7 +426,7 @@ mod tests {
         let input = "00:00.000 ttl: Hello\n";
         assert!(matches!(
             parse_lyrics(input),
-            Err(ParseLyricsError::UnclosedCue { .. }),
+            Err(ParseLyricsError::UnclosedCue(_)),
         ));
     }
 
@@ -398,7 +439,7 @@ mod tests {
         };
         assert!(matches!(
             parse_lyrics(input),
-            Err(ParseLyricsError::OutOfOrder { .. }),
+            Err(ParseLyricsError::OutOfOrder(_)),
         ));
     }
 }
