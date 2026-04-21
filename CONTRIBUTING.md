@@ -24,7 +24,7 @@ Pull request titles must follow the same Conventional Commits format as commit m
 
 ### Merge Commits
 
-A merge commit message must also follow the Conventional Commits format. Always supply an explicit message when running `git merge`, for example `git merge --no-ff -m "chore(merge): integrate feature branch" feature-branch`, rather than accepting the default `Merge branch '…'` message that Git generates. This rule is especially important for AI agents, which tend to run `git merge` without reviewing or overriding the default commit message.
+A merge commit message must also follow the Conventional Commits format. Whenever `git merge` creates a merge commit, such as during a non-fast-forward merge, always supply an explicit message rather than accepting the default `Merge branch '…'` text that Git generates. For example, use `git merge --no-ff -m "chore(merge): integrate feature branch" feature-branch`. This rule is especially important for AI agents, which tend to run `git merge` without reviewing or overriding the default commit message.
 
 ## Code Style
 
