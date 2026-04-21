@@ -55,6 +55,7 @@ impl Timestamp {
         let digit = |next: char| next.to_digit(10).map(|value| value as u8);
 
         let mut chars = input.chars();
+
         let tens_min = chars
             .next()
             .and_then(digit)
@@ -63,10 +64,12 @@ impl Timestamp {
             .next()
             .and_then(digit)
             .ok_or(TakeTimestampError::ShapeMismatch)?;
+
         chars
             .next()
             .filter(|&c| c == ':')
             .ok_or(TakeTimestampError::ShapeMismatch)?;
+
         let tens_sec = chars
             .next()
             .and_then(digit)
@@ -75,10 +78,12 @@ impl Timestamp {
             .next()
             .and_then(digit)
             .ok_or(TakeTimestampError::ShapeMismatch)?;
+
         chars
             .next()
             .filter(|&c| c == '.')
             .ok_or(TakeTimestampError::ShapeMismatch)?;
+
         let hundreds_ms = chars
             .next()
             .and_then(digit)
