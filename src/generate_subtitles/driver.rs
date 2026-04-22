@@ -265,16 +265,15 @@ pub fn main() -> ExitCode {
     let mut total_written = 0usize;
     for song_dir in song_dirs {
         let has_txt = read_dir(&song_dir)
-            .map(|iter| {
-                iter.filter_map(|entry| entry.ok()).any(|entry| {
-                    entry
-                        .file_name()
-                        .to_str()
-                        .map(|name| name.starts_with("lyrics.") && name.ends_with(".txt"))
-                        .unwrap_or(false)
-                })
-            })
-            .unwrap_or(false);
+            .unwrap_or_else(|error| panic!("error: Cannot read directory {song_dir:?}: {error}"))
+            .map(Result::<DirEntry, _>::unwrap)
+            .any(|entry| {
+                entry
+                    .file_name()
+                    .to_str()
+                    .map(|name| name.starts_with("lyrics.") && name.ends_with(".txt"))
+                    .unwrap_or(false)
+            });
         if !has_txt {
             continue;
         }
