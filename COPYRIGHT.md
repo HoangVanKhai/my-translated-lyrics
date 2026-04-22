@@ -90,9 +90,8 @@ The files in this category are:
 - `sources/*/video.toml`
 - `sources/*/credits.yaml`
 - `sources/*/line-markers.toml`
-- `drafts/FarewellToJianghu-ChangGeYiQuJianghuYuan/credits-and-titles.json`
-- `drafts/FarewellToJianghu-ChangGeYiQuJianghuYuan/credits-and-titles.full.json`
-- `drafts/MillenniumOfFrostAndSnow-ShuangXueQianNian/video.toml`
+- `drafts/**/*.json`
+- `drafts/**/video.toml`
 
 ## Reporting concerns
 
