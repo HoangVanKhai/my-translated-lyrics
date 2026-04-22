@@ -232,9 +232,9 @@ fn render_credit_pair(
 }
 
 /// Reproduces ASCII space/tab runs verbatim between the role tag and
-/// the name tag so that Jianghu's two-space gutter survives the
-/// round-trip; other separators such as `：` or `\u{3000}` collapse
-/// to a single ASCII space.
+/// the name tag so that a multi-space gutter survives the round-trip;
+/// other separators such as `：` or `\u{3000}` collapse to a single
+/// ASCII space.
 fn append_separator_for_output(output: &mut String, raw: &str) {
     if !raw.is_empty() && raw.chars().all(|ch| ch == ' ' || ch == '\t') {
         output.push_str(raw);

@@ -27,9 +27,9 @@ pub struct CreditPair {
     pub role: String,
     /// Raw separator text captured between the role cell and the
     /// name cell, preserved verbatim for the renderer to decide how
-    /// to emit it: ASCII space/tab runs survive unchanged (so
-    /// Jianghu's two-space gutter round-trips), while other shapes
-    /// such as `：` or `\u{3000}` collapse to a single ASCII space.
+    /// to emit it: ASCII space/tab runs survive unchanged (so a
+    /// multi-space gutter round-trips), while other shapes such as
+    /// `：` or `\u{3000}` collapse to a single ASCII space.
     pub separator: String,
     /// Decomposed name region, with bracketed highlights promoted
     /// to structural segments.
