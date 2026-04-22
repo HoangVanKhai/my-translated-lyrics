@@ -25,11 +25,11 @@ pub const END_OF_VIDEO_MARKER: &str = "eov";
 /// A _marker_ is the short token (for example `LTY`, `cre`, `ttl`,
 /// `LRC`) at the start of each line in a song's `lyrics.*.txt`
 /// files. This descriptor catalogs every marker the song uses and
-/// groups them by the rendering role they play — voice, named
-/// class, credit block, or plain pass-through. The groups are
-/// consumed by [`crate::generate_subtitles`] and its submodules;
-/// see [`crate::generate_subtitles::render_vtt`] for how each group
-/// is wrapped in the output and
+/// groups them by the rendering role they play. The roles are
+/// voice, named class, credit block, and plain pass-through. The
+/// groups are consumed by [`crate::generate_subtitles`] and its
+/// submodules; see [`crate::generate_subtitles::render_vtt`] for
+/// how each group is wrapped in the output, and
 /// [`crate::generate_subtitles::styles`] for the shared presentation
 /// palette.
 #[derive(Default, Deserialize, Serialize)]
@@ -55,10 +55,10 @@ pub struct LineMarkersDesc {
 /// A CSS class name that is safe to splat into a `::cue(c.{name})`
 /// selector and a `<c.{name}>` tag without escaping.
 ///
-/// The permitted shape is `[A-Za-z_][A-Za-z0-9_-]*` — the common
-/// subset of the CSS identifier grammar and the HTML class-name
-/// rules. This excludes whitespace, quotes, dots, braces, and
-/// anything outside basic ASCII, all of which would break the
+/// The permitted shape is `[A-Za-z_][A-Za-z0-9_-]*`. The pattern
+/// is the common subset of the CSS identifier grammar and the HTML
+/// class-name rules. It excludes whitespace, quotes, dots, braces,
+/// and anything outside basic ASCII, all of which would break the
 /// STYLE block or the inline tag if interpolated raw.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct CssClassName(String);
@@ -121,11 +121,12 @@ fn is_class_name_continue(ch: char) -> bool {
 ///
 /// The permitted shape is any non-empty string whose characters are
 /// none of `<`, `>`, `"`, `\`, `U+2028`, `U+2029`, and which
-/// contains no ASCII or Unicode control character. This keeps CJK,
-/// accented Latin, and embedded spaces — the three shapes that
-/// already appear in `sources/*/line-markers.toml` — while rejecting
-/// every character that would terminate the HTML-like cue tag or
-/// the CSS attribute string.
+/// contains no ASCII or Unicode control character. This reject list
+/// captures every character that would terminate the HTML-like cue
+/// tag or the CSS attribute string. The shape is otherwise
+/// permissive, and in particular accepts CJK text, accented Latin,
+/// and embedded spaces, the three categories that already appear in
+/// `sources/*/line-markers.toml`.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct VoiceName(String);
 

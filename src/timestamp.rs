@@ -33,16 +33,16 @@ impl Timestamp {
     /// from `input` and returns the parsed `Timestamp` along with the
     /// unconsumed tail. Follows the parse-don't-validate pattern:
     ///
-    /// - `Ok((ts, tail))` — the prefix matched the shape and every
-    ///   component fits its range. `tail` is `input` past the nine
-    ///   consumed characters, untouched.
-    /// - `Err(TakeTimestampError::ShapeMismatch)` — the first nine
-    ///   characters of `input` do not form an `MM:SS.mmm` shape (too
-    ///   short, wrong punctuation, or a non-digit where a digit is
-    ///   required). Callers typically treat this as "no timestamp
+    /// - `Ok((ts, tail))` indicates the prefix matched the shape and
+    ///   every component fits its range. `tail` is `input` past the
+    ///   nine consumed characters, untouched.
+    /// - `Err(TakeTimestampError::ShapeMismatch)` indicates the first
+    ///   nine characters of `input` do not form an `MM:SS.mmm` shape
+    ///   (too short, wrong punctuation, or a non-digit where a digit
+    ///   is required). Callers typically treat this as "no timestamp
     ///   here" and route the line elsewhere.
-    /// - `Err(TakeTimestampError::SecondsOutOfRange { … })` — the
-    ///   prefix has timestamp shape but the seconds component
+    /// - `Err(TakeTimestampError::SecondsOutOfRange { … })` indicates
+    ///   the prefix has timestamp shape but the seconds component
     ///   exceeds 59. Three-digit milliseconds can never exceed 999,
     ///   and two-digit minutes are uncapped by design. The error
     ///   carries a copy of the offending 9-character prefix for
