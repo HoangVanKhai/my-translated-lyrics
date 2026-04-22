@@ -1,4 +1,38 @@
-# The MIT License
+# License
+
+This repository contains material in more than one legal category, and a
+single license cannot cover all of it. This file licenses only the
+software in the repository. The Chinese-language lyrics and the
+Vietnamese translations of those lyrics are described separately in
+[`COPYRIGHT.md`](./COPYRIGHT.md), which you should read together with
+this file.
+
+## Scope of the MIT License below
+
+The MIT License below applies to the source code, build configuration,
+continuous-integration configuration, and contributor documentation in
+this repository. Concretely, it covers every file under the following
+paths:
+
+- `src/`
+- `cli/`
+- `tests/`
+- `template/`
+- `.github/`
+- `**/*.js`
+- `**/*.sh`
+- `**/*.md`
+- `Cargo.toml`, `Cargo.lock`
+- `package.json`, `pnpm-lock.yaml`
+- `rust-toolchain`
+- `cspell.yaml`
+- `.editorconfig`, `.gitattributes`, `.gitignore`
+
+It does not apply to the Chinese-language lyrics or to the Vietnamese
+translations carried in the `dist/`, `sources/`, and `drafts/`
+directories. See [`COPYRIGHT.md`](./COPYRIGHT.md) for those.
+
+## The MIT License
 
 Copyright © 2026 Hoàng Văn Khải
 

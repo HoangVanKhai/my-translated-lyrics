@@ -9,6 +9,7 @@ ignorePaths:
   - 'cspell.yaml'
   - 'drafts/**/*.js'
   - 'drafts/**/*.json'
+  - 'COPYRIGHT.md'
   - 'LICENSE.md'
   - 'package.json'
   - 'pnpm-lock.yaml'
