@@ -193,7 +193,10 @@ pub fn load_song(song_dir: &Path) -> Result<Song, GenerateError> {
         })?;
         let file_name = entry.file_name();
         let Some(file_name) = file_name.to_str() else {
-            continue;
+            panic!(
+                "lyrics directory entry {path:?} has a non-UTF-8 filename",
+                path = entry.path(),
+            );
         };
         let Some(middle) = file_name
             .strip_prefix("lyrics.")
