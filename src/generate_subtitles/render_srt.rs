@@ -172,3 +172,6 @@ pub enum RenderSrtError {
     #[display("{_0}")]
     Credits(#[error(not(source))] Credits),
 }
+
+#[cfg(test)]
+mod tests;

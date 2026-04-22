@@ -13,6 +13,13 @@
 //! role raises [`ParseCreditError::UnknownRole`]. This lets the
 //! integration tests catch typos such as `作詞` vs `作词` before
 //! they ever reach `dist/`.
+//!
+//! Only the `credit-roles` list is consumed by this parser. The
+//! `credit-names` list on [`CreditsDesc`] is loaded and carried
+//! through the pipeline but is not cross-checked against the parsed
+//! name regions here; see the "`credits.yaml` consistency test"
+//! item in the PR description for the deferred work that would add
+//! that validation.
 
 use crate::credits_descriptor::CreditsDesc;
 use crate::video_descriptor::Language;

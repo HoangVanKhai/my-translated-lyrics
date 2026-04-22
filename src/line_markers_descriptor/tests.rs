@@ -1,4 +1,5 @@
 use super::{CssClassName, InvalidCssClassName, InvalidVoiceName, VoiceName};
+use serde::{Deserialize, Serialize};
 
 #[test]
 fn accepts_simple_ascii_names() {
@@ -108,4 +109,53 @@ fn voice_name_rejects_control_and_line_separator_characters() {
             InvalidVoiceName::ForbiddenCharacter(ch),
         );
     }
+}
+
+/// Wrapper so `toml::from_str` has a root table to deserialize into.
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
+struct CssClassHolder {
+    value: CssClassName,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
+struct VoiceNameHolder {
+    value: VoiceName,
+}
+
+#[test]
+fn css_class_name_round_trips_through_toml() {
+    let original = CssClassHolder {
+        value: CssClassName::new("kebab-name_42".to_string()).unwrap(),
+    };
+    let serialized = toml::to_string(&original).unwrap();
+    let deserialized: CssClassHolder = toml::from_str(&serialized).unwrap();
+    assert_eq!(deserialized, original);
+}
+
+#[test]
+fn css_class_name_toml_rejects_invalid_source() {
+    let err = toml::from_str::<CssClassHolder>("value = \"bad name\"").unwrap_err();
+    assert!(
+        err.to_string().contains("class name"),
+        "error message should surface the validator's diagnostic: {err}",
+    );
+}
+
+#[test]
+fn voice_name_round_trips_through_toml() {
+    let original = VoiceNameHolder {
+        value: VoiceName::new("Voz Ñ".to_string()).unwrap(),
+    };
+    let serialized = toml::to_string(&original).unwrap();
+    let deserialized: VoiceNameHolder = toml::from_str(&serialized).unwrap();
+    assert_eq!(deserialized, original);
+}
+
+#[test]
+fn voice_name_toml_rejects_invalid_source() {
+    let err = toml::from_str::<VoiceNameHolder>("value = \"bad<name\"").unwrap_err();
+    assert!(
+        err.to_string().contains("voice name"),
+        "error message should surface the validator's diagnostic: {err}",
+    );
 }
