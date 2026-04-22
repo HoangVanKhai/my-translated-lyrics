@@ -27,10 +27,10 @@ fn accepts_simple_ascii_names() {
 
 #[test]
 fn rejects_empty() {
-    assert!(matches!(
-        CssClassName::new(String::new()),
-        Err(InvalidCssClassName::Empty),
-    ));
+    assert_eq!(
+        CssClassName::new(String::new()).unwrap_err(),
+        InvalidCssClassName::Empty,
+    );
 }
 
 #[test]
@@ -43,10 +43,10 @@ fn rejects_leading_digit_hyphen_or_non_ascii() {
         CssClassName::new("-name".to_string()).unwrap_err(),
         InvalidCssClassName::InvalidLeadingCharacter('-'),
     );
-    assert!(matches!(
-        CssClassName::new("名字".to_string()),
-        Err(InvalidCssClassName::InvalidLeadingCharacter(_)),
-    ));
+    assert_eq!(
+        CssClassName::new("名字".to_string()).unwrap_err(),
+        InvalidCssClassName::InvalidLeadingCharacter('名'),
+    );
 }
 
 #[test]

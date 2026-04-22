@@ -74,30 +74,30 @@ fn shape_mismatch_rejects_non_ascii_unicode_digits() {
 #[test]
 fn shape_mismatch_reports_error() {
     // Missing colon.
-    assert!(matches!(
-        Timestamp::take("0002.960"),
-        Err(TakeTimestampError::ShapeMismatch),
-    ));
+    assert_eq!(
+        Timestamp::take("0002.960").unwrap_err(),
+        TakeTimestampError::ShapeMismatch,
+    );
     // Missing dot.
-    assert!(matches!(
-        Timestamp::take("00:02"),
-        Err(TakeTimestampError::ShapeMismatch),
-    ));
+    assert_eq!(
+        Timestamp::take("00:02").unwrap_err(),
+        TakeTimestampError::ShapeMismatch,
+    );
     // Fewer than three millisecond digits.
-    assert!(matches!(
-        Timestamp::take("00:02.96"),
-        Err(TakeTimestampError::ShapeMismatch),
-    ));
+    assert_eq!(
+        Timestamp::take("00:02.96").unwrap_err(),
+        TakeTimestampError::ShapeMismatch,
+    );
     // Empty input.
-    assert!(matches!(
-        Timestamp::take(""),
-        Err(TakeTimestampError::ShapeMismatch),
-    ));
+    assert_eq!(
+        Timestamp::take("").unwrap_err(),
+        TakeTimestampError::ShapeMismatch,
+    );
     // Non-digit where a digit is required.
-    assert!(matches!(
-        Timestamp::take("ab:cd.efg"),
-        Err(TakeTimestampError::ShapeMismatch),
-    ));
+    assert_eq!(
+        Timestamp::take("ab:cd.efg").unwrap_err(),
+        TakeTimestampError::ShapeMismatch,
+    );
 }
 
 #[test]

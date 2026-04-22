@@ -1,8 +1,9 @@
 use super::{
-    EmptyCueBody, ExtraTextAfterControlMarker, ParseLyricsError, ReservedControlMarker,
+    EmptyCueBody, ExtraTextAfterControlMarker, InvalidTimestamp, MissingMarker,
+    MissingSeparatorAfterTimestamp, OutOfOrder, ParseLyricsError, ReservedControlMarker,
     parse_lyrics,
 };
-use crate::timestamp::Timestamp;
+use crate::timestamp::{SecondsOutOfRange, TakeTimestampError, Timestamp};
 use text_block_macros::text_block_fnl;
 
 #[test]
@@ -69,24 +70,28 @@ fn control_markers_reject_trailing_text() {
         "00:00.000 ttl: Hello"
         "00:02.000 clr some trailing text"
     };
-    assert!(matches!(
-        parse_lyrics(clr_input),
-        Err(ParseLyricsError::ExtraTextAfterControlMarker(
-            ExtraTextAfterControlMarker { marker, .. },
-        )) if marker == "clr",
-    ));
+    assert_eq!(
+        parse_lyrics(clr_input).unwrap_err(),
+        ParseLyricsError::ExtraTextAfterControlMarker(ExtraTextAfterControlMarker {
+            line_number: 2,
+            marker: "clr".to_string(),
+            trailing: "some trailing text".to_string(),
+        }),
+    );
 
     let eov_input = text_block_fnl! {
         "00:00.000 ttl: Hello"
         "00:02.000 clr"
         "00:05.000 eov\tend of video"
     };
-    assert!(matches!(
-        parse_lyrics(eov_input),
-        Err(ParseLyricsError::ExtraTextAfterControlMarker(
-            ExtraTextAfterControlMarker { marker, .. },
-        )) if marker == "eov",
-    ));
+    assert_eq!(
+        parse_lyrics(eov_input).unwrap_err(),
+        ParseLyricsError::ExtraTextAfterControlMarker(ExtraTextAfterControlMarker {
+            line_number: 3,
+            marker: "eov".to_string(),
+            trailing: "end of video".to_string(),
+        }),
+    );
 }
 
 #[test]
@@ -108,10 +113,13 @@ fn rejects_cue_line_without_marker() {
         "00:00.000 Plain text without marker"
         "00:02.000 clr"
     };
-    assert!(matches!(
-        parse_lyrics(input),
-        Err(ParseLyricsError::MissingMarker(_)),
-    ));
+    assert_eq!(
+        parse_lyrics(input).unwrap_err(),
+        ParseLyricsError::MissingMarker(MissingMarker {
+            line_number: 1,
+            content: "Plain text without marker".to_string(),
+        }),
+    );
 }
 
 #[test]
@@ -121,10 +129,13 @@ fn rejects_timestamp_without_separator_after_prefix() {
         "00:02.000ttl: no space after timestamp"
         "00:05.000 clr"
     };
-    assert!(matches!(
-        parse_lyrics(input),
-        Err(ParseLyricsError::MissingSeparatorAfterTimestamp(_)),
-    ));
+    assert_eq!(
+        parse_lyrics(input).unwrap_err(),
+        ParseLyricsError::MissingSeparatorAfterTimestamp(MissingSeparatorAfterTimestamp {
+            line_number: 2,
+            content: "00:02.000ttl: no space after timestamp".to_string(),
+        }),
+    );
 }
 
 #[test]
@@ -142,10 +153,10 @@ fn cue_ends_at_next_cue_when_no_clr() {
 #[test]
 fn rejects_cue_without_following_event() {
     let input = "00:00.000 ttl: Hello\n";
-    assert!(matches!(
-        parse_lyrics(input),
-        Err(ParseLyricsError::UnclosedCue(_)),
-    ));
+    assert_eq!(
+        parse_lyrics(input).unwrap_err(),
+        ParseLyricsError::UnclosedCue(Timestamp::new(0, 0, 0)),
+    );
 }
 
 #[test]
@@ -155,10 +166,13 @@ fn rejects_out_of_order_events() {
         "00:01.000 ttl: B"
         "00:03.000 clr"
     };
-    assert!(matches!(
-        parse_lyrics(input),
-        Err(ParseLyricsError::OutOfOrder(_)),
-    ));
+    assert_eq!(
+        parse_lyrics(input).unwrap_err(),
+        ParseLyricsError::OutOfOrder(OutOfOrder {
+            previous: Timestamp::new(0, 2, 0),
+            next: Timestamp::new(0, 1, 0),
+        }),
+    );
 }
 
 #[test]
@@ -167,23 +181,25 @@ fn rejects_cue_marker_that_collides_with_control_token() {
         "00:00.000 clr: Hello"
         "00:02.000 clr"
     };
-    assert!(matches!(
-        parse_lyrics(clr_input),
-        Err(ParseLyricsError::ReservedControlMarker(
-            ReservedControlMarker { marker, .. },
-        )) if marker == "clr",
-    ));
+    assert_eq!(
+        parse_lyrics(clr_input).unwrap_err(),
+        ParseLyricsError::ReservedControlMarker(ReservedControlMarker {
+            line_number: 1,
+            marker: "clr".to_string(),
+        }),
+    );
 
     let eov_input = text_block_fnl! {
         "00:00.000 eov: whatever"
         "00:02.000 clr"
     };
-    assert!(matches!(
-        parse_lyrics(eov_input),
-        Err(ParseLyricsError::ReservedControlMarker(
-            ReservedControlMarker { marker, .. },
-        )) if marker == "eov",
-    ));
+    assert_eq!(
+        parse_lyrics(eov_input).unwrap_err(),
+        ParseLyricsError::ReservedControlMarker(ReservedControlMarker {
+            line_number: 1,
+            marker: "eov".to_string(),
+        }),
+    );
 }
 
 #[test]
@@ -192,12 +208,13 @@ fn rejects_cue_with_empty_body() {
         "00:00.000 ttl:"
         "00:02.000 clr"
     };
-    assert!(matches!(
-        parse_lyrics(input),
-        Err(ParseLyricsError::EmptyCueBody(
-            EmptyCueBody { marker, .. },
-        )) if marker == "ttl",
-    ));
+    assert_eq!(
+        parse_lyrics(input).unwrap_err(),
+        ParseLyricsError::EmptyCueBody(EmptyCueBody {
+            line_number: 1,
+            marker: "ttl".to_string(),
+        }),
+    );
 }
 
 #[test]
@@ -205,15 +222,14 @@ fn invalid_timestamp_preserves_line_and_cause() {
     let input = text_block_fnl! {
         "00:60.000 ttl: seconds too high"
     };
-    let err = parse_lyrics(input).unwrap_err();
-    let ParseLyricsError::InvalidTimestamp(payload) = err else {
-        panic!("expected InvalidTimestamp");
-    };
-    assert_eq!(payload.line_number, 1);
-    // The underlying take error should be the seconds-out-of-range variant,
-    // not a shape mismatch.
-    assert!(matches!(
-        payload.cause,
-        crate::timestamp::TakeTimestampError::SecondsOutOfRange(_),
-    ));
+    assert_eq!(
+        parse_lyrics(input).unwrap_err(),
+        ParseLyricsError::InvalidTimestamp(InvalidTimestamp {
+            line_number: 1,
+            cause: TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
+                raw: "00:60.000".to_string(),
+                value: 60,
+            }),
+        }),
+    );
 }

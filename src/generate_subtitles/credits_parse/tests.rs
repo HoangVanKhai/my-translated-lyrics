@@ -1,4 +1,6 @@
-use super::{Bracketed, CreditsVocabulary, NameSegment, ParseCreditError, parse_credit_line};
+use super::{
+    Bracketed, CreditsVocabulary, NameSegment, ParseCreditError, UnknownRole, parse_credit_line,
+};
 use crate::credits_descriptor::CreditsDesc;
 use crate::video_descriptor::Language;
 use maplit::btreemap;
@@ -79,10 +81,13 @@ fn longer_role_wins_over_shorter_prefix() {
 #[test]
 fn unknown_leading_text_errors() {
     let v = vocabulary(&["role-a"]);
-    assert!(matches!(
-        parse_credit_line("unknown  name-a", &v),
-        Err(ParseCreditError::UnknownRole(_)),
-    ));
+    assert_eq!(
+        parse_credit_line("unknown  name-a", &v).unwrap_err(),
+        ParseCreditError::UnknownRole(UnknownRole {
+            line: "unknown  name-a".to_string(),
+            offset: 0,
+        }),
+    );
 }
 
 #[test]
