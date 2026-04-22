@@ -1,7 +1,7 @@
 use crate::video_descriptor::Language;
 use core::fmt;
 use derive_more::{Display, Error};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
@@ -60,7 +60,8 @@ pub struct LineMarkersDesc {
 /// class-name rules. It excludes whitespace, quotes, dots, braces,
 /// and anything outside basic ASCII, all of which would break the
 /// STYLE block or the inline tag if interpolated raw.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(try_from = "String", into = "String")]
 pub struct CssClassName(String);
 
 impl CssClassName {
@@ -94,16 +95,17 @@ impl fmt::Display for CssClassName {
     }
 }
 
-impl<'de> Deserialize<'de> for CssClassName {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let source = String::deserialize(deserializer)?;
-        CssClassName::new(source).map_err(serde::de::Error::custom)
+impl TryFrom<String> for CssClassName {
+    type Error = InvalidCssClassName;
+
+    fn try_from(source: String) -> Result<Self, Self::Error> {
+        CssClassName::new(source)
     }
 }
 
-impl Serialize for CssClassName {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        self.0.serialize(serializer)
+impl From<CssClassName> for String {
+    fn from(value: CssClassName) -> Self {
+        value.0
     }
 }
 
@@ -127,7 +129,8 @@ fn is_class_name_continue(ch: char) -> bool {
 /// permissive, and in particular accepts CJK text, accented Latin,
 /// and embedded spaces, the three categories that already appear in
 /// `sources/*/line-markers.toml`.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(try_from = "String", into = "String")]
 pub struct VoiceName(String);
 
 impl VoiceName {
@@ -157,16 +160,17 @@ impl fmt::Display for VoiceName {
     }
 }
 
-impl<'de> Deserialize<'de> for VoiceName {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let source = String::deserialize(deserializer)?;
-        VoiceName::new(source).map_err(serde::de::Error::custom)
+impl TryFrom<String> for VoiceName {
+    type Error = InvalidVoiceName;
+
+    fn try_from(source: String) -> Result<Self, Self::Error> {
+        VoiceName::new(source)
     }
 }
 
-impl Serialize for VoiceName {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        self.0.serialize(serializer)
+impl From<VoiceName> for String {
+    fn from(value: VoiceName) -> Self {
+        value.0
     }
 }
 
