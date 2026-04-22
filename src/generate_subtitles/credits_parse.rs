@@ -23,7 +23,6 @@
 
 use crate::credits_descriptor::CreditsDesc;
 use crate::video_descriptor::Language;
-use core::fmt;
 use derive_more::{Display, Error};
 use std::collections::BTreeSet;
 
@@ -59,7 +58,8 @@ pub enum NameSegment {
 /// [`Bracketed::take`], which follows the parse-don't-validate
 /// pattern: it consumes a prefix of the input and returns both the
 /// parsed value and the remaining unparsed tail.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display("{_0}")]
 pub struct Bracketed(String);
 
 impl Bracketed {
@@ -88,12 +88,6 @@ impl Bracketed {
     /// The bracketed text, including the surrounding brackets.
     pub fn as_str(&self) -> &str {
         &self.0
-    }
-}
-
-impl fmt::Display for Bracketed {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.0)
     }
 }
 

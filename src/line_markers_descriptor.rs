@@ -1,5 +1,4 @@
 use crate::video_descriptor::Language;
-use core::fmt;
 use derive_more::{Display, Error};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -60,7 +59,8 @@ pub struct LineMarkersDesc {
 /// class-name rules. It excludes whitespace, quotes, dots, braces,
 /// and anything outside basic ASCII, all of which would break the
 /// STYLE block or the inline tag if interpolated raw.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(Debug, Display, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[display("{_0}")]
 #[serde(try_from = "String", into = "String")]
 pub struct CssClassName(String);
 
@@ -86,12 +86,6 @@ impl CssClassName {
     /// The underlying class-name text.
     pub fn as_str(&self) -> &str {
         &self.0
-    }
-}
-
-impl fmt::Display for CssClassName {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.0)
     }
 }
 
@@ -129,7 +123,8 @@ fn is_class_name_continue(ch: char) -> bool {
 /// permissive, and in particular accepts CJK text, accented Latin,
 /// and embedded spaces, the three categories that already appear in
 /// `sources/*/line-markers.toml`.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(Debug, Display, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[display("{_0}")]
 #[serde(try_from = "String", into = "String")]
 pub struct VoiceName(String);
 
@@ -151,12 +146,6 @@ impl VoiceName {
     /// The underlying voice-name text.
     pub fn as_str(&self) -> &str {
         &self.0
-    }
-}
-
-impl fmt::Display for VoiceName {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.0)
     }
 }
 
