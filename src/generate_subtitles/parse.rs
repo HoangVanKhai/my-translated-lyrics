@@ -124,9 +124,19 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                         content: body.to_string(),
                     })
                 })?;
+                if marker == CLEAR_MARKER || marker == END_OF_VIDEO_MARKER {
+                    return Err(ParseLyricsError::ReservedControlMarker(
+                        ReservedControlMarker {
+                            line_number,
+                            marker: marker.to_string(),
+                        },
+                    ));
+                }
                 if text.is_empty() {
-                    last_cue_index = None;
-                    continue;
+                    return Err(ParseLyricsError::EmptyCueBody(EmptyCueBody {
+                        line_number,
+                        marker: marker.to_string(),
+                    }));
                 }
 
                 let event = Event::Cue {
@@ -261,6 +271,24 @@ pub struct OutOfOrder {
     pub next: Timestamp,
 }
 
+/// Payload for [`ParseLyricsError::ReservedControlMarker`].
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display(
+    "line {line_number}: marker {marker:?} is reserved for the `clr`/`eov` control tokens and cannot name a cue"
+)]
+pub struct ReservedControlMarker {
+    pub line_number: usize,
+    pub marker: String,
+}
+
+/// Payload for [`ParseLyricsError::EmptyCueBody`].
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display("line {line_number}: cue with marker {marker:?} has an empty body")]
+pub struct EmptyCueBody {
+    pub line_number: usize,
+    pub marker: String,
+}
+
 #[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum ParseLyricsError {
@@ -274,6 +302,10 @@ pub enum ParseLyricsError {
     MissingSeparatorAfterTimestamp(#[error(not(source))] MissingSeparatorAfterTimestamp),
     #[display("{_0}")]
     ExtraTextAfterControlMarker(#[error(not(source))] ExtraTextAfterControlMarker),
+    #[display("{_0}")]
+    ReservedControlMarker(#[error(not(source))] ReservedControlMarker),
+    #[display("{_0}")]
+    EmptyCueBody(#[error(not(source))] EmptyCueBody),
     #[display("{_0}")]
     OutOfOrder(#[error(not(source))] OutOfOrder),
     #[display("cue at {_0} has no following cue or `clr`")]

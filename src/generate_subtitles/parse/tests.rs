@@ -1,4 +1,7 @@
-use super::{ExtraTextAfterControlMarker, ParseLyricsError, parse_lyrics};
+use super::{
+    EmptyCueBody, ExtraTextAfterControlMarker, ParseLyricsError, ReservedControlMarker,
+    parse_lyrics,
+};
 use crate::timestamp::Timestamp;
 use text_block_macros::text_block_fnl;
 
@@ -155,5 +158,62 @@ fn rejects_out_of_order_events() {
     assert!(matches!(
         parse_lyrics(input),
         Err(ParseLyricsError::OutOfOrder(_)),
+    ));
+}
+
+#[test]
+fn rejects_cue_marker_that_collides_with_control_token() {
+    let clr_input = text_block_fnl! {
+        "00:00.000 clr: Hello"
+        "00:02.000 clr"
+    };
+    assert!(matches!(
+        parse_lyrics(clr_input),
+        Err(ParseLyricsError::ReservedControlMarker(
+            ReservedControlMarker { marker, .. },
+        )) if marker == "clr",
+    ));
+
+    let eov_input = text_block_fnl! {
+        "00:00.000 eov: whatever"
+        "00:02.000 clr"
+    };
+    assert!(matches!(
+        parse_lyrics(eov_input),
+        Err(ParseLyricsError::ReservedControlMarker(
+            ReservedControlMarker { marker, .. },
+        )) if marker == "eov",
+    ));
+}
+
+#[test]
+fn rejects_cue_with_empty_body() {
+    let input = text_block_fnl! {
+        "00:00.000 ttl:"
+        "00:02.000 clr"
+    };
+    assert!(matches!(
+        parse_lyrics(input),
+        Err(ParseLyricsError::EmptyCueBody(
+            EmptyCueBody { marker, .. },
+        )) if marker == "ttl",
+    ));
+}
+
+#[test]
+fn invalid_timestamp_preserves_line_and_cause() {
+    let input = text_block_fnl! {
+        "00:60.000 ttl: seconds too high"
+    };
+    let err = parse_lyrics(input).unwrap_err();
+    let ParseLyricsError::InvalidTimestamp(payload) = err else {
+        panic!("expected InvalidTimestamp");
+    };
+    assert_eq!(payload.line_number, 1);
+    // The underlying take error should be the seconds-out-of-range variant,
+    // not a shape mismatch.
+    assert!(matches!(
+        payload.cause,
+        crate::timestamp::TakeTimestampError::SecondsOutOfRange(_),
     ));
 }
