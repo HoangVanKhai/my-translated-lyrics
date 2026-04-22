@@ -60,9 +60,6 @@ fn hour_boundary() {
 
 #[test]
 fn shape_mismatch_rejects_non_ascii_unicode_digits() {
-    // `char::to_digit(10)` would accept these as `0`, but the
-    // `MM:SS.mmm` source format is ASCII-only, and slicing the
-    // input by byte index would panic mid-character.
     assert!(matches!(
         Timestamp::take("００:00.000"),
         Err(TakeTimestampError::ShapeMismatch),
