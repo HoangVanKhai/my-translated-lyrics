@@ -19,16 +19,14 @@ paths:
 - `tests/`
 - `template/`
 - `.github/`
-- `sources/*/make-subtitles.js`
-- `generate-ai-instructions.sh`
-- `install-local-lyrics.sh`
+- `**/*.js`
+- `**/*.sh`
+- `**/*.md`
 - `Cargo.toml`, `Cargo.lock`
 - `package.json`, `pnpm-lock.yaml`
 - `rust-toolchain`
 - `cspell.yaml`
 - `.editorconfig`, `.gitattributes`, `.gitignore`
-- `CONTRIBUTING.md`, `AGENTS.md`, `CLAUDE.md`
-- This `LICENSE.md` file and `COPYRIGHT.md`
 
 It does not apply to the Chinese-language lyrics or to the Vietnamese
 translations carried in the `dist/`, `sources/`, and `drafts/`

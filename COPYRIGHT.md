@@ -26,8 +26,8 @@ The files in this category are:
 - `sources/*/lyrics.zh.txt`
 - `sources/*/lyrics.zh.srt`
 - `sources/*/lyrics.zh.vtt`
-- `drafts/MillenniumOfFrostAndSnow-ShuangXueQianNian/luatube712.zh-TW.srt`
-- `drafts/MillenniumOfFrostAndSnow-ShuangXueQianNian/luotube712.zh-CN.srt`
+- `drafts/**/*.zh.srt`
+- `drafts/**/*.zh-*.srt`
 
 Each lyrics file begins with a `cre` (credits) block that names the
 people involved in producing the song, including the lyricist, composer,
