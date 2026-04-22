@@ -102,12 +102,13 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                 let first_token = body.split_whitespace().next().unwrap_or("");
 
                 if first_token == END_OF_VIDEO_MARKER || first_token == CLEAR_MARKER {
-                    if body.len() > first_token.len() {
+                    let trailing = body[first_token.len()..].trim();
+                    if !trailing.is_empty() {
                         return Err(ParseLyricsError::ExtraTextAfterControlMarker(
                             ExtraTextAfterControlMarker {
                                 line_number,
                                 marker: first_token.to_string(),
-                                trailing: body[first_token.len()..].trim_start().to_string(),
+                                trailing: trailing.to_string(),
                             },
                         ));
                     }
@@ -238,7 +239,7 @@ pub struct StrayContinuation {
 
 /// Payload for [`ParseLyricsError::MissingMarker`].
 #[derive(Debug, Display, Clone, PartialEq, Eq)]
-#[display("line {line_number}: cue body {content:?} carries no marker")]
+#[display("line {line_number}: cue body {content:?} has no `:` separator between marker and text")]
 pub struct MissingMarker {
     pub line_number: usize,
     pub content: String,
