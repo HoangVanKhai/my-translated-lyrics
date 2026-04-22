@@ -11,6 +11,7 @@
 use super::credits_parse::{
     CreditPair, CreditsVocabulary, NameSegment, ParseCreditError, parse_credit_line,
 };
+use super::escape::Escaped;
 use super::parse::SubtitleCue;
 use super::styles::{Style, class_style, voice_style};
 use crate::credits_descriptor::CreditsDesc;
@@ -88,11 +89,12 @@ fn resolve_style(marker_name: &str, markers: &LineMarkersDesc) -> Option<Style> 
 }
 
 fn wrap_with_style(text: &str, style: Option<&Style>) -> String {
+    let escaped = Escaped(text).to_string();
     let Some(style) = style else {
-        return text.to_string();
+        return escaped;
     };
 
-    let mut wrapped = text.to_string();
+    let mut wrapped = escaped;
     if let Some(color) = style.color {
         wrapped = format!("<font color=\"{color}\">{wrapped}</font>");
     }
@@ -120,7 +122,7 @@ fn render_credit_pair(output: &mut String, pair: &CreditPair) {
     write!(
         output,
         "<font color=\"{CREDIT_ROLE_COLOR}\">{role}</font>",
-        role = pair.role,
+        role = Escaped(&pair.role),
     )
     .expect("writing to String is infallible");
     append_separator_for_output(output, &pair.separator);
@@ -133,11 +135,14 @@ fn render_credit_pair(output: &mut String, pair: &CreditPair) {
 fn write_name_segments(output: &mut String, segments: &[NameSegment]) {
     for segment in segments {
         match segment {
-            NameSegment::Plain(text) => output.push_str(text),
+            NameSegment::Plain(text) => {
+                write!(output, "{}", Escaped(text)).expect("writing to String is infallible");
+            }
             NameSegment::Special(text) => {
                 write!(
                     output,
-                    "<font color=\"{CREDIT_SPECIAL_COLOR}\">{text}</font>"
+                    "<font color=\"{CREDIT_SPECIAL_COLOR}\">{text}</font>",
+                    text = Escaped(text.as_str()),
                 )
                 .expect("writing to String is infallible");
             }

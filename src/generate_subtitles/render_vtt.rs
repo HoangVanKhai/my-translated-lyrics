@@ -32,6 +32,7 @@
 use super::credits_parse::{
     CreditPair, CreditsVocabulary, NameSegment, ParseCreditError, parse_credit_line,
 };
+use super::escape::Escaped;
 use super::parse::SubtitleCue;
 use super::styles::{Style, class_style, voice_style};
 use crate::credits_descriptor::CreditsDesc;
@@ -169,9 +170,9 @@ fn render_cue(
         }
         rendered_lines.join("\n")
     } else if let Some(class_name) = markers.classes.get(marker) {
-        format!("<c.{class_name}>{text}</c>", text = cue.text)
+        format!("<c.{class_name}>{text}</c>", text = Escaped(&cue.text))
     } else {
-        cue.text.clone()
+        Escaped(&cue.text).to_string()
     };
 
     let voice_name = markers
@@ -222,7 +223,7 @@ fn render_credit_pair(
     write!(
         output,
         "<c.{CLASS_CREDIT_ROLE}>{role}</c>",
-        role = pair.role,
+        role = Escaped(&pair.role),
     )
     .expect("writing to String is infallible");
     append_separator_for_output(output, &pair.separator);
@@ -246,11 +247,17 @@ fn append_separator_for_output(output: &mut String, raw: &str) {
 fn write_name_segments(output: &mut String, segments: &[NameSegment], used_special: &mut bool) {
     for segment in segments {
         match segment {
-            NameSegment::Plain(text) => output.push_str(text),
+            NameSegment::Plain(text) => {
+                write!(output, "{}", Escaped(text)).expect("writing to String is infallible");
+            }
             NameSegment::Special(text) => {
                 *used_special = true;
-                write!(output, "<c.{CLASS_CREDIT_SPECIAL}>{text}</c>")
-                    .expect("writing to String is infallible");
+                write!(
+                    output,
+                    "<c.{CLASS_CREDIT_SPECIAL}>{text}</c>",
+                    text = Escaped(text.as_str()),
+                )
+                .expect("writing to String is infallible");
             }
         }
     }
