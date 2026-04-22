@@ -124,7 +124,7 @@ pub fn load_song(song_dir: &Path) -> Result<Song, GenerateError> {
     let directory_name = song_dir
         .file_name()
         .and_then(|name| name.to_str())
-        .ok_or_else(|| GenerateError::NonUtf8Path(song_dir.to_path_buf()))?
+        .unwrap_or_else(|| panic!("song directory {song_dir:?} has a non-UTF-8 name"))
         .to_string();
 
     let video_path = song_dir.join(VIDEO_CONFIG_FILE_NAME);
@@ -408,8 +408,6 @@ pub enum GenerateError {
     CreateDir(#[error(not(source))] CreateDir),
     #[display("{_0}")]
     WriteFile(#[error(not(source))] WriteFile),
-    #[display("path is not valid UTF-8: {_0:?}")]
-    NonUtf8Path(#[error(not(source))] PathBuf),
     #[display("{_0}")]
     UnrecognizedLanguage(#[error(not(source))] UnrecognizedLanguage),
     #[display("{_0}")]
