@@ -2,6 +2,7 @@ use super::{
     ParseTimestampError, SecondsOutOfRange, SrtTime, TakeTimestampError, Timestamp, TrailingText,
     VttTime,
 };
+use pretty_assertions::assert_eq;
 
 #[test]
 fn takes_basic_timestamp_with_tail() {
