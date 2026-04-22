@@ -16,7 +16,7 @@ use clap::Parser;
 use derive_more::{Display, Error};
 use itertools::Itertools;
 use std::collections::BTreeMap;
-use std::fs::{create_dir_all, read_dir, read_to_string, write as write_file};
+use std::fs::{DirEntry, create_dir_all, read_dir, read_to_string, write as write_file};
 use std::io;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
@@ -257,7 +257,7 @@ pub fn main() -> ExitCode {
         }
     };
     let song_dirs = entries
-        .filter_map(Result::ok)
+        .map(Result::<DirEntry, _>::unwrap)
         .filter(|entry| entry.file_type().map(|ft| ft.is_dir()).unwrap_or(false))
         .map(|entry| entry.path())
         .sorted();
