@@ -11,6 +11,7 @@ ignorePaths:
   - 'drafts/**/*.json'
   - 'sources/**/*.js'
   - 'sources/**/*.json'
+  - 'COPYRIGHT.md'
   - 'LICENSE.md'
   - 'package.json'
   - 'pnpm-lock.yaml'
