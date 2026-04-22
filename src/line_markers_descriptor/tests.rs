@@ -1,4 +1,5 @@
 use super::{CssClassName, InvalidCssClassName, InvalidVoiceName, VoiceName};
+use pretty_assertions::assert_eq;
 use serde::{Deserialize, Serialize};
 
 #[test]

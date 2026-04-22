@@ -5,6 +5,7 @@ use crate::line_markers_descriptor::LineMarkersDesc;
 use crate::timestamp::Timestamp;
 use crate::video_descriptor::Language;
 use maplit::btreemap;
+use pretty_assertions::assert_eq;
 
 fn credits_with_one_role() -> CreditsDesc {
     CreditsDesc {
