@@ -32,7 +32,7 @@
 use super::credits_parse::{
     CreditPair, CreditsVocabulary, NameSegment, ParseCreditError, parse_credit_line,
 };
-use super::escape::Escaped;
+use super::escape::{Escaped, append_separator_for_output};
 use super::parse::SubtitleCue;
 use super::styles::{Style, class_style, voice_style};
 use crate::credits_descriptor::CreditsDesc;
@@ -230,18 +230,6 @@ fn render_credit_pair(
     write!(output, "<c.{CLASS_CREDIT_NAME}>").expect("writing to String is infallible");
     write_name_segments(output, &pair.name_segments, used_special);
     output.push_str("</c>");
-}
-
-/// Reproduces ASCII space/tab runs verbatim between the role tag and
-/// the name tag so that a multi-space gutter survives the round-trip;
-/// other separators such as `：` or `\u{3000}` collapse to a single
-/// ASCII space.
-fn append_separator_for_output(output: &mut String, raw: &str) {
-    if !raw.is_empty() && raw.chars().all(|ch| ch == ' ' || ch == '\t') {
-        output.push_str(raw);
-    } else {
-        output.push(' ');
-    }
 }
 
 fn write_name_segments(output: &mut String, segments: &[NameSegment], used_special: &mut bool) {

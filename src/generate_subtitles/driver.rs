@@ -44,15 +44,12 @@ struct Args {
 /// Everything the renderers need for one song's one language.
 pub struct LanguageBundle {
     pub language: Language,
-    pub lyrics_path: PathBuf,
     pub cues: Vec<SubtitleCue>,
 }
 
 /// Parsed representation of a song directory, ready for rendering.
 pub struct Song {
     pub directory_name: String,
-    pub source_dir: PathBuf,
-    pub video: VideoDesc,
     pub markers: LineMarkersDesc,
     pub credits: CreditsDesc,
     pub languages: Vec<LanguageBundle>,
@@ -127,6 +124,11 @@ pub fn load_song(song_dir: &Path) -> Result<Song, GenerateError> {
         .unwrap_or_else(|| panic!("song directory {song_dir:?} has a non-UTF-8 name"))
         .to_string();
 
+    // `video.toml` is parsed purely to validate that the file exists
+    // and is well-formed. None of its fields flow into the rendered
+    // output today; the parse catches corrupted descriptors at load
+    // time instead of deferring the failure to a downstream consumer
+    // that does not exist yet.
     let video_path = song_dir.join(VIDEO_CONFIG_FILE_NAME);
     let video_content = read_to_string(&video_path).map_err(|cause| {
         GenerateError::ReadFile(ReadFile {
@@ -134,7 +136,7 @@ pub fn load_song(song_dir: &Path) -> Result<Song, GenerateError> {
             cause,
         })
     })?;
-    let video: VideoDesc = toml::from_str(&video_content).map_err(|cause| {
+    let _: VideoDesc = toml::from_str(&video_content).map_err(|cause| {
         GenerateError::ParseVideoDesc(ParseVideoDesc {
             path: video_path.clone(),
             cause,
@@ -223,20 +225,11 @@ pub fn load_song(song_dir: &Path) -> Result<Song, GenerateError> {
                 cause,
             })
         })?;
-        languages.insert(
-            language.clone(),
-            LanguageBundle {
-                language,
-                lyrics_path,
-                cues,
-            },
-        );
+        languages.insert(language.clone(), LanguageBundle { language, cues });
     }
 
     Ok(Song {
         directory_name,
-        source_dir: song_dir.to_path_buf(),
-        video,
         markers,
         credits,
         languages: languages.into_values().collect(),
@@ -258,7 +251,17 @@ pub fn main() -> ExitCode {
     };
     let song_dirs = entries
         .map(Result::<DirEntry, _>::unwrap)
-        .filter(|entry| entry.file_type().map(|ft| ft.is_dir()).unwrap_or(false))
+        .filter(|entry| {
+            entry
+                .file_type()
+                .unwrap_or_else(|error| {
+                    panic!(
+                        "error: Cannot read file type of {path:?}: {error}",
+                        path = entry.path(),
+                    )
+                })
+                .is_dir()
+        })
         .map(|entry| entry.path())
         .sorted();
 

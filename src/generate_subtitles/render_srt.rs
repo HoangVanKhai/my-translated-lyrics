@@ -11,7 +11,7 @@
 use super::credits_parse::{
     CreditPair, CreditsVocabulary, NameSegment, ParseCreditError, parse_credit_line,
 };
-use super::escape::Escaped;
+use super::escape::{Escaped, append_separator_for_output};
 use super::parse::SubtitleCue;
 use super::styles::{Style, class_style, voice_style};
 use crate::credits_descriptor::CreditsDesc;
@@ -89,22 +89,31 @@ fn resolve_style(marker_name: &str, markers: &LineMarkersDesc) -> Option<Style> 
 }
 
 fn wrap_with_style(text: &str, style: Option<&Style>) -> String {
-    let escaped = Escaped(text).to_string();
     let Some(style) = style else {
-        return escaped;
+        return Escaped(text).to_string();
     };
 
-    let mut wrapped = escaped;
-    if let Some(color) = style.color {
-        wrapped = format!("<font color=\"{color}\">{wrapped}</font>");
+    let mut output = String::new();
+    if style.bold {
+        output.push_str("<b>");
     }
     if style.italic {
-        wrapped = format!("<i>{wrapped}</i>");
+        output.push_str("<i>");
+    }
+    if let Some(color) = style.color {
+        write!(output, "<font color=\"{color}\">").expect("writing to String is infallible");
+    }
+    write!(output, "{}", Escaped(text)).expect("writing to String is infallible");
+    if style.color.is_some() {
+        output.push_str("</font>");
+    }
+    if style.italic {
+        output.push_str("</i>");
     }
     if style.bold {
-        wrapped = format!("<b>{wrapped}</b>");
+        output.push_str("</b>");
     }
-    wrapped
+    output
 }
 
 fn render_credit_line(pairs: &[CreditPair]) -> String {
@@ -147,14 +156,6 @@ fn write_name_segments(output: &mut String, segments: &[NameSegment]) {
                 .expect("writing to String is infallible");
             }
         }
-    }
-}
-
-fn append_separator_for_output(output: &mut String, raw: &str) {
-    if !raw.is_empty() && raw.chars().all(|ch| ch == ' ' || ch == '\t') {
-        output.push_str(raw);
-    } else {
-        output.push(' ');
     }
 }
 
