@@ -21,6 +21,31 @@ fn markers_with_credit_trigger() -> LineMarkersDesc {
 }
 
 #[test]
+fn cue_text_html_meta_characters_are_escaped() {
+    let cues = vec![SubtitleCue {
+        start: Timestamp::new(0, 0, 0),
+        end: Timestamp::new(0, 5, 0),
+        marker: "plain".to_string(),
+        text: "<a> & <b>".to_string(),
+    }];
+    let output = render_file(
+        &cues,
+        &LineMarkersDesc::default(),
+        &CreditsDesc::default(),
+        &Language::Vietnamese,
+    )
+    .unwrap();
+    assert!(
+        output.contains("&lt;a&gt; &amp; &lt;b&gt;"),
+        "expected escaped cue text in output:\n{output}",
+    );
+    assert!(
+        !output.contains("<a>"),
+        "raw `<a>` must not appear in the rendered output:\n{output}",
+    );
+}
+
+#[test]
 fn unknown_role_in_credit_line_produces_credits_error() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0),
