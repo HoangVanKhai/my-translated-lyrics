@@ -1,4 +1,5 @@
 use core::fmt;
+use core::str::FromStr;
 use derive_more::{Display, Error};
 
 /// A point in time inside the video, measured as milliseconds from
@@ -186,11 +187,58 @@ pub struct SecondsOutOfRange {
     pub value: u64,
 }
 
+/// Payload for a trailing-text error. Describes an input that begins
+/// with a valid `MM:SS.mmm` prefix but carries extra characters after
+/// the nine consumed ones.
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display(
+    "invalid timestamp {raw:?}: unexpected trailing text {trailing:?} after the `MM:SS.mmm` prefix"
+)]
+pub struct TrailingText {
+    pub raw: String,
+    pub trailing: String,
+}
+
+/// Reasons [`Timestamp::from_str`] can fail.
+///
+/// `FromStr` requires the entire input to denote a single
+/// `MM:SS.mmm` timestamp. The parser reuses [`Timestamp::take`] and
+/// then rejects any remaining tail, so the error surface is the
+/// union of [`TakeTimestampError`] with an extra [`TrailingText`]
+/// variant for inputs that started well but did not end at the
+/// prefix boundary.
 #[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum ParseTimestampError {
+    /// The input does not begin with an `MM:SS.mmm` shape.
+    #[display("input does not begin with an MM:SS.mmm timestamp")]
+    ShapeMismatch,
+    /// The input begins with an `MM:SS.mmm` shape but the seconds
+    /// component is out of range.
     #[display("{_0}")]
     SecondsOutOfRange(#[error(not(source))] SecondsOutOfRange),
+    /// The input begins with a valid `MM:SS.mmm` prefix but has
+    /// trailing content after the nine consumed characters.
+    #[display("{_0}")]
+    TrailingText(#[error(not(source))] TrailingText),
+}
+
+impl FromStr for Timestamp {
+    type Err = ParseTimestampError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match Timestamp::take(s) {
+            Ok((timestamp, "")) => Ok(timestamp),
+            Ok((_, trailing)) => Err(ParseTimestampError::TrailingText(TrailingText {
+                raw: s.to_string(),
+                trailing: trailing.to_string(),
+            })),
+            Err(TakeTimestampError::ShapeMismatch) => Err(ParseTimestampError::ShapeMismatch),
+            Err(TakeTimestampError::SecondsOutOfRange(inner)) => {
+                Err(ParseTimestampError::SecondsOutOfRange(inner))
+            }
+        }
+    }
 }
 
 /// Reasons [`Timestamp::take`] can fail.

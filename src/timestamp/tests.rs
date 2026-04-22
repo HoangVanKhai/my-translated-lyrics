@@ -1,4 +1,7 @@
-use super::{SecondsOutOfRange, SrtTime, TakeTimestampError, Timestamp, VttTime};
+use super::{
+    ParseTimestampError, SecondsOutOfRange, SrtTime, TakeTimestampError, Timestamp, TrailingText,
+    VttTime,
+};
 
 #[test]
 fn takes_basic_timestamp_with_tail() {
@@ -113,6 +116,42 @@ fn rejects_seconds_out_of_range() {
         TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
             raw: "00:99.000".to_string(),
             value: 99,
+        }),
+    );
+}
+
+#[test]
+fn from_str_accepts_exact_mm_ss_mmm_shape() {
+    let parsed: Timestamp = "01:23.456".parse().unwrap();
+    assert_eq!(parsed, Timestamp::new(1, 23, 456));
+}
+
+#[test]
+fn from_str_rejects_shape_mismatch() {
+    assert_eq!(
+        "not-a-timestamp".parse::<Timestamp>().unwrap_err(),
+        ParseTimestampError::ShapeMismatch,
+    );
+}
+
+#[test]
+fn from_str_rejects_seconds_out_of_range() {
+    assert_eq!(
+        "00:60.000".parse::<Timestamp>().unwrap_err(),
+        ParseTimestampError::SecondsOutOfRange(SecondsOutOfRange {
+            raw: "00:60.000".to_string(),
+            value: 60,
+        }),
+    );
+}
+
+#[test]
+fn from_str_rejects_trailing_text() {
+    assert_eq!(
+        "00:02.960 tail".parse::<Timestamp>().unwrap_err(),
+        ParseTimestampError::TrailingText(TrailingText {
+            raw: "00:02.960 tail".to_string(),
+            trailing: " tail".to_string(),
         }),
     );
 }
