@@ -60,14 +60,14 @@ fn hour_boundary() {
 
 #[test]
 fn shape_mismatch_rejects_non_ascii_unicode_digits() {
-    assert!(matches!(
-        Timestamp::take("００:00.000"),
-        Err(TakeTimestampError::ShapeMismatch),
-    ));
-    assert!(matches!(
-        Timestamp::take("٠٠:00.000"),
-        Err(TakeTimestampError::ShapeMismatch),
-    ));
+    assert_eq!(
+        Timestamp::take("００:00.000").unwrap_err(),
+        TakeTimestampError::ShapeMismatch,
+    );
+    assert_eq!(
+        Timestamp::take("٠٠:00.000").unwrap_err(),
+        TakeTimestampError::ShapeMismatch,
+    );
 }
 
 #[test]
