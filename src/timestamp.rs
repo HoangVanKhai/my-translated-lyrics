@@ -1,6 +1,17 @@
 use core::fmt;
 use core::str::FromStr;
-use derive_more::{Display, Error};
+use derive_more::{Display, Error, From, Into};
+
+/// Milliseconds in one second. The inner `u64` of [`Timestamp`] and
+/// the format widths of the `MM:SS.mmm` and `HH:MM:SS.mmm` shapes
+/// are all expressed in multiples of this unit.
+const MILLISECONDS_PER_SECOND: u64 = 1_000;
+/// Milliseconds in one minute, derived from [`MILLISECONDS_PER_SECOND`]
+/// so the relationship between the units is visible at the definition.
+const MILLISECONDS_PER_MINUTE: u64 = 60 * MILLISECONDS_PER_SECOND;
+/// Milliseconds in one hour, derived from [`MILLISECONDS_PER_MINUTE`]
+/// for the same reason.
+const MILLISECONDS_PER_HOUR: u64 = 60 * MILLISECONDS_PER_MINUTE;
 
 /// A point in time inside the video, measured as milliseconds from
 /// `00:00.000`. Cues use it for start and end positions and for
@@ -14,17 +25,17 @@ use derive_more::{Display, Error};
 #[derive(Display, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[display(
     "{minutes:02}:{seconds:02}.{milliseconds:03}",
-    minutes = _0 / 60_000,
-    seconds = (_0 % 60_000) / 1_000,
-    milliseconds = _0 % 1_000,
+    minutes = _0 / MILLISECONDS_PER_MINUTE,
+    seconds = (_0 % MILLISECONDS_PER_MINUTE) / MILLISECONDS_PER_SECOND,
+    milliseconds = _0 % MILLISECONDS_PER_SECOND,
 )]
 pub struct Timestamp(u64);
 
 impl Timestamp {
     /// Composes a `Timestamp` total from minutes, seconds, and
     /// milliseconds components. The result is
-    /// `minutes * 60_000 + seconds * 1_000 + milliseconds`, so this
-    /// constructor doubles as a single-unit conversion:
+    /// `minutes * MILLISECONDS_PER_MINUTE + seconds * MILLISECONDS_PER_SECOND + milliseconds`,
+    /// so this constructor doubles as a single-unit conversion:
     /// `Timestamp::new(n, 0, 0)` yields `n` minutes,
     /// `Timestamp::new(0, n, 0)` yields `n` seconds, and
     /// `Timestamp::new(0, 0, n)` yields `n` milliseconds.
@@ -37,7 +48,9 @@ impl Timestamp {
     /// must perform it before calling `new`; [`Timestamp::take`] does
     /// so for `MM:SS.mmm` source strings.
     pub const fn new(minutes: u64, seconds: u64, milliseconds: u64) -> Self {
-        Timestamp(minutes * 60_000 + seconds * 1_000 + milliseconds)
+        Timestamp(
+            minutes * MILLISECONDS_PER_MINUTE + seconds * MILLISECONDS_PER_SECOND + milliseconds,
+        )
     }
 
     /// Consumes a leading `MM:SS.mmm` prefix (9 ASCII characters)
@@ -135,28 +148,46 @@ impl fmt::Debug for Timestamp {
 }
 
 /// Thin wrapper around [`Timestamp`] that renders in the SubRip
-/// `HH:MM:SS,mmm` format.
-#[derive(Display, Clone, Copy)]
-#[display(
-    "{hours:02}:{minutes:02}:{seconds:02},{milliseconds:03}",
-    hours = _0.0 / 3_600_000,
-    minutes = (_0.0 % 3_600_000) / 60_000,
-    seconds = (_0.0 % 60_000) / 1_000,
-    milliseconds = _0.0 % 1_000,
-)]
-pub struct SrtTime(pub Timestamp);
+/// `HH:MM:SS,mmm` format. Construction and extraction go through
+/// `From`/`Into`; the inner `Timestamp` is not exposed directly so
+/// that every call site is a named conversion rather than a
+/// positional tuple access.
+#[derive(From, Into, Clone, Copy)]
+pub struct SrtTime(Timestamp);
+
+impl fmt::Display for SrtTime {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let Timestamp(total) = (*self).into();
+        write!(
+            f,
+            "{hours:02}:{minutes:02}:{seconds:02},{milliseconds:03}",
+            hours = total / MILLISECONDS_PER_HOUR,
+            minutes = (total % MILLISECONDS_PER_HOUR) / MILLISECONDS_PER_MINUTE,
+            seconds = (total % MILLISECONDS_PER_MINUTE) / MILLISECONDS_PER_SECOND,
+            milliseconds = total % MILLISECONDS_PER_SECOND,
+        )
+    }
+}
 
 /// Thin wrapper around [`Timestamp`] that renders in the WebVTT
-/// `HH:MM:SS.mmm` format.
-#[derive(Display, Clone, Copy)]
-#[display(
-    "{hours:02}:{minutes:02}:{seconds:02}.{milliseconds:03}",
-    hours = _0.0 / 3_600_000,
-    minutes = (_0.0 % 3_600_000) / 60_000,
-    seconds = (_0.0 % 60_000) / 1_000,
-    milliseconds = _0.0 % 1_000,
-)]
-pub struct VttTime(pub Timestamp);
+/// `HH:MM:SS.mmm` format. See [`SrtTime`] for the same construction
+/// and extraction story.
+#[derive(From, Into, Clone, Copy)]
+pub struct VttTime(Timestamp);
+
+impl fmt::Display for VttTime {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let Timestamp(total) = (*self).into();
+        write!(
+            f,
+            "{hours:02}:{minutes:02}:{seconds:02}.{milliseconds:03}",
+            hours = total / MILLISECONDS_PER_HOUR,
+            minutes = (total % MILLISECONDS_PER_HOUR) / MILLISECONDS_PER_MINUTE,
+            seconds = (total % MILLISECONDS_PER_MINUTE) / MILLISECONDS_PER_SECOND,
+            milliseconds = total % MILLISECONDS_PER_SECOND,
+        )
+    }
+}
 
 /// Payload for a seconds-out-of-range error. Describes an
 /// `MM:SS.mmm` prefix whose seconds component exceeds 59.

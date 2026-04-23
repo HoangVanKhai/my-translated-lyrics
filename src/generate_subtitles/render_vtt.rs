@@ -94,8 +94,8 @@ pub fn render_file(
         writeln!(
             output,
             "{start} --> {end}",
-            start = VttTime(rendering.start),
-            end = VttTime(rendering.end),
+            start = VttTime::from(rendering.start),
+            end = VttTime::from(rendering.end),
         )
         .expect("writing to String is infallible");
         output.push_str(&rendering.content);

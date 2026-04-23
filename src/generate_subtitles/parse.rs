@@ -35,25 +35,29 @@ pub struct SubtitleCue {
     pub text: String,
 }
 
+/// Payload of an [`Event::Cue`]. The start time is the one declared
+/// in the source file; the end time is resolved later by looking at
+/// the next event in the stream.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct Cue {
+    start: Timestamp,
+    marker: String,
+    text: String,
+}
+
 /// An intermediate event extracted from a source file before end times
 /// are resolved.
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Event {
-    Cue {
-        start: Timestamp,
-        marker: String,
-        text: String,
-    },
-    Clear {
-        start: Timestamp,
-    },
+    Cue(Cue),
+    Clear(Timestamp),
 }
 
 impl Event {
     fn start(&self) -> Timestamp {
         match self {
-            Event::Cue { start, .. } => *start,
-            Event::Clear { start } => *start,
+            Event::Cue(cue) => cue.start,
+            Event::Clear(start) => *start,
         }
     }
 }
@@ -113,7 +117,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                         ));
                     }
                     if first_token == CLEAR_MARKER {
-                        events.push(Event::Clear { start });
+                        events.push(Event::Clear(start));
                     }
                     last_cue_index = None;
                     continue;
@@ -140,12 +144,11 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                     }));
                 }
 
-                let event = Event::Cue {
+                events.push(Event::Cue(Cue {
                     start,
                     marker: marker.to_string(),
                     text: text.to_string(),
-                };
-                events.push(event);
+                }));
                 last_cue_index = Some(events.len() - 1);
             }
             None => {
@@ -155,7 +158,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                         content: trimmed.to_string(),
                     }));
                 };
-                if let Event::Cue { text, .. } = &mut events[cue_index] {
+                if let Event::Cue(Cue { text, .. }) = &mut events[cue_index] {
                     text.push('\n');
                     text.push_str(trimmed);
                 } else {
@@ -180,11 +183,11 @@ fn resolve_cues(events: Vec<Event>) -> Result<Vec<SubtitleCue>, ParseLyricsError
     let mut cues: Vec<SubtitleCue> = Vec::new();
 
     for (index, event) in events.iter().enumerate() {
-        let Event::Cue {
+        let Event::Cue(Cue {
             start,
             marker,
             text,
-        } = event
+        }) = event
         else {
             continue;
         };

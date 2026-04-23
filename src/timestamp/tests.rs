@@ -39,7 +39,7 @@ fn display_round_trips() {
 #[test]
 fn srt_time_uses_comma() {
     assert_eq!(
-        SrtTime(Timestamp::new(0, 2, 960)).to_string(),
+        SrtTime::from(Timestamp::new(0, 2, 960)).to_string(),
         "00:00:02,960",
     );
 }
@@ -47,7 +47,7 @@ fn srt_time_uses_comma() {
 #[test]
 fn vtt_time_uses_dot() {
     assert_eq!(
-        VttTime(Timestamp::new(0, 2, 960)).to_string(),
+        VttTime::from(Timestamp::new(0, 2, 960)).to_string(),
         "00:00:02.960",
     );
 }
@@ -55,8 +55,8 @@ fn vtt_time_uses_dot() {
 #[test]
 fn hour_boundary() {
     let value = Timestamp::new(61, 2, 15);
-    assert_eq!(SrtTime(value).to_string(), "01:01:02,015");
-    assert_eq!(VttTime(value).to_string(), "01:01:02.015");
+    assert_eq!(SrtTime::from(value).to_string(), "01:01:02,015");
+    assert_eq!(VttTime::from(value).to_string(), "01:01:02.015");
 }
 
 #[test]

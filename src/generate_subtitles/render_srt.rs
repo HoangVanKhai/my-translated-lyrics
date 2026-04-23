@@ -40,8 +40,8 @@ pub fn render_file(
         writeln!(
             output,
             "{start} --> {end}",
-            start = SrtTime(cue.start),
-            end = SrtTime(cue.end),
+            start = SrtTime::from(cue.start),
+            end = SrtTime::from(cue.end),
         )
         .expect("writing to String is infallible");
         let body = render_cue_body(cue, markers, &vocabulary)?;
