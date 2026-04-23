@@ -109,6 +109,24 @@ fn eov_marker_does_not_produce_a_cue() {
 }
 
 #[test]
+fn eov_between_a_cue_and_its_continuation_leaves_the_cue_open() {
+    let input = text_block_fnl! {
+        "00:00.000 cre: first line"
+        "00:03.000 eov"
+        "            second line"
+        "00:05.000 clr"
+    };
+    // `eov` is documented as "ignored entirely": it must not reset
+    // the continuation scope, so the indented `second line` after it
+    // still appends to the `cre` cue opened on line 1, and the cue
+    // does not close until the `clr` on line 4.
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(cues.len(), 1);
+    assert_eq!(cues[0].text, "first line\nsecond line");
+    assert_eq!(cues[0].end, Timestamp::new(0, 5, 0));
+}
+
+#[test]
 fn rejects_cue_line_without_marker() {
     let input = text_block_fnl! {
         "00:00.000 Plain text without marker"

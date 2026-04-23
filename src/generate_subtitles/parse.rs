@@ -118,8 +118,8 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                     }
                     if first_token == CLEAR_MARKER {
                         events.push(Event::Clear(start));
+                        last_cue_index = None;
                     }
-                    last_cue_index = None;
                     continue;
                 }
 
@@ -240,9 +240,11 @@ pub struct StrayContinuation {
     pub content: String,
 }
 
-/// Payload for [`ParseLyricsError::MissingMarker`].
+/// Payload for [`ParseLyricsError::MissingMarker`]. Raised when a
+/// cue body has no `:` separator at all, and also when it has a `:`
+/// but the marker half before it is empty.
 #[derive(Debug, Display, Clone, PartialEq, Eq)]
-#[display("line {line_number}: cue body {content:?} has no `:` separator between marker and text")]
+#[display("line {line_number}: cue body {content:?} carries no marker before the `:` separator")]
 pub struct MissingMarker {
     pub line_number: usize,
     pub content: String,

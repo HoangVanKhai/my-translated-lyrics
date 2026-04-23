@@ -46,7 +46,9 @@ pub struct LineMarkersDesc {
     #[serde(default)]
     pub classes: BTreeMap<String, CssClassName>,
     /// Markers that open a credit block. The cue body is parsed
-    /// line-by-line with the song's `credits.yaml` vocabulary.
+    /// line-by-line against the `credit-roles` entries in the song's
+    /// `credits.yaml`; the companion `credit-names` entries are not
+    /// consumed by this path and are tracked separately.
     #[serde(default)]
     pub credits: Vec<String>,
 }

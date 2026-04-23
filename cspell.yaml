@@ -64,7 +64,6 @@ overrides:
       - Feng
       - hardlink
       - maplit
-      - peekable
       - rsplit
       - saphyr
       - Tianyi

@@ -48,8 +48,9 @@ pub fn render_file(
         output.push_str(&body);
         output.push_str("\n\n");
     }
-    let trimmed = output.trim_end().to_string();
-    Ok(format!("{trimmed}\n"))
+    output.truncate(output.trim_end().len());
+    output.push('\n');
+    Ok(output)
 }
 
 fn render_cue_body(
