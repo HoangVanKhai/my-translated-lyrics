@@ -1,6 +1,6 @@
 use super::{
     MinutesOutOfRange, ParseTimestampError, SecondsOutOfRange, SrtTime, TakeTimestampError,
-    Timestamp, TrailingText, VttTime,
+    Timestamp, UnexpectedCharacter, VttTime,
 };
 use pretty_assertions::assert_eq;
 
@@ -216,12 +216,13 @@ fn from_str_rejects_minutes_out_of_range() {
 }
 
 #[test]
-fn from_str_rejects_trailing_text() {
+fn from_str_rejects_unexpected_character_after_prefix() {
     assert_eq!(
         "00:02.960 tail".parse::<Timestamp>().unwrap_err(),
-        ParseTimestampError::TrailingText(TrailingText {
+        ParseTimestampError::UnexpectedCharacter(UnexpectedCharacter {
             raw: "00:02.960 tail".to_string(),
-            trailing: " tail".to_string(),
+            character: ' ',
+            position: 9,
         }),
     );
 }

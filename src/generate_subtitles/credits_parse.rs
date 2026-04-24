@@ -23,6 +23,7 @@
 
 use crate::credits_descriptor::CreditsDesc;
 use crate::video_descriptor::Language;
+use core::str::FromStr;
 use derive_more::{Display, Error};
 use std::collections::BTreeSet;
 
@@ -88,6 +89,69 @@ impl Bracketed {
     /// The bracketed text, including the surrounding brackets.
     pub fn as_str(&self) -> &str {
         &self.0
+    }
+}
+
+/// Payload for [`ParseBracketedError::UnexpectedCharacter`].
+/// Describes an input that begins with a valid bracketed span but,
+/// at [`position`](Self::position), carries a
+/// [`character`](Self::character) that [`Bracketed::from_str`] did
+/// not expect there: `FromStr` requires end of input once the
+/// closing bracket has been consumed, so any character past the
+/// closing bracket is unexpected.
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display(
+    "invalid bracketed span {raw:?}: unexpected character {character:?} at byte offset {position}; a bracketed span must be followed by end of input"
+)]
+pub struct UnexpectedCharacter {
+    pub raw: String,
+    pub character: char,
+    pub position: usize,
+}
+
+/// Reasons [`Bracketed::from_str`] can fail.
+///
+/// `FromStr` requires the entire input to denote a single
+/// bracketed span. The parser reuses [`Bracketed::take`] and then
+/// rejects any remaining input, so the error surface has two
+/// variants: a shape mismatch when the input does not form a
+/// bracketed span at all, and an unexpected-character error when
+/// a valid span is followed by further content.
+#[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum ParseBracketedError {
+    /// The input does not form a valid bracketed span: it is
+    /// empty, does not begin with a recognized opening bracket,
+    /// contains another bracket before the matching close, or
+    /// ends before the closing bracket.
+    #[display("input is not a valid bracketed span")]
+    ShapeMismatch,
+    /// The input begins with a valid bracketed span but carries
+    /// an unexpected character where end of input was required.
+    #[display("{_0}")]
+    UnexpectedCharacter(#[error(not(source))] UnexpectedCharacter),
+}
+
+impl FromStr for Bracketed {
+    type Err = ParseBracketedError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (value, trailing) = Bracketed::take(s).ok_or(ParseBracketedError::ShapeMismatch)?;
+        if trailing.is_empty() {
+            return Ok(value);
+        }
+        let position = s.len() - trailing.len();
+        let character = trailing
+            .chars()
+            .next()
+            .expect("a non-empty trailing slice has a first character");
+        Err(ParseBracketedError::UnexpectedCharacter(
+            UnexpectedCharacter {
+                raw: s.to_string(),
+                character,
+                position,
+            },
+        ))
     }
 }
 

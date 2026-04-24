@@ -1,5 +1,6 @@
 use super::{
-    Bracketed, CreditsVocabulary, NameSegment, ParseCreditError, UnknownRole, parse_credit_line,
+    Bracketed, CreditsVocabulary, NameSegment, ParseBracketedError, ParseCreditError,
+    UnexpectedCharacter, UnknownRole, parse_credit_line,
 };
 use crate::credits_descriptor::CreditsDesc;
 use crate::video_descriptor::Language;
@@ -15,16 +16,6 @@ fn vocabulary(roles: &[&str]) -> CreditsVocabulary {
         credit_names: Vec::new(),
     };
     CreditsVocabulary::from_descriptor(&descriptor, &Language::Vietnamese)
-}
-
-fn bracketed(source: &str) -> Bracketed {
-    let (value, rest) =
-        Bracketed::take(source).expect("test fixture must be a valid bracketed prefix");
-    assert!(
-        rest.is_empty(),
-        "test fixture must not carry trailing bytes past the closing bracket",
-    );
-    value
 }
 
 #[test]
@@ -100,7 +91,7 @@ fn recognizes_lenticular_highlight() {
         parsed[0].name_segments,
         vec![
             NameSegment::Plain("name-a".into()),
-            NameSegment::Special(bracketed("【label-a】")),
+            NameSegment::Special("【label-a】".parse().unwrap()),
         ],
     );
 }
@@ -112,9 +103,9 @@ fn multiple_highlights_interleave_with_plain_text() {
     assert_eq!(
         parsed[0].name_segments,
         vec![
-            NameSegment::Special(bracketed("【label-a】")),
+            NameSegment::Special("【label-a】".parse().unwrap()),
             NameSegment::Plain("name-a ".into()),
-            NameSegment::Special(bracketed("【label-b】")),
+            NameSegment::Special("【label-b】".parse().unwrap()),
             NameSegment::Plain("name-b".into()),
         ],
     );
@@ -144,4 +135,42 @@ fn bracketed_rejects_non_bracket_prefix_and_nested_or_unclosed_brackets() {
     assert!(Bracketed::take("【a【b】c】").is_none());
     assert!(Bracketed::take("[mismatch】").is_none());
     assert!(Bracketed::take("(also [nested])").is_none());
+}
+
+#[test]
+fn bracketed_from_str_accepts_a_single_span() {
+    let parsed: Bracketed = "【label-a】".parse().unwrap();
+    assert_eq!(parsed.as_str(), "【label-a】");
+}
+
+#[test]
+fn bracketed_from_str_rejects_shape_mismatch() {
+    // Whatever `take` would report as `None` maps to `ShapeMismatch`
+    // for `FromStr`: empty input, no opening bracket, nested
+    // bracket before the matching close, or end of input before
+    // the close.
+    for input in ["", "no bracket", "[open only", "【a【b】c】"] {
+        assert_eq!(
+            input.parse::<Bracketed>().unwrap_err(),
+            ParseBracketedError::ShapeMismatch,
+        );
+    }
+}
+
+#[test]
+fn bracketed_from_str_rejects_unexpected_character_after_span() {
+    // The span closes at byte offset 9 (`】` in UTF-8 is three
+    // bytes, plus `label-a` is seven ASCII bytes, plus `【` is
+    // three bytes: 3 + 7 + 3 = 13). The first byte past the
+    // closing bracket is the unexpected character.
+    let input = "【label-a】trailing";
+    let err = input.parse::<Bracketed>().unwrap_err();
+    assert_eq!(
+        err,
+        ParseBracketedError::UnexpectedCharacter(UnexpectedCharacter {
+            raw: input.to_string(),
+            character: 't',
+            position: "【label-a】".len(),
+        }),
+    );
 }
