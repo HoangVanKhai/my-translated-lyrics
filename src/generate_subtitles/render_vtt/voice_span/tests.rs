@@ -58,7 +58,8 @@ fn voice_name_containing_ampersand_is_not_html_escaped_in_either_context() {
     // Regression for the bug that `fix(render-vtt): drop redundant
     // voice-name escape` repaired. A prior revision wrapped the
     // voice name in the HTML-entity escape at both interpolation
-    // sites, which desynced the cue tag from the CSS selector: the
+    // sites, which broke the match between cue tag and CSS selector:
+    // the
     // WebVTT cue-text parser decodes `&amp;` back to `&` inside
     // `<v ...>`, but CSS does not decode entity references in
     // attribute-value strings, so the selector would match the
