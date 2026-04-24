@@ -182,10 +182,7 @@ fn render_cue(
         .and_then(|by_language| by_language.get(language));
 
     let content = match voice_name {
-        Some(voice_name) => format!(
-            "<v {voice_name}>{inner}</v>",
-            voice_name = Escaped(voice_name.as_str()),
-        ),
+        Some(voice_name) => format!("<v {voice_name}>{inner}</v>"),
         None => inner,
     };
 
@@ -301,12 +298,8 @@ fn write_style_block(
 }
 
 fn write_voice_rule(output: &mut String, voice_name: &VoiceName, style: Option<&Style>) {
-    writeln!(
-        output,
-        "::cue(v[voice=\"{voice_name}\"]) {{",
-        voice_name = Escaped(voice_name.as_str()),
-    )
-    .expect("writing to String is infallible");
+    writeln!(output, "::cue(v[voice=\"{voice_name}\"]) {{")
+        .expect("writing to String is infallible");
     if let Some(style) = style {
         write_style_body(output, style);
     }
