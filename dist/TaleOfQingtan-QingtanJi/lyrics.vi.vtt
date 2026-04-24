@@ -20,7 +20,7 @@ STYLE
   color: #EE0000;
   font-style: italic;
 }
-::cue(v[voice="Lạc Thiên Y & Nhạc Chính Lăng"]) {
+::cue(v[voice="Lạc Thiên Y &amp; Nhạc Chính Lăng"]) {
   color: #9966CC;
 }
 ::cue(c.creditRole) {
@@ -151,28 +151,28 @@ STYLE
 <v Lạc Thiên Y>Sau khi biệt ly nếu nghe tiếng kiếm ngân, xin đừng mong ngóng ngày về nữa</v>
 
 00:02:47.920 --> 00:02:51.440
-<v Lạc Thiên Y & Nhạc Chính Lăng>Một điệu múa kiếm khí lay động, đêm dài tìm kiếm giữa khoảng không xuân</v>
+<v Lạc Thiên Y &amp; Nhạc Chính Lăng>Một điệu múa kiếm khí lay động, đêm dài tìm kiếm giữa khoảng không xuân</v>
 
 00:02:51.440 --> 00:02:54.960
-<v Lạc Thiên Y & Nhạc Chính Lăng>Người ở đâu giữa chốn đình viện, trong ánh thanh quang vạn dặm</v>
+<v Lạc Thiên Y &amp; Nhạc Chính Lăng>Người ở đâu giữa chốn đình viện, trong ánh thanh quang vạn dặm</v>
 
 00:02:54.960 --> 00:02:58.600
-<v Lạc Thiên Y & Nhạc Chính Lăng>Đốt đàn rồi khó mà tấu tiếp, bẻ kiếm đi sợ lo lắng nảy sinh</v>
+<v Lạc Thiên Y &amp; Nhạc Chính Lăng>Đốt đàn rồi khó mà tấu tiếp, bẻ kiếm đi sợ lo lắng nảy sinh</v>
 
 00:02:58.600 --> 00:03:02.000
-<v Lạc Thiên Y & Nhạc Chính Lăng>Băng qua sông chạm vào luồng hàn triều, ngồi lặng yên càng thêm bận lòng</v>
+<v Lạc Thiên Y &amp; Nhạc Chính Lăng>Băng qua sông chạm vào luồng hàn triều, ngồi lặng yên càng thêm bận lòng</v>
 
 00:03:02.000 --> 00:03:05.520
-<v Lạc Thiên Y & Nhạc Chính Lăng>Những điều ấy đều khó thực hiện, lấy gì để đi hết quãng đời còn lại</v>
+<v Lạc Thiên Y &amp; Nhạc Chính Lăng>Những điều ấy đều khó thực hiện, lấy gì để đi hết quãng đời còn lại</v>
 
 00:03:05.520 --> 00:03:09.200
-<v Lạc Thiên Y & Nhạc Chính Lăng>Thường thấy trong nỗi tương tư, chẳng có ai thưởng thức thanh âm mùa xuân</v>
+<v Lạc Thiên Y &amp; Nhạc Chính Lăng>Thường thấy trong nỗi tương tư, chẳng có ai thưởng thức thanh âm mùa xuân</v>
 
 00:03:09.200 --> 00:03:12.675
-<v Lạc Thiên Y & Nhạc Chính Lăng>Ngày về biệt vô âm tín, để lại cho ta một thanh kiếm sắc</v>
+<v Lạc Thiên Y &amp; Nhạc Chính Lăng>Ngày về biệt vô âm tín, để lại cho ta một thanh kiếm sắc</v>
 
 00:03:12.675 --> 00:03:17.880
-<v Lạc Thiên Y & Nhạc Chính Lăng>Thân này hòa vào tuyết núi, lòng này vẫn vẹn nguyên lòng thành</v>
+<v Lạc Thiên Y &amp; Nhạc Chính Lăng>Thân này hòa vào tuyết núi, lòng này vẫn vẹn nguyên lòng thành</v>
 
 00:03:35.750 --> 00:03:39.155
 <v Lạc Thiên Y>Rượu Tết Hàn Thực đã tan, chớ để tiệp báo chậm trễ</v>
@@ -187,28 +187,28 @@ STYLE
 <v Nhạc Chính Lăng>Người giữ kiếm núi Kính Đình, chuyến đi này mãi chẳng thấy về</v>
 
 00:03:51.520 --> 00:03:55.155
-<v Lạc Thiên Y & Nhạc Chính Lăng>Chợt nghe tiếng kiếm ngân dài, đêm dậy khêu đèn nến</v>
+<v Lạc Thiên Y &amp; Nhạc Chính Lăng>Chợt nghe tiếng kiếm ngân dài, đêm dậy khêu đèn nến</v>
 
 00:03:55.155 --> 00:03:58.475
-<v Lạc Thiên Y & Nhạc Chính Lăng>Trong sân nào có chi đâu, chỉ thấy ngàn dặm tiếng hoa rơi</v>
+<v Lạc Thiên Y &amp; Nhạc Chính Lăng>Trong sân nào có chi đâu, chỉ thấy ngàn dặm tiếng hoa rơi</v>
 
 00:03:58.475 --> 00:04:02.080
-<v Lạc Thiên Y & Nhạc Chính Lăng>Tình hiệp sĩ nên soi cùng nguyệt, mộng hồn đồng hành khắp cửu châu</v>
+<v Lạc Thiên Y &amp; Nhạc Chính Lăng>Tình hiệp sĩ nên soi cùng nguyệt, mộng hồn đồng hành khắp cửu châu</v>
 
 00:04:02.080 --> 00:04:05.680
-<v Lạc Thiên Y & Nhạc Chính Lăng>Ngày sau nếu được về quê cũ, nguyện cùng làm đôi lão đầu bạc</v>
+<v Lạc Thiên Y &amp; Nhạc Chính Lăng>Ngày sau nếu được về quê cũ, nguyện cùng làm đôi lão đầu bạc</v>
 
 00:04:05.680 --> 00:04:09.240
-<v Lạc Thiên Y & Nhạc Chính Lăng>Nhân sinh gửi gắm một đời, không rảnh than thân phiêu bạt</v>
+<v Lạc Thiên Y &amp; Nhạc Chính Lăng>Nhân sinh gửi gắm một đời, không rảnh than thân phiêu bạt</v>
 
 00:04:09.240 --> 00:04:12.640
-<v Lạc Thiên Y & Nhạc Chính Lăng>Luôn hướng về phía chân trời, biết khi nào gặp nhau dưới trăng</v>
+<v Lạc Thiên Y &amp; Nhạc Chính Lăng>Luôn hướng về phía chân trời, biết khi nào gặp nhau dưới trăng</v>
 
 00:04:12.640 --> 00:04:16.200
-<v Lạc Thiên Y & Nhạc Chính Lăng>Khách phân ly kẻ thư người kiếm, mỗi người giữ một nửa mùa đông</v>
+<v Lạc Thiên Y &amp; Nhạc Chính Lăng>Khách phân ly kẻ thư người kiếm, mỗi người giữ một nửa mùa đông</v>
 
 00:04:16.200 --> 00:04:22.200
-<v Lạc Thiên Y & Nhạc Chính Lăng>Ý chí ta tan vào tuyết núi, mấy bận xông pha giữa gió bấc</v>
+<v Lạc Thiên Y &amp; Nhạc Chính Lăng>Ý chí ta tan vào tuyết núi, mấy bận xông pha giữa gió bấc</v>
 
 00:04:32.355 --> 00:04:41.432
 <c.title>《Thanh Đàn Ký》</c>
