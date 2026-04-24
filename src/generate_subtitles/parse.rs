@@ -123,6 +123,20 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                     continue;
                 }
 
+                // Run the reserved-character check on the full body
+                // before `split_marker`. A line such as `<v>foo</v>`
+                // has no `:` separator, so `split_marker` would
+                // return `None` and the error would surface as
+                // `MissingMarker` even though the real problem is
+                // the angle brackets. Checking here lets the more
+                // specific `CueTextReservedCharacter` diagnostic
+                // win. The control-marker branch above is
+                // deliberately left above this check because its
+                // own `ExtraTextAfterControlMarker` diagnostic is
+                // more specific than the reserved-character error
+                // for the `clr`/`eov` cases.
+                reject_reserved_cue_text_characters(body, line_number)?;
+
                 let (marker, text) = split_marker(body).ok_or_else(|| {
                     ParseLyricsError::MissingMarker(MissingMarker {
                         line_number,
@@ -143,7 +157,6 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                         marker: marker.to_string(),
                     }));
                 }
-                reject_reserved_cue_text_characters(text, line_number)?;
 
                 events.push(Event::Cue(Cue {
                     start,
@@ -318,6 +331,8 @@ pub struct CueTextReservedCharacter {
 #[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum ParseLyricsError {
+    // Per-line failures, in the order they are raised inside the
+    // `collect_events` loop.
     #[display("{_0}")]
     InvalidTimestamp(#[error(not(source))] InvalidTimestamp),
     #[display("{_0}")]
@@ -334,6 +349,7 @@ pub enum ParseLyricsError {
     EmptyCueBody(#[error(not(source))] EmptyCueBody),
     #[display("{_0}")]
     CueTextReservedCharacter(#[error(not(source))] CueTextReservedCharacter),
+    // Post-pass failures, raised after `collect_events` returns.
     #[display("{_0}")]
     OutOfOrder(#[error(not(source))] OutOfOrder),
     #[display("cue at {_0} has no following cue or `clr`")]
@@ -347,6 +363,15 @@ pub enum ParseLyricsError {
 /// `<` and `>` in the source would not survive to the output as
 /// themselves; they are rejected here to surface the author's
 /// intent early rather than silently dropping it.
+///
+/// Reports the first offending character only. A line that
+/// carries both `<` and `>` (the common `<tag>` shape) would in
+/// principle benefit from a combined diagnostic, but a single
+/// report per line is the convention every other `ParseLyricsError`
+/// variant follows, and the author almost always types the two
+/// angle brackets together; seeing the `<` once, fixing the whole
+/// tag, and rerunning is the same workflow as for `MissingMarker`
+/// or `ReservedControlMarker`.
 fn reject_reserved_cue_text_characters(
     text: &str,
     line_number: usize,

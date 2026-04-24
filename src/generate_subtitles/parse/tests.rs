@@ -273,16 +273,50 @@ fn rejects_angle_bracket_in_continuation_line() {
     // The validator fires on every cue-text line, not only on the
     // opening body, so a reserved character that only appears on a
     // continuation line is still caught at the line that contains
-    // it.
-    let input = text_block_fnl! {
+    // it. Cover both `<` and `>` so the continuation path is
+    // locked symmetrically with the opening-line test above.
+    let lt_input = text_block_fnl! {
         "00:00.000 cre: first line"
-        "            second <tag> line"
+        "            second <tag line"
         "00:05.000 clr"
+    };
+    assert_eq!(
+        parse_lyrics(lt_input).unwrap_err(),
+        ParseLyricsError::CueTextReservedCharacter(CueTextReservedCharacter {
+            line_number: 2,
+            character: '<',
+        }),
+    );
+
+    let gt_input = text_block_fnl! {
+        "00:00.000 cre: first line"
+        "            end of tag>"
+        "00:05.000 clr"
+    };
+    assert_eq!(
+        parse_lyrics(gt_input).unwrap_err(),
+        ParseLyricsError::CueTextReservedCharacter(CueTextReservedCharacter {
+            line_number: 2,
+            character: '>',
+        }),
+    );
+}
+
+#[test]
+fn marker_less_body_with_reserved_character_reports_reserved_character() {
+    // A line such as `00:00.000 <v>foo</v>` has no `:` separator,
+    // so without the reserved-character check running before
+    // `split_marker` the error would surface as `MissingMarker`
+    // even though the real problem is the angle brackets. Verify
+    // that the more specific diagnostic wins here.
+    let input = text_block_fnl! {
+        "00:00.000 <v>foo</v>"
+        "00:02.000 clr"
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::CueTextReservedCharacter(CueTextReservedCharacter {
-            line_number: 2,
+            line_number: 1,
             character: '<',
         }),
     );

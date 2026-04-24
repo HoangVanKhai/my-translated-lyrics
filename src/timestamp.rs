@@ -89,6 +89,11 @@ impl Timestamp {
     ///   Both out-of-range errors carry a copy of the offending
     ///   9-character prefix for diagnostics.
     ///
+    /// When both `MM` and `SS` fields are out of range, the
+    /// minutes variant is reported because the one-hour cap is the
+    /// tighter invariant; a seconds diagnostic on a prefix the
+    /// type would reject anyway would be misleading.
+    ///
     /// The caller is responsible for anything past the prefix: if
     /// the cue format requires whitespace between the timestamp and
     /// the body, the caller inspects `tail` for it.
@@ -156,8 +161,10 @@ impl Timestamp {
 
         Ok((
             Timestamp::new(minutes, seconds, milliseconds).expect(
-                "minutes < 60, seconds < 60, and three-digit milliseconds < 1000 \
-                 keep the total below one hour",
+                "the two `if` guards above rule out `minutes >= 60` and \
+                 `seconds >= 60`, and three-digit ASCII parsing caps \
+                 milliseconds below 1000, so the weighted total is \
+                 strictly less than one hour and `Timestamp::new` accepts it",
             ),
             chars.as_str(),
         ))

@@ -80,7 +80,11 @@ fn maximum_representable_value_renders_just_below_one_hour() {
 fn new_rejects_totals_that_reach_or_exceed_one_hour() {
     // Every composition whose weighted total lands at exactly one
     // hour or beyond must be rejected, regardless of which component
-    // pushed the total past the cap.
+    // pushed the total past the cap. The just-below-cap composition
+    // (59:59.999, one millisecond short of one hour) is the
+    // symmetric "still `Some`" boundary that locks the cap at its
+    // exact threshold.
+    assert!(Timestamp::new(59, 59, 999).is_some());
     assert_eq!(Timestamp::new(60, 0, 0), None);
     assert_eq!(Timestamp::new(59, 60, 0), None);
     assert_eq!(Timestamp::new(59, 59, 1_000), None);
@@ -210,6 +214,22 @@ fn from_str_rejects_minutes_out_of_range() {
         "60:00.000".parse::<Timestamp>().unwrap_err(),
         ParseTimestampError::MinutesOutOfRange(MinutesOutOfRange {
             raw: "60:00.000".to_string(),
+            value: 60,
+        }),
+    );
+}
+
+#[test]
+fn from_str_minutes_out_of_range_takes_precedence_over_seconds_out_of_range() {
+    // `FromStr` rebuilds its own variant set from
+    // `TakeTimestampError`, so a future reorder of the `match` arms
+    // could silently change which diagnostic wins when both `MM`
+    // and `SS` are out of range. Lock that forwarding with a
+    // parallel of the `take` precedence test.
+    assert_eq!(
+        "60:60.000".parse::<Timestamp>().unwrap_err(),
+        ParseTimestampError::MinutesOutOfRange(MinutesOutOfRange {
+            raw: "60:60.000".to_string(),
             value: 60,
         }),
     );

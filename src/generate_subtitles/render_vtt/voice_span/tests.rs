@@ -21,6 +21,22 @@ fn voice_span_emits_cue_tag_wrapping_pre_escaped_inner() {
 }
 
 #[test]
+fn voice_span_wraps_a_classed_cue_fragment_as_is() {
+    // The `VoiceSpan` module docs say the wrapper accepts an inner
+    // body that the caller may already have composed as
+    // `<c.class>…</c>`. Exercise that shape so a future change to
+    // the inner-rendering rules that reintroduces double escaping
+    // trips here before it reaches any golden file.
+    let voice_name = sample_voice_name("Alpha");
+    let rendered = VoiceSpan {
+        voice_name: &voice_name,
+        inner: "<c.LRC>line</c>",
+    }
+    .to_string();
+    assert_eq!(rendered, "<v Alpha><c.LRC>line</c></v>");
+}
+
+#[test]
 fn voice_span_preserves_ascii_apostrophes_in_the_name() {
     // `'` is not a meta character of the WebVTT cue tag, so it
     // passes through unchanged.
@@ -55,8 +71,7 @@ fn voice_selector_preserves_ascii_apostrophes_inside_double_quotes() {
 
 #[test]
 fn voice_name_containing_ampersand_is_not_html_escaped_in_either_context() {
-    // Regression for the bug that `fix(render-vtt): drop redundant
-    // voice-name escape` repaired. A prior revision wrapped the
+    // Regression for a bug where a prior revision wrapped the
     // voice name in the HTML-entity escape at both interpolation
     // sites, which broke the match between cue tag and CSS selector:
     // the
