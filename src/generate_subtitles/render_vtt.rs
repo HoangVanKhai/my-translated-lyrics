@@ -41,7 +41,7 @@ use crate::timestamp::{Timestamp, VttTime};
 use crate::video_descriptor::Language;
 use core::fmt::Write;
 use derive_more::{Display, Error};
-use voice_span::{VoiceNameCssSelector, VoicedLine};
+use voice_span::{VoiceSelector, VoiceSpan};
 
 mod voice_span;
 
@@ -185,7 +185,7 @@ fn render_cue(
         .and_then(|by_language| by_language.get(language));
 
     let content = match voice_name {
-        Some(voice_name) => VoicedLine {
+        Some(voice_name) => VoiceSpan {
             voice_name,
             inner: &inner,
         }
@@ -308,7 +308,7 @@ fn write_voice_rule(output: &mut String, voice_name: &VoiceName, style: Option<&
     writeln!(
         output,
         "::cue({selector}) {{",
-        selector = VoiceNameCssSelector(voice_name),
+        selector = VoiceSelector(voice_name),
     )
     .expect("writing to String is infallible");
     if let Some(style) = style {

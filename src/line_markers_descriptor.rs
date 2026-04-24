@@ -131,9 +131,9 @@ fn is_class_name_continue(ch: char) -> bool {
 /// selector, have incompatible quoting rules, and a single
 /// `Display` impl could only be correct in one of them. Rendering
 /// therefore goes through the context-specific wrappers
-/// `render_vtt::voice_span::VoicedLine` and
-/// `render_vtt::voice_span::VoiceNameCssSelector`, which state
-/// explicitly which output shape they produce.
+/// `render_vtt::voice_span::VoiceSpan` and
+/// `render_vtt::voice_span::VoiceSelector`, which state explicitly
+/// which output shape they produce.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(try_from = "String", into = "String")]
 pub struct VoiceName(String);

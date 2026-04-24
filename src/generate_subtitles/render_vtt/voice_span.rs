@@ -6,35 +6,36 @@
 //! quoting rules, and a single `Display` impl could only be
 //! correct in one of them.
 //!
-//! - [`VoicedLine`] renders `<v {name}>{inner}</v>` for cue-text
+//! - [`VoiceSpan`] renders `<v {name}>{inner}</v>` for cue-text
 //!   output. The WebVTT cue-tag grammar reads the annotation up to
 //!   the first `>`, so the [`VoiceName`] invariant keeps the tag
 //!   well-formed. The inner body is expected to be already
 //!   HTML-entity-escaped by the caller, because the cue-text parser
 //!   resolves entity references inside the `<v>` body.
-//! - [`VoiceNameCssSelector`] renders `v[voice="{name}"]` for the
-//!   STYLE block. The [`VoiceName`] reject list covers `"`, `\`,
-//!   and line terminators, which are exactly the characters that
-//!   would break the CSS double-quoted attribute-value string, so
-//!   no additional escape is needed here either.
+//! - [`VoiceSelector`] renders `v[voice="{name}"]` for the STYLE
+//!   block. The [`VoiceName`] reject list covers `"`, `\`, and line
+//!   terminators, which are exactly the characters that would break
+//!   the CSS double-quoted attribute-value string, so no additional
+//!   escape is needed here either.
 
 use crate::line_markers_descriptor::VoiceName;
 use core::fmt;
 
 /// Renders a cue body with its surrounding `<v {name}>…</v>` voice
-/// span.
+/// span. The spec name for this construct is "WebVTT cue voice
+/// span".
 ///
 /// The inner text must already be in cue-text form: plain prose
 /// passed through the HTML-entity escape, or an already-wrapped
 /// `<c.class>…</c>` fragment. This type does not escape the inner
 /// text because the caller may have composed it from several
 /// already-escaped pieces.
-pub struct VoicedLine<'a> {
+pub struct VoiceSpan<'a> {
     pub voice_name: &'a VoiceName,
     pub inner: &'a str,
 }
 
-impl fmt::Display for VoicedLine<'_> {
+impl fmt::Display for VoiceSpan<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
@@ -51,9 +52,9 @@ impl fmt::Display for VoicedLine<'_> {
 ///
 /// The caller wraps the result in `::cue(…)` to form the full
 /// WebVTT STYLE-block selector.
-pub struct VoiceNameCssSelector<'a>(pub &'a VoiceName);
+pub struct VoiceSelector<'a>(pub &'a VoiceName);
 
-impl fmt::Display for VoiceNameCssSelector<'_> {
+impl fmt::Display for VoiceSelector<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "v[voice=\"{name}\"]", name = self.0.as_str())
     }
