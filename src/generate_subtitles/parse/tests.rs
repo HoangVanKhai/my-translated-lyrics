@@ -1,7 +1,7 @@
 use super::{
-    EmptyCueBody, ExtraTextAfterControlMarker, InvalidTimestamp, MissingMarker,
-    MissingSeparatorAfterTimestamp, OutOfOrder, ParseLyricsError, ReservedControlMarker,
-    parse_lyrics,
+    CueTextReservedCharacter, EmptyCueBody, ExtraTextAfterControlMarker, InvalidTimestamp,
+    MissingMarker, MissingSeparatorAfterTimestamp, OutOfOrder, ParseLyricsError,
+    ReservedControlMarker, parse_lyrics,
 };
 use crate::timestamp::{SecondsOutOfRange, TakeTimestampError, Timestamp};
 use pretty_assertions::assert_eq;
@@ -234,6 +234,73 @@ fn rejects_cue_with_empty_body() {
             marker: "ttl".to_string(),
         }),
     );
+}
+
+#[test]
+fn rejects_angle_bracket_in_cue_opening_body() {
+    // `<` and `>` belong to the WebVTT cue-tag grammar, not to the
+    // `lyrics.{lang}.txt` source format. The renderer later
+    // HTML-entity-escapes the cue text, so a literal `<` in the
+    // source would only survive to the output as `&lt;`; rejecting
+    // it at parse time surfaces the author's intent early.
+    let lt_input = text_block_fnl! {
+        "00:00.000 ttl: hello <world>"
+        "00:02.000 clr"
+    };
+    assert_eq!(
+        parse_lyrics(lt_input).unwrap_err(),
+        ParseLyricsError::CueTextReservedCharacter(CueTextReservedCharacter {
+            line_number: 1,
+            character: '<',
+        }),
+    );
+
+    let gt_input = text_block_fnl! {
+        "00:00.000 ttl: end>"
+        "00:02.000 clr"
+    };
+    assert_eq!(
+        parse_lyrics(gt_input).unwrap_err(),
+        ParseLyricsError::CueTextReservedCharacter(CueTextReservedCharacter {
+            line_number: 1,
+            character: '>',
+        }),
+    );
+}
+
+#[test]
+fn rejects_angle_bracket_in_continuation_line() {
+    // The validator fires on every cue-text line, not only on the
+    // opening body, so a reserved character that only appears on a
+    // continuation line is still caught at the line that contains
+    // it.
+    let input = text_block_fnl! {
+        "00:00.000 cre: first line"
+        "            second <tag> line"
+        "00:05.000 clr"
+    };
+    assert_eq!(
+        parse_lyrics(input).unwrap_err(),
+        ParseLyricsError::CueTextReservedCharacter(CueTextReservedCharacter {
+            line_number: 2,
+            character: '<',
+        }),
+    );
+}
+
+#[test]
+fn accepts_ampersand_in_cue_text() {
+    // `&` is not VTT-specific on its own; it only forms markup when
+    // it introduces an entity reference, and even then the renderer
+    // HTML-entity-escapes the cue text before emission, so a lone
+    // `&` in the source round-trips correctly.
+    let input = text_block_fnl! {
+        "00:00.000 ttl: R&B classics"
+        "00:02.000 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(cues.len(), 1);
+    assert_eq!(cues[0].text, "R&B classics");
 }
 
 #[test]

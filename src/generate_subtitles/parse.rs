@@ -143,6 +143,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                         marker: marker.to_string(),
                     }));
                 }
+                reject_reserved_cue_text_characters(text, line_number)?;
 
                 events.push(Event::Cue(Cue {
                     start,
@@ -158,6 +159,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                         content: trimmed.to_string(),
                     }));
                 };
+                reject_reserved_cue_text_characters(trimmed, line_number)?;
                 if let Event::Cue(Cue { text, .. }) = &mut events[cue_index] {
                     text.push('\n');
                     text.push_str(trimmed);
@@ -295,6 +297,24 @@ pub struct EmptyCueBody {
     pub marker: String,
 }
 
+/// Payload for [`ParseLyricsError::CueTextReservedCharacter`].
+///
+/// The `lyrics.{lang}.txt` source format is plain prose; the cue
+/// text reaches the WebVTT and SubRip renderers after HTML-entity
+/// escape, so there is no author-level way to embed a literal
+/// `<` or `>` into the rendered cue. Any such character in the
+/// source is almost certainly an attempt to hand-author WebVTT
+/// markup, which belongs in the renderer's vocabulary (class and
+/// voice markers in `line-markers.toml`), not in the prose.
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display(
+    "line {line_number}: cue text contains {character:?}, which the WebVTT cue-tag grammar reserves for tag delimiters"
+)]
+pub struct CueTextReservedCharacter {
+    pub line_number: usize,
+    pub character: char,
+}
+
 #[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum ParseLyricsError {
@@ -313,9 +333,33 @@ pub enum ParseLyricsError {
     #[display("{_0}")]
     EmptyCueBody(#[error(not(source))] EmptyCueBody),
     #[display("{_0}")]
+    CueTextReservedCharacter(#[error(not(source))] CueTextReservedCharacter),
+    #[display("{_0}")]
     OutOfOrder(#[error(not(source))] OutOfOrder),
     #[display("cue at {_0} has no following cue or `clr`")]
     UnclosedCue(#[error(not(source))] Timestamp),
+}
+
+/// Rejects any cue text (an opening line's body after the marker,
+/// or a continuation line's contents) that contains a character
+/// the WebVTT cue-tag grammar treats as a tag delimiter. The
+/// renderer later HTML-entity-escapes the cue body, so literal
+/// `<` and `>` in the source would not survive to the output as
+/// themselves; they are rejected here to surface the author's
+/// intent early rather than silently dropping it.
+fn reject_reserved_cue_text_characters(
+    text: &str,
+    line_number: usize,
+) -> Result<(), ParseLyricsError> {
+    if let Some(character) = text.chars().find(|&c| matches!(c, '<' | '>')) {
+        return Err(ParseLyricsError::CueTextReservedCharacter(
+            CueTextReservedCharacter {
+                line_number,
+                character,
+            },
+        ));
+    }
+    Ok(())
 }
 
 #[cfg(test)]
