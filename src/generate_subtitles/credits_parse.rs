@@ -92,23 +92,6 @@ impl Bracketed {
     }
 }
 
-/// Payload for [`ParseBracketedError::UnexpectedCharacter`].
-/// Describes an input that begins with a valid bracketed span but,
-/// at [`position`](Self::position), carries a
-/// [`character`](Self::character) that [`Bracketed::from_str`] did
-/// not expect there: `FromStr` requires end of input once the
-/// closing bracket has been consumed, so any character past the
-/// closing bracket is unexpected.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
-#[display(
-    "invalid bracketed span {raw:?}: unexpected character {character:?} at byte offset {position}; a bracketed span must be followed by end of input"
-)]
-pub struct UnexpectedCharacter {
-    pub raw: String,
-    pub character: char,
-    pub position: usize,
-}
-
 /// Reasons [`Bracketed::from_str`] can fail.
 ///
 /// `FromStr` requires the entire input to denote a single
@@ -128,8 +111,10 @@ pub enum ParseBracketedError {
     ShapeMismatch,
     /// The input begins with a valid bracketed span but carries
     /// an unexpected character where end of input was required.
-    #[display("{_0}")]
-    UnexpectedCharacter(#[error(not(source))] UnexpectedCharacter),
+    #[display(
+        "unexpected character {_0:?} after the bracketed span; `FromStr` requires end of input there"
+    )]
+    UnexpectedCharacter(#[error(not(source))] char),
 }
 
 impl FromStr for Bracketed {
@@ -137,21 +122,10 @@ impl FromStr for Bracketed {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (value, trailing) = Bracketed::take(s).ok_or(ParseBracketedError::ShapeMismatch)?;
-        if trailing.is_empty() {
-            return Ok(value);
+        match trailing.chars().next() {
+            None => Ok(value),
+            Some(character) => Err(ParseBracketedError::UnexpectedCharacter(character)),
         }
-        let position = s.len() - trailing.len();
-        let character = trailing
-            .chars()
-            .next()
-            .expect("a non-empty trailing slice has a first character");
-        Err(ParseBracketedError::UnexpectedCharacter(
-            UnexpectedCharacter {
-                raw: s.to_string(),
-                character,
-                position,
-            },
-        ))
     }
 }
 

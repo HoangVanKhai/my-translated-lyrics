@@ -1,6 +1,6 @@
 use super::{
     MinutesOutOfRange, ParseTimestampError, SecondsOutOfRange, SrtTime, TakeTimestampError,
-    Timestamp, UnexpectedCharacter, VttTime,
+    Timestamp, VttTime,
 };
 use pretty_assertions::assert_eq;
 
@@ -239,10 +239,6 @@ fn from_str_minutes_out_of_range_takes_precedence_over_seconds_out_of_range() {
 fn from_str_rejects_unexpected_character_after_prefix() {
     assert_eq!(
         "00:02.960 tail".parse::<Timestamp>().unwrap_err(),
-        ParseTimestampError::UnexpectedCharacter(UnexpectedCharacter {
-            raw: "00:02.960 tail".to_string(),
-            character: ' ',
-            position: 9,
-        }),
+        ParseTimestampError::UnexpectedCharacter(' '),
     );
 }

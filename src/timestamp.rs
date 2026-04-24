@@ -240,31 +240,15 @@ pub struct SecondsOutOfRange {
     pub value: u64,
 }
 
-/// Payload for an unexpected-character error. Describes an input
-/// that begins with a valid `MM:SS.mmm` prefix but, at
-/// [`position`](Self::position), carries a
-/// [`character`](Self::character) that [`Timestamp::from_str`]
-/// did not expect there: [`Timestamp::from_str`] requires end of
-/// input after the ninth character, so any character at position
-/// nine or beyond is unexpected.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
-#[display(
-    "invalid timestamp {raw:?}: unexpected character {character:?} at byte offset {position}; `MM:SS.mmm` must be followed by end of input"
-)]
-pub struct UnexpectedCharacter {
-    pub raw: String,
-    pub character: char,
-    pub position: usize,
-}
-
 /// Reasons [`Timestamp::from_str`] can fail.
 ///
 /// `FromStr` requires the entire input to denote a single
 /// `MM:SS.mmm` timestamp. The parser reuses [`Timestamp::take`] and
 /// then rejects any remaining input, so the error surface is the
 /// union of [`TakeTimestampError`] with an extra
-/// [`UnexpectedCharacter`] variant for inputs that started well
-/// but carry content past the nine consumed characters.
+/// [`UnexpectedCharacter`](Self::UnexpectedCharacter) variant for
+/// inputs that started well but carry content past the nine
+/// consumed characters.
 #[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum ParseTimestampError {
@@ -281,8 +265,10 @@ pub enum ParseTimestampError {
     SecondsOutOfRange(#[error(not(source))] SecondsOutOfRange),
     /// The input begins with a valid `MM:SS.mmm` prefix but has
     /// an unexpected character where end of input was required.
-    #[display("{_0}")]
-    UnexpectedCharacter(#[error(not(source))] UnexpectedCharacter),
+    #[display(
+        "unexpected character {_0:?} after the `MM:SS.mmm` prefix; `FromStr` requires end of input there"
+    )]
+    UnexpectedCharacter(#[error(not(source))] char),
 }
 
 impl FromStr for Timestamp {
@@ -290,21 +276,10 @@ impl FromStr for Timestamp {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match Timestamp::take(s) {
-            Ok((timestamp, "")) => Ok(timestamp),
-            Ok((_, trailing)) => {
-                let position = s.len() - trailing.len();
-                let character = trailing
-                    .chars()
-                    .next()
-                    .expect("a non-empty trailing slice has a first character");
-                Err(ParseTimestampError::UnexpectedCharacter(
-                    UnexpectedCharacter {
-                        raw: s.to_string(),
-                        character,
-                        position,
-                    },
-                ))
-            }
+            Ok((timestamp, trailing)) => match trailing.chars().next() {
+                None => Ok(timestamp),
+                Some(character) => Err(ParseTimestampError::UnexpectedCharacter(character)),
+            },
             Err(TakeTimestampError::ShapeMismatch) => Err(ParseTimestampError::ShapeMismatch),
             Err(TakeTimestampError::MinutesOutOfRange(inner)) => {
                 Err(ParseTimestampError::MinutesOutOfRange(inner))

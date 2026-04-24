@@ -1,6 +1,6 @@
 use super::{
-    Bracketed, CreditsVocabulary, NameSegment, ParseBracketedError, ParseCreditError,
-    UnexpectedCharacter, UnknownRole, parse_credit_line,
+    Bracketed, CreditsVocabulary, NameSegment, ParseBracketedError, ParseCreditError, UnknownRole,
+    parse_credit_line,
 };
 use crate::credits_descriptor::CreditsDesc;
 use crate::video_descriptor::Language;
@@ -159,18 +159,11 @@ fn bracketed_from_str_rejects_shape_mismatch() {
 
 #[test]
 fn bracketed_from_str_rejects_unexpected_character_after_span() {
-    // The span closes at byte offset 9 (`】` in UTF-8 is three
-    // bytes, plus `label-a` is seven ASCII bytes, plus `【` is
-    // three bytes: 3 + 7 + 3 = 13). The first byte past the
-    // closing bracket is the unexpected character.
-    let input = "【label-a】trailing";
-    let err = input.parse::<Bracketed>().unwrap_err();
+    // The first character past the closing bracket is what the
+    // diagnostic reports; nothing else is needed to describe the
+    // failure.
     assert_eq!(
-        err,
-        ParseBracketedError::UnexpectedCharacter(UnexpectedCharacter {
-            raw: input.to_string(),
-            character: 't',
-            position: "【label-a】".len(),
-        }),
+        "【label-a】trailing".parse::<Bracketed>().unwrap_err(),
+        ParseBracketedError::UnexpectedCharacter('t'),
     );
 }
