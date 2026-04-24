@@ -19,6 +19,13 @@ const MILLISECONDS_PER_HOUR: u64 = 60 * MILLISECONDS_PER_MINUTE;
 /// implementation detail; callers compose and destructure via the
 /// minute / second / millisecond API surface.
 ///
+/// The type carries an upper bound: every `Timestamp` represents a
+/// point strictly earlier than `01:00:00.000`, i.e. less than one
+/// hour from video start. The `MM:SS.mmm` source format does not
+/// have an hour field, and no song in this repository is long
+/// enough to need one; enforcing the bound at construction keeps
+/// that invariant visible at every call site.
+///
 /// Renders through `Display` in the `MM:SS.mmm` source format. Error
 /// messages that quote a timestamp use this implementation so the
 /// output matches the form the source file used.
@@ -40,17 +47,23 @@ impl Timestamp {
     /// `Timestamp::new(0, n, 0)` yields `n` seconds, and
     /// `Timestamp::new(0, 0, n)` yields `n` milliseconds.
     ///
-    /// The components are intentionally not range-checked. Supporting
-    /// the single-unit patterns above requires the same arithmetic
-    /// that would normalize an out-of-range cue component, and that
-    /// same arithmetic falls out of the composition naturally.
-    /// Callers that need strict `SS < 60` / `mmm < 1_000` validation
-    /// must perform it before calling `new`; [`Timestamp::take`] does
-    /// so for `MM:SS.mmm` source strings.
-    pub const fn new(minutes: u64, seconds: u64, milliseconds: u64) -> Self {
-        Timestamp(
-            minutes * MILLISECONDS_PER_MINUTE + seconds * MILLISECONDS_PER_SECOND + milliseconds,
-        )
+    /// Individual components are not range-checked; the constructor
+    /// only validates the composed total. `new(0, 120, 0)` is
+    /// accepted and yields the same `Timestamp` as `new(2, 0, 0)`.
+    /// The `None` return value is reserved for inputs whose total
+    /// reaches or exceeds one hour, which the type invariant
+    /// forbids. Callers that need the strict `MM < 60` /
+    /// `SS < 60` / `mmm < 1_000` component ranges of the
+    /// `MM:SS.mmm` source format must perform those checks before
+    /// calling `new`; [`Timestamp::take`] does so.
+    pub const fn new(minutes: u64, seconds: u64, milliseconds: u64) -> Option<Self> {
+        let total =
+            minutes * MILLISECONDS_PER_MINUTE + seconds * MILLISECONDS_PER_SECOND + milliseconds;
+        if total < MILLISECONDS_PER_HOUR {
+            Some(Timestamp(total))
+        } else {
+            None
+        }
     }
 
     /// Consumes a leading `MM:SS.mmm` prefix (9 ASCII characters)
@@ -65,12 +78,16 @@ impl Timestamp {
     ///   (too short, wrong punctuation, or a non-digit where a digit
     ///   is required). Callers typically treat this as "no timestamp
     ///   here" and route the line elsewhere.
+    /// - `Err(TakeTimestampError::MinutesOutOfRange { … })` indicates
+    ///   the prefix has timestamp shape but the minutes component
+    ///   reaches or exceeds 60. `Timestamp` caps at one hour, so a
+    ///   two-digit `MM` field of 60 or more is rejected rather than
+    ///   rolled over.
     /// - `Err(TakeTimestampError::SecondsOutOfRange { … })` indicates
     ///   the prefix has timestamp shape but the seconds component
-    ///   exceeds 59. Three-digit milliseconds can never exceed 999,
-    ///   and two-digit minutes are uncapped by design. The error
-    ///   carries a copy of the offending 9-character prefix for
-    ///   diagnostics.
+    ///   exceeds 59. Three-digit milliseconds can never exceed 999.
+    ///   Both out-of-range errors carry a copy of the offending
+    ///   9-character prefix for diagnostics.
     ///
     /// The caller is responsible for anything past the prefix: if
     /// the cue format requires whitespace between the timestamp and
@@ -124,6 +141,12 @@ impl Timestamp {
             .ok_or(TakeTimestampError::ShapeMismatch)?;
         let milliseconds = u64::from(hundreds) * 100 + u64::from(tens) * 10 + u64::from(ones);
 
+        if minutes >= 60 {
+            return Err(TakeTimestampError::MinutesOutOfRange(MinutesOutOfRange {
+                raw: input[..9].to_string(),
+                value: minutes,
+            }));
+        }
         if seconds >= 60 {
             return Err(TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
                 raw: input[..9].to_string(),
@@ -132,7 +155,10 @@ impl Timestamp {
         }
 
         Ok((
-            Timestamp::new(minutes, seconds, milliseconds),
+            Timestamp::new(minutes, seconds, milliseconds).expect(
+                "minutes < 60, seconds < 60, and three-digit milliseconds < 1000 \
+                 keep the total below one hour",
+            ),
             chars.as_str(),
         ))
     }
@@ -189,6 +215,15 @@ impl fmt::Display for VttTime {
     }
 }
 
+/// Payload for a minutes-out-of-range error. Describes an
+/// `MM:SS.mmm` prefix whose minutes component reaches or exceeds 60.
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display("invalid timestamp {raw:?}: minutes component {value} must be less than 60")]
+pub struct MinutesOutOfRange {
+    pub raw: String,
+    pub value: u64,
+}
+
 /// Payload for a seconds-out-of-range error. Describes an
 /// `MM:SS.mmm` prefix whose seconds component exceeds 59.
 #[derive(Debug, Display, Clone, PartialEq, Eq)]
@@ -224,6 +259,10 @@ pub enum ParseTimestampError {
     /// The input does not begin with an `MM:SS.mmm` shape.
     #[display("input does not begin with an MM:SS.mmm timestamp")]
     ShapeMismatch,
+    /// The input begins with an `MM:SS.mmm` shape but the minutes
+    /// component is out of range (reaches or exceeds 60).
+    #[display("{_0}")]
+    MinutesOutOfRange(#[error(not(source))] MinutesOutOfRange),
     /// The input begins with an `MM:SS.mmm` shape but the seconds
     /// component is out of range.
     #[display("{_0}")]
@@ -245,6 +284,9 @@ impl FromStr for Timestamp {
                 trailing: trailing.to_string(),
             })),
             Err(TakeTimestampError::ShapeMismatch) => Err(ParseTimestampError::ShapeMismatch),
+            Err(TakeTimestampError::MinutesOutOfRange(inner)) => {
+                Err(ParseTimestampError::MinutesOutOfRange(inner))
+            }
             Err(TakeTimestampError::SecondsOutOfRange(inner)) => {
                 Err(ParseTimestampError::SecondsOutOfRange(inner))
             }
@@ -266,6 +308,10 @@ pub enum TakeTimestampError {
     /// The input does not begin with an `MM:SS.mmm` shape.
     #[display("input does not begin with an MM:SS.mmm timestamp")]
     ShapeMismatch,
+    /// The input begins with an `MM:SS.mmm` shape but the minutes
+    /// component reaches or exceeds 60, breaking the one-hour cap.
+    #[display("{_0}")]
+    MinutesOutOfRange(#[error(not(source))] MinutesOutOfRange),
     /// The input begins with an `MM:SS.mmm` shape but the seconds
     /// component is out of range.
     #[display("{_0}")]

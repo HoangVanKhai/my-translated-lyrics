@@ -24,8 +24,8 @@ fn markers_with_credit_trigger() -> LineMarkersDesc {
 #[test]
 fn cue_text_html_meta_characters_are_escaped() {
     let cues = vec![SubtitleCue {
-        start: Timestamp::new(0, 0, 0),
-        end: Timestamp::new(0, 5, 0),
+        start: Timestamp::new(0, 0, 0).unwrap(),
+        end: Timestamp::new(0, 5, 0).unwrap(),
         marker: "plain".to_string(),
         text: "<a> & <b>".to_string(),
     }];
@@ -49,8 +49,8 @@ fn cue_text_html_meta_characters_are_escaped() {
 #[test]
 fn unknown_role_in_credit_line_produces_credits_error() {
     let cues = vec![SubtitleCue {
-        start: Timestamp::new(0, 0, 0),
-        end: Timestamp::new(0, 5, 0),
+        start: Timestamp::new(0, 0, 0).unwrap(),
+        end: Timestamp::new(0, 5, 0).unwrap(),
         marker: "cre".to_string(),
         text: "unknown-role name-a".to_string(),
     }];
@@ -62,5 +62,5 @@ fn unknown_role_in_credit_line_produces_credits_error() {
     )
     .unwrap_err();
     let RenderSrtError::Credits(payload) = err;
-    assert_eq!(payload.start, Timestamp::new(0, 0, 0));
+    assert_eq!(payload.start, Timestamp::new(0, 0, 0).unwrap());
 }

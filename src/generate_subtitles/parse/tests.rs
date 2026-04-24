@@ -16,12 +16,12 @@ fn parses_simple_sequence() {
     };
     let cues = parse_lyrics(input).unwrap();
     assert_eq!(cues.len(), 2);
-    assert_eq!(cues[0].start, Timestamp::new(0, 0, 0));
-    assert_eq!(cues[0].end, Timestamp::new(0, 2, 0));
+    assert_eq!(cues[0].start, Timestamp::new(0, 0, 0).unwrap());
+    assert_eq!(cues[0].end, Timestamp::new(0, 2, 0).unwrap());
     assert_eq!(cues[0].marker, "ttl");
     assert_eq!(cues[0].text, "Hello");
-    assert_eq!(cues[1].start, Timestamp::new(0, 2, 0));
-    assert_eq!(cues[1].end, Timestamp::new(0, 4, 0));
+    assert_eq!(cues[1].start, Timestamp::new(0, 2, 0).unwrap());
+    assert_eq!(cues[1].end, Timestamp::new(0, 4, 0).unwrap());
     assert_eq!(cues[1].marker, "LRC");
     assert_eq!(cues[1].text, "world");
 }
@@ -62,7 +62,7 @@ fn control_markers_accept_trailing_whitespace_only() {
     };
     let cues = parse_lyrics(input).unwrap();
     assert_eq!(cues.len(), 1);
-    assert_eq!(cues[0].end, Timestamp::new(0, 2, 0));
+    assert_eq!(cues[0].end, Timestamp::new(0, 2, 0).unwrap());
 }
 
 #[test]
@@ -105,7 +105,7 @@ fn eov_marker_does_not_produce_a_cue() {
     };
     let cues = parse_lyrics(input).unwrap();
     assert_eq!(cues.len(), 1);
-    assert_eq!(cues[0].end, Timestamp::new(0, 2, 0));
+    assert_eq!(cues[0].end, Timestamp::new(0, 2, 0).unwrap());
 }
 
 #[test]
@@ -123,7 +123,7 @@ fn eov_between_a_cue_and_its_continuation_leaves_the_cue_open() {
     let cues = parse_lyrics(input).unwrap();
     assert_eq!(cues.len(), 1);
     assert_eq!(cues[0].text, "first line\nsecond line");
-    assert_eq!(cues[0].end, Timestamp::new(0, 5, 0));
+    assert_eq!(cues[0].end, Timestamp::new(0, 5, 0).unwrap());
 }
 
 #[test]
@@ -165,8 +165,8 @@ fn cue_ends_at_next_cue_when_no_clr() {
         "00:02.000 clr"
     };
     let cues = parse_lyrics(input).unwrap();
-    assert_eq!(cues[0].end, Timestamp::new(0, 1, 0));
-    assert_eq!(cues[1].end, Timestamp::new(0, 2, 0));
+    assert_eq!(cues[0].end, Timestamp::new(0, 1, 0).unwrap());
+    assert_eq!(cues[1].end, Timestamp::new(0, 2, 0).unwrap());
 }
 
 #[test]
@@ -174,7 +174,7 @@ fn rejects_cue_without_following_event() {
     let input = "00:00.000 ttl: Hello\n";
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::UnclosedCue(Timestamp::new(0, 0, 0)),
+        ParseLyricsError::UnclosedCue(Timestamp::new(0, 0, 0).unwrap()),
     );
 }
 
@@ -188,8 +188,8 @@ fn rejects_out_of_order_events() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::OutOfOrder(OutOfOrder {
-            previous: Timestamp::new(0, 2, 0),
-            next: Timestamp::new(0, 1, 0),
+            previous: Timestamp::new(0, 2, 0).unwrap(),
+            next: Timestamp::new(0, 1, 0).unwrap(),
         }),
     );
 }

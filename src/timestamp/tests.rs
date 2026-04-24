@@ -1,29 +1,41 @@
 use super::{
-    ParseTimestampError, SecondsOutOfRange, SrtTime, TakeTimestampError, Timestamp, TrailingText,
-    VttTime,
+    MinutesOutOfRange, ParseTimestampError, SecondsOutOfRange, SrtTime, TakeTimestampError,
+    Timestamp, TrailingText, VttTime,
 };
 use pretty_assertions::assert_eq;
 
 #[test]
 fn takes_basic_timestamp_with_tail() {
     let (ts, tail) = Timestamp::take("00:02.960 hello").unwrap();
-    assert_eq!(ts, Timestamp::new(0, 2, 960));
+    assert_eq!(ts, Timestamp::new(0, 2, 960).unwrap());
     assert_eq!(tail, " hello");
 }
 
 #[test]
 fn takes_timestamp_at_exact_length() {
     let (ts, tail) = Timestamp::take("01:59.715").unwrap();
-    assert_eq!(ts, Timestamp::new(1, 59, 715));
+    assert_eq!(ts, Timestamp::new(1, 59, 715).unwrap());
     assert_eq!(tail, "");
 }
 
 #[test]
 fn new_composes_weighted_components() {
-    assert_eq!(Timestamp::new(0, 0, 1), Timestamp::new(0, 0, 1));
-    assert_eq!(Timestamp::new(0, 1, 0), Timestamp::new(0, 0, 1_000));
-    assert_eq!(Timestamp::new(1, 0, 0), Timestamp::new(0, 60, 0));
-    assert_eq!(Timestamp::new(0, 0, 2_500), Timestamp::new(0, 2, 500));
+    assert_eq!(
+        Timestamp::new(0, 0, 1).unwrap(),
+        Timestamp::new(0, 0, 1).unwrap()
+    );
+    assert_eq!(
+        Timestamp::new(0, 1, 0).unwrap(),
+        Timestamp::new(0, 0, 1_000).unwrap()
+    );
+    assert_eq!(
+        Timestamp::new(1, 0, 0).unwrap(),
+        Timestamp::new(0, 60, 0).unwrap()
+    );
+    assert_eq!(
+        Timestamp::new(0, 0, 2_500).unwrap(),
+        Timestamp::new(0, 2, 500).unwrap()
+    );
 }
 
 #[test]
@@ -39,7 +51,7 @@ fn display_round_trips() {
 #[test]
 fn srt_time_uses_comma() {
     assert_eq!(
-        SrtTime::from(Timestamp::new(0, 2, 960)).to_string(),
+        SrtTime::from(Timestamp::new(0, 2, 960).unwrap()).to_string(),
         "00:00:02,960",
     );
 }
@@ -47,16 +59,32 @@ fn srt_time_uses_comma() {
 #[test]
 fn vtt_time_uses_dot() {
     assert_eq!(
-        VttTime::from(Timestamp::new(0, 2, 960)).to_string(),
+        VttTime::from(Timestamp::new(0, 2, 960).unwrap()).to_string(),
         "00:00:02.960",
     );
 }
 
 #[test]
-fn hour_boundary() {
-    let value = Timestamp::new(61, 2, 15);
-    assert_eq!(SrtTime::from(value).to_string(), "01:01:02,015");
-    assert_eq!(VttTime::from(value).to_string(), "01:01:02.015");
+fn maximum_representable_value_renders_just_below_one_hour() {
+    // `Timestamp` is capped at one hour, so the largest value the
+    // constructor accepts is 59:59.999. The SRT and VTT wrappers
+    // still emit `HH:MM:SS`, but the hour field at that value is
+    // always `00`.
+    let value = Timestamp::new(59, 59, 999).unwrap();
+    assert_eq!(value.to_string(), "59:59.999");
+    assert_eq!(SrtTime::from(value).to_string(), "00:59:59,999");
+    assert_eq!(VttTime::from(value).to_string(), "00:59:59.999");
+}
+
+#[test]
+fn new_rejects_totals_that_reach_or_exceed_one_hour() {
+    // Every composition whose weighted total lands at exactly one
+    // hour or beyond must be rejected, regardless of which component
+    // pushed the total past the cap.
+    assert_eq!(Timestamp::new(60, 0, 0), None);
+    assert_eq!(Timestamp::new(59, 60, 0), None);
+    assert_eq!(Timestamp::new(59, 59, 1_000), None);
+    assert_eq!(Timestamp::new(120, 0, 0), None);
 }
 
 #[test]
@@ -119,9 +147,42 @@ fn rejects_seconds_out_of_range() {
 }
 
 #[test]
+fn rejects_minutes_out_of_range() {
+    assert_eq!(
+        Timestamp::take("60:00.000").unwrap_err(),
+        TakeTimestampError::MinutesOutOfRange(MinutesOutOfRange {
+            raw: "60:00.000".to_string(),
+            value: 60,
+        }),
+    );
+    assert_eq!(
+        Timestamp::take("99:59.999trailing").unwrap_err(),
+        TakeTimestampError::MinutesOutOfRange(MinutesOutOfRange {
+            raw: "99:59.999".to_string(),
+            value: 99,
+        }),
+    );
+}
+
+#[test]
+fn minutes_out_of_range_takes_precedence_over_seconds_out_of_range() {
+    // When both components are out of range, the minutes diagnostic
+    // fires first because the one-hour cap is the tighter invariant;
+    // reporting a seconds overflow under a timestamp the type would
+    // reject anyway would be misleading.
+    assert_eq!(
+        Timestamp::take("60:60.000").unwrap_err(),
+        TakeTimestampError::MinutesOutOfRange(MinutesOutOfRange {
+            raw: "60:60.000".to_string(),
+            value: 60,
+        }),
+    );
+}
+
+#[test]
 fn from_str_accepts_exact_mm_ss_mmm_shape() {
     let parsed: Timestamp = "01:23.456".parse().unwrap();
-    assert_eq!(parsed, Timestamp::new(1, 23, 456));
+    assert_eq!(parsed, Timestamp::new(1, 23, 456).unwrap());
 }
 
 #[test]
@@ -138,6 +199,17 @@ fn from_str_rejects_seconds_out_of_range() {
         "00:60.000".parse::<Timestamp>().unwrap_err(),
         ParseTimestampError::SecondsOutOfRange(SecondsOutOfRange {
             raw: "00:60.000".to_string(),
+            value: 60,
+        }),
+    );
+}
+
+#[test]
+fn from_str_rejects_minutes_out_of_range() {
+    assert_eq!(
+        "60:00.000".parse::<Timestamp>().unwrap_err(),
+        ParseTimestampError::MinutesOutOfRange(MinutesOutOfRange {
+            raw: "60:00.000".to_string(),
             value: 60,
         }),
     );
