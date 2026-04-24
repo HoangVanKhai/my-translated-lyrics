@@ -113,9 +113,9 @@ fn is_class_name_continue(ch: char) -> bool {
     ch.is_ascii_alphanumeric() || ch == '-' || ch == '_'
 }
 
-/// A speaker label that is safe to splat into a WebVTT `<v {name}>`
-/// tag and a `::cue(v[voice="{name}"])` attribute selector without
-/// escaping.
+/// A speaker label. Populates the WebVTT `<v {name}>` cue tag and
+/// the `::cue(v[voice="{name}"])` attribute selector that styles
+/// it.
 ///
 /// The permitted shape is any non-empty string whose characters are
 /// none of `<`, `>`, `"`, `\`, `U+2028`, `U+2029`, and which
@@ -125,8 +125,16 @@ fn is_class_name_continue(ch: char) -> bool {
 /// permissive, and in particular accepts CJK text, accented Latin,
 /// and embedded spaces, the three categories that already appear in
 /// `sources/*/line-markers.toml`.
-#[derive(Debug, Display, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-#[display("{_0}")]
+///
+/// `VoiceName` deliberately does not implement `Display`. The two
+/// destination contexts, the WebVTT cue tag and the CSS attribute
+/// selector, have incompatible quoting rules, and a single
+/// `Display` impl could only be correct in one of them. Rendering
+/// therefore goes through the context-specific wrappers
+/// `render_vtt::voice_span::VoicedLine` and
+/// `render_vtt::voice_span::VoiceNameCssSelector`, which state
+/// explicitly which output shape they produce.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(try_from = "String", into = "String")]
 pub struct VoiceName(String);
 

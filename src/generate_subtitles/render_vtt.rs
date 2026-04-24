@@ -41,6 +41,9 @@ use crate::timestamp::{Timestamp, VttTime};
 use crate::video_descriptor::Language;
 use core::fmt::Write;
 use derive_more::{Display, Error};
+use voice_span::{VoiceNameCssSelector, VoicedLine};
+
+mod voice_span;
 
 /// Built-in class name for the role cell of a credit line.
 const CLASS_CREDIT_ROLE: &str = "creditRole";
@@ -182,7 +185,11 @@ fn render_cue(
         .and_then(|by_language| by_language.get(language));
 
     let content = match voice_name {
-        Some(voice_name) => format!("<v {voice_name}>{inner}</v>"),
+        Some(voice_name) => VoicedLine {
+            voice_name,
+            inner: &inner,
+        }
+        .to_string(),
         None => inner,
     };
 
@@ -298,8 +305,12 @@ fn write_style_block(
 }
 
 fn write_voice_rule(output: &mut String, voice_name: &VoiceName, style: Option<&Style>) {
-    writeln!(output, "::cue(v[voice=\"{voice_name}\"]) {{")
-        .expect("writing to String is infallible");
+    writeln!(
+        output,
+        "::cue({selector}) {{",
+        selector = VoiceNameCssSelector(voice_name),
+    )
+    .expect("writing to String is infallible");
     if let Some(style) = style {
         write_style_body(output, style);
     }
