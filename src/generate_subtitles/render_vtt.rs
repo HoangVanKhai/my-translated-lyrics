@@ -74,7 +74,7 @@ const CREDIT_SPECIAL_STYLE: Style = Style {
 };
 
 /// Renders all cues for a single language into a complete `.vtt` file.
-pub fn render_file(
+pub fn render_vtt(
     cues: &[SubtitleCue],
     markers: &LineMarkersDesc,
     credits: &CreditsDesc,
