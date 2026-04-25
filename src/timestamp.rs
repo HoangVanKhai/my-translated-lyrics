@@ -17,10 +17,10 @@ const MILLISECONDS_PER_HOUR: u64 = 60 * MILLISECONDS_PER_MINUTE;
 /// digits, a colon, two ASCII digits, a dot, and three ASCII
 /// digits add up to nine. Every cap-respecting [`Timestamp`]
 /// renders to exactly this many bytes; the
-/// [`rendered_length_matches_byte_length_constant`] test in
-/// `tests.rs` and the `[..MM_SS_MMM_BYTE_LENGTH]` slices below
+/// `rendered_length_matches_timestamp_str_len` test in
+/// `tests.rs` and the `[..TIMESTAMP_STR_LEN]` slices below
 /// keep the constant honest.
-pub const MM_SS_MMM_BYTE_LENGTH: usize = 9;
+pub const TIMESTAMP_STR_LEN: usize = 9;
 
 /// A point in time inside the video, measured as milliseconds from
 /// `00:00.000`. Cues use it for start and end positions and for
@@ -166,7 +166,7 @@ impl Timestamp {
 
         if seconds >= 60 {
             return Err(TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
-                raw: input[..MM_SS_MMM_BYTE_LENGTH].to_string(),
+                raw: input[..TIMESTAMP_STR_LEN].to_string(),
                 value: seconds,
             }));
         }
@@ -180,7 +180,7 @@ impl Timestamp {
             // cap check (`total < MILLISECONDS_PER_HOUR`), which
             // can only fire when `minutes >= 60`.
             TakeTimestampError::MinutesOutOfRange(MinutesOutOfRange {
-                raw: input[..MM_SS_MMM_BYTE_LENGTH].to_string(),
+                raw: input[..TIMESTAMP_STR_LEN].to_string(),
                 value: minutes,
             })
         })?;

@@ -11,13 +11,13 @@
 //! [`END_OF_VIDEO_MARKER`]: crate::line_markers_descriptor::END_OF_VIDEO_MARKER
 
 use crate::line_markers_descriptor::{CLEAR_MARKER, END_OF_VIDEO_MARKER};
-use crate::timestamp::{MM_SS_MMM_BYTE_LENGTH, TakeTimestampError, Timestamp};
+use crate::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
 use derive_more::{Display, Error};
 
 /// Indent width of a line that opens a new marker at the same start
 /// time as the cue immediately above. Equals the byte length of an
 /// `MM:SS.mmm` timestamp plus one ASCII space.
-const TIMESTAMP_PREFIX_WIDTH: usize = MM_SS_MMM_BYTE_LENGTH + 1;
+const TIMESTAMP_PREFIX_WIDTH: usize = TIMESTAMP_STR_LEN + 1;
 
 /// A subtitle cue with a resolved end time, ready for rendering.
 ///
