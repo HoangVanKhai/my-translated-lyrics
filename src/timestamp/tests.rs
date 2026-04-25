@@ -1,6 +1,6 @@
 use super::{
-    MinutesOutOfRange, ParseTimestampError, SecondsOutOfRange, SrtTime, TakeTimestampError,
-    Timestamp, VttTime,
+    MM_SS_MMM_BYTE_LENGTH, MinutesOutOfRange, ParseTimestampError, SecondsOutOfRange, SrtTime,
+    TakeTimestampError, Timestamp, VttTime,
 };
 use pretty_assertions::assert_eq;
 
@@ -62,6 +62,25 @@ fn vtt_time_uses_dot() {
         VttTime::from(Timestamp::new(0, 2, 960).unwrap()).to_string(),
         "00:00:02.960",
     );
+}
+
+#[test]
+fn rendered_length_matches_byte_length_constant() {
+    // The display impl for `Timestamp` formats two ASCII digits, a
+    // colon, two ASCII digits, a dot, and three ASCII digits, so
+    // every cap-respecting value renders to exactly
+    // `MM_SS_MMM_BYTE_LENGTH` bytes. Lock that invariant at both
+    // ends of the legal range plus one mid-range value, so a future
+    // tweak to the format string trips here before any caller that
+    // slices on the constant produces silent UTF-8 panics.
+    for ts in [
+        Timestamp::default(),
+        Timestamp::new(0, 0, 1).unwrap(),
+        Timestamp::new(12, 34, 567).unwrap(),
+        Timestamp::new(59, 59, 999).unwrap(),
+    ] {
+        assert_eq!(ts.to_string().len(), MM_SS_MMM_BYTE_LENGTH);
+    }
 }
 
 #[test]

@@ -13,6 +13,15 @@ const MILLISECONDS_PER_MINUTE: u64 = 60 * MILLISECONDS_PER_SECOND;
 /// for the same reason.
 const MILLISECONDS_PER_HOUR: u64 = 60 * MILLISECONDS_PER_MINUTE;
 
+/// Byte length of a rendered `MM:SS.mmm` timestamp. Two ASCII
+/// digits, a colon, two ASCII digits, a dot, and three ASCII
+/// digits add up to nine. Every cap-respecting [`Timestamp`]
+/// renders to exactly this many bytes; the
+/// [`rendered_length_matches_byte_length_constant`] test in
+/// `tests.rs` and the `[..MM_SS_MMM_BYTE_LENGTH]` slices below
+/// keep the constant honest.
+pub const MM_SS_MMM_BYTE_LENGTH: usize = 9;
+
 /// A point in time inside the video, measured as milliseconds from
 /// `00:00.000`. Cues use it for start and end positions and for
 /// ordering comparisons. The millisecond resolution is an internal
@@ -148,13 +157,13 @@ impl Timestamp {
 
         if minutes >= 60 {
             return Err(TakeTimestampError::MinutesOutOfRange(MinutesOutOfRange {
-                raw: input[..9].to_string(),
+                raw: input[..MM_SS_MMM_BYTE_LENGTH].to_string(),
                 value: minutes,
             }));
         }
         if seconds >= 60 {
             return Err(TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
-                raw: input[..9].to_string(),
+                raw: input[..MM_SS_MMM_BYTE_LENGTH].to_string(),
                 value: seconds,
             }));
         }
