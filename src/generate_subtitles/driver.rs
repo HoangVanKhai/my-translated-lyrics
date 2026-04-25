@@ -200,10 +200,10 @@ pub fn load_song(song_dir: &Path) -> Result<Song, GenerateError> {
                 path = entry.path(),
             );
         };
-        let Some(middle) = file_name
+        let middle = file_name
             .strip_prefix("lyrics.")
-            .and_then(|rest| rest.strip_suffix(LYRICS_TXT_SUFFIX))
-        else {
+            .and_then(|rest| rest.strip_suffix(LYRICS_TXT_SUFFIX));
+        let Some(middle) = middle else {
             continue;
         };
         let lyrics_path = entry.path();
