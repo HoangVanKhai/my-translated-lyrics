@@ -159,15 +159,17 @@ impl Timestamp {
             }));
         }
 
-        Ok((
-            Timestamp::new(minutes, seconds, milliseconds).expect(
-                "the two `if` guards above rule out `minutes >= 60` and \
-                 `seconds >= 60`, and three-digit ASCII parsing caps \
-                 milliseconds below 1000, so the weighted total is \
-                 strictly less than one hour and `Timestamp::new` accepts it",
-            ),
-            chars.as_str(),
-        ))
+        // The two guards above plus the three-digit ASCII parse
+        // (`milliseconds <= 999`) bound the weighted total at
+        // `59 * 60_000 + 59 * 1_000 + 999 = 3_599_999`, which is
+        // strictly less than `MILLISECONDS_PER_HOUR`. Construct the
+        // value directly through the private tuple constructor so
+        // the `Option` from `Timestamp::new` does not enter the call
+        // graph here; the alternative would be an `.expect` whose
+        // safety argument lives in two places at once.
+        let total =
+            minutes * MILLISECONDS_PER_MINUTE + seconds * MILLISECONDS_PER_SECOND + milliseconds;
+        Ok((Timestamp(total), chars.as_str()))
     }
 }
 
