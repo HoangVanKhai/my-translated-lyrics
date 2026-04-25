@@ -7,8 +7,8 @@
 //! `install-local-lyrics`'s `--execute` flag opts into the actual write.
 
 use super::parse::{ParseLyricsError, SubtitleCue, parse_lyrics};
-use super::render_srt::{RenderSrtError, render_file as render_srt_file};
-use super::render_vtt::{RenderVttError, render_file as render_vtt_file};
+use super::render_srt::{RenderSrtError, render_srt};
+use super::render_vtt::{RenderVttError, render_vtt};
 use crate::credits_descriptor::{CREDITS_CONFIG_FILE_NAME, CreditsDesc};
 use crate::line_markers_descriptor::{LINE_MARKERS_CONFIG_FILE_NAME, LineMarkersDesc};
 use crate::video_descriptor::{Language, VIDEO_CONFIG_FILE_NAME, VideoDesc};
@@ -76,7 +76,7 @@ pub fn render_song_to_disk(
 
     let mut written: Vec<PathBuf> = Vec::with_capacity(song.languages.len() * 2);
     for bundle in &song.languages {
-        let vtt = render_vtt_file(&bundle.cues, &song.markers, &song.credits, &bundle.language)
+        let vtt = render_vtt(&bundle.cues, &song.markers, &song.credits, &bundle.language)
             .map_err(|cause| {
                 GenerateError::RenderVtt(RenderVtt {
                     song: song.directory_name.clone(),
@@ -84,7 +84,7 @@ pub fn render_song_to_disk(
                     cause,
                 })
             })?;
-        let srt = render_srt_file(&bundle.cues, &song.markers, &song.credits, &bundle.language)
+        let srt = render_srt(&bundle.cues, &song.markers, &song.credits, &bundle.language)
             .map_err(|cause| {
                 GenerateError::RenderSrt(RenderSrt {
                     song: song.directory_name.clone(),

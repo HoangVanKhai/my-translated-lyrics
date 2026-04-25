@@ -1,4 +1,4 @@
-use super::{RenderVttError, render_file};
+use super::{RenderVttError, render_vtt};
 use crate::credits_descriptor::CreditsDesc;
 use crate::generate_subtitles::parse::{CuePart, SubtitleCue};
 use crate::line_markers_descriptor::LineMarkersDesc;
@@ -31,7 +31,7 @@ fn cue_text_html_meta_characters_are_escaped() {
             text: "<a> & <b>".to_string(),
         }],
     }];
-    let output = render_file(
+    let output = render_vtt(
         &cues,
         &LineMarkersDesc::default(),
         &CreditsDesc::default(),
@@ -58,7 +58,7 @@ fn unknown_role_in_credit_line_produces_credits_error() {
             text: "unknown-role name-a".to_string(),
         }],
     }];
-    let err = render_file(
+    let err = render_vtt(
         &cues,
         &markers_with_credit_trigger(),
         &credits_with_one_role(),

@@ -26,7 +26,7 @@ const CREDIT_NAME_COLOR: &str = "#AAAAAA";
 const CREDIT_SPECIAL_COLOR: &str = "#55ABCD";
 
 /// Renders all cues for a single language into a complete `.srt` file.
-pub fn render_file(
+pub fn render_srt(
     cues: &[SubtitleCue],
     markers: &LineMarkersDesc,
     credits: &CreditsDesc,
