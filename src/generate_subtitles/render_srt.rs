@@ -77,7 +77,7 @@ fn render_cue_part(
         let mut rendered_lines: Vec<String> = Vec::new();
         for line in part.text.lines() {
             let pairs = parse_credit_line(line.trim_start(), vocabulary).map_err(|cause| {
-                RenderSrtError::Credits(Credits {
+                RenderSrtError::Credits(RenderSrtErrorCreditsPayload {
                     start: cue_start,
                     cause,
                 })
@@ -175,7 +175,7 @@ fn write_name_segments(output: &mut String, segments: &[NameSegment]) {
 /// Payload for [`RenderSrtError::Credits`].
 #[derive(Debug, Display, Clone, PartialEq, Eq)]
 #[display("cue at {start} failed to render as a credit line: {cause}")]
-pub struct Credits {
+pub struct RenderSrtErrorCreditsPayload {
     pub start: Timestamp,
     pub cause: ParseCreditError,
 }
@@ -183,7 +183,7 @@ pub struct Credits {
 #[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum RenderSrtError {
-    Credits(#[error(not(source))] Credits),
+    Credits(#[error(not(source))] RenderSrtErrorCreditsPayload),
 }
 
 #[cfg(test)]
