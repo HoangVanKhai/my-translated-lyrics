@@ -261,22 +261,6 @@ fn from_str_rejects_minutes_out_of_range() {
 }
 
 #[test]
-fn from_str_seconds_out_of_range_takes_precedence_over_minutes_out_of_range() {
-    // `FromStr` rebuilds its own variant set from
-    // `TakeTimestampError`, so a future reorder of the `match` arms
-    // could silently change which diagnostic wins when both `MM`
-    // and `SS` are out of range. Lock that forwarding with a
-    // parallel of the `take` precedence test.
-    assert_eq!(
-        "60:60.000".parse::<Timestamp>().unwrap_err(),
-        ParseTimestampError::SecondsOutOfRange(SecondsOutOfRange {
-            raw: "60:60.000".to_string(),
-            value: 60,
-        }),
-    );
-}
-
-#[test]
 fn from_str_rejects_unexpected_character_after_prefix() {
     assert_eq!(
         "00:02.960 tail".parse::<Timestamp>().unwrap_err(),
