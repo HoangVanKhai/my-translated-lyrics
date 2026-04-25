@@ -3,3 +3,6 @@
 /.claude/settings.local.json
 /.claude/hooks/
 node_modules
+tmp.*
+*.tmp
+tmp
