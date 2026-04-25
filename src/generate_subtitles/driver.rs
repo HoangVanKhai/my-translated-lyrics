@@ -402,26 +402,15 @@ pub struct RenderSrt {
 #[derive(Debug, Display, Error)]
 #[non_exhaustive]
 pub enum GenerateError {
-    #[display("{_0}")]
     ReadFile(#[error(not(source))] ReadFile),
-    #[display("{_0}")]
     ReadDir(#[error(not(source))] ReadDir),
-    #[display("{_0}")]
     CreateDir(#[error(not(source))] CreateDir),
-    #[display("{_0}")]
     WriteFile(#[error(not(source))] WriteFile),
-    #[display("{_0}")]
     UnrecognizedLanguage(#[error(not(source))] UnrecognizedLanguage),
-    #[display("{_0}")]
     ParseVideoDesc(#[error(not(source))] ParseVideoDesc),
-    #[display("{_0}")]
     ParseLineMarkers(#[error(not(source))] ParseLineMarkers),
-    #[display("{_0}")]
     ParseCredits(#[error(not(source))] ParseCredits),
-    #[display("{_0}")]
     ParseLyrics(#[error(not(source))] ParseLyrics),
-    #[display("{_0}")]
     RenderVtt(#[error(not(source))] RenderVtt),
-    #[display("{_0}")]
     RenderSrt(#[error(not(source))] RenderSrt),
 }

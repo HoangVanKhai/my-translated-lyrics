@@ -275,11 +275,9 @@ pub enum ParseTimestampError {
     ShapeMismatch,
     /// The input begins with an `MM:SS.mmm` shape but the minutes
     /// component is out of range (reaches or exceeds 60).
-    #[display("{_0}")]
     MinutesOutOfRange(#[error(not(source))] MinutesOutOfRange),
     /// The input begins with an `MM:SS.mmm` shape but the seconds
     /// component is out of range.
-    #[display("{_0}")]
     SecondsOutOfRange(#[error(not(source))] SecondsOutOfRange),
     /// The input begins with a valid `MM:SS.mmm` prefix but has
     /// an unexpected character where end of input was required.
@@ -325,11 +323,9 @@ pub enum TakeTimestampError {
     ShapeMismatch,
     /// The input begins with an `MM:SS.mmm` shape but the minutes
     /// component reaches or exceeds 60, breaking the one-hour cap.
-    #[display("{_0}")]
     MinutesOutOfRange(#[error(not(source))] MinutesOutOfRange),
     /// The input begins with an `MM:SS.mmm` shape but the seconds
     /// component is out of range.
-    #[display("{_0}")]
     SecondsOutOfRange(#[error(not(source))] SecondsOutOfRange),
 }
 

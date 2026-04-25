@@ -60,7 +60,6 @@ pub enum NameSegment {
 /// pattern: it consumes a prefix of the input and returns both the
 /// parsed value and the remaining unparsed tail.
 #[derive(Debug, Display, Clone, PartialEq, Eq)]
-#[display("{_0}")]
 pub struct Bracketed(String);
 
 impl Bracketed {
@@ -318,7 +317,6 @@ pub struct UnknownRole {
 #[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum ParseCreditError {
-    #[display("{_0}")]
     UnknownRole(#[error(not(source))] UnknownRole),
 }
 

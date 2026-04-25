@@ -62,7 +62,6 @@ pub struct LineMarkersDesc {
 /// and anything outside basic ASCII, all of which would break the
 /// STYLE block or the inline tag if interpolated raw.
 #[derive(Debug, Display, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-#[display("{_0}")]
 #[serde(try_from = "String", into = "String")]
 pub struct CssClassName(String);
 

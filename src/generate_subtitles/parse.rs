@@ -541,34 +541,20 @@ pub struct CueTextReservedCharacter {
 pub enum ParseLyricsError {
     // Per-line failures, in the order they are raised inside the
     // `collect_events` loop.
-    #[display("{_0}")]
     InvalidTimestamp(#[error(not(source))] InvalidTimestamp),
-    #[display("{_0}")]
     MalformedHeader(#[error(not(source))] MalformedHeader),
-    #[display("{_0}")]
     OrphanedShorthandMarker(#[error(not(source))] OrphanedShorthandMarker),
-    #[display("{_0}")]
     MalformedIndentation(#[error(not(source))] MalformedIndentation),
-    #[display("{_0}")]
     RepeatedTimestamp(#[error(not(source))] RepeatedTimestamp),
-    #[display("{_0}")]
     StrayContinuation(#[error(not(source))] StrayContinuation),
-    #[display("{_0}")]
     MissingMarker(#[error(not(source))] MissingMarker),
-    #[display("{_0}")]
     MissingSeparatorAfterTimestamp(#[error(not(source))] MissingSeparatorAfterTimestamp),
-    #[display("{_0}")]
     ExtraTextAfterControlMarker(#[error(not(source))] ExtraTextAfterControlMarker),
-    #[display("{_0}")]
     ReservedControlMarker(#[error(not(source))] ReservedControlMarker),
-    #[display("{_0}")]
     EmptyCueBody(#[error(not(source))] EmptyCueBody),
-    #[display("{_0}")]
     TabIndentation(#[error(not(source))] TabIndentation),
-    #[display("{_0}")]
     CueTextReservedCharacter(#[error(not(source))] CueTextReservedCharacter),
     // Post-pass failures, raised after `collect_events` returns.
-    #[display("{_0}")]
     OutOfOrder(#[error(not(source))] OutOfOrder),
     #[display("cue at {_0} has no following cue or `clr`")]
     UnclosedCue(#[error(not(source))] Timestamp),

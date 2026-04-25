@@ -184,7 +184,6 @@ pub struct Credits {
 #[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum RenderSrtError {
-    #[display("{_0}")]
     Credits(#[error(not(source))] Credits),
 }
 
