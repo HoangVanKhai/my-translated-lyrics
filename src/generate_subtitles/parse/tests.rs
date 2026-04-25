@@ -1,7 +1,7 @@
 use super::{
     CueTextReservedCharacter, EmptyCueBody, ExtraTextAfterControlMarker, InvalidTimestamp,
     MissingMarker, MissingSeparatorAfterTimestamp, OutOfOrder, ParseLyricsError,
-    ReservedControlMarker, parse_lyrics,
+    ReservedControlMarker, TabIndentation, parse_lyrics,
 };
 use crate::timestamp::{SecondsOutOfRange, TakeTimestampError, Timestamp};
 use pretty_assertions::assert_eq;
@@ -319,6 +319,20 @@ fn marker_less_body_with_reserved_character_reports_reserved_character() {
             line_number: 1,
             character: '<',
         }),
+    );
+}
+
+#[test]
+fn rejects_tab_in_leading_whitespace() {
+    // Indentation must be ASCII spaces only. A tab in the leading
+    // whitespace produces a focused diagnostic at the line that
+    // contains it. Tabs that appear after the first non-whitespace
+    // character are not rejected by this rule, since the
+    // restriction only governs the indentation column.
+    let input = "00:00.000 ttl: Hello\n\t            cre: tabbed indent\n00:05.000 clr\n";
+    assert_eq!(
+        parse_lyrics(input).unwrap_err(),
+        ParseLyricsError::TabIndentation(TabIndentation { line_number: 2 }),
     );
 }
 

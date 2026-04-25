@@ -79,6 +79,22 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
             continue;
         }
 
+        // Indentation must use ASCII spaces only; a tab in the
+        // leading whitespace would interact unpredictably with the
+        // forthcoming column-exact indentation rules and is rejected
+        // here so the prohibition shows up at the boundary rather
+        // than in a downstream "indent does not match expected
+        // width" message.
+        if raw_line
+            .bytes()
+            .take_while(|&b| b == b' ' || b == b'\t')
+            .any(|b| b == b'\t')
+        {
+            return Err(ParseLyricsError::TabIndentation(TabIndentation {
+                line_number,
+            }));
+        }
+
         let header = match Timestamp::take(trimmed) {
             Ok((start, after_prefix)) => {
                 let body = after_prefix.trim_start();
@@ -310,6 +326,22 @@ pub struct EmptyCueBody {
     pub marker: String,
 }
 
+/// Payload for [`ParseLyricsError::TabIndentation`].
+///
+/// The parser requires every line's leading whitespace to consist
+/// of ASCII spaces only. Tabs would render at different visual
+/// widths under different terminal settings, which interacts
+/// poorly with the column-exact indentation rules the format
+/// uses to distinguish a continuation of the prior marker from a
+/// new marker at the same timestamp.
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display(
+    "line {line_number}: indentation contains a tab; only ASCII spaces are allowed in leading whitespace"
+)]
+pub struct TabIndentation {
+    pub line_number: usize,
+}
+
 /// Payload for [`ParseLyricsError::CueTextReservedCharacter`].
 ///
 /// The `lyrics.{lang}.txt` source format is plain prose; the cue
@@ -347,6 +379,8 @@ pub enum ParseLyricsError {
     ReservedControlMarker(#[error(not(source))] ReservedControlMarker),
     #[display("{_0}")]
     EmptyCueBody(#[error(not(source))] EmptyCueBody),
+    #[display("{_0}")]
+    TabIndentation(#[error(not(source))] TabIndentation),
     #[display("{_0}")]
     CueTextReservedCharacter(#[error(not(source))] CueTextReservedCharacter),
     // Post-pass failures, raised after `collect_events` returns.
