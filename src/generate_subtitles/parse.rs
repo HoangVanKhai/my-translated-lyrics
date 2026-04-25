@@ -107,11 +107,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
             continue;
         }
 
-        if raw_line
-            .bytes()
-            .take_while(|&b| b == b' ' || b == b'\t')
-            .any(|b| b == b'\t')
-        {
+        if raw_line.trim_start_matches(' ').starts_with('\t') {
             return Err(ParseLyricsError::TabIndentation(TabIndentation {
                 line_number,
             }));
