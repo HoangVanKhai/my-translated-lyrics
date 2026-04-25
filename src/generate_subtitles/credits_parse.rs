@@ -168,7 +168,7 @@ impl CreditsVocabulary {
     fn take_role<'a>(&self, input: &'a str) -> Option<(&'a str, &'a str)> {
         self.roles.iter().find_map(|role| {
             let rest = input.strip_prefix(role.as_str())?;
-            is_role_boundary(rest).then(|| input.split_at(role.len()))
+            is_role_boundary(rest).then_some(input.split_at(role.len()))
         })
     }
 

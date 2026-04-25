@@ -59,6 +59,10 @@ impl Timestamp {
     pub const fn new(minutes: u64, seconds: u64, milliseconds: u64) -> Option<Self> {
         let total =
             minutes * MILLISECONDS_PER_MINUTE + seconds * MILLISECONDS_PER_SECOND + milliseconds;
+        // `bool::then_some` would express this more concisely, but
+        // it is not const-stable, and dropping `const fn` from
+        // `new` for a four-line readability gain would trade away
+        // the constructor's ability to run at compile time.
         if total < MILLISECONDS_PER_HOUR {
             Some(Timestamp(total))
         } else {
@@ -98,6 +102,10 @@ impl Timestamp {
     /// the cue format requires whitespace between the timestamp and
     /// the body, the caller inspects `tail` for it.
     pub fn take(input: &str) -> Result<(Self, &str), TakeTimestampError> {
+        // The closure body cannot become eager (`.then_some(next as
+        // u8 - b'0')`) because `next as u8` truncates non-ASCII
+        // chars to their low byte, and the subtraction would
+        // overflow before `is_ascii_digit()` filters the value out.
         let digit = |next: char| next.is_ascii_digit().then(|| next as u8 - b'0');
 
         let mut chars = input.chars();
