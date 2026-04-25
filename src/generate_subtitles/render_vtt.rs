@@ -42,7 +42,7 @@ use crate::video_descriptor::Language;
 use core::fmt::Write;
 use derive_more::{Display, Error};
 use text_block_macros::text_block_fnl;
-use voice_span::{VoiceSelector, VoiceSpan};
+use voice_span::VoiceSelector;
 
 mod voice_span;
 
@@ -86,7 +86,7 @@ pub fn render_vtt(
     let mut features = Features::default();
     for cue in cues {
         let rendering = render_cue(cue, markers, &vocabulary, language)?;
-        features.record(&rendering);
+        features.merge(&rendering.features);
         cue_renderings.push(rendering);
     }
 
@@ -110,12 +110,17 @@ pub fn render_vtt(
     Ok(output)
 }
 
-/// Aggregated flags used to decide which built-in credit style rules
-/// to emit. Voice and class rules are always emitted for every entry
-/// in the line-markers descriptor; the credit styles are emitted
-/// conditionally because the `creditSpecial` class, in particular,
-/// appears only when a song's credits list includes a bracketed
-/// highlight (`【...】`, `[...]`, or `(...)`).
+/// Flags that record which built-in credit classes a cue (or, when
+/// merged across cues, a whole song) actually used. Voice and class
+/// rules are always emitted for every entry in the line-markers
+/// descriptor; the credit styles are emitted conditionally because
+/// the `creditSpecial` class, in particular, appears only when a
+/// song's credits list includes a bracketed highlight (`【...】`,
+/// `[...]`, or `(...)`).
+///
+/// The same shape is used at two levels: each `CueRendering` carries
+/// the per-cue flags, and `render_vtt` keeps a song-level
+/// accumulator that ORs the per-cue flags together with `merge`.
 #[derive(Debug, Default)]
 struct Features {
     used_credit_role: bool,
@@ -124,16 +129,10 @@ struct Features {
 }
 
 impl Features {
-    fn record(&mut self, rendering: &CueRendering) {
-        if rendering.used_credit_role {
-            self.used_credit_role = true;
-        }
-        if rendering.used_credit_name {
-            self.used_credit_name = true;
-        }
-        if rendering.used_credit_special {
-            self.used_credit_special = true;
-        }
+    fn merge(&mut self, other: &Self) {
+        self.used_credit_role |= other.used_credit_role;
+        self.used_credit_name |= other.used_credit_name;
+        self.used_credit_special |= other.used_credit_special;
     }
 }
 
@@ -141,9 +140,7 @@ struct CueRendering {
     start: Timestamp,
     end: Timestamp,
     content: String,
-    used_credit_role: bool,
-    used_credit_name: bool,
-    used_credit_special: bool,
+    features: Features,
 }
 
 fn render_cue(
@@ -152,110 +149,94 @@ fn render_cue(
     vocabulary: &CreditsVocabulary,
     language: &Language,
 ) -> Result<CueRendering, RenderVttError> {
-    let mut used_credit_role = false;
-    let mut used_credit_name = false;
-    let mut used_credit_special = false;
+    let mut content = String::new();
+    let mut features = Features::default();
 
-    let mut rendered_parts: Vec<String> = Vec::with_capacity(cue.parts.len());
-    for part in &cue.parts {
-        rendered_parts.push(render_cue_part(
+    for (index, part) in cue.parts.iter().enumerate() {
+        if index > 0 {
+            content.push('\n');
+        }
+        render_cue_part(
+            &mut content,
+            &mut features,
             cue.start,
             part,
             markers,
             vocabulary,
             language,
-            &mut used_credit_role,
-            &mut used_credit_name,
-            &mut used_credit_special,
-        )?);
+        )?;
     }
 
     Ok(CueRendering {
         start: cue.start,
         end: cue.end,
-        content: rendered_parts.join("\n"),
-        used_credit_role,
-        used_credit_name,
-        used_credit_special,
+        content,
+        features,
     })
 }
 
-#[allow(clippy::too_many_arguments)]
 fn render_cue_part(
+    output: &mut String,
+    features: &mut Features,
     cue_start: Timestamp,
     part: &CuePart,
     markers: &LineMarkersDesc,
     vocabulary: &CreditsVocabulary,
     language: &Language,
-    used_credit_role: &mut bool,
-    used_credit_name: &mut bool,
-    used_credit_special: &mut bool,
-) -> Result<String, RenderVttError> {
+) -> Result<(), RenderVttError> {
     let marker = part.marker.as_str();
+    let voice_name = markers
+        .voices
+        .get(marker)
+        .and_then(|by_language| by_language.get(language));
 
-    let inner = if markers.credits.iter().any(|entry| entry == marker) {
-        let mut rendered_lines: Vec<String> = Vec::new();
-        for line in part.text.lines() {
+    if let Some(voice_name) = voice_name {
+        write!(output, "<v {name}>", name = voice_name.as_str()).unwrap();
+    }
+
+    if markers.credits.iter().any(|entry| entry == marker) {
+        for (index, line) in part.text.lines().enumerate() {
+            if index > 0 {
+                output.push('\n');
+            }
             let pairs = parse_credit_line(line.trim_start(), vocabulary).map_err(|cause| {
                 RenderVttError::Credits(RenderVttErrorCreditsPayload {
                     start: cue_start,
                     cause,
                 })
             })?;
-            rendered_lines.push(render_credit_line(
-                &pairs,
-                used_credit_role,
-                used_credit_name,
-                used_credit_special,
-            ));
+            render_credit_line(output, features, &pairs);
         }
-        rendered_lines.join("\n")
     } else if let Some(class_name) = markers.classes.get(marker) {
-        format!("<c.{class_name}>{text}</c>", text = Escaped(&part.text))
+        write!(
+            output,
+            "<c.{class_name}>{text}</c>",
+            text = Escaped(&part.text)
+        )
+        .unwrap();
     } else {
-        Escaped(&part.text).to_string()
-    };
+        write!(output, "{}", Escaped(&part.text)).unwrap();
+    }
 
-    let voice_name = markers
-        .voices
-        .get(marker)
-        .and_then(|by_language| by_language.get(language));
+    if voice_name.is_some() {
+        output.push_str("</v>");
+    }
 
-    Ok(match voice_name {
-        Some(voice_name) => VoiceSpan {
-            voice_name,
-            inner: &inner,
-        }
-        .to_string(),
-        None => inner,
-    })
+    Ok(())
 }
 
-fn render_credit_line(
-    pairs: &[CreditPair],
-    used_role: &mut bool,
-    used_name: &mut bool,
-    used_special: &mut bool,
-) -> String {
-    let mut output = String::new();
+fn render_credit_line(output: &mut String, features: &mut Features, pairs: &[CreditPair]) {
     for (index, pair) in pairs.iter().enumerate() {
         if index > 0 {
             output.push(' ');
         }
-        render_credit_pair(&mut output, pair, used_role, used_name, used_special);
+        render_credit_pair(output, features, pair);
     }
-    output
 }
 
-fn render_credit_pair(
-    output: &mut String,
-    pair: &CreditPair,
-    used_role: &mut bool,
-    used_name: &mut bool,
-    used_special: &mut bool,
-) {
-    *used_role = true;
-    *used_name = true;
+fn render_credit_pair(output: &mut String, features: &mut Features, pair: &CreditPair) {
+    features.used_credit_role = true;
+    features.used_credit_name = true;
     write!(
         output,
         "<c.{CLASS_CREDIT_ROLE}>{role}</c>",
@@ -264,18 +245,18 @@ fn render_credit_pair(
     .unwrap();
     append_separator_for_output(output, &pair.separator);
     write!(output, "<c.{CLASS_CREDIT_NAME}>").unwrap();
-    write_name_segments(output, &pair.name_segments, used_special);
+    write_name_segments(output, features, &pair.name_segments);
     output.push_str("</c>");
 }
 
-fn write_name_segments(output: &mut String, segments: &[NameSegment], used_special: &mut bool) {
+fn write_name_segments(output: &mut String, features: &mut Features, segments: &[NameSegment]) {
     for segment in segments {
         match segment {
             NameSegment::Plain(text) => {
                 write!(output, "{}", Escaped(text)).unwrap();
             }
             NameSegment::Special(text) => {
-                *used_special = true;
+                features.used_credit_special = true;
                 write!(
                     output,
                     "<c.{CLASS_CREDIT_SPECIAL}>{text}</c>",

@@ -1,10 +1,11 @@
 use super::{RenderVttError, render_vtt};
 use crate::credits_descriptor::CreditsDesc;
 use crate::generate_subtitles::parse::{CuePart, SubtitleCue};
-use crate::line_markers_descriptor::LineMarkersDesc;
+use crate::line_markers_descriptor::{LineMarkersDesc, VoiceName};
 use crate::timestamp::Timestamp;
 use crate::video_descriptor::Language;
 use maplit::btreemap;
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 
 fn credits_with_one_role() -> CreditsDesc {
@@ -45,6 +46,55 @@ fn cue_text_html_meta_characters_are_escaped() {
     assert!(
         !output.contains("<a>"),
         "raw `<a>` must not appear in the rendered output:\n{output}",
+    );
+}
+
+#[test]
+fn voice_name_containing_ampersand_is_emitted_verbatim_in_cue_tag() {
+    // Regression for the bug where the voice name was passed
+    // through HTML-entity escape on the cue-tag side. The WebVTT
+    // cue-text parser decodes `&amp;` back to `&`, but the CSS
+    // selector side does not, so an HTML-escaped cue tag falls
+    // out of step with its STYLE-block selector. Both sides now emit the raw
+    // `&` character verbatim; the CSS-side companion lives in
+    // `render_vtt/voice_span/tests.rs`.
+    let voice_name = "Alpha & Beta"
+        .to_string()
+        .pipe(VoiceName::new)
+        .expect("test fixture passes the voice-name validator");
+    let markers = LineMarkersDesc {
+        markers: vec!["vca".to_string()],
+        voices: btreemap! {
+            "vca".to_string() => btreemap! { Language::Vietnamese => voice_name },
+        },
+        ..Default::default()
+    };
+    let cues = vec![SubtitleCue {
+        start: Timestamp::new(0, 0, 0).unwrap(),
+        end: Timestamp::new(0, 5, 0).unwrap(),
+        parts: vec![CuePart {
+            marker: "vca".to_string(),
+            text: "body".to_string(),
+        }],
+    }];
+    let output = render_vtt(
+        &cues,
+        &markers,
+        &CreditsDesc::default(),
+        &Language::Vietnamese,
+    )
+    .unwrap();
+    assert!(
+        output.contains("<v Alpha & Beta>body</v>"),
+        "cue-tag side must emit raw `&`:\n{output}",
+    );
+    assert!(
+        output.contains("v[voice=\"Alpha & Beta\"]"),
+        "CSS-selector side must emit raw `&`:\n{output}",
+    );
+    assert!(
+        !output.contains("&amp;"),
+        "no HTML-entity escape of the voice name should appear:\n{output}",
     );
 }
 
