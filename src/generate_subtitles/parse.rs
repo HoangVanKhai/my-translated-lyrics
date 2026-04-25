@@ -11,8 +11,13 @@
 //! [`END_OF_VIDEO_MARKER`]: crate::line_markers_descriptor::END_OF_VIDEO_MARKER
 
 use crate::line_markers_descriptor::{CLEAR_MARKER, END_OF_VIDEO_MARKER};
-use crate::timestamp::{TakeTimestampError, Timestamp};
+use crate::timestamp::{MM_SS_MMM_BYTE_LENGTH, TakeTimestampError, Timestamp};
 use derive_more::{Display, Error};
+
+/// Indent width of a line that opens a new marker at the same start
+/// time as the cue immediately above. Equals the byte length of an
+/// `MM:SS.mmm` timestamp plus one ASCII space.
+const TIMESTAMP_PREFIX_WIDTH: usize = MM_SS_MMM_BYTE_LENGTH + 1;
 
 /// A subtitle cue with a resolved end time, ready for rendering.
 ///
@@ -53,26 +58,29 @@ pub struct CuePart {
 
 /// Payload of an [`Event::Cue`]. The start time is the one declared
 /// in the source file; the end time is resolved later by looking at
-/// the next event in the stream.
+/// the next event in the stream. The list of parts mirrors
+/// [`SubtitleCue::parts`]: a fresh timestamped header line opens a
+/// group with one part, a column-`TIMESTAMP_PREFIX_WIDTH` shorthand
+/// line appends a new part to that group, and a continuation line
+/// extends the most recent part's text.
 #[derive(Debug, Clone, PartialEq, Eq)]
-struct Cue {
+struct CueGroup {
     start: Timestamp,
-    marker: String,
-    text: String,
+    parts: Vec<CuePart>,
 }
 
 /// An intermediate event extracted from a source file before end times
 /// are resolved.
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Event {
-    Cue(Cue),
+    Cue(CueGroup),
     Clear(Timestamp),
 }
 
 impl Event {
     fn start(&self) -> Timestamp {
         match self {
-            Event::Cue(cue) => cue.start,
+            Event::Cue(group) => group.start,
             Event::Clear(start) => *start,
         }
     }
@@ -87,20 +95,18 @@ pub fn parse_lyrics(content: &str) -> Result<Vec<SubtitleCue>, ParseLyricsError>
 fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
     let mut events: Vec<Event> = Vec::new();
     let mut last_cue_index: Option<usize> = None;
+    // Byte length of `marker: ` for the most recently added part of
+    // the most recently opened cue group. A continuation line is
+    // valid only when its indent equals
+    // `TIMESTAMP_PREFIX_WIDTH + last_part_marker_prefix_width`.
+    let mut last_part_marker_prefix_width: Option<usize> = None;
 
     for (line_index, raw_line) in content.lines().enumerate() {
         let line_number = line_index + 1;
-        let trimmed = raw_line.trim();
-        if trimmed.is_empty() || trimmed.starts_with('#') {
+        if raw_line.trim().is_empty() || raw_line.trim_start().starts_with('#') {
             continue;
         }
 
-        // Indentation must use ASCII spaces only; a tab in the
-        // leading whitespace would interact unpredictably with the
-        // forthcoming column-exact indentation rules and is rejected
-        // here so the prohibition shows up at the boundary rather
-        // than in a downstream "indent does not match expected
-        // width" message.
         if raw_line
             .bytes()
             .take_while(|&b| b == b' ' || b == b'\t')
@@ -111,146 +117,243 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
             }));
         }
 
-        let header = match Timestamp::take(trimmed) {
-            Ok((start, after_prefix)) => {
-                let body = after_prefix.trim_start();
-                if body.len() == after_prefix.len() {
-                    return Err(ParseLyricsError::MissingSeparatorAfterTimestamp(
-                        MissingSeparatorAfterTimestamp {
-                            line_number,
-                            content: trimmed.to_string(),
-                        },
-                    ));
-                }
-                Some((start, body))
-            }
-            Err(TakeTimestampError::ShapeMismatch) => None,
-            Err(cause) => {
-                return Err(ParseLyricsError::InvalidTimestamp(InvalidTimestamp {
+        let indent = raw_line.bytes().take_while(|&b| b == b' ').count();
+        let body = &raw_line[indent..];
+
+        if indent == 0 {
+            handle_header_line(
+                body,
+                line_number,
+                &mut events,
+                &mut last_cue_index,
+                &mut last_part_marker_prefix_width,
+            )?;
+        } else if indent == TIMESTAMP_PREFIX_WIDTH {
+            handle_shorthand_marker_line(
+                body,
+                line_number,
+                &mut events,
+                last_cue_index,
+                &mut last_part_marker_prefix_width,
+            )?;
+        } else if last_part_marker_prefix_width
+            .is_some_and(|w| indent == TIMESTAMP_PREFIX_WIDTH + w)
+        {
+            handle_continuation_line(body, line_number, &mut events, last_cue_index)?;
+        } else {
+            return Err(ParseLyricsError::MalformedIndentation(
+                MalformedIndentation {
                     line_number,
-                    cause,
-                }));
-            }
-        };
-
-        match header {
-            Some((start, body)) => {
-                let first_token = body.split_whitespace().next().unwrap_or("");
-
-                if first_token == END_OF_VIDEO_MARKER || first_token == CLEAR_MARKER {
-                    let trailing = body[first_token.len()..].trim();
-                    if !trailing.is_empty() {
-                        return Err(ParseLyricsError::ExtraTextAfterControlMarker(
-                            ExtraTextAfterControlMarker {
-                                line_number,
-                                marker: first_token.to_string(),
-                                trailing: trailing.to_string(),
-                            },
-                        ));
-                    }
-                    if first_token == CLEAR_MARKER {
-                        events.push(Event::Clear(start));
-                        last_cue_index = None;
-                    }
-                    continue;
-                }
-
-                // Run the reserved-character check on the full body
-                // before `split_marker`. A line such as `<v>foo</v>`
-                // has no `:` separator, so `split_marker` would
-                // return `None` and the error would surface as
-                // `MissingMarker` even though the real problem is
-                // the angle brackets. Checking here lets the more
-                // specific `CueTextReservedCharacter` diagnostic
-                // win. The control-marker branch above is
-                // deliberately left above this check because its
-                // own `ExtraTextAfterControlMarker` diagnostic is
-                // more specific than the reserved-character error
-                // for the `clr`/`eov` cases.
-                reject_reserved_cue_text_characters(body, line_number)?;
-
-                let (marker, text) = split_marker(body).ok_or_else(|| {
-                    ParseLyricsError::MissingMarker(MissingMarker {
-                        line_number,
-                        content: body.to_string(),
-                    })
-                })?;
-                if marker == CLEAR_MARKER || marker == END_OF_VIDEO_MARKER {
-                    return Err(ParseLyricsError::ReservedControlMarker(
-                        ReservedControlMarker {
-                            line_number,
-                            marker: marker.to_string(),
-                        },
-                    ));
-                }
-                if text.is_empty() {
-                    return Err(ParseLyricsError::EmptyCueBody(EmptyCueBody {
-                        line_number,
-                        marker: marker.to_string(),
-                    }));
-                }
-
-                events.push(Event::Cue(Cue {
-                    start,
-                    marker: marker.to_string(),
-                    text: text.to_string(),
-                }));
-                last_cue_index = Some(events.len() - 1);
-            }
-            None => {
-                let Some(cue_index) = last_cue_index else {
-                    return Err(ParseLyricsError::StrayContinuation(StrayContinuation {
-                        line_number,
-                        content: trimmed.to_string(),
-                    }));
-                };
-                reject_reserved_cue_text_characters(trimmed, line_number)?;
-                if let Event::Cue(Cue { text, .. }) = &mut events[cue_index] {
-                    text.push('\n');
-                    text.push_str(trimmed);
-                } else {
-                    unreachable!("last_cue_index must point at a Cue event");
-                }
-            }
-        }
-    }
-
-    for window in events.windows(2) {
-        let previous = window[0].start();
-        let next = window[1].start();
-        if next < previous {
-            return Err(ParseLyricsError::OutOfOrder(OutOfOrder { previous, next }));
+                    actual: indent,
+                    shorthand_indent: TIMESTAMP_PREFIX_WIDTH,
+                    continuation_indent: last_part_marker_prefix_width
+                        .map(|w| TIMESTAMP_PREFIX_WIDTH + w),
+                },
+            ));
         }
     }
 
     Ok(events)
 }
 
+fn handle_header_line(
+    body: &str,
+    line_number: usize,
+    events: &mut Vec<Event>,
+    last_cue_index: &mut Option<usize>,
+    last_part_marker_prefix_width: &mut Option<usize>,
+) -> Result<(), ParseLyricsError> {
+    let (start, after_prefix) = match Timestamp::take(body) {
+        Ok(parsed) => parsed,
+        Err(TakeTimestampError::ShapeMismatch) => {
+            return Err(ParseLyricsError::MalformedHeader(MalformedHeader {
+                line_number,
+                content: body.to_string(),
+            }));
+        }
+        Err(cause) => {
+            return Err(ParseLyricsError::InvalidTimestamp(InvalidTimestamp {
+                line_number,
+                cause,
+            }));
+        }
+    };
+
+    let cue_body = after_prefix.trim_start();
+    if cue_body.len() == after_prefix.len() {
+        return Err(ParseLyricsError::MissingSeparatorAfterTimestamp(
+            MissingSeparatorAfterTimestamp {
+                line_number,
+                content: body.to_string(),
+            },
+        ));
+    }
+
+    let first_token = cue_body.split_whitespace().next().unwrap_or("");
+    if first_token == END_OF_VIDEO_MARKER || first_token == CLEAR_MARKER {
+        let trailing = cue_body[first_token.len()..].trim();
+        if !trailing.is_empty() {
+            return Err(ParseLyricsError::ExtraTextAfterControlMarker(
+                ExtraTextAfterControlMarker {
+                    line_number,
+                    marker: first_token.to_string(),
+                    trailing: trailing.to_string(),
+                },
+            ));
+        }
+        if first_token == CLEAR_MARKER {
+            check_event_order(start, line_number, events)?;
+            events.push(Event::Clear(start));
+            *last_cue_index = None;
+            *last_part_marker_prefix_width = None;
+        }
+        // `eov` is documented as "ignored entirely"; it pushes no
+        // event and so does not participate in the repeated- or
+        // out-of-order checks. This lets a source file note both
+        // `clr` and `eov` at the moment the video ends, since the
+        // `eov` is a documentation sentinel rather than a competing
+        // cue boundary.
+        return Ok(());
+    }
+
+    check_event_order(start, line_number, events)?;
+    let (marker, text) = parse_marker_part(cue_body, line_number)?;
+    events.push(Event::Cue(CueGroup {
+        start,
+        parts: vec![CuePart {
+            marker: marker.to_string(),
+            text: text.to_string(),
+        }],
+    }));
+    *last_cue_index = Some(events.len() - 1);
+    *last_part_marker_prefix_width = Some(marker_prefix_width(marker));
+    Ok(())
+}
+
+fn handle_shorthand_marker_line(
+    body: &str,
+    line_number: usize,
+    events: &mut [Event],
+    last_cue_index: Option<usize>,
+    last_part_marker_prefix_width: &mut Option<usize>,
+) -> Result<(), ParseLyricsError> {
+    let Some(cue_index) = last_cue_index else {
+        return Err(ParseLyricsError::OrphanedShorthandMarker(
+            OrphanedShorthandMarker {
+                line_number,
+                content: body.to_string(),
+            },
+        ));
+    };
+    let (marker, text) = parse_marker_part(body, line_number)?;
+    let Event::Cue(group) = &mut events[cue_index] else {
+        unreachable!("last_cue_index must point at a Cue event");
+    };
+    group.parts.push(CuePart {
+        marker: marker.to_string(),
+        text: text.to_string(),
+    });
+    *last_part_marker_prefix_width = Some(marker_prefix_width(marker));
+    Ok(())
+}
+
+fn handle_continuation_line(
+    body: &str,
+    line_number: usize,
+    events: &mut [Event],
+    last_cue_index: Option<usize>,
+) -> Result<(), ParseLyricsError> {
+    let cue_index =
+        last_cue_index.expect("indent matched continuation width, so a prior cue must exist");
+    reject_reserved_cue_text_characters(body, line_number)?;
+    let Event::Cue(group) = &mut events[cue_index] else {
+        unreachable!("last_cue_index must point at a Cue event");
+    };
+    let part = group
+        .parts
+        .last_mut()
+        .expect("a cue group always has at least one part once it is opened");
+    part.text.push('\n');
+    part.text.push_str(body);
+    Ok(())
+}
+
+fn parse_marker_part(body: &str, line_number: usize) -> Result<(&str, &str), ParseLyricsError> {
+    reject_reserved_cue_text_characters(body, line_number)?;
+    let (marker, text) = split_marker(body).ok_or_else(|| {
+        ParseLyricsError::MissingMarker(MissingMarker {
+            line_number,
+            content: body.to_string(),
+        })
+    })?;
+    if marker == CLEAR_MARKER || marker == END_OF_VIDEO_MARKER {
+        return Err(ParseLyricsError::ReservedControlMarker(
+            ReservedControlMarker {
+                line_number,
+                marker: marker.to_string(),
+            },
+        ));
+    }
+    if text.is_empty() {
+        return Err(ParseLyricsError::EmptyCueBody(EmptyCueBody {
+            line_number,
+            marker: marker.to_string(),
+        }));
+    }
+    Ok((marker, text))
+}
+
+/// Byte width of `marker: ` (the marker name, a colon, and one
+/// ASCII space). Used to compute the expected indent of a
+/// continuation line under the part it continues.
+fn marker_prefix_width(marker: &str) -> usize {
+    marker.len() + 2
+}
+
+/// Rejects a new event whose start time matches or precedes the
+/// most recent recorded event. Skipped for `eov` lines because
+/// `eov` does not push an event and therefore should not compete
+/// for the same start-time slot as a real cue or `clr`.
+fn check_event_order(
+    start: Timestamp,
+    line_number: usize,
+    events: &[Event],
+) -> Result<(), ParseLyricsError> {
+    let Some(previous_start) = events.last().map(Event::start) else {
+        return Ok(());
+    };
+    if previous_start == start {
+        return Err(ParseLyricsError::RepeatedTimestamp(RepeatedTimestamp {
+            line_number,
+            start,
+        }));
+    }
+    if start < previous_start {
+        return Err(ParseLyricsError::OutOfOrder(OutOfOrder {
+            previous: previous_start,
+            next: start,
+        }));
+    }
+    Ok(())
+}
+
 fn resolve_cues(events: Vec<Event>) -> Result<Vec<SubtitleCue>, ParseLyricsError> {
     let mut cues: Vec<SubtitleCue> = Vec::new();
 
     for (index, event) in events.iter().enumerate() {
-        let Event::Cue(Cue {
-            start,
-            marker,
-            text,
-        }) = event
-        else {
+        let Event::Cue(group) = event else {
             continue;
         };
 
         let end = events
             .get(index + 1)
             .map(Event::start)
-            .ok_or(ParseLyricsError::UnclosedCue(*start))?;
+            .ok_or(ParseLyricsError::UnclosedCue(group.start))?;
 
         cues.push(SubtitleCue {
-            start: *start,
+            start: group.start,
             end,
-            parts: vec![CuePart {
-                marker: marker.clone(),
-                text: text.clone(),
-            }],
+            parts: group.parts.clone(),
         });
     }
 
@@ -344,6 +447,65 @@ pub struct EmptyCueBody {
     pub marker: String,
 }
 
+/// Payload for [`ParseLyricsError::MalformedHeader`]. Raised when
+/// a column-zero line does not begin with an `MM:SS.mmm` timestamp;
+/// every column-zero line in the source format is expected to open
+/// either a fresh cue or a `clr` / `eov` control event.
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display(
+    "line {line_number}: header line {content:?} does not begin with an `MM:SS.mmm` timestamp"
+)]
+pub struct MalformedHeader {
+    pub line_number: usize,
+    pub content: String,
+}
+
+/// Payload for [`ParseLyricsError::OrphanedShorthandMarker`]. Raised
+/// when a column-`TIMESTAMP_PREFIX_WIDTH` line carries a marker but
+/// no cue is open above it for the new marker to share a start
+/// time with.
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display(
+    "line {line_number}: shorthand marker line {content:?} appears before any timestamp opens a cue"
+)]
+pub struct OrphanedShorthandMarker {
+    pub line_number: usize,
+    pub content: String,
+}
+
+/// Payload for [`ParseLyricsError::MalformedIndentation`]. Lists the
+/// observed indent and the two values the parser would have
+/// accepted at this point in the input. `continuation_indent` is
+/// `None` when no part is currently open (so a continuation could
+/// not be valid here regardless of indent).
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display(
+    "line {line_number}: indent of {actual} space(s) matches no expected width; expected {shorthand_indent} for a shorthand marker line{}",
+    continuation_indent.map_or_else(String::new, |w| format!(" or {w} for a continuation of the current marker"))
+)]
+pub struct MalformedIndentation {
+    pub line_number: usize,
+    pub actual: usize,
+    pub shorthand_indent: usize,
+    pub continuation_indent: Option<usize>,
+}
+
+/// Payload for [`ParseLyricsError::RepeatedTimestamp`]. Raised when
+/// two consecutive timestamped header lines share a start time;
+/// the column-`TIMESTAMP_PREFIX_WIDTH` shorthand is the canonical
+/// way to attach multiple markers to a single timestamp, and a
+/// repeated timestamp form would create two separate cues that
+/// the renderer would emit as overlapping subtitle blocks.
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display(
+    "line {line_number}: timestamp {start} repeats the start time of the immediately previous event; use the column-{prefix} shorthand to attach a second marker to the same timestamp",
+    prefix = TIMESTAMP_PREFIX_WIDTH
+)]
+pub struct RepeatedTimestamp {
+    pub line_number: usize,
+    pub start: Timestamp,
+}
+
 /// Payload for [`ParseLyricsError::TabIndentation`].
 ///
 /// The parser requires every line's leading whitespace to consist
@@ -385,6 +547,14 @@ pub enum ParseLyricsError {
     // `collect_events` loop.
     #[display("{_0}")]
     InvalidTimestamp(#[error(not(source))] InvalidTimestamp),
+    #[display("{_0}")]
+    MalformedHeader(#[error(not(source))] MalformedHeader),
+    #[display("{_0}")]
+    OrphanedShorthandMarker(#[error(not(source))] OrphanedShorthandMarker),
+    #[display("{_0}")]
+    MalformedIndentation(#[error(not(source))] MalformedIndentation),
+    #[display("{_0}")]
+    RepeatedTimestamp(#[error(not(source))] RepeatedTimestamp),
     #[display("{_0}")]
     StrayContinuation(#[error(not(source))] StrayContinuation),
     #[display("{_0}")]
