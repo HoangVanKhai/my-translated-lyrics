@@ -41,6 +41,7 @@ use crate::timestamp::{Timestamp, VttTime};
 use crate::video_descriptor::Language;
 use core::fmt::Write;
 use derive_more::{Display, Error};
+use text_block_macros::text_block_fnl;
 use voice_span::{VoiceSelector, VoiceSpan};
 
 mod voice_span;
@@ -292,11 +293,13 @@ fn write_style_block(
     features: &Features,
     language: &Language,
 ) {
-    output.push_str("STYLE\n");
-    output.push_str("::cue {\n");
-    output.push_str("  background-color: transparent;\n");
-    output.push_str("  text-shadow: 2px 2px 2px black;\n");
-    output.push_str("}\n");
+    output.push_str(text_block_fnl! {
+        "STYLE"
+        "::cue {"
+        "  background-color: transparent;"
+        "  text-shadow: 2px 2px 2px black;"
+        "}"
+    });
 
     for marker_name in &markers.markers {
         let Some(voice_name) = markers
