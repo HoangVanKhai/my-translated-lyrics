@@ -209,14 +209,15 @@ fn rejects_minutes_out_of_range() {
 }
 
 #[test]
-fn minutes_out_of_range_takes_precedence_over_seconds_out_of_range() {
-    // When both components are out of range, the minutes diagnostic
-    // fires first because the one-hour cap is the tighter invariant;
-    // reporting a seconds overflow under a timestamp the type would
-    // reject anyway would be misleading.
+fn seconds_out_of_range_takes_precedence_over_minutes_out_of_range() {
+    // When both components are out of range, the seconds diagnostic
+    // fires first: `Timestamp::take` runs an explicit
+    // `seconds >= 60` guard before delegating the cap check to
+    // `Timestamp::new`, so the more local component-range error
+    // wins over the cap-derived minutes error.
     assert_eq!(
         Timestamp::take("60:60.000").unwrap_err(),
-        TakeTimestampError::MinutesOutOfRange(MinutesOutOfRange {
+        TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
             raw: "60:60.000".to_string(),
             value: 60,
         }),
@@ -260,7 +261,7 @@ fn from_str_rejects_minutes_out_of_range() {
 }
 
 #[test]
-fn from_str_minutes_out_of_range_takes_precedence_over_seconds_out_of_range() {
+fn from_str_seconds_out_of_range_takes_precedence_over_minutes_out_of_range() {
     // `FromStr` rebuilds its own variant set from
     // `TakeTimestampError`, so a future reorder of the `match` arms
     // could silently change which diagnostic wins when both `MM`
@@ -268,7 +269,7 @@ fn from_str_minutes_out_of_range_takes_precedence_over_seconds_out_of_range() {
     // parallel of the `take` precedence test.
     assert_eq!(
         "60:60.000".parse::<Timestamp>().unwrap_err(),
-        ParseTimestampError::MinutesOutOfRange(MinutesOutOfRange {
+        ParseTimestampError::SecondsOutOfRange(SecondsOutOfRange {
             raw: "60:60.000".to_string(),
             value: 60,
         }),

@@ -103,9 +103,10 @@ impl Timestamp {
     ///   9-character prefix for diagnostics.
     ///
     /// When both `MM` and `SS` fields are out of range, the
-    /// minutes variant is reported because the one-hour cap is the
-    /// tighter invariant; a seconds diagnostic on a prefix the
-    /// type would reject anyway would be misleading.
+    /// seconds variant is reported. The seconds guard fires before
+    /// the cap check inside [`Timestamp::new`], so the more local
+    /// component-range diagnostic wins over the cap-derived
+    /// minutes diagnostic.
     ///
     /// The caller is responsible for anything past the prefix: if
     /// the cue format requires whitespace between the timestamp and
@@ -163,12 +164,6 @@ impl Timestamp {
             .ok_or(TakeTimestampError::ShapeMismatch)?;
         let milliseconds = u64::from(hundreds) * 100 + u64::from(tens) * 10 + u64::from(ones);
 
-        if minutes >= 60 {
-            return Err(TakeTimestampError::MinutesOutOfRange(MinutesOutOfRange {
-                raw: input[..MM_SS_MMM_BYTE_LENGTH].to_string(),
-                value: minutes,
-            }));
-        }
         if seconds >= 60 {
             return Err(TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
                 raw: input[..MM_SS_MMM_BYTE_LENGTH].to_string(),
@@ -176,17 +171,21 @@ impl Timestamp {
             }));
         }
 
-        // The two guards above plus the three-digit ASCII parse
-        // (`milliseconds <= 999`) bound the weighted total at
-        // `59 * 60_000 + 59 * 1_000 + 999 = 3_599_999`, which is
-        // strictly less than `MILLISECONDS_PER_HOUR`. Construct the
-        // value directly through the private tuple constructor so
-        // the `Option` from `Timestamp::new` does not enter the call
-        // graph here; the alternative would be an `.expect` whose
-        // safety argument lives in two places at once.
-        let total =
-            minutes * MILLISECONDS_PER_MINUTE + seconds * MILLISECONDS_PER_SECOND + milliseconds;
-        Ok((Timestamp(total), chars.as_str()))
+        let timestamp = Timestamp::new(minutes, seconds, milliseconds).ok_or_else(|| {
+            // With `seconds < 60` (filtered by the guard above) and
+            // the 2/3-digit ASCII parses capping all three
+            // components, the `checked_*` paths inside `new` cannot
+            // overflow on any input that reaches this line. The
+            // only remaining way for `new` to return `None` is the
+            // cap check (`total < MILLISECONDS_PER_HOUR`), which
+            // can only fire when `minutes >= 60`.
+            TakeTimestampError::MinutesOutOfRange(MinutesOutOfRange {
+                raw: input[..MM_SS_MMM_BYTE_LENGTH].to_string(),
+                value: minutes,
+            })
+        })?;
+
+        Ok((timestamp, chars.as_str()))
     }
 }
 
