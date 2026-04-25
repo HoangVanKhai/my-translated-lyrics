@@ -33,7 +33,7 @@ use super::credits_parse::{
     CreditPair, CreditsVocabulary, NameSegment, ParseCreditError, parse_credit_line,
 };
 use super::escape::{Escaped, append_separator_for_output};
-use super::parse::SubtitleCue;
+use super::parse::{CuePart, SubtitleCue};
 use super::styles::{Style, class_style, voice_style};
 use crate::credits_descriptor::CreditsDesc;
 use crate::line_markers_descriptor::{LineMarkersDesc, VoiceName};
@@ -151,32 +151,68 @@ fn render_cue(
     vocabulary: &CreditsVocabulary,
     language: &Language,
 ) -> Result<CueRendering, RenderVttError> {
-    let marker = cue.marker.as_str();
     let mut used_credit_role = false;
     let mut used_credit_name = false;
     let mut used_credit_special = false;
 
+    let mut rendered_parts: Vec<String> = Vec::with_capacity(cue.parts.len());
+    for part in &cue.parts {
+        rendered_parts.push(render_cue_part(
+            cue.start,
+            part,
+            markers,
+            vocabulary,
+            language,
+            &mut used_credit_role,
+            &mut used_credit_name,
+            &mut used_credit_special,
+        )?);
+    }
+
+    Ok(CueRendering {
+        start: cue.start,
+        end: cue.end,
+        content: rendered_parts.join("\n"),
+        used_credit_role,
+        used_credit_name,
+        used_credit_special,
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+fn render_cue_part(
+    cue_start: Timestamp,
+    part: &CuePart,
+    markers: &LineMarkersDesc,
+    vocabulary: &CreditsVocabulary,
+    language: &Language,
+    used_credit_role: &mut bool,
+    used_credit_name: &mut bool,
+    used_credit_special: &mut bool,
+) -> Result<String, RenderVttError> {
+    let marker = part.marker.as_str();
+
     let inner = if markers.credits.iter().any(|entry| entry == marker) {
         let mut rendered_lines: Vec<String> = Vec::new();
-        for line in cue.text.lines() {
+        for line in part.text.lines() {
             let pairs = parse_credit_line(line.trim_start(), vocabulary).map_err(|cause| {
                 RenderVttError::Credits(Credits {
-                    start: cue.start,
+                    start: cue_start,
                     cause,
                 })
             })?;
             rendered_lines.push(render_credit_line(
                 &pairs,
-                &mut used_credit_role,
-                &mut used_credit_name,
-                &mut used_credit_special,
+                used_credit_role,
+                used_credit_name,
+                used_credit_special,
             ));
         }
         rendered_lines.join("\n")
     } else if let Some(class_name) = markers.classes.get(marker) {
-        format!("<c.{class_name}>{text}</c>", text = Escaped(&cue.text))
+        format!("<c.{class_name}>{text}</c>", text = Escaped(&part.text))
     } else {
-        Escaped(&cue.text).to_string()
+        Escaped(&part.text).to_string()
     };
 
     let voice_name = markers
@@ -184,22 +220,13 @@ fn render_cue(
         .get(marker)
         .and_then(|by_language| by_language.get(language));
 
-    let content = match voice_name {
+    Ok(match voice_name {
         Some(voice_name) => VoiceSpan {
             voice_name,
             inner: &inner,
         }
         .to_string(),
         None => inner,
-    };
-
-    Ok(CueRendering {
-        start: cue.start,
-        end: cue.end,
-        content,
-        used_credit_role,
-        used_credit_name,
-        used_credit_special,
     })
 }
 

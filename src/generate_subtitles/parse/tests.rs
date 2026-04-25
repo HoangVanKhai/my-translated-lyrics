@@ -18,12 +18,12 @@ fn parses_simple_sequence() {
     assert_eq!(cues.len(), 2);
     assert_eq!(cues[0].start, Timestamp::new(0, 0, 0).unwrap());
     assert_eq!(cues[0].end, Timestamp::new(0, 2, 0).unwrap());
-    assert_eq!(cues[0].marker, "ttl");
-    assert_eq!(cues[0].text, "Hello");
+    assert_eq!(cues[0].parts[0].marker, "ttl");
+    assert_eq!(cues[0].parts[0].text, "Hello");
     assert_eq!(cues[1].start, Timestamp::new(0, 2, 0).unwrap());
     assert_eq!(cues[1].end, Timestamp::new(0, 4, 0).unwrap());
-    assert_eq!(cues[1].marker, "LRC");
-    assert_eq!(cues[1].text, "world");
+    assert_eq!(cues[1].parts[0].marker, "LRC");
+    assert_eq!(cues[1].parts[0].text, "world");
 }
 
 #[test]
@@ -37,7 +37,7 @@ fn comments_and_blank_lines_are_skipped() {
     };
     let cues = parse_lyrics(input).unwrap();
     assert_eq!(cues.len(), 1);
-    assert_eq!(cues[0].text, "Hello");
+    assert_eq!(cues[0].parts[0].text, "Hello");
 }
 
 #[test]
@@ -50,7 +50,7 @@ fn continuation_lines_append_to_current_cue() {
     };
     let cues = parse_lyrics(input).unwrap();
     assert_eq!(cues.len(), 1);
-    assert_eq!(cues[0].text, "first line\nsecond line\nthird line");
+    assert_eq!(cues[0].parts[0].text, "first line\nsecond line\nthird line");
 }
 
 #[test]
@@ -122,7 +122,7 @@ fn eov_between_a_cue_and_its_continuation_leaves_the_cue_open() {
     // does not close until the `clr` on line 4.
     let cues = parse_lyrics(input).unwrap();
     assert_eq!(cues.len(), 1);
-    assert_eq!(cues[0].text, "first line\nsecond line");
+    assert_eq!(cues[0].parts[0].text, "first line\nsecond line");
     assert_eq!(cues[0].end, Timestamp::new(0, 5, 0).unwrap());
 }
 
@@ -348,7 +348,7 @@ fn accepts_ampersand_in_cue_text() {
     };
     let cues = parse_lyrics(input).unwrap();
     assert_eq!(cues.len(), 1);
-    assert_eq!(cues[0].text, "R&B classics");
+    assert_eq!(cues[0].parts[0].text, "R&B classics");
 }
 
 #[test]

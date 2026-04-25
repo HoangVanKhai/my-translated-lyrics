@@ -1,6 +1,6 @@
 use super::{RenderVttError, render_file};
 use crate::credits_descriptor::CreditsDesc;
-use crate::generate_subtitles::parse::SubtitleCue;
+use crate::generate_subtitles::parse::{CuePart, SubtitleCue};
 use crate::line_markers_descriptor::LineMarkersDesc;
 use crate::timestamp::Timestamp;
 use crate::video_descriptor::Language;
@@ -26,8 +26,10 @@ fn cue_text_html_meta_characters_are_escaped() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        marker: "plain".to_string(),
-        text: "<a> & <b>".to_string(),
+        parts: vec![CuePart {
+            marker: "plain".to_string(),
+            text: "<a> & <b>".to_string(),
+        }],
     }];
     let output = render_file(
         &cues,
@@ -51,8 +53,10 @@ fn unknown_role_in_credit_line_produces_credits_error() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        marker: "cre".to_string(),
-        text: "unknown-role name-a".to_string(),
+        parts: vec![CuePart {
+            marker: "cre".to_string(),
+            text: "unknown-role name-a".to_string(),
+        }],
     }];
     let err = render_file(
         &cues,

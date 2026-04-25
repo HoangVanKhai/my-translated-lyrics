@@ -15,6 +15,13 @@ use crate::timestamp::{TakeTimestampError, Timestamp};
 use derive_more::{Display, Error};
 
 /// A subtitle cue with a resolved end time, ready for rendering.
+///
+/// A cue groups one or more [`CuePart`]s that share a start time.
+/// Until the strict-indentation refactor wires up the multi-marker
+/// shorthand the parser always emits exactly one part per cue, but
+/// the IR is shaped for the multi-part case so the renderer code
+/// already iterates over [`parts`](Self::parts) and joins per-part
+/// fragments with `\n`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SubtitleCue {
     /// Timestamp at which the cue begins to display. Read directly
@@ -25,6 +32,15 @@ pub struct SubtitleCue {
     /// is the next cue or a `clr` sentinel; `parse_lyrics` fails with
     /// [`ParseLyricsError::UnclosedCue`] if no such event exists.
     pub end: Timestamp,
+    /// One or more parts that share this cue's start and end times.
+    /// Each part carries its own marker and text and renders to a
+    /// separate line within the resulting SRT or VTT cue block.
+    pub parts: Vec<CuePart>,
+}
+
+/// One marker-text pair within a [`SubtitleCue`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CuePart {
     /// The leading marker token that the cue-opening line declared, for
     /// example `ttl` in `ttl: 《Song》`. Every cue-opening line in the
     /// source format carries a marker; lines that appear to lack one
@@ -231,8 +247,10 @@ fn resolve_cues(events: Vec<Event>) -> Result<Vec<SubtitleCue>, ParseLyricsError
         cues.push(SubtitleCue {
             start: *start,
             end,
-            marker: marker.clone(),
-            text: text.clone(),
+            parts: vec![CuePart {
+                marker: marker.clone(),
+                text: text.clone(),
+            }],
         });
     }
 

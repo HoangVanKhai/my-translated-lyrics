@@ -12,7 +12,7 @@ use super::credits_parse::{
     CreditPair, CreditsVocabulary, NameSegment, ParseCreditError, parse_credit_line,
 };
 use super::escape::{Escaped, append_separator_for_output};
-use super::parse::SubtitleCue;
+use super::parse::{CuePart, SubtitleCue};
 use super::styles::{Style, class_style, voice_style};
 use crate::credits_descriptor::CreditsDesc;
 use crate::line_markers_descriptor::LineMarkersDesc;
@@ -58,14 +58,27 @@ fn render_cue_body(
     markers: &LineMarkersDesc,
     vocabulary: &CreditsVocabulary,
 ) -> Result<String, RenderSrtError> {
-    let marker = cue.marker.as_str();
+    let mut rendered_parts: Vec<String> = Vec::with_capacity(cue.parts.len());
+    for part in &cue.parts {
+        rendered_parts.push(render_cue_part(cue.start, part, markers, vocabulary)?);
+    }
+    Ok(rendered_parts.join("\n"))
+}
+
+fn render_cue_part(
+    cue_start: Timestamp,
+    part: &CuePart,
+    markers: &LineMarkersDesc,
+    vocabulary: &CreditsVocabulary,
+) -> Result<String, RenderSrtError> {
+    let marker = part.marker.as_str();
 
     if markers.credits.iter().any(|entry| entry == marker) {
         let mut rendered_lines: Vec<String> = Vec::new();
-        for line in cue.text.lines() {
+        for line in part.text.lines() {
             let pairs = parse_credit_line(line.trim_start(), vocabulary).map_err(|cause| {
                 RenderSrtError::Credits(Credits {
-                    start: cue.start,
+                    start: cue_start,
                     cause,
                 })
             })?;
@@ -75,7 +88,7 @@ fn render_cue_body(
     }
 
     let style = resolve_style(marker, markers);
-    Ok(wrap_with_style(&cue.text, style.as_ref()))
+    Ok(wrap_with_style(&part.text, style.as_ref()))
 }
 
 /// Looks up the SRT style for a marker by consulting the hardcoded
