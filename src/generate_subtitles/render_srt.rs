@@ -44,8 +44,7 @@ pub fn render_srt(
             end = SrtTime::from(cue.end),
         )
         .unwrap();
-        let body = render_cue_body(cue, markers, &vocabulary)?;
-        output.push_str(&body);
+        render_cue_body(&mut output, cue, markers, &vocabulary)?;
         output.push_str("\n\n");
     }
     output.truncate(output.trim_end().len());
@@ -54,41 +53,48 @@ pub fn render_srt(
 }
 
 fn render_cue_body(
+    output: &mut String,
     cue: &SubtitleCue,
     markers: &LineMarkersDesc,
     vocabulary: &CreditsVocabulary,
-) -> Result<String, RenderSrtError> {
-    let mut rendered_parts: Vec<String> = Vec::with_capacity(cue.parts.len());
-    for part in &cue.parts {
-        rendered_parts.push(render_cue_part(cue.start, part, markers, vocabulary)?);
+) -> Result<(), RenderSrtError> {
+    for (index, part) in cue.parts.iter().enumerate() {
+        if index > 0 {
+            output.push('\n');
+        }
+        render_cue_part(output, cue.start, part, markers, vocabulary)?;
     }
-    Ok(rendered_parts.join("\n"))
+    Ok(())
 }
 
 fn render_cue_part(
+    output: &mut String,
     cue_start: Timestamp,
     part: &CuePart,
     markers: &LineMarkersDesc,
     vocabulary: &CreditsVocabulary,
-) -> Result<String, RenderSrtError> {
+) -> Result<(), RenderSrtError> {
     let marker = part.marker.as_str();
 
     if markers.credits.iter().any(|entry| entry == marker) {
-        let mut rendered_lines: Vec<String> = Vec::new();
-        for line in part.text.lines() {
+        for (index, line) in part.text.lines().enumerate() {
+            if index > 0 {
+                output.push('\n');
+            }
             let pairs = parse_credit_line(line.trim_start(), vocabulary).map_err(|cause| {
                 RenderSrtError::Credits(RenderSrtErrorCreditsPayload {
                     start: cue_start,
                     cause,
                 })
             })?;
-            rendered_lines.push(render_credit_line(&pairs));
+            render_credit_line(output, &pairs);
         }
-        return Ok(rendered_lines.join("\n"));
+        return Ok(());
     }
 
     let style = resolve_style(marker, markers);
-    Ok(wrap_with_style(&part.text, style.as_ref()))
+    wrap_with_style(output, &part.text, style.as_ref());
+    Ok(())
 }
 
 /// Looks up the SRT style for a marker by consulting the hardcoded
@@ -102,12 +108,12 @@ fn resolve_style(marker_name: &str, markers: &LineMarkersDesc) -> Option<Style> 
     class_style(class_name.as_str())
 }
 
-fn wrap_with_style(text: &str, style: Option<&Style>) -> String {
+fn wrap_with_style(output: &mut String, text: &str, style: Option<&Style>) {
     let Some(style) = style else {
-        return Escaped(text).to_string();
+        write!(output, "{}", Escaped(text)).unwrap();
+        return;
     };
 
-    let mut output = String::new();
     if style.bold {
         output.push_str("<b>");
     }
@@ -127,18 +133,15 @@ fn wrap_with_style(text: &str, style: Option<&Style>) -> String {
     if style.bold {
         output.push_str("</b>");
     }
-    output
 }
 
-fn render_credit_line(pairs: &[CreditPair]) -> String {
-    let mut output = String::new();
+fn render_credit_line(output: &mut String, pairs: &[CreditPair]) {
     for (index, pair) in pairs.iter().enumerate() {
         if index > 0 {
             output.push(' ');
         }
-        render_credit_pair(&mut output, pair);
+        render_credit_pair(output, pair);
     }
-    output
 }
 
 fn render_credit_pair(output: &mut String, pair: &CreditPair) {
