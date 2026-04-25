@@ -90,7 +90,7 @@ pub fn render_file(
     }
 
     let mut output = String::new();
-    write!(output, "WEBVTT\nLanguage: {language}\n\n").expect("writing to String is infallible");
+    write!(output, "WEBVTT\nLanguage: {language}\n\n").unwrap();
     write_style_block(&mut output, markers, &features, language);
     output.push('\n');
     for rendering in &cue_renderings {
@@ -100,7 +100,7 @@ pub fn render_file(
             start = VttTime::from(rendering.start),
             end = VttTime::from(rendering.end),
         )
-        .expect("writing to String is infallible");
+        .unwrap();
         output.push_str(&rendering.content);
         output.push_str("\n\n");
     }
@@ -260,9 +260,9 @@ fn render_credit_pair(
         "<c.{CLASS_CREDIT_ROLE}>{role}</c>",
         role = Escaped(&pair.role),
     )
-    .expect("writing to String is infallible");
+    .unwrap();
     append_separator_for_output(output, &pair.separator);
-    write!(output, "<c.{CLASS_CREDIT_NAME}>").expect("writing to String is infallible");
+    write!(output, "<c.{CLASS_CREDIT_NAME}>").unwrap();
     write_name_segments(output, &pair.name_segments, used_special);
     output.push_str("</c>");
 }
@@ -271,7 +271,7 @@ fn write_name_segments(output: &mut String, segments: &[NameSegment], used_speci
     for segment in segments {
         match segment {
             NameSegment::Plain(text) => {
-                write!(output, "{}", Escaped(text)).expect("writing to String is infallible");
+                write!(output, "{}", Escaped(text)).unwrap();
             }
             NameSegment::Special(text) => {
                 *used_special = true;
@@ -280,7 +280,7 @@ fn write_name_segments(output: &mut String, segments: &[NameSegment], used_speci
                     "<c.{CLASS_CREDIT_SPECIAL}>{text}</c>",
                     text = Escaped(text.as_str()),
                 )
-                .expect("writing to String is infallible");
+                .unwrap();
             }
         }
     }
@@ -337,7 +337,7 @@ fn write_voice_rule(output: &mut String, voice_name: &VoiceName, style: Option<&
         "::cue({selector}) {{",
         selector = VoiceSelector(voice_name),
     )
-    .expect("writing to String is infallible");
+    .unwrap();
     if let Some(style) = style {
         write_style_body(output, style);
     }
@@ -345,14 +345,14 @@ fn write_voice_rule(output: &mut String, voice_name: &VoiceName, style: Option<&
 }
 
 fn write_class_rule(output: &mut String, class_name: &str, style: &Style) {
-    writeln!(output, "::cue(c.{class_name}) {{").expect("writing to String is infallible");
+    writeln!(output, "::cue(c.{class_name}) {{").unwrap();
     write_style_body(output, style);
     output.push_str("}\n");
 }
 
 fn write_style_body(output: &mut String, style: &Style) {
     if let Some(color) = style.color {
-        writeln!(output, "  color: {color};").expect("writing to String is infallible");
+        writeln!(output, "  color: {color};").unwrap();
     }
     if style.italic {
         output.push_str("  font-style: italic;\n");

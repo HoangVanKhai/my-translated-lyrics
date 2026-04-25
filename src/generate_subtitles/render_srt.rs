@@ -36,14 +36,14 @@ pub fn render_file(
 
     let mut output = String::new();
     for (cue_index, cue) in cues.iter().enumerate() {
-        writeln!(output, "{}", cue_index + 1).expect("writing to String is infallible");
+        writeln!(output, "{}", cue_index + 1).unwrap();
         writeln!(
             output,
             "{start} --> {end}",
             start = SrtTime::from(cue.start),
             end = SrtTime::from(cue.end),
         )
-        .expect("writing to String is infallible");
+        .unwrap();
         let body = render_cue_body(cue, markers, &vocabulary)?;
         output.push_str(&body);
         output.push_str("\n\n");
@@ -115,9 +115,9 @@ fn wrap_with_style(text: &str, style: Option<&Style>) -> String {
         output.push_str("<i>");
     }
     if let Some(color) = style.color {
-        write!(output, "<font color=\"{color}\">").expect("writing to String is infallible");
+        write!(output, "<font color=\"{color}\">").unwrap();
     }
-    write!(output, "{}", Escaped(text)).expect("writing to String is infallible");
+    write!(output, "{}", Escaped(text)).unwrap();
     if style.color.is_some() {
         output.push_str("</font>");
     }
@@ -147,10 +147,9 @@ fn render_credit_pair(output: &mut String, pair: &CreditPair) {
         "<font color=\"{CREDIT_ROLE_COLOR}\">{role}</font>",
         role = Escaped(&pair.role),
     )
-    .expect("writing to String is infallible");
+    .unwrap();
     append_separator_for_output(output, &pair.separator);
-    write!(output, "<font color=\"{CREDIT_NAME_COLOR}\">")
-        .expect("writing to String is infallible");
+    write!(output, "<font color=\"{CREDIT_NAME_COLOR}\">").unwrap();
     write_name_segments(output, &pair.name_segments);
     output.push_str("</font>");
 }
@@ -159,7 +158,7 @@ fn write_name_segments(output: &mut String, segments: &[NameSegment]) {
     for segment in segments {
         match segment {
             NameSegment::Plain(text) => {
-                write!(output, "{}", Escaped(text)).expect("writing to String is infallible");
+                write!(output, "{}", Escaped(text)).unwrap();
             }
             NameSegment::Special(text) => {
                 write!(
@@ -167,7 +166,7 @@ fn write_name_segments(output: &mut String, segments: &[NameSegment]) {
                     "<font color=\"{CREDIT_SPECIAL_COLOR}\">{text}</font>",
                     text = Escaped(text.as_str()),
                 )
-                .expect("writing to String is infallible");
+                .unwrap();
             }
         }
     }
