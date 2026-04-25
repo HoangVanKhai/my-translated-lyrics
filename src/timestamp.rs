@@ -59,15 +59,23 @@ impl Timestamp {
     /// Individual components are not range-checked; the constructor
     /// only validates the composed total. `new(0, 120, 0)` is
     /// accepted and yields the same `Timestamp` as `new(2, 0, 0)`.
-    /// The `None` return value is reserved for inputs whose total
-    /// reaches or exceeds one hour, which the type invariant
-    /// forbids. Callers that need the strict `MM < 60` /
+    /// `None` is returned for two distinct reasons: when the
+    /// weighted total reaches or exceeds one hour (the cap
+    /// invariant), and when any intermediate `u64` multiplication
+    /// or addition would overflow. The latter would otherwise
+    /// silently wrap in release builds and the wrapped value
+    /// could happen to land below the cap, so the constructor
+    /// uses checked arithmetic and propagates the overflow as
+    /// `None` rather than risking a stray valid `Timestamp` from
+    /// nonsense input. Callers that need the strict `MM < 60` /
     /// `SS < 60` / `mmm < 1_000` component ranges of the
     /// `MM:SS.mmm` source format must perform those checks before
     /// calling `new`; [`Timestamp::take`] does so.
     pub fn new(minutes: u64, seconds: u64, milliseconds: u64) -> Option<Self> {
-        let total =
-            minutes * MILLISECONDS_PER_MINUTE + seconds * MILLISECONDS_PER_SECOND + milliseconds;
+        let total = minutes
+            .checked_mul(MILLISECONDS_PER_MINUTE)?
+            .checked_add(seconds.checked_mul(MILLISECONDS_PER_SECOND)?)?
+            .checked_add(milliseconds)?;
         (total < MILLISECONDS_PER_HOUR).then_some(Timestamp(total))
     }
 

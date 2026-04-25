@@ -96,6 +96,27 @@ fn maximum_representable_value_renders_just_below_one_hour() {
 }
 
 #[test]
+fn new_rejects_arithmetic_overflow_before_the_cap_check() {
+    // `Timestamp::new` accepts arbitrary `u64` components, so the
+    // weighted total can overflow `u64` before the cap check has a
+    // chance to look at it. In release builds an unchecked
+    // multiplication would wrap silently and the wrapped value
+    // could happen to land below `MILLISECONDS_PER_HOUR`, leaking
+    // a stray `Some(Timestamp(_))` from nonsense input. The
+    // `checked_mul` / `checked_add` chain forwards every overflow
+    // as `None` instead.
+    assert_eq!(Timestamp::new(u64::MAX, 0, 0), None);
+    assert_eq!(Timestamp::new(0, u64::MAX, 0), None);
+    assert_eq!(Timestamp::new(u64::MAX, u64::MAX, u64::MAX), None);
+    // The largest `minutes` that can multiply by
+    // `MILLISECONDS_PER_MINUTE` without overflowing is
+    // `u64::MAX / MILLISECONDS_PER_MINUTE`. Adding any non-zero
+    // milliseconds to that product overflows the subsequent add.
+    let max_safe_minutes = u64::MAX / 60_000;
+    assert_eq!(Timestamp::new(max_safe_minutes, 0, u64::MAX), None);
+}
+
+#[test]
 fn new_rejects_totals_that_reach_or_exceed_one_hour() {
     // Every composition whose weighted total lands at exactly one
     // hour or beyond must be rejected, regardless of which component
