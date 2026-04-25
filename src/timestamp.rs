@@ -56,18 +56,10 @@ impl Timestamp {
     /// `SS < 60` / `mmm < 1_000` component ranges of the
     /// `MM:SS.mmm` source format must perform those checks before
     /// calling `new`; [`Timestamp::take`] does so.
-    pub const fn new(minutes: u64, seconds: u64, milliseconds: u64) -> Option<Self> {
+    pub fn new(minutes: u64, seconds: u64, milliseconds: u64) -> Option<Self> {
         let total =
             minutes * MILLISECONDS_PER_MINUTE + seconds * MILLISECONDS_PER_SECOND + milliseconds;
-        // `bool::then_some` would express this more concisely, but
-        // it is not const-stable, and dropping `const fn` from
-        // `new` for a four-line readability gain would trade away
-        // the constructor's ability to run at compile time.
-        if total < MILLISECONDS_PER_HOUR {
-            Some(Timestamp(total))
-        } else {
-            None
-        }
+        (total < MILLISECONDS_PER_HOUR).then_some(Timestamp(total))
     }
 
     /// Consumes a leading `MM:SS.mmm` prefix (9 ASCII characters)
