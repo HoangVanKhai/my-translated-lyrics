@@ -302,11 +302,11 @@ fn write_style_block(
     });
 
     for marker_name in &markers.markers {
-        let Some(voice_name) = markers
+        let voice_name = markers
             .voices
             .get(marker_name)
-            .and_then(|by_language| by_language.get(language))
-        else {
+            .and_then(|by_language| by_language.get(language));
+        let Some(voice_name) = voice_name else {
             continue;
         };
         let style = voice_style(marker_name);
