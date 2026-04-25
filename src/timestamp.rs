@@ -38,7 +38,7 @@ pub const MM_SS_MMM_BYTE_LENGTH: usize = 9;
 /// Renders through `Display` in the `MM:SS.mmm` source format. Error
 /// messages that quote a timestamp use this implementation so the
 /// output matches the form the source file used.
-#[derive(Display, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[derive(Display, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[display(
     "{minutes:02}:{seconds:02}.{milliseconds:03}",
     minutes = _0 / MILLISECONDS_PER_MINUTE,

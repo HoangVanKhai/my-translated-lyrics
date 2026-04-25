@@ -74,7 +74,7 @@ fn rendered_length_matches_byte_length_constant() {
     // tweak to the format string trips here before any caller that
     // slices on the constant produces silent UTF-8 panics.
     for ts in [
-        Timestamp::default(),
+        Timestamp::new(0, 0, 0).unwrap(),
         Timestamp::new(0, 0, 1).unwrap(),
         Timestamp::new(12, 34, 567).unwrap(),
         Timestamp::new(59, 59, 999).unwrap(),
