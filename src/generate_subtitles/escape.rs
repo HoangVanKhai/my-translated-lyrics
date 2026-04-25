@@ -17,8 +17,8 @@
 use core::fmt::{self, Write};
 
 /// Wraps a string slice so its `Display` impl emits an HTML-escaped
-/// form. Use this wherever source text flows into a `<c.…>…</c>`,
-/// `<v …>…</v>`, `<font …>…</font>`, or similar tag body: raw `<`,
+/// form. Use this wherever source text flows into a `<c....>...</c>`,
+/// `<v ...>...</v>`, `<font ...>...</font>`, or similar tag body: raw `<`,
 /// `>`, and `&` characters would otherwise terminate the tag early or
 /// open an entity reference that was never intended.
 pub struct Escaped<'a>(pub &'a str);

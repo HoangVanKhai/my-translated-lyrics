@@ -24,7 +24,7 @@ fn voice_span_emits_cue_tag_wrapping_pre_escaped_inner() {
 fn voice_span_wraps_a_classed_cue_fragment_as_is() {
     // The `VoiceSpan` module docs say the wrapper accepts an inner
     // body that the caller may already have composed as
-    // `<c.class>…</c>`. Exercise that shape so a future change to
+    // `<c.class>...</c>`. Exercise that shape so a future change to
     // the inner-rendering rules that reintroduces double escaping
     // trips here before it reaches any golden file.
     let voice_name = sample_voice_name("Alpha");

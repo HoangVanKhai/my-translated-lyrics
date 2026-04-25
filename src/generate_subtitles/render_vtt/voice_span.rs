@@ -21,13 +21,13 @@
 use crate::line_markers_descriptor::VoiceName;
 use core::fmt;
 
-/// Renders a cue body with its surrounding `<v {name}>…</v>` voice
+/// Renders a cue body with its surrounding `<v {name}>...</v>` voice
 /// span. The spec name for this construct is "WebVTT cue voice
 /// span".
 ///
 /// The inner text must already be in cue-text form: plain prose
 /// passed through the HTML-entity escape, or an already-wrapped
-/// `<c.class>…</c>` fragment. This type does not escape the inner
+/// `<c.class>...</c>` fragment. This type does not escape the inner
 /// text because the caller may have composed it from several
 /// already-escaped pieces.
 pub struct VoiceSpan<'a> {
@@ -50,7 +50,7 @@ impl fmt::Display for VoiceSpan<'_> {
 /// targets every voice span in the current cue scope whose voice
 /// attribute matches `name`.
 ///
-/// The caller wraps the result in `::cue(…)` to form the full
+/// The caller wraps the result in `::cue(...)` to form the full
 /// WebVTT STYLE-block selector.
 pub struct VoiceSelector<'a>(pub &'a VoiceName);
 

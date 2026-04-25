@@ -91,12 +91,12 @@ impl Timestamp {
     ///   (too short, wrong punctuation, or a non-digit where a digit
     ///   is required). Callers typically treat this as "no timestamp
     ///   here" and route the line elsewhere.
-    /// - `Err(TakeTimestampError::MinutesOutOfRange { … })` indicates
+    /// - `Err(TakeTimestampError::MinutesOutOfRange { ... })` indicates
     ///   the prefix has timestamp shape but the minutes component
     ///   reaches or exceeds 60. `Timestamp` caps at one hour, so a
     ///   two-digit `MM` field of 60 or more is rejected rather than
     ///   rolled over.
-    /// - `Err(TakeTimestampError::SecondsOutOfRange { … })` indicates
+    /// - `Err(TakeTimestampError::SecondsOutOfRange { ... })` indicates
     ///   the prefix has timestamp shape but the seconds component
     ///   exceeds 59. Three-digit milliseconds can never exceed 999.
     ///   Both out-of-range errors carry a copy of the offending
