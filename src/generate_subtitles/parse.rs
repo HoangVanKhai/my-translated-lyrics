@@ -22,11 +22,9 @@ const TIMESTAMP_PREFIX_WIDTH: usize = TIMESTAMP_STR_LEN + 1;
 /// A subtitle cue with a resolved end time, ready for rendering.
 ///
 /// A cue groups one or more [`CuePart`]s that share a start time.
-/// Until the strict-indentation refactor wires up the multi-marker
-/// shorthand the parser always emits exactly one part per cue, but
-/// the IR is shaped for the multi-part case so the renderer code
-/// already iterates over [`parts`](Self::parts) and joins per-part
-/// fragments with `\n`.
+/// Each part carries its own marker and text; the renderer emits
+/// the parts as a single subtitle block whose body has one line
+/// per part.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SubtitleCue {
     /// Timestamp at which the cue begins to display. Read directly
@@ -34,8 +32,7 @@ pub struct SubtitleCue {
     pub start: Timestamp,
     /// Timestamp at which the cue stops displaying. Taken from the
     /// timestamp of the next event in the source file, whether that
-    /// is the next cue or a `clr` sentinel; `parse_lyrics` fails with
-    /// [`ParseLyricsError::UnclosedCue`] if no such event exists.
+    /// is the next cue or a `clr` sentinel.
     pub end: Timestamp,
     /// One or more parts that share this cue's start and end times.
     /// Each part carries its own marker and text and renders to a
@@ -47,9 +44,7 @@ pub struct SubtitleCue {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CuePart {
     /// The leading marker token that the cue-opening line declared, for
-    /// example `ttl` in `ttl: 《Song》`. Every cue-opening line in the
-    /// source format carries a marker; lines that appear to lack one
-    /// cause [`ParseLyricsError::MissingMarker`].
+    /// example `ttl` in `ttl: 《Song》`.
     pub marker: String,
     /// Cue text, with line breaks preserved between the opening line
     /// and any continuation lines.
