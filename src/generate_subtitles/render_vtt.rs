@@ -184,7 +184,7 @@ fn render_cue_part(
     vocabulary: &CreditsVocabulary,
     language: &Language,
 ) -> Result<(), RenderVttError> {
-    let marker = part.marker.as_str();
+    let marker = &part.marker;
     let voice_name = markers
         .voices
         .get(marker)
@@ -194,7 +194,7 @@ fn render_cue_part(
         write!(output, "<v {name}>", name = voice_name.as_str()).unwrap();
     }
 
-    if markers.credits.iter().any(|entry| entry == marker) {
+    if markers.credits.contains(marker) {
         for (index, line) in part.text.lines().enumerate() {
             if index > 0 {
                 output.push('\n');

@@ -74,9 +74,9 @@ fn render_cue_part(
     markers: &LineMarkersDesc,
     vocabulary: &CreditsVocabulary,
 ) -> Result<(), RenderSrtError> {
-    let marker = part.marker.as_str();
+    let marker = &part.marker;
 
-    if markers.credits.iter().any(|entry| entry == marker) {
+    if markers.credits.contains(marker) {
         for (index, line) in part.text.lines().enumerate() {
             if index > 0 {
                 output.push('\n');
