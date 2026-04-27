@@ -504,3 +504,29 @@ fn allows_eov_to_share_a_timestamp_with_the_preceding_clr() {
     assert_eq!(cues.len(), 1);
     assert_eq!(cues[0].end, Timestamp::new(0, 18, 0).unwrap());
 }
+
+#[test]
+fn whitespace_only_cue_body_falls_through_to_missing_marker() {
+    // A header line like `00:00.000   ` (timestamp, run of spaces,
+    // no body) parses as `Timestamp::take` succeeding with three
+    // trailing spaces, then `cue_body = after_prefix.trim_start()`
+    // yields the empty string. The empty body has no `:` and no
+    // marker, so `parse_marker_part` falls into the
+    // `split_marker(body) -> None` branch and raises
+    // `MissingMarker { content: "" }`. The dedicated `EmptyCueBody`
+    // variant cannot apply here because it carries the marker
+    // name, and a whitespace-only body has none. Lock the current
+    // outcome so a future reader does not assume the diagnostic
+    // is something else.
+    let input = text_block_fnl! {
+        "00:00.000   "
+        "00:02.000 clr"
+    };
+    assert_eq!(
+        parse_lyrics(input).unwrap_err(),
+        ParseLyricsError::MissingMarker(MissingMarker {
+            line_number: 1,
+            content: String::new(),
+        }),
+    );
+}
