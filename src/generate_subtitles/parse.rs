@@ -376,14 +376,6 @@ pub struct InvalidTimestamp {
     pub cause: TakeTimestampError,
 }
 
-/// Payload for [`ParseLyricsError::StrayContinuation`].
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
-#[display("line {line_number}: continuation text {content:?} before any cue")]
-pub struct StrayContinuation {
-    pub line_number: usize,
-    pub content: String,
-}
-
 /// Payload for [`ParseLyricsError::MissingMarker`]. Raised when a
 /// cue body has no `:` separator at all, and also when it has a `:`
 /// but the marker half before it is empty.
@@ -554,7 +546,6 @@ pub enum ParseLyricsError {
     OrphanedShorthandMarker(#[error(not(source))] OrphanedShorthandMarker),
     MalformedIndentation(#[error(not(source))] MalformedIndentation),
     RepeatedTimestamp(#[error(not(source))] RepeatedTimestamp),
-    StrayContinuation(#[error(not(source))] StrayContinuation),
     MissingMarker(#[error(not(source))] MissingMarker),
     MissingSeparatorAfterTimestamp(#[error(not(source))] MissingSeparatorAfterTimestamp),
     ExtraTextAfterControlMarker(#[error(not(source))] ExtraTextAfterControlMarker),
