@@ -330,7 +330,11 @@ fn rejects_tab_in_leading_whitespace() {
     // contains it. Tabs that appear after the first non-whitespace
     // character are not rejected by this rule, since the
     // restriction only governs the indentation column.
-    let input = "00:00.000 ttl: Hello\n\t            cre: tabbed indent\n00:05.000 clr\n";
+    let input = text_block_fnl! {
+        "00:00.000 ttl: Hello"
+        "\t            cre: tabbed indent"
+        "00:05.000 clr"
+    };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::TabIndentation(TabIndentation { line_number: 2 }),
@@ -417,7 +421,10 @@ fn rejects_shorthand_marker_before_any_cue_is_open() {
     // A column-10 line cannot appear before a header has opened a
     // cue group; there is no start time to attach the new marker
     // to.
-    let input = "          ttl: orphan\n00:01.000 clr\n";
+    let input = text_block_fnl! {
+        "          ttl: orphan"
+        "00:01.000 clr"
+    };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::OrphanedShorthandMarker(OrphanedShorthandMarker {
