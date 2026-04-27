@@ -215,6 +215,13 @@ fn seconds_out_of_range_takes_precedence_over_minutes_out_of_range() {
     // `seconds >= 60` guard before delegating the cap check to
     // `Timestamp::new`, so the more local component-range error
     // wins over the cap-derived minutes error.
+    //
+    // This test is load-bearing for the precedence claim in
+    // `Timestamp::take`'s doc comment: a future change that moves
+    // the explicit guard, or that swaps the guard for a different
+    // shape, would silently flip which diagnostic fires for
+    // `60:60.000` and the doc would no longer match the behavior.
+    // Keep this test in lockstep with that paragraph.
     assert_eq!(
         Timestamp::take("60:60.000").unwrap_err(),
         TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {

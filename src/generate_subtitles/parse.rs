@@ -12,6 +12,7 @@
 
 use crate::line_markers_descriptor::{CLEAR_MARKER, END_OF_VIDEO_MARKER};
 use crate::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
+use core::fmt;
 use derive_more::{Display, Error};
 
 /// Indent width of a line that opens a new marker at the same start
@@ -469,16 +470,28 @@ pub struct OrphanedShorthandMarker {
 /// accepted at this point in the input. `continuation_indent` is
 /// `None` when no part is currently open (so a continuation could
 /// not be valid here regardless of indent).
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
-#[display(
-    "line {line_number}: indent of {actual} space(s) matches no expected width; expected {shorthand_indent} for a shorthand marker line{}",
-    continuation_indent.map_or_else(String::new, |w| format!(" or {w} for a continuation of the current marker"))
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MalformedIndentation {
     pub line_number: usize,
     pub actual: usize,
     pub shorthand_indent: usize,
     pub continuation_indent: Option<usize>,
+}
+
+impl fmt::Display for MalformedIndentation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "line {line_number}: indent of {actual} space(s) matches no expected width; expected {shorthand} for a shorthand marker line",
+            line_number = self.line_number,
+            actual = self.actual,
+            shorthand = self.shorthand_indent,
+        )?;
+        match self.continuation_indent {
+            Some(width) => write!(f, " or {width} for a continuation of the current marker"),
+            None => Ok(()),
+        }
+    }
 }
 
 /// Payload for [`ParseLyricsError::RepeatedTimestamp`]. Raised when

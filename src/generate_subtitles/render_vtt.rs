@@ -40,6 +40,7 @@ use crate::line_markers_descriptor::{LineMarkersDesc, VoiceName};
 use crate::timestamp::{Timestamp, VttTime};
 use crate::video_descriptor::Language;
 use core::fmt::Write;
+use core::ops::BitOrAssign;
 use derive_more::{Display, Error};
 use text_block_macros::text_block_fnl;
 use voice_span::VoiceSelector;
@@ -86,7 +87,7 @@ pub fn render_vtt(
     let mut features = Features::default();
     for cue in cues {
         let rendering = render_cue(cue, markers, &vocabulary, language)?;
-        features.merge(&rendering.features);
+        features |= rendering.features;
         cue_renderings.push(rendering);
     }
 
@@ -120,16 +121,16 @@ pub fn render_vtt(
 ///
 /// The same shape is used at two levels: each `CueRendering` carries
 /// the per-cue flags, and `render_vtt` keeps a song-level
-/// accumulator that ORs the per-cue flags together with `merge`.
-#[derive(Debug, Default)]
+/// accumulator that folds the per-cue flags in via `|=`.
+#[derive(Debug, Default, Clone, Copy)]
 struct Features {
     used_credit_role: bool,
     used_credit_name: bool,
     used_credit_special: bool,
 }
 
-impl Features {
-    fn merge(&mut self, other: &Self) {
+impl BitOrAssign for Features {
+    fn bitor_assign(&mut self, other: Self) {
         self.used_credit_role |= other.used_credit_role;
         self.used_credit_name |= other.used_credit_name;
         self.used_credit_special |= other.used_credit_special;
