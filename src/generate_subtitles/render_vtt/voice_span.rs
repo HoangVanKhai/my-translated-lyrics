@@ -11,13 +11,16 @@
 //! renderer, which writes `<v {name}>...</v>` into the per-cue
 //! output buffer rather than constructing an intermediate value.
 //!
-//! The [`VoiceName`] reject list covers `"`, `\`, and line
-//! terminators, which are exactly the characters that would break
-//! the CSS double-quoted attribute-value string, so the selector
-//! needs no additional escape.
+//! [`VoiceName::new`] rejects `<`, `>`, `"`, `\`, `U+2028`,
+//! `U+2029`, and any control character. Those characters are
+//! exactly the set that would break either the WebVTT cue tag or
+//! the CSS double-quoted attribute-value string, so neither side
+//! needs an escape pass on top of the reject list.
+//!
+//! [`VoiceName::new`]: crate::line_markers_descriptor::VoiceName::new
 
 use crate::line_markers_descriptor::VoiceName;
-use core::fmt;
+use derive_more::Display;
 
 /// Renders the CSS attribute selector `v[voice="{name}"]` that
 /// targets every voice span in the current cue scope whose voice
@@ -25,13 +28,9 @@ use core::fmt;
 ///
 /// The caller wraps the result in `::cue(...)` to form the full
 /// WebVTT STYLE-block selector.
+#[derive(Display)]
+#[display("v[voice=\"{name}\"]", name = _0.as_str())]
 pub struct VoiceSelector<'a>(pub &'a VoiceName);
-
-impl fmt::Display for VoiceSelector<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "v[voice=\"{name}\"]", name = self.0.as_str())
-    }
-}
 
 #[cfg(test)]
 mod tests;

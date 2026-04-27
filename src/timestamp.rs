@@ -203,42 +203,28 @@ impl fmt::Debug for Timestamp {
 /// `From`/`Into`; the inner `Timestamp` is not exposed directly so
 /// that every call site is a named conversion rather than a
 /// positional tuple access.
-#[derive(From, Into, Clone, Copy)]
+#[derive(Display, From, Into, Clone, Copy)]
+#[display(
+    "{hours:02}:{minutes:02}:{seconds:02},{milliseconds:03}",
+    hours = _0.0 / MILLISECONDS_PER_HOUR,
+    minutes = (_0.0 % MILLISECONDS_PER_HOUR) / MILLISECONDS_PER_MINUTE,
+    seconds = (_0.0 % MILLISECONDS_PER_MINUTE) / MILLISECONDS_PER_SECOND,
+    milliseconds = _0.0 % MILLISECONDS_PER_SECOND,
+)]
 pub struct SrtTime(Timestamp);
-
-impl fmt::Display for SrtTime {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Timestamp(total) = (*self).into();
-        write!(
-            f,
-            "{hours:02}:{minutes:02}:{seconds:02},{milliseconds:03}",
-            hours = total / MILLISECONDS_PER_HOUR,
-            minutes = (total % MILLISECONDS_PER_HOUR) / MILLISECONDS_PER_MINUTE,
-            seconds = (total % MILLISECONDS_PER_MINUTE) / MILLISECONDS_PER_SECOND,
-            milliseconds = total % MILLISECONDS_PER_SECOND,
-        )
-    }
-}
 
 /// Thin wrapper around [`Timestamp`] that renders in the WebVTT
 /// `HH:MM:SS.mmm` format. See [`SrtTime`] for the same construction
 /// and extraction story.
-#[derive(From, Into, Clone, Copy)]
+#[derive(Display, From, Into, Clone, Copy)]
+#[display(
+    "{hours:02}:{minutes:02}:{seconds:02}.{milliseconds:03}",
+    hours = _0.0 / MILLISECONDS_PER_HOUR,
+    minutes = (_0.0 % MILLISECONDS_PER_HOUR) / MILLISECONDS_PER_MINUTE,
+    seconds = (_0.0 % MILLISECONDS_PER_MINUTE) / MILLISECONDS_PER_SECOND,
+    milliseconds = _0.0 % MILLISECONDS_PER_SECOND,
+)]
 pub struct VttTime(Timestamp);
-
-impl fmt::Display for VttTime {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Timestamp(total) = (*self).into();
-        write!(
-            f,
-            "{hours:02}:{minutes:02}:{seconds:02}.{milliseconds:03}",
-            hours = total / MILLISECONDS_PER_HOUR,
-            minutes = (total % MILLISECONDS_PER_HOUR) / MILLISECONDS_PER_MINUTE,
-            seconds = (total % MILLISECONDS_PER_MINUTE) / MILLISECONDS_PER_SECOND,
-            milliseconds = total % MILLISECONDS_PER_SECOND,
-        )
-    }
-}
 
 /// Payload for a minutes-out-of-range error. Describes an
 /// `MM:SS.mmm` prefix whose minutes component reaches or exceeds 60.
