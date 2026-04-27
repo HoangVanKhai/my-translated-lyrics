@@ -191,6 +191,14 @@ fn render_cue_part(
         .get(marker)
         .and_then(|by_language| by_language.get(language));
 
+    // `VoiceName::new` rejects `<`, `>`, `"`, `\`, `U+2028`,
+    // `U+2029`, and any control character at the data boundary, so
+    // splatting the name directly into the cue tag is safe without
+    // an HTML-entity escape pass: none of the rejected characters
+    // can break the tag, and `&` (which `VoiceName` allows) is left
+    // verbatim because the WebVTT parser would decode `&amp;` back
+    // to `&` and that would fall out of step with the CSS-side
+    // selector.
     if let Some(voice_name) = voice_name {
         write!(output, "<v {name}>", name = voice_name.as_str()).unwrap();
     }
