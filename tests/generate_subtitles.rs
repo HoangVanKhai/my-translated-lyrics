@@ -104,7 +104,7 @@ fn has_lyrics_txt(song_dir: &Path) -> bool {
 fn collect_subtitle_files(root: &Path) -> BTreeSet<PathBuf> {
     root.pipe(WalkDir::new)
         .into_iter()
-        .map(Result::unwrap)
+        .map(Result::<walkdir::DirEntry, _>::unwrap)
         .filter(|entry| entry.file_type().is_file())
         .map(walkdir::DirEntry::into_path)
         .filter(|path| {
