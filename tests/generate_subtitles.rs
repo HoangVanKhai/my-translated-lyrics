@@ -27,7 +27,7 @@ fn dist_is_up_to_date_with_sources() {
     let entries = sources_dir
         .pipe_ref(read_dir)
         .unwrap()
-        .map(Result::unwrap)
+        .map(Result::<DirEntry, _>::unwrap)
         .filter(|entry| entry.file_type().unwrap().is_dir())
         .sorted_by_key(|entry| entry.file_name());
 
