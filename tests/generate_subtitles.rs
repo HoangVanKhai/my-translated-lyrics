@@ -105,7 +105,7 @@ fn collect_subtitle_files(root: &Path) -> BTreeSet<PathBuf> {
     if !root.exists() {
         return BTreeSet::new();
     }
-    WalkDir::new(root)
+    root.pipe(WalkDir::new)
         .into_iter()
         .map(Result::unwrap)
         .filter(|entry| entry.file_type().is_file())
