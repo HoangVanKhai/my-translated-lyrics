@@ -118,30 +118,42 @@ pub fn load_song(song_dir: &Path) -> Song {
     // time instead of deferring the failure to a downstream consumer
     // that does not exist yet.
     let video_path = song_dir.join(VIDEO_CONFIG_FILE_NAME);
-    let video_content = read_to_string(&video_path)
-        .unwrap_or_else(|error| panic!("error: Cannot read {video_path:?}: {error}"));
-    let _: VideoDesc = toml::from_str(&video_content)
-        .unwrap_or_else(|error| panic!("error: Cannot parse {video_path:?}: {error}"));
+    video_path
+        .pipe_ref(read_to_string)
+        .unwrap_or_else(|error| panic!("error: Cannot read {video_path:?}: {error}"))
+        .pipe_as_ref(toml::from_str::<VideoDesc>)
+        .unwrap_or_else(|error| panic!("error: Cannot parse {video_path:?}: {error}"))
+        .pipe(drop::<VideoDesc>);
 
     let markers_path = song_dir.join(LINE_MARKERS_CONFIG_FILE_NAME);
-    let markers: LineMarkersDesc = if markers_path.exists() {
-        let markers_content = read_to_string(&markers_path)
-            .unwrap_or_else(|error| panic!("error: Cannot read {markers_path:?}: {error}"));
-        toml::from_str(&markers_content)
-            .unwrap_or_else(|error| panic!("error: Cannot parse {markers_path:?}: {error}"))
-    } else {
-        LineMarkersDesc::default()
-    };
+    let markers: LineMarkersDesc = markers_path
+        .exists()
+        .then_some(&markers_path)
+        .map(read_to_string)
+        .map(|result| {
+            result.unwrap_or_else(|error| panic!("error: Cannot read {markers_path:?}: {error}"))
+        })
+        .as_deref()
+        .map(toml::from_str::<LineMarkersDesc>)
+        .map(|result| {
+            result.unwrap_or_else(|error| panic!("error: Cannot parse {markers_path:?}: {error}"))
+        })
+        .unwrap_or_default();
 
     let credits_path = song_dir.join(CREDITS_CONFIG_FILE_NAME);
-    let credits: CreditsDesc = if credits_path.exists() {
-        let credits_content = read_to_string(&credits_path)
-            .unwrap_or_else(|error| panic!("error: Cannot read {credits_path:?}: {error}"));
-        serde_saphyr::from_str(&credits_content)
-            .unwrap_or_else(|error| panic!("error: Cannot parse {credits_path:?}: {error}"))
-    } else {
-        CreditsDesc::default()
-    };
+    let credits: CreditsDesc = credits_path
+        .exists()
+        .then_some(&credits_path)
+        .map(read_to_string)
+        .map(|result| {
+            result.unwrap_or_else(|error| panic!("error: Cannot read {credits_path:?}: {error}"))
+        })
+        .as_deref()
+        .map(serde_saphyr::from_str::<CreditsDesc>)
+        .map(|result| {
+            result.unwrap_or_else(|error| panic!("error: Cannot parse {credits_path:?}: {error}"))
+        })
+        .unwrap_or_default();
 
     let mut languages = BTreeMap::<Language, LanguageBundle>::new();
     let entries = song_dir
