@@ -89,7 +89,7 @@ pub fn parse_lyrics(content: &str) -> Result<Vec<SubtitleCue>, ParseLyricsError>
 }
 
 fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
-    let mut events: Vec<Event> = Vec::new();
+    let mut events = Vec::<Event>::new();
     let mut last_cue_index: Option<usize> = None;
     // Byte length of `marker: ` for the most recently added part of
     // the most recently opened cue group. A continuation line is
@@ -330,7 +330,7 @@ fn check_event_order(
 }
 
 fn resolve_cues(events: Vec<Event>) -> Result<Vec<SubtitleCue>, ParseLyricsError> {
-    let mut cues: Vec<SubtitleCue> = Vec::new();
+    let mut cues = Vec::<SubtitleCue>::new();
 
     for (index, event) in events.iter().enumerate() {
         let Event::Cue(group) = event else {

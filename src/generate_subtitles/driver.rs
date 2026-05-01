@@ -176,7 +176,7 @@ pub fn load_song(song_dir: &Path) -> Result<Song, GenerateError> {
         CreditsDesc::default()
     };
 
-    let mut languages: BTreeMap<Language, LanguageBundle> = BTreeMap::new();
+    let mut languages = BTreeMap::<Language, LanguageBundle>::new();
     let entries = read_dir(song_dir).map_err(|cause| {
         GenerateError::ReadDir(GenerateErrorReadDirPayload {
             path: song_dir.to_path_buf(),

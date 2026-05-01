@@ -189,7 +189,7 @@ pub fn parse_credit_line(
     line: &str,
     vocabulary: &CreditsVocabulary,
 ) -> Result<Vec<CreditPair>, ParseCreditError> {
-    let mut pairs: Vec<CreditPair> = Vec::new();
+    let mut pairs = Vec::<CreditPair>::new();
     let (_, mut rest) = take_leading_whitespace(line);
 
     while !rest.is_empty() {
@@ -218,7 +218,7 @@ pub fn parse_credit_line(
 }
 
 fn parse_name_region(region: &str) -> Vec<NameSegment> {
-    let mut segments: Vec<NameSegment> = Vec::new();
+    let mut segments = Vec::<NameSegment>::new();
     let mut plain = String::new();
     let mut rest = region;
 
@@ -251,8 +251,8 @@ where
     Iter: IntoIterator<Item = Item>,
     Item: AsRef<str>,
 {
-    let mut seen: BTreeSet<String> = BTreeSet::new();
-    let mut collected: Vec<String> = Vec::new();
+    let mut seen = BTreeSet::<String>::new();
+    let mut collected = Vec::<String>::new();
     for value in values {
         let owned = value.as_ref().to_string();
         if seen.insert(owned.clone()) {

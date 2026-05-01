@@ -81,7 +81,7 @@ pub fn render_vtt(
 ) -> Result<String, RenderVttError> {
     let vocabulary = CreditsVocabulary::from_descriptor(credits, language);
 
-    let mut cue_renderings: Vec<CueRendering> = Vec::with_capacity(cues.len());
+    let mut cue_renderings = Vec::<CueRendering>::with_capacity(cues.len());
     let mut features = Features::default();
     for cue in cues {
         let rendering = render_cue(cue, markers, &vocabulary, language)?;
