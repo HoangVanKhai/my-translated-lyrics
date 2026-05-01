@@ -2,8 +2,10 @@ pub mod _utils;
 pub use _utils::*;
 
 use itertools::Itertools;
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::collections::BTreeSet;
+use std::ffi::OsString;
 use std::fs::{DirEntry, read_dir, read_to_string};
 use std::path::{Path, PathBuf};
 use translated_lyrics::generate_subtitles::{load_song, render_song};
@@ -88,16 +90,13 @@ fn dist_is_up_to_date_with_sources() {
 }
 
 fn has_lyrics_txt(song_dir: &Path) -> bool {
-    let Ok(entries) = read_dir(song_dir) else {
-        return false;
-    };
-    entries.map(Result::<DirEntry, _>::unwrap).any(|entry| {
-        entry
-            .file_name()
-            .to_str()
-            .map(|name| name.starts_with("lyrics.") && name.ends_with(".txt"))
-            .unwrap_or(false)
-    })
+    song_dir
+        .pipe(read_dir)
+        .into_iter() // ignore Err
+        .flat_map(|entries| entries.map(Result::<DirEntry, _>::unwrap))
+        .map(|entry| entry.file_name())
+        .flat_map(OsString::into_string)
+        .any(|name| name.starts_with("lyrics.") && name.ends_with(".txt"))
 }
 
 fn collect_subtitle_files(root: &Path) -> BTreeSet<PathBuf> {
