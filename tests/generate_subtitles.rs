@@ -31,8 +31,8 @@ fn dist_is_up_to_date_with_sources() {
         .filter(|entry| entry.file_type().unwrap().is_dir())
         .sorted_by_key(|entry| entry.file_name());
 
-    let mut expected_dist_files: BTreeSet<PathBuf> = BTreeSet::new();
-    let mut rendered_song_names: BTreeSet<String> = BTreeSet::new();
+    let mut expected_dist_files = BTreeSet::<PathBuf>::new();
+    let mut rendered_song_names = BTreeSet::<String>::new();
     for entry in entries {
         let song_dir = entry.path();
         if !has_lyrics_txt(&song_dir) {
