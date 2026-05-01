@@ -23,4 +23,4 @@ pub mod styles;
 mod driver;
 mod escape;
 
-pub use driver::{GenerateError, Song, load_song, main, render_song};
+pub use driver::{Song, load_song, main, render_song};

@@ -1,5 +1,3 @@
-use std::process::ExitCode;
-
-fn main() -> ExitCode {
-    translated_lyrics::generate_subtitles::main()
+fn main() {
+    translated_lyrics::generate_subtitles::main();
 }
