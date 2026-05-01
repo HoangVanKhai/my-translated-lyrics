@@ -97,7 +97,7 @@ fn has_lyrics_txt(song_dir: &Path) -> bool {
         .map(Result::<DirEntry, _>::unwrap)
         .map(|entry| entry.file_name())
         .map(OsString::into_string)
-        .map(Result::unwrap)
+        .map(Result::<String, _>::unwrap)
         .any(|name| name.starts_with("lyrics.") && name.ends_with(".txt"))
 }
 
