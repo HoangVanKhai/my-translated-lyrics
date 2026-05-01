@@ -17,9 +17,7 @@ pub const CREDIT_SPECIAL_COLOR: &str = "#55ABCD";
 /// Presentation attributes applied to a run of cue text.
 #[derive(Clone, Copy)]
 pub struct Style {
-    /// Six-digit hex color such as `"#FFD966"`, embedded verbatim in
-    /// `<font color="..">` tags and in `::cue(...) { color: ... }`
-    /// rules.
+    /// CSS color value, such as `"#FFD966"` or `"white"`.
     pub color: Option<&'static str>,
     /// Render the run in italics.
     pub italic: bool,
