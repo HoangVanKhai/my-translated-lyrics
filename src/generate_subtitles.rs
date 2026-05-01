@@ -15,12 +15,11 @@
 //! The entry point [`main`] is called from `cli/generate_subtitles.rs`.
 
 pub mod credits_parse;
+mod driver;
+mod escape;
 pub mod parse;
 pub mod render_srt;
 pub mod render_vtt;
 pub mod styles;
-
-mod driver;
-mod escape;
 
 pub use driver::{GenerateError, Song, load_song, main, render_song_to_disk};
