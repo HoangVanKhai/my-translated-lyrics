@@ -71,7 +71,7 @@ fn dist_is_up_to_date_with_sources() {
 
     assert!(
         !expected_dist_files.is_empty(),
-        "no songs were rendered; is sources/ empty?",
+        "no songs were rendered; is `sources/` empty?",
     );
 
     let actual_dist_files: BTreeSet<PathBuf> = rendered_song_names
