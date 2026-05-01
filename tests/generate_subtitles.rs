@@ -24,7 +24,8 @@ fn dist_is_up_to_date_with_sources() {
     let dist_dir = manifest_dir.join("dist");
     let scratch_dir = Temp::new_dir();
 
-    let entries = read_dir(&sources_dir)
+    let entries = sources_dir
+        .pipe_ref(read_dir)
         .unwrap()
         .map(Result::unwrap)
         .filter(|entry| entry.file_type().unwrap().is_dir())
