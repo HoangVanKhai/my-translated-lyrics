@@ -82,7 +82,7 @@ fn dist_is_up_to_date_with_sources() {
     assert_eq!(
         stale,
         &[] as &[&PathBuf],
-        "dist/ contains stale subtitle artifacts that the generator no longer produces: {stale:#?}. \
+        "`dist/` contains stale subtitle artifacts that the generator no longer produces: {stale:#?}. \
         The generator does not remove files it no longer writes; delete them manually, \
         then rerun `cargo run --bin generate-subtitles -- sources dist --execute` to verify.",
     );
@@ -90,7 +90,7 @@ fn dist_is_up_to_date_with_sources() {
     assert_eq!(
         missing,
         &[] as &[&PathBuf],
-        "dist/ is missing subtitle artifacts the generator just wrote: {missing:#?}. \
+        "`dist/` is missing subtitle artifacts the generator just wrote: {missing:#?}. \
         Regenerate with `cargo run --bin generate-subtitles -- sources dist --execute`.",
     );
 }
