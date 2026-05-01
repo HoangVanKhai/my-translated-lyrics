@@ -394,6 +394,5 @@ pub enum RenderVttError {
 
 #[cfg(test)]
 mod tests;
-
 #[cfg(test)]
 mod voice_selector_tests;
