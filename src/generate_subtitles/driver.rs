@@ -84,6 +84,10 @@ pub fn render_song_to_disk(
                     cause,
                 })
             })?;
+        let vtt_path = destination_dir.join(format!("lyrics.{}.vtt", bundle.language));
+        write_subtitle(&vtt_path, &vtt, execute)?;
+        written += 1;
+
         let srt = render_srt(&bundle.cues, &song.markers, &song.credits, &bundle.language)
             .map_err(|cause| {
                 GenerateError::RenderSrt(GenerateErrorRenderSrtPayload {
@@ -92,12 +96,7 @@ pub fn render_song_to_disk(
                     cause,
                 })
             })?;
-        let vtt_path = destination_dir.join(format!("lyrics.{}.vtt", bundle.language));
         let srt_path = destination_dir.join(format!("lyrics.{}.srt", bundle.language));
-
-        write_subtitle(&vtt_path, &vtt, execute)?;
-        written += 1;
-
         write_subtitle(&srt_path, &srt, execute)?;
         written += 1;
     }
