@@ -45,9 +45,6 @@ use core::fmt::Write;
 use core::ops::BitOrAssign;
 use derive_more::{Display, Error};
 use text_block_macros::text_block_fnl;
-use voice_selector::VoiceSelector;
-
-mod voice_selector;
 
 /// Built-in class name for the role cell of a credit line.
 const CLASS_CREDIT_ROLE: &str = "creditRole";
@@ -326,6 +323,30 @@ fn write_style_block(
     }
 }
 
+/// `Display` wrapper that renders the CSS attribute selector
+/// `v[voice="{name}"]` for a [`VoiceName`].
+///
+/// `VoiceName` does not implement `Display` on its own because the
+/// type is consumed in two contexts whose quoting rules disagree
+/// (the WebVTT cue tag and the CSS attribute selector), and a
+/// single `Display` impl could only be correct in one. This wrapper
+/// is the CSS-side helper: it produces the shape that goes inside
+/// `::cue(...)` in the STYLE block. The cue-tag side is emitted
+/// directly by [`render_cue_part`], which writes `<v {name}>...</v>`
+/// into the per-cue output buffer rather than constructing an
+/// intermediate value.
+///
+/// [`VoiceName::new`] rejects `<`, `>`, `"`, `\`, `U+2028`,
+/// `U+2029`, and any control character. Those characters are
+/// exactly the set that would break either the WebVTT cue tag or
+/// the CSS double-quoted attribute-value string, so neither side
+/// needs an escape pass on top of the reject list.
+///
+/// [`VoiceName::new`]: crate::line_markers_descriptor::VoiceName::new
+#[derive(Display)]
+#[display(r#"v[voice="{name}"]"#, name = _0.as_str())]
+struct VoiceSelector<'a>(&'a VoiceName);
+
 fn write_voice_rule(output: &mut String, voice_name: &VoiceName, style: Option<&Style>) {
     writeln!(
         output,
@@ -373,3 +394,6 @@ pub enum RenderVttError {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod voice_selector_tests;
