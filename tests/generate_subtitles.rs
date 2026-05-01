@@ -9,6 +9,7 @@ use std::ffi::OsString;
 use std::fs::{DirEntry, read_dir, read_to_string};
 use std::path::{Path, PathBuf};
 use translated_lyrics::generate_subtitles::{load_song, render_song};
+use walkdir::WalkDir;
 
 /// Exhaustively re-renders each song directory in `sources/` and
 /// compares the generated `.srt` and `.vtt` files against the checked-in
@@ -101,23 +102,18 @@ fn has_lyrics_txt(song_dir: &Path) -> bool {
 }
 
 fn collect_subtitle_files(root: &Path) -> BTreeSet<PathBuf> {
-    let mut collected = BTreeSet::new();
-    let Ok(entries) = read_dir(root) else {
-        return collected;
-    };
-    for entry in entries.map(Result::<DirEntry, _>::unwrap) {
-        let path = entry.path();
-        let file_type = entry.file_type().unwrap();
-        if file_type.is_dir() {
-            collected.extend(collect_subtitle_files(&path));
-        } else if file_type.is_file()
-            && path
-                .extension()
+    if !root.exists() {
+        return BTreeSet::new();
+    }
+    WalkDir::new(root)
+        .into_iter()
+        .map(Result::unwrap)
+        .filter(|entry| entry.file_type().is_file())
+        .map(walkdir::DirEntry::into_path)
+        .filter(|path| {
+            path.extension()
                 .and_then(|ext| ext.to_str())
                 .is_some_and(|ext| ext == "srt" || ext == "vtt")
-        {
-            collected.insert(path);
-        }
-    }
-    collected
+        })
+        .collect()
 }
