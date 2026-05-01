@@ -105,7 +105,7 @@ fn collect_subtitle_files(root: &Path) -> BTreeSet<PathBuf> {
     let Ok(entries) = read_dir(root) else {
         return collected;
     };
-    for entry in entries.filter_map(Result::ok) {
+    for entry in entries.map(Result::<DirEntry, _>::unwrap) {
         let path = entry.path();
         let file_type = entry.file_type().unwrap();
         if file_type.is_dir() {
