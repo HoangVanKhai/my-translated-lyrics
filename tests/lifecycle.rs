@@ -124,7 +124,7 @@ fn dry_run_does_not_install_subtitles() {
             true,
         ),
     );
-    assert!(env.target_subtitle_files().is_empty());
+    assert_eq!(env.target_subtitle_files(), &[] as &[String]);
 }
 
 #[test]
