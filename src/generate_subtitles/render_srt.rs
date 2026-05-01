@@ -121,7 +121,7 @@ fn wrap_with_style(output: &mut String, text: &str, style: Option<&Style>) {
         output.push_str("<i>");
     }
     if let Some(color) = style.color {
-        write!(output, "<font color=\"{color}\">").unwrap();
+        write!(output, r#"<font color="{color}">"#).unwrap();
     }
     write!(output, "{}", Escaped(text)).unwrap();
     if style.color.is_some() {
@@ -147,12 +147,12 @@ fn render_credit_line(output: &mut String, pairs: &[CreditPair]) {
 fn render_credit_pair(output: &mut String, pair: &CreditPair) {
     write!(
         output,
-        "<font color=\"{CREDIT_ROLE_COLOR}\">{role}</font>",
+        r#"<font color="{CREDIT_ROLE_COLOR}">{role}</font>"#,
         role = Escaped(&pair.role),
     )
     .unwrap();
     append_separator_for_output(output, &pair.separator);
-    write!(output, "<font color=\"{CREDIT_NAME_COLOR}\">").unwrap();
+    write!(output, r#"<font color="{CREDIT_NAME_COLOR}">"#).unwrap();
     write_name_segments(output, &pair.name_segments);
     output.push_str("</font>");
 }
@@ -166,7 +166,7 @@ fn write_name_segments(output: &mut String, segments: &[NameSegment]) {
             NameSegment::Special(text) => {
                 write!(
                     output,
-                    "<font color=\"{CREDIT_SPECIAL_COLOR}\">{text}</font>",
+                    r#"<font color="{CREDIT_SPECIAL_COLOR}">{text}</font>"#,
                     text = Escaped(text.as_str()),
                 )
                 .unwrap();
