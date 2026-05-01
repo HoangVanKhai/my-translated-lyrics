@@ -262,7 +262,7 @@ pub fn main() -> ExitCode {
         .map(|entry| entry.path())
         .sorted();
 
-    let mut total_written = 0usize;
+    let mut total_written: usize = 0;
     for song_dir in song_dirs {
         let has_txt = read_dir(&song_dir)
             .unwrap_or_else(|error| panic!("error: Cannot read directory {song_dir:?}: {error}"))
