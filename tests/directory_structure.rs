@@ -98,7 +98,7 @@ fn dist_subtitle_file_names_are_canonical() {
             match name.parse::<LyricsFileName>() {
                 Ok(_) => {}
                 Err(ParseLyricsFileNameError::NotLyricsFile) => continue,
-                Err(error) => panic!("`dist/{song_name}/{name}`: {error}"),
+                Err(error) => panic!("dist/{song_name}/{name}: {error}"),
             }
         }
     }
