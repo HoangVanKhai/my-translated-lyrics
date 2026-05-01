@@ -6,7 +6,7 @@ use pretty_assertions::assert_eq;
 use std::collections::BTreeSet;
 use std::fs::{read_dir, read_to_string};
 use std::path::{Path, PathBuf};
-use translated_lyrics::generate_subtitles::{load_song, render_song_to_disk};
+use translated_lyrics::generate_subtitles::{load_song, render_song};
 
 /// Exhaustively re-renders each song directory in `sources/` and
 /// compares the generated `.srt` and `.vtt` files against the checked-in
@@ -42,7 +42,7 @@ fn dist_is_up_to_date_with_sources() {
                 .to_string(),
         );
         let song = load_song(&song_dir).unwrap();
-        let rendered_count = render_song_to_disk(&song, &scratch_dir, true).unwrap();
+        let rendered_count = render_song(&song, &scratch_dir, true).unwrap();
         let subtitle_files = collect_subtitle_files(&scratch_dir.join(&song.directory_name));
         dbg!(&subtitle_files);
         assert_eq!(subtitle_files.len(), rendered_count);

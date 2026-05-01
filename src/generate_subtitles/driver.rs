@@ -59,11 +59,7 @@ pub struct Song {
 /// to both `.srt` and `.vtt` and writing the result into `dist_dir`.
 /// Returns the count of files that were (or, in dry-run mode, would
 /// have been) written.
-pub fn render_song_to_disk(
-    song: &Song,
-    dist_dir: &Path,
-    execute: bool,
-) -> Result<usize, GenerateError> {
+pub fn render_song(song: &Song, dist_dir: &Path, execute: bool) -> Result<usize, GenerateError> {
     let destination_dir = dist_dir.join(&song.directory_name);
     if execute {
         create_dir_all(&destination_dir).map_err(|cause| {
@@ -289,7 +285,7 @@ pub fn main() -> ExitCode {
             }
         };
         eprintln!("stage: Rendering {:?}", song.directory_name);
-        let written = match render_song_to_disk(&song, &args.dist, args.execute) {
+        let written = match render_song(&song, &args.dist, args.execute) {
             Ok(count) => count,
             Err(error) => {
                 eprintln!("error: {error}");
