@@ -42,8 +42,12 @@ fn dist_is_up_to_date_with_sources() {
                 .to_string(),
         );
         let song = load_song(&song_dir).expect("load song");
-        render_song_to_disk(&song, &scratch_dir, true).expect("render song to scratch");
-        for generated_path in collect_subtitle_files(&scratch_dir.join(&song.directory_name)) {
+        let rendered_count =
+            render_song_to_disk(&song, &scratch_dir, true).expect("render song to scratch");
+        let subtitle_files = collect_subtitle_files(&scratch_dir.join(&song.directory_name));
+        dbg!(&subtitle_files);
+        assert_eq!(subtitle_files.len(), rendered_count);
+        for generated_path in subtitle_files {
             let relative = generated_path
                 .strip_prefix(&scratch_dir)
                 .expect("generated path must be inside scratch dir");
