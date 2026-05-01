@@ -43,9 +43,9 @@ use core::fmt::Write;
 use core::ops::BitOrAssign;
 use derive_more::{Display, Error};
 use text_block_macros::text_block_fnl;
-use voice_span::VoiceSelector;
+use voice_selector::VoiceSelector;
 
-mod voice_span;
+mod voice_selector;
 
 /// Built-in class name for the role cell of a credit line.
 const CLASS_CREDIT_ROLE: &str = "creditRole";
