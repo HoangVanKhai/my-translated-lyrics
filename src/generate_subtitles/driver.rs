@@ -74,7 +74,7 @@ pub fn render_song_to_disk(
         })?;
     }
 
-    let mut written = 0usize;
+    let mut written: usize = 0;
     for bundle in &song.languages {
         let vtt = render_vtt(&bundle.cues, &song.markers, &song.credits, &bundle.language)
             .map_err(|cause| {
