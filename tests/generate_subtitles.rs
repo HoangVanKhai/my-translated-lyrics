@@ -4,7 +4,7 @@ pub use _utils::*;
 use itertools::Itertools;
 use pretty_assertions::assert_eq;
 use std::collections::BTreeSet;
-use std::fs::{read_dir, read_to_string};
+use std::fs::{DirEntry, read_dir, read_to_string};
 use std::path::{Path, PathBuf};
 use translated_lyrics::generate_subtitles::{load_song, render_song};
 
@@ -91,7 +91,7 @@ fn has_lyrics_txt(song_dir: &Path) -> bool {
     let Ok(entries) = read_dir(song_dir) else {
         return false;
     };
-    entries.filter_map(Result::ok).any(|entry| {
+    entries.map(Result::<DirEntry, _>::unwrap).any(|entry| {
         entry
             .file_name()
             .to_str()
