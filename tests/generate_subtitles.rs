@@ -93,8 +93,7 @@ fn dist_is_up_to_date_with_sources() {
 fn has_lyrics_txt(song_dir: &Path) -> bool {
     song_dir
         .pipe(read_dir)
-        .into_iter() // ignore Err
-        .flatten()
+        .unwrap()
         .map(Result::<DirEntry, _>::unwrap)
         .map(|entry| entry.file_name())
         .flat_map(OsString::into_string)
