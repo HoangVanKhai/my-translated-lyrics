@@ -94,9 +94,12 @@ pub fn render_song_to_disk(
             })?;
         let vtt_path = destination_dir.join(format!("lyrics.{}.vtt", bundle.language));
         let srt_path = destination_dir.join(format!("lyrics.{}.srt", bundle.language));
+
         write_subtitle(&vtt_path, &vtt, execute)?;
+        written += 1;
+
         write_subtitle(&srt_path, &srt, execute)?;
-        written += 2;
+        written += 1;
     }
     Ok(written)
 }
