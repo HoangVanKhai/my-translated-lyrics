@@ -102,6 +102,7 @@ pub enum ParseVideoTitleError {
 #[derive(
     Debug,
     Clone,
+    Copy,
     strum::Display,
     PartialEq,
     Eq,
