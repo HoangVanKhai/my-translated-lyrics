@@ -25,7 +25,7 @@ fn dist_drafts_and_sources_have_flat_structure() {
             .pipe(Path::new)
             .join(top_dir_name);
         if !top_dir.exists() {
-            assert_ne!(top_dir_name, "dist", "dist/ directory must exist",);
+            assert_ne!(top_dir_name, "dist", "`dist/` directory must exist",);
             continue;
         }
 
@@ -42,7 +42,7 @@ fn dist_drafts_and_sources_have_flat_structure() {
 
             assert!(
                 path.is_dir(),
-                "{top_dir_name}/{name} should be a directory, not a file",
+                "`{top_dir_name}/{name}` should be a directory, not a file",
             );
 
             let inner_entries = path
@@ -58,7 +58,7 @@ fn dist_drafts_and_sources_have_flat_structure() {
 
                 assert!(
                     inner_path.is_file(),
-                    "{top_dir_name}/{name}/{inner_name} should be a file, not a directory",
+                    "`{top_dir_name}/{name}/{inner_name}` should be a file, not a directory",
                 );
             }
         }
@@ -98,7 +98,7 @@ fn dist_subtitle_file_names_are_canonical() {
             match name.parse::<LyricsFileName>() {
                 Ok(_) => {}
                 Err(ParseLyricsFileNameError::NotLyricsFile) => continue,
-                Err(error) => panic!("dist/{song_name}/{name}: {error}"),
+                Err(error) => panic!("`dist/{song_name}/{name}`: {error}"),
             }
         }
     }
