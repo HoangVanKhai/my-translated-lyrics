@@ -44,7 +44,7 @@ fn video_title_accepts_normal_component() {
 #[test]
 fn video_title_rejects_backslash() {
     assert!(matches!(
-        "foo\\bar".to_string().pipe(VideoTitle::try_from),
+        r"foo\bar".to_string().pipe(VideoTitle::try_from),
         Err(ParseVideoTitleError::ContainsBackslash)
     ));
 }

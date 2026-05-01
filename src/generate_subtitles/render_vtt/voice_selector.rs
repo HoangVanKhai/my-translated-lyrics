@@ -29,7 +29,7 @@ use derive_more::Display;
 /// The caller wraps the result in `::cue(...)` to form the full
 /// WebVTT STYLE-block selector.
 #[derive(Display)]
-#[display("v[voice=\"{name}\"]", name = _0.as_str())]
+#[display(r#"v[voice="{name}"]"#, name = _0.as_str())]
 pub struct VoiceSelector<'a>(pub &'a VoiceName);
 
 #[cfg(test)]

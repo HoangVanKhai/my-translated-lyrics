@@ -89,7 +89,7 @@ fn voice_name_containing_ampersand_is_emitted_verbatim_in_cue_tag() {
         "cue-tag side must emit raw `&`:\n{output}",
     );
     assert!(
-        output.contains("v[voice=\"Alpha & Beta\"]"),
+        output.contains(r#"v[voice="Alpha & Beta"]"#),
         "CSS-selector side must emit raw `&`:\n{output}",
     );
     assert!(

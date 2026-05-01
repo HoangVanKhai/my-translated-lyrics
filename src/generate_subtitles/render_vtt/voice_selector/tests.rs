@@ -14,7 +14,7 @@ fn voice_selector_emits_double_quoted_attribute_selector() {
     let voice_name = sample_voice_name("名字一");
     assert_eq!(
         VoiceSelector(&voice_name).to_string(),
-        "v[voice=\"名字一\"]",
+        r#"v[voice="名字一"]"#,
     );
 }
 
@@ -25,7 +25,7 @@ fn voice_selector_preserves_ascii_apostrophes_inside_double_quotes() {
     let voice_name = sample_voice_name("O'Brien");
     assert_eq!(
         VoiceSelector(&voice_name).to_string(),
-        "v[voice=\"O'Brien\"]",
+        r#"v[voice="O'Brien"]"#,
     );
 }
 
@@ -44,6 +44,6 @@ fn voice_selector_preserves_ampersand_verbatim() {
     let voice_name = sample_voice_name("Alpha & Beta");
     assert_eq!(
         VoiceSelector(&voice_name).to_string(),
-        "v[voice=\"Alpha & Beta\"]",
+        r#"v[voice="Alpha & Beta"]"#,
     );
 }

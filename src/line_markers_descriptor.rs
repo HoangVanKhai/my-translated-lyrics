@@ -182,7 +182,7 @@ pub enum InvalidVoiceName {
     #[display("voice name must not be empty")]
     Empty,
     #[display(
-        "voice name must not contain {_0:?}; `<`, `>`, `\"`, `\\`, line separators, and control characters are reserved by WebVTT and CSS"
+        r#"voice name must not contain {_0:?}; `<`, `>`, `"`, `\`, line separators, and control characters are reserved by WebVTT and CSS"#
     )]
     ForbiddenCharacter(#[error(not(source))] char),
 }

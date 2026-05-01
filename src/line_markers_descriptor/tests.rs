@@ -74,7 +74,7 @@ fn rejects_unsafe_continue_characters() {
         InvalidCssClassName::InvalidCharacter('.'),
     );
     assert_eq!(
-        "bad\"name".to_string().pipe(CssClassName::new).unwrap_err(),
+        r#"bad"name"#.to_string().pipe(CssClassName::new).unwrap_err(),
         InvalidCssClassName::InvalidCharacter('"'),
     );
 }
@@ -146,7 +146,7 @@ fn css_class_name_round_trips_through_toml() {
 
 #[test]
 fn css_class_name_toml_rejects_invalid_source() {
-    let err = toml::from_str::<CssClassHolder>("value = \"bad name\"").unwrap_err();
+    let err = toml::from_str::<CssClassHolder>(r#"value = "bad name""#).unwrap_err();
     assert!(
         err.to_string().contains("class name"),
         "error message should surface the validator's diagnostic: {err}",
@@ -165,7 +165,7 @@ fn voice_name_round_trips_through_toml() {
 
 #[test]
 fn voice_name_toml_rejects_invalid_source() {
-    let err = toml::from_str::<VoiceNameHolder>("value = \"bad<name\"").unwrap_err();
+    let err = toml::from_str::<VoiceNameHolder>(r#"value = "bad<name""#).unwrap_err();
     assert!(
         err.to_string().contains("voice name"),
         "error message should surface the validator's diagnostic: {err}",
