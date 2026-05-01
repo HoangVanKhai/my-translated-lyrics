@@ -42,8 +42,7 @@ use crate::line_markers_descriptor::{LineMarkersDesc, VoiceName};
 use crate::timestamp::{Timestamp, VttTime};
 use crate::video_descriptor::Language;
 use core::fmt::Write;
-use core::ops::BitOrAssign;
-use derive_more::{Display, Error};
+use derive_more::{BitOrAssign, Display, Error};
 use text_block_macros::text_block_fnl;
 
 /// Built-in class name for the role cell of a credit line.
@@ -121,19 +120,11 @@ pub fn render_vtt(
 /// The same shape is used at two levels: each `CueRendering` carries
 /// the per-cue flags, and `render_vtt` keeps a song-level
 /// accumulator that folds the per-cue flags in via `|=`.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, BitOrAssign)]
 struct Features {
     used_credit_role: bool,
     used_credit_name: bool,
     used_credit_special: bool,
-}
-
-impl BitOrAssign for Features {
-    fn bitor_assign(&mut self, other: Self) {
-        self.used_credit_role |= other.used_credit_role;
-        self.used_credit_name |= other.used_credit_name;
-        self.used_credit_special |= other.used_credit_special;
-    }
 }
 
 struct CueRendering {
