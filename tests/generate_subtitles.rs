@@ -38,19 +38,16 @@ fn dist_is_up_to_date_with_sources() {
             song_dir
                 .file_name()
                 .and_then(|name| name.to_str())
-                .expect("song directory must have a valid UTF-8 name")
+                .unwrap()
                 .to_string(),
         );
-        let song = load_song(&song_dir).expect("load song");
-        let rendered_count =
-            render_song_to_disk(&song, &scratch_dir, true).expect("render song to scratch");
+        let song = load_song(&song_dir).unwrap();
+        let rendered_count = render_song_to_disk(&song, &scratch_dir, true).unwrap();
         let subtitle_files = collect_subtitle_files(&scratch_dir.join(&song.directory_name));
         dbg!(&subtitle_files);
         assert_eq!(subtitle_files.len(), rendered_count);
         for generated_path in subtitle_files {
-            let relative = generated_path
-                .strip_prefix(&scratch_dir)
-                .expect("generated path must be inside scratch dir");
+            let relative = generated_path.strip_prefix(&scratch_dir).unwrap();
             let expected_path = dist_dir.join(relative);
             let generated = read_to_string(&generated_path).unwrap();
             let expected = read_to_string(&expected_path).unwrap_or_else(|error| {
