@@ -57,13 +57,13 @@ pub struct Song {
 
 /// Builds the subtitles for a single song by rendering each language
 /// to both `.srt` and `.vtt` and writing the result into `dist_dir`.
-/// Returns the set of files that were (or, in dry-run mode, would
+/// Returns the count of files that were (or, in dry-run mode, would
 /// have been) written.
 pub fn render_song_to_disk(
     song: &Song,
     dist_dir: &Path,
     execute: bool,
-) -> Result<Vec<PathBuf>, GenerateError> {
+) -> Result<usize, GenerateError> {
     let destination_dir = dist_dir.join(&song.directory_name);
     if execute {
         create_dir_all(&destination_dir).map_err(|cause| {
@@ -74,7 +74,7 @@ pub fn render_song_to_disk(
         })?;
     }
 
-    let mut written: Vec<PathBuf> = Vec::with_capacity(song.languages.len() * 2);
+    let mut written = 0usize;
     for bundle in &song.languages {
         let vtt = render_vtt(&bundle.cues, &song.markers, &song.credits, &bundle.language)
             .map_err(|cause| {
@@ -96,8 +96,7 @@ pub fn render_song_to_disk(
         let srt_path = destination_dir.join(format!("lyrics.{}.srt", bundle.language));
         write_subtitle(&vtt_path, &vtt, execute)?;
         write_subtitle(&srt_path, &srt, execute)?;
-        written.push(vtt_path);
-        written.push(srt_path);
+        written += 2;
     }
     Ok(written)
 }
@@ -289,13 +288,13 @@ pub fn main() -> ExitCode {
         };
         eprintln!("stage: Rendering {:?}", song.directory_name);
         let written = match render_song_to_disk(&song, &args.dist, args.execute) {
-            Ok(paths) => paths,
+            Ok(count) => count,
             Err(error) => {
                 eprintln!("error: {error}");
                 return ExitCode::FAILURE;
             }
         };
-        total_written += written.len();
+        total_written += written;
     }
 
     if !args.execute {
