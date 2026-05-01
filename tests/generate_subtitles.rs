@@ -96,7 +96,8 @@ fn has_lyrics_txt(song_dir: &Path) -> bool {
         .unwrap()
         .map(Result::<DirEntry, _>::unwrap)
         .map(|entry| entry.file_name())
-        .flat_map(OsString::into_string)
+        .map(OsString::into_string)
+        .map(Result::unwrap)
         .any(|name| name.starts_with("lyrics.") && name.ends_with(".txt"))
 }
 
@@ -108,7 +109,7 @@ fn collect_subtitle_files(root: &Path) -> BTreeSet<PathBuf> {
         .map(walkdir::DirEntry::into_path)
         .filter(|path| {
             path.extension()
-                .and_then(|ext| ext.to_str())
+                .map(|ext| ext.to_str().unwrap())
                 .is_some_and(|ext| ext == "srt" || ext == "vtt")
         })
         .collect()
