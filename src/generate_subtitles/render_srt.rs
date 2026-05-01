@@ -145,8 +145,8 @@ fn render_credit_line(output: &mut String, pairs: &[CreditPair]) {
 fn render_credit_pair(output: &mut String, pair: &CreditPair) {
     write!(
         output,
-        r#"<font color="{CREDIT_ROLE_COLOR}">{role}</font>"#,
-        role = Escaped(&pair.role),
+        r#"<font color="{CREDIT_ROLE_COLOR}">{}</font>"#,
+        Escaped(&pair.role),
     )
     .unwrap();
     append_separator_for_output(output, &pair.separator);
@@ -164,8 +164,8 @@ fn write_name_segments(output: &mut String, segments: &[NameSegment]) {
             NameSegment::Special(text) => {
                 write!(
                     output,
-                    r#"<font color="{CREDIT_SPECIAL_COLOR}">{text}</font>"#,
-                    text = Escaped(text.as_str()),
+                    r#"<font color="{CREDIT_SPECIAL_COLOR}">{}</font>"#,
+                    Escaped(text.as_str()),
                 )
                 .unwrap();
             }

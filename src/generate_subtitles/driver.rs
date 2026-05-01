@@ -92,8 +92,8 @@ pub fn render_song_to_disk(
                     cause,
                 })
             })?;
-        let vtt_path = destination_dir.join(format!("lyrics.{lang}.vtt", lang = bundle.language));
-        let srt_path = destination_dir.join(format!("lyrics.{lang}.srt", lang = bundle.language));
+        let vtt_path = destination_dir.join(format!("lyrics.{}.vtt", bundle.language));
+        let srt_path = destination_dir.join(format!("lyrics.{}.srt", bundle.language));
         write_subtitle(&vtt_path, &vtt, execute)?;
         write_subtitle(&srt_path, &srt, execute)?;
         written.push(vtt_path);
@@ -196,8 +196,8 @@ pub fn load_song(song_dir: &Path) -> Result<Song, GenerateError> {
         let file_name = entry.file_name();
         let Some(file_name) = file_name.to_str() else {
             panic!(
-                "lyrics directory entry {path:?} has a non-UTF-8 filename",
-                path = entry.path(),
+                "lyrics directory entry {:?} has a non-UTF-8 filename",
+                entry.path(),
             );
         };
         let middle = file_name

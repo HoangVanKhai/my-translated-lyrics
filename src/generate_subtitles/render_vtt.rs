@@ -190,7 +190,7 @@ fn render_cue_part(
     // to `&` and that would fall out of step with the CSS-side
     // selector.
     if let Some(voice_name) = voice_name {
-        write!(output, "<v {name}>", name = voice_name.as_str()).unwrap();
+        write!(output, "<v {}>", voice_name.as_str()).unwrap();
     }
 
     if markers.credits.contains(marker) {
@@ -207,12 +207,7 @@ fn render_cue_part(
             render_credit_line(output, features, &pairs);
         }
     } else if let Some(class_name) = markers.classes.get(marker) {
-        write!(
-            output,
-            "<c.{class_name}>{text}</c>",
-            text = Escaped(&part.text)
-        )
-        .unwrap();
+        write!(output, "<c.{class_name}>{}</c>", Escaped(&part.text)).unwrap();
     } else {
         write!(output, "{}", Escaped(&part.text)).unwrap();
     }
@@ -236,12 +231,7 @@ fn render_credit_line(output: &mut String, features: &mut Features, pairs: &[Cre
 fn render_credit_pair(output: &mut String, features: &mut Features, pair: &CreditPair) {
     features.used_credit_role = true;
     features.used_credit_name = true;
-    write!(
-        output,
-        "<c.{CLASS_CREDIT_ROLE}>{role}</c>",
-        role = Escaped(&pair.role),
-    )
-    .unwrap();
+    write!(output, "<c.{CLASS_CREDIT_ROLE}>{}</c>", Escaped(&pair.role)).unwrap();
     append_separator_for_output(output, &pair.separator);
     write!(output, "<c.{CLASS_CREDIT_NAME}>").unwrap();
     write_name_segments(output, features, &pair.name_segments);
@@ -258,8 +248,8 @@ fn write_name_segments(output: &mut String, features: &mut Features, segments: &
                 features.used_credit_special = true;
                 write!(
                     output,
-                    "<c.{CLASS_CREDIT_SPECIAL}>{text}</c>",
-                    text = Escaped(text.as_str()),
+                    "<c.{CLASS_CREDIT_SPECIAL}>{}</c>",
+                    Escaped(text.as_str()),
                 )
                 .unwrap();
             }
@@ -335,16 +325,11 @@ fn write_style_block(
 ///
 /// [`VoiceName::new`]: crate::line_markers_descriptor::VoiceName::new
 #[derive(Display)]
-#[display(r#"v[voice="{name}"]"#, name = _0.as_str())]
+#[display(r#"v[voice="{}"]"#, _0.as_str())]
 struct VoiceSelector<'a>(&'a VoiceName);
 
 fn write_voice_rule(output: &mut String, voice_name: &VoiceName, style: Option<&Style>) {
-    writeln!(
-        output,
-        "::cue({selector}) {{",
-        selector = VoiceSelector(voice_name),
-    )
-    .unwrap();
+    writeln!(output, "::cue({}) {{", VoiceSelector(voice_name)).unwrap();
     if let Some(style) = style {
         write_style_body(output, style);
     }

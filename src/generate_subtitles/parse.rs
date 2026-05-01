@@ -496,8 +496,8 @@ impl fmt::Display for MalformedIndentation {
 /// the renderer would emit as overlapping subtitle blocks.
 #[derive(Debug, Display, Clone, PartialEq, Eq)]
 #[display(
-    "line {line_number}: timestamp {start} repeats the start time of the immediately previous event; use the column-{prefix} shorthand to attach a second marker to the same timestamp",
-    prefix = TIMESTAMP_PREFIX_WIDTH
+    "line {line_number}: timestamp {start} repeats the start time of the immediately previous event; use the column-{} shorthand to attach a second marker to the same timestamp",
+    TIMESTAMP_PREFIX_WIDTH
 )]
 pub struct RepeatedTimestamp {
     pub line_number: usize,

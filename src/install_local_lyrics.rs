@@ -205,10 +205,7 @@ pub fn main() {
             let lyrics = match local_name.parse::<LyricsFileName>() {
                 Ok(lyrics) => lyrics,
                 Err(ParseLyricsFileNameError::NotLyricsFile) => continue,
-                Err(error) => panic!(
-                    "error: {dir}/{local_name}: {error}",
-                    dir = video_dir.display(),
-                ),
+                Err(error) => panic!("error: {}/{local_name}: {error}", video_dir.display(),),
             };
             let target_name = lyrics.target_file_name(&desc.video_title).to_string();
 
