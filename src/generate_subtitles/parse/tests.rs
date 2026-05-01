@@ -2,7 +2,7 @@ use super::{
     CueTextReservedCharacter, EmptyCueBody, ExtraTextAfterControlMarker, InvalidTimestamp,
     MalformedHeader, MalformedIndentation, MissingMarker, MissingSeparatorAfterTimestamp,
     OrphanedShorthandMarker, OutOfOrder, ParseLyricsError, RepeatedTimestamp,
-    ReservedControlMarker, TabIndentation, parse_lyrics,
+    ReservedControlMarker, TabIndentation, UnclosedCue, parse_lyrics,
 };
 use crate::timestamp::{SecondsOutOfRange, TakeTimestampError, Timestamp};
 use pretty_assertions::assert_eq;
@@ -175,7 +175,9 @@ fn rejects_cue_without_following_event() {
     let input = "00:00.000 ttl: Hello\n";
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::UnclosedCue(Timestamp::new(0, 0, 0).unwrap()),
+        ParseLyricsError::UnclosedCue(UnclosedCue {
+            start: Timestamp::new(0, 0, 0).unwrap()
+        }),
     );
 }
 

@@ -340,7 +340,9 @@ fn resolve_cues(events: Vec<Event>) -> Result<Vec<SubtitleCue>, ParseLyricsError
         let end = events
             .get(index + 1)
             .map(Event::start)
-            .ok_or(ParseLyricsError::UnclosedCue(group.start))?;
+            .ok_or(ParseLyricsError::UnclosedCue(UnclosedCue {
+                start: group.start,
+            }))?;
 
         cues.push(SubtitleCue {
             start: group.start,
@@ -536,27 +538,38 @@ pub struct CueTextReservedCharacter {
     pub character: char,
 }
 
+/// Payload for [`ParseLyricsError::UnclosedCue`]. Carries the
+/// start timestamp of the cue that has no following event to
+/// close it.
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[display("cue at {start} has no following cue or `clr`")]
+pub struct UnclosedCue {
+    pub start: Timestamp,
+}
+
 #[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum ParseLyricsError {
-    // Per-line failures, in the order they are raised inside the
-    // `collect_events` loop.
-    InvalidTimestamp(#[error(not(source))] InvalidTimestamp),
-    MalformedHeader(#[error(not(source))] MalformedHeader),
-    OrphanedShorthandMarker(#[error(not(source))] OrphanedShorthandMarker),
+    // Per-line failures, grouped by parse stage. The
+    // indent-classifier guards (`TabIndentation`,
+    // `MalformedIndentation`) fire first; the header path follows;
+    // the shorthand path's diagnostic comes after.
+    TabIndentation(#[error(not(source))] TabIndentation),
     MalformedIndentation(#[error(not(source))] MalformedIndentation),
-    RepeatedTimestamp(#[error(not(source))] RepeatedTimestamp),
-    MissingMarker(#[error(not(source))] MissingMarker),
+    MalformedHeader(#[error(not(source))] MalformedHeader),
+    InvalidTimestamp(#[error(not(source))] InvalidTimestamp),
     MissingSeparatorAfterTimestamp(#[error(not(source))] MissingSeparatorAfterTimestamp),
     ExtraTextAfterControlMarker(#[error(not(source))] ExtraTextAfterControlMarker),
+    RepeatedTimestamp(#[error(not(source))] RepeatedTimestamp),
+    OutOfOrder(#[error(not(source))] OutOfOrder),
+    CueTextReservedCharacter(#[error(not(source))] CueTextReservedCharacter),
+    MissingMarker(#[error(not(source))] MissingMarker),
     ReservedControlMarker(#[error(not(source))] ReservedControlMarker),
     EmptyCueBody(#[error(not(source))] EmptyCueBody),
-    TabIndentation(#[error(not(source))] TabIndentation),
-    CueTextReservedCharacter(#[error(not(source))] CueTextReservedCharacter),
-    // Post-pass failures, raised after `collect_events` returns.
-    OutOfOrder(#[error(not(source))] OutOfOrder),
-    #[display("cue at {_0} has no following cue or `clr`")]
-    UnclosedCue(#[error(not(source))] Timestamp),
+    OrphanedShorthandMarker(#[error(not(source))] OrphanedShorthandMarker),
+    // Post-pass failure, raised after `collect_events` returns
+    // when `resolve_cues` finds a cue with no following event.
+    UnclosedCue(#[error(not(source))] UnclosedCue),
 }
 
 /// Rejects any cue text (an opening line's body after the marker,
