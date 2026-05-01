@@ -6,6 +6,14 @@
 //! consult the tables in this module to map a class name or a voice
 //! marker to its color and text decoration.
 
+/// Color used for the role cell of every credit line.
+pub const CREDIT_ROLE_COLOR: &str = "#AAAA22";
+/// Color used for the name cell of every credit line.
+pub const CREDIT_NAME_COLOR: &str = "#AAAAAA";
+/// Color used for a bracketed highlight (`【...】`, `[...]`, or
+/// `(...)`) inside a credit name.
+pub const CREDIT_SPECIAL_COLOR: &str = "#55ABCD";
+
 /// Presentation attributes applied to a run of cue text.
 #[derive(Clone, Copy)]
 pub struct Style {

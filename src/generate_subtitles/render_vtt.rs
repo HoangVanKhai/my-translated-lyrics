@@ -34,7 +34,9 @@ use super::credits_parse::{
 };
 use super::escape::{Escaped, append_separator_for_output};
 use super::parse::{CuePart, SubtitleCue};
-use super::styles::{Style, class_style, voice_style};
+use super::styles::{
+    CREDIT_NAME_COLOR, CREDIT_ROLE_COLOR, CREDIT_SPECIAL_COLOR, Style, class_style, voice_style,
+};
 use crate::credits_descriptor::CreditsDesc;
 use crate::line_markers_descriptor::{LineMarkersDesc, VoiceName};
 use crate::timestamp::{Timestamp, VttTime};
@@ -57,19 +59,19 @@ const CLASS_CREDIT_SPECIAL: &str = "creditSpecial";
 
 /// Fixed style for the credit role class.
 const CREDIT_ROLE_STYLE: Style = Style {
-    color: Some("#AAAA22"),
+    color: Some(CREDIT_ROLE_COLOR),
     italic: false,
     bold: false,
 };
 /// Fixed style for the credit name class.
 const CREDIT_NAME_STYLE: Style = Style {
-    color: Some("#AAAAAA"),
+    color: Some(CREDIT_NAME_COLOR),
     italic: false,
     bold: false,
 };
 /// Fixed style for the credit highlight class.
 const CREDIT_SPECIAL_STYLE: Style = Style {
-    color: Some("#55ABCD"),
+    color: Some(CREDIT_SPECIAL_COLOR),
     italic: false,
     bold: false,
 };

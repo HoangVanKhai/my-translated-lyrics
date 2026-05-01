@@ -13,17 +13,15 @@ use super::credits_parse::{
 };
 use super::escape::{Escaped, append_separator_for_output};
 use super::parse::{CuePart, SubtitleCue};
-use super::styles::{Style, class_style, voice_style};
+use super::styles::{
+    CREDIT_NAME_COLOR, CREDIT_ROLE_COLOR, CREDIT_SPECIAL_COLOR, Style, class_style, voice_style,
+};
 use crate::credits_descriptor::CreditsDesc;
 use crate::line_markers_descriptor::LineMarkersDesc;
 use crate::timestamp::{SrtTime, Timestamp};
 use crate::video_descriptor::Language;
 use core::fmt::Write;
 use derive_more::{Display, Error};
-
-const CREDIT_ROLE_COLOR: &str = "#AAAA22";
-const CREDIT_NAME_COLOR: &str = "#AAAAAA";
-const CREDIT_SPECIAL_COLOR: &str = "#55ABCD";
 
 /// Renders all cues for a single language into a complete `.srt` file.
 pub fn render_srt(
