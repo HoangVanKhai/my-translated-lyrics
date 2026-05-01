@@ -109,7 +109,7 @@ fn collect_subtitle_files(root: &Path) -> BTreeSet<PathBuf> {
         .map(walkdir::DirEntry::into_path)
         .filter(|path| {
             path.extension()
-                .map(|ext| ext.to_str().unwrap())
+                .and_then(|ext| ext.to_str())
                 .is_some_and(|ext| ext == "srt" || ext == "vtt")
         })
         .collect()
