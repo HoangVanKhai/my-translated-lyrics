@@ -12,7 +12,7 @@ fn dist_video_descriptors_are_valid() {
         .join("dist")
         .pipe(read_dir)
         .unwrap()
-        .map(Result::unwrap)
+        .map(Result::<DirEntry, _>::unwrap)
         .sorted_by_key(DirEntry::file_name);
 
     for entry in entries {

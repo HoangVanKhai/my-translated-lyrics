@@ -32,7 +32,7 @@ fn dist_drafts_and_sources_have_flat_structure() {
         let entries = top_dir
             .pipe(read_dir)
             .unwrap()
-            .map(Result::unwrap)
+            .map(Result::<DirEntry, _>::unwrap)
             .sorted_by_key(DirEntry::file_name);
 
         for entry in entries {
@@ -48,7 +48,7 @@ fn dist_drafts_and_sources_have_flat_structure() {
             let inner_entries = path
                 .pipe(read_dir)
                 .unwrap()
-                .map(Result::unwrap)
+                .map(Result::<DirEntry, _>::unwrap)
                 .sorted_by_key(DirEntry::file_name);
 
             for inner_entry in inner_entries {
@@ -73,7 +73,7 @@ fn dist_subtitle_file_names_are_canonical() {
     let entries = dist_dir
         .pipe(read_dir)
         .unwrap()
-        .map(Result::unwrap)
+        .map(Result::<DirEntry, _>::unwrap)
         .sorted_by_key(DirEntry::file_name);
 
     for entry in entries {
@@ -88,7 +88,7 @@ fn dist_subtitle_file_names_are_canonical() {
         let inner_entries = song_dir
             .pipe(read_dir)
             .unwrap()
-            .map(Result::unwrap)
+            .map(Result::<DirEntry, _>::unwrap)
             .sorted_by_key(DirEntry::file_name);
 
         for inner_entry in inner_entries {
