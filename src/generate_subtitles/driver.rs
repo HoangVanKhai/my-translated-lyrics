@@ -10,6 +10,7 @@ use super::parse::{SubtitleCue, parse_lyrics};
 use super::render_srt::render_srt;
 use super::render_vtt::render_vtt;
 use crate::credits_descriptor::{CREDITS_CONFIG_FILE_NAME, CreditsDesc};
+use crate::file_snapshot::FileSnapshot;
 use crate::line_markers_descriptor::{LINE_MARKERS_CONFIG_FILE_NAME, LineMarkersDesc};
 use crate::video_descriptor::{Language, VIDEO_CONFIG_FILE_NAME, VideoDesc};
 use clap::Parser;
@@ -105,9 +106,11 @@ pub fn render_song(song: &Song, dist_dir: &Path, execute: bool) -> usize {
 /// planned write but leaves the filesystem untouched.
 fn write_subtitle(path: &Path, content: &str, execute: bool) -> bool {
     if path.exists() {
-        let existing = read_to_string(path)
+        let snapshot = path
+            .to_path_buf()
+            .pipe(FileSnapshot::new)
             .unwrap_or_else(|error| panic!("error: Cannot read {path:?}: {error}"));
-        if existing == content {
+        if snapshot.content_eq_str(content) {
             return false;
         }
     }

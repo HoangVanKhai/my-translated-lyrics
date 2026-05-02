@@ -67,4 +67,20 @@ impl FileSnapshot {
             ),
         }
     }
+
+    /// Variant of [`content_eq`] for an in-memory `&str` second
+    /// operand. Compares the apparent file size against the byte
+    /// length of `other` first and returns `false` immediately on
+    /// mismatch, skipping the disk read.
+    ///
+    /// [`content_eq`]: Self::content_eq
+    pub(crate) fn content_eq_str(&self, other: &str) -> bool {
+        if self.size != other.len() as u64 {
+            return false;
+        }
+        match self.load() {
+            Ok(content) => content == other,
+            Err(error) => panic!("error: Cannot load file {:?}: {error}", &self.path),
+        }
+    }
 }
