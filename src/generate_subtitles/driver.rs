@@ -318,7 +318,7 @@ pub fn main() {
             continue;
         }
         let song = load_song(&song_dir);
-        eprintln!("stage: Rendering {:?}", song.directory_name);
+        eprintln!("info: Rendering {:?}", song.directory_name);
         total_files += song.languages.len() * 2;
         totals += render_song(&song, &args.dist, args.execute);
     }
