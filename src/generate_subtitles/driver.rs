@@ -125,7 +125,7 @@ pub fn load_song(song_dir: &Path) -> Song {
     let directory_name = song_dir
         .file_name()
         .and_then(|name| name.to_str())
-        .unwrap_or_else(|| panic!("song directory {song_dir:?} has a non-UTF-8 name"))
+        .unwrap_or_else(|| panic!("error: song directory {song_dir:?} has a non-UTF-8 name"))
         .to_string();
 
     // `video.toml` is parsed purely to validate that the file exists
@@ -184,7 +184,7 @@ pub fn load_song(song_dir: &Path) -> Song {
             .to_str()
             .unwrap_or_else(|| {
                 panic!(
-                    "lyrics directory entry {:?} has a non-UTF-8 filename",
+                    "error: lyrics directory entry {:?} has a non-UTF-8 filename",
                     entry.path(),
                 )
             })
