@@ -54,9 +54,11 @@ pub struct Song {
 }
 
 /// Builds the subtitles for a single song by rendering each language
-/// to both `.srt` and `.vtt` and writing the result into `dist_dir`.
-/// Returns the count of files that were (or, in dry-run mode, would
-/// have been) written.
+/// to both `.srt` and `.vtt` and writing the result into `dist_dir`
+/// when the rendered content differs from the existing dist file (or
+/// when no dist file exists yet). Returns the count of files that
+/// were (or, in dry-run mode, would be) written; files that already
+/// match their rendered counterpart are skipped silently.
 pub fn render_song(song: &Song, dist_dir: &Path, execute: bool) -> usize {
     let destination_dir = dist_dir.join(&song.directory_name);
     if execute {
@@ -76,8 +78,9 @@ pub fn render_song(song: &Song, dist_dir: &Path, execute: bool) -> usize {
                 )
             });
         let vtt_path = destination_dir.join(format!("lyrics.{}.vtt", bundle.language));
-        write_subtitle(&vtt_path, &vtt, execute);
-        written += 1;
+        if write_subtitle(&vtt_path, &vtt, execute) {
+            written += 1;
+        }
 
         let srt = render_srt(&bundle.cues, &song.markers, &song.credits, &bundle.language)
             .unwrap_or_else(|error| {
@@ -88,19 +91,32 @@ pub fn render_song(song: &Song, dist_dir: &Path, execute: bool) -> usize {
                 )
             });
         let srt_path = destination_dir.join(format!("lyrics.{}.srt", bundle.language));
-        write_subtitle(&srt_path, &srt, execute);
-        written += 1;
+        if write_subtitle(&srt_path, &srt, execute) {
+            written += 1;
+        }
     }
     written
 }
 
-fn write_subtitle(path: &Path, content: &str, execute: bool) {
-    eprintln!("write {path:?}");
-    if !execute {
-        return;
+/// Writes `content` to `path` when it differs from what is already
+/// on disk, or when no file exists at `path` yet. Returns `true`
+/// when a write is necessary. In dry-run mode (`execute = false`)
+/// the function still performs the comparison and announces the
+/// planned write but leaves the filesystem untouched.
+fn write_subtitle(path: &Path, content: &str, execute: bool) -> bool {
+    if path.exists() {
+        let existing = read_to_string(path)
+            .unwrap_or_else(|error| panic!("error: Cannot read {path:?}: {error}"));
+        if existing == content {
+            return false;
+        }
     }
-    write_file(path, content)
-        .unwrap_or_else(|error| panic!("error: Cannot write {path:?}: {error}"));
+    eprintln!("write {path:?}");
+    if execute {
+        write_file(path, content)
+            .unwrap_or_else(|error| panic!("error: Cannot write {path:?}: {error}"));
+    }
+    true
 }
 
 /// Loads all source artifacts for a single song into memory and parses
@@ -234,6 +250,7 @@ pub fn main() {
         .sorted();
 
     let mut total_written: usize = 0;
+    let mut total_files: usize = 0;
     for song_dir in song_dirs {
         let has_txt = song_dir
             .pipe_ref(read_dir)
@@ -251,15 +268,24 @@ pub fn main() {
         }
         let song = load_song(&song_dir);
         eprintln!("stage: Rendering {:?}", song.directory_name);
+        total_files += song.languages.len() * 2;
         total_written += render_song(&song, &args.dist, args.execute);
     }
+    let total_unchanged = total_files - total_written;
 
+    eprintln!();
     if !args.execute {
-        eprintln!();
         eprintln!("info: No files were written. Rerun with --execute to apply changes.");
-        eprintln!("info: {total_written} files would be written.");
+        if total_written == 0 {
+            eprintln!("info: All {total_files} files are already up to date.");
+        } else {
+            eprintln!(
+                "info: {total_written} files would be written. {total_unchanged} already up to date."
+            );
+        }
+    } else if total_written == 0 {
+        eprintln!("info: All {total_files} files are already up to date.");
     } else {
-        eprintln!();
-        eprintln!("info: Wrote {total_written} files.");
+        eprintln!("info: Wrote {total_written} files. {total_unchanged} already up to date.");
     }
 }
