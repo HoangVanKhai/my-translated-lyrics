@@ -178,9 +178,13 @@ pub fn load_song(song_dir: &Path) -> Song {
             continue;
         };
         let lyrics_path = entry.path();
-        let language = middle.parse::<Language>().unwrap_or_else(|_| {
-            panic!("error: lyrics file {lyrics_path:?} has unrecognized language code {middle:?}")
-        });
+        let language = middle.parse::<Language>().unwrap_or_else(
+            |strum::ParseError::VariantNotFound| {
+                panic!(
+                    "error: lyrics file {lyrics_path:?} has unrecognized language code {middle:?}"
+                )
+            },
+        );
         let cues = lyrics_path
             .pipe_ref(read_to_string)
             .unwrap_or_else(|error| panic!("error: Cannot read {lyrics_path:?}: {error}"))
