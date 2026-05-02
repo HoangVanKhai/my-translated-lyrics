@@ -14,6 +14,7 @@ use crate::file_snapshot::FileSnapshot;
 use crate::line_markers_descriptor::{LINE_MARKERS_CONFIG_FILE_NAME, LineMarkersDesc};
 use crate::video_descriptor::{Language, VIDEO_CONFIG_FILE_NAME, VideoDesc};
 use clap::Parser;
+use derive_more::AddAssign;
 use itertools::Itertools;
 use pipe_trait::Pipe;
 use std::collections::BTreeMap;
@@ -54,13 +55,58 @@ pub struct Song {
     pub languages: Vec<LanguageBundle>,
 }
 
+/// Per-language counts produced by [`render_song`]. The renderer
+/// reports each rendered file as either an addition (no prior file
+/// at the target path) or an update (existing file replaced because
+/// the content changed). Files whose existing dist counterpart
+/// already matches the rendered content do not appear in either
+/// count.
+#[derive(Debug, Default, Clone, Copy, AddAssign)]
+pub struct RenderCounts {
+    /// Files created in `dist/` because no prior file existed at
+    /// the target path.
+    pub added: usize,
+    /// Files whose existing dist content was replaced because the
+    /// rendered content differed.
+    pub updated: usize,
+}
+
+impl RenderCounts {
+    /// Total number of files that were (or, in dry-run mode, would
+    /// be) written: `added + updated`.
+    pub fn total(self) -> usize {
+        self.added + self.updated
+    }
+
+    fn record(&mut self, outcome: WriteOutcome) {
+        match outcome {
+            WriteOutcome::Added => self.added += 1,
+            WriteOutcome::Updated => self.updated += 1,
+            WriteOutcome::Unchanged => {}
+        }
+    }
+}
+
+/// Outcome of a single [`write_subtitle`] call.
+#[derive(Debug, Clone, Copy)]
+enum WriteOutcome {
+    /// No prior file at the target path; a new file was written.
+    Added,
+    /// Prior file existed at the target path with different
+    /// content; the file was overwritten.
+    Updated,
+    /// Prior file existed at the target path with the same content;
+    /// no write was performed.
+    Unchanged,
+}
+
 /// Builds the subtitles for a single song by rendering each language
 /// to both `.srt` and `.vtt` and writing the result into `dist_dir`
 /// when the rendered content differs from the existing dist file (or
-/// when no dist file exists yet). Returns the count of files that
-/// were (or, in dry-run mode, would be) written; files that already
-/// match their rendered counterpart are skipped silently.
-pub fn render_song(song: &Song, dist_dir: &Path, execute: bool) -> usize {
+/// when no dist file exists yet). Files that already match their
+/// rendered counterpart are skipped silently. Returns the per-song
+/// [`RenderCounts`].
+pub fn render_song(song: &Song, dist_dir: &Path, execute: bool) -> RenderCounts {
     let destination_dir = dist_dir.join(&song.directory_name);
     if execute {
         create_dir_all(&destination_dir).unwrap_or_else(|error| {
@@ -68,7 +114,7 @@ pub fn render_song(song: &Song, dist_dir: &Path, execute: bool) -> usize {
         });
     }
 
-    let mut written: usize = 0;
+    let mut counts = RenderCounts::default();
     for bundle in &song.languages {
         let vtt = render_vtt(&bundle.cues, &song.markers, &song.credits, &bundle.language)
             .unwrap_or_else(|error| {
@@ -79,9 +125,7 @@ pub fn render_song(song: &Song, dist_dir: &Path, execute: bool) -> usize {
                 )
             });
         let vtt_path = destination_dir.join(format!("lyrics.{}.vtt", bundle.language));
-        if write_subtitle(&vtt_path, &vtt, execute) {
-            written += 1;
-        }
+        counts.record(write_subtitle(&vtt_path, &vtt, execute));
 
         let srt = render_srt(&bundle.cues, &song.markers, &song.credits, &bundle.language)
             .unwrap_or_else(|error| {
@@ -92,34 +136,38 @@ pub fn render_song(song: &Song, dist_dir: &Path, execute: bool) -> usize {
                 )
             });
         let srt_path = destination_dir.join(format!("lyrics.{}.srt", bundle.language));
-        if write_subtitle(&srt_path, &srt, execute) {
-            written += 1;
-        }
+        counts.record(write_subtitle(&srt_path, &srt, execute));
     }
-    written
+    counts
 }
 
-/// Writes `content` to `path` when it differs from what is already
-/// on disk, or when no file exists at `path` yet. Returns `true`
-/// when a write is necessary. In dry-run mode (`execute = false`)
-/// the function still performs the comparison and announces the
-/// planned write but leaves the filesystem untouched.
-fn write_subtitle(path: &Path, content: &str, execute: bool) -> bool {
-    if path.exists() {
+/// Writes `content` to `path`, distinguishing the three outcomes of
+/// the write: no prior file ([`WriteOutcome::Added`]), prior file
+/// with different content ([`WriteOutcome::Updated`]), or prior file
+/// with the same content ([`WriteOutcome::Unchanged`], the only path
+/// that touches neither the filesystem nor the announcement
+/// channel). In dry-run mode (`execute = false`) the function still
+/// performs the comparison and announces the planned action but
+/// leaves the filesystem untouched.
+fn write_subtitle(path: &Path, content: &str, execute: bool) -> WriteOutcome {
+    let (verb, outcome) = if path.exists() {
         let snapshot = path
             .to_path_buf()
             .pipe(FileSnapshot::new)
             .unwrap_or_else(|error| panic!("error: Cannot read {path:?}: {error}"));
         if snapshot.content_eq_str(content) {
-            return false;
+            return WriteOutcome::Unchanged;
         }
-    }
-    eprintln!("write {path:?}");
+        ("update", WriteOutcome::Updated)
+    } else {
+        ("add", WriteOutcome::Added)
+    };
+    eprintln!("{verb} {path:?}");
     if execute {
         write_file(path, content)
             .unwrap_or_else(|error| panic!("error: Cannot write {path:?}: {error}"));
     }
-    true
+    outcome
 }
 
 /// Loads all source artifacts for a single song into memory and parses
@@ -252,7 +300,7 @@ pub fn main() {
         .map(|entry| entry.path())
         .sorted();
 
-    let mut total_written: usize = 0;
+    let mut totals = RenderCounts::default();
     let mut total_files: usize = 0;
     for song_dir in song_dirs {
         let has_txt = song_dir
@@ -272,23 +320,21 @@ pub fn main() {
         let song = load_song(&song_dir);
         eprintln!("stage: Rendering {:?}", song.directory_name);
         total_files += song.languages.len() * 2;
-        total_written += render_song(&song, &args.dist, args.execute);
+        totals += render_song(&song, &args.dist, args.execute);
     }
-    let total_unchanged = total_files - total_written;
+    let total_unchanged = total_files - totals.total();
 
     eprintln!();
-    if !args.execute {
-        eprintln!("info: No files were written. Rerun with --execute to apply changes.");
-        if total_written == 0 {
-            eprintln!("info: All {total_files} files are already up to date.");
-        } else {
-            eprintln!(
-                "info: {total_written} files would be written. {total_unchanged} already up to date."
-            );
-        }
-    } else if total_written == 0 {
-        eprintln!("info: All {total_files} files are already up to date.");
+    if args.execute {
+        eprintln!("info: Added {} files.", totals.added);
+        eprintln!("info: Updated {} files.", totals.updated);
     } else {
-        eprintln!("info: Wrote {total_written} files. {total_unchanged} already up to date.");
+        eprintln!("info: {} files would be added.", totals.added);
+        eprintln!("info: {} files would be updated.", totals.updated);
+    }
+    eprintln!("info: {total_unchanged} files already up to date.");
+    if !args.execute {
+        eprintln!();
+        eprintln!("info: No files were written. Rerun with --execute to apply changes.");
     }
 }

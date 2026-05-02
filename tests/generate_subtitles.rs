@@ -49,7 +49,7 @@ fn dist_is_up_to_date_with_sources() {
         let rendered_count = render_song(&song, &scratch_dir, true);
         let subtitle_files = collect_subtitle_files(&scratch_dir.join(&song.directory_name));
         dbg!(&subtitle_files);
-        assert_eq!(subtitle_files.len(), rendered_count);
+        assert_eq!(subtitle_files.len(), rendered_count.total());
         for generated_path in subtitle_files {
             let relative = generated_path.strip_prefix(&scratch_dir).unwrap();
             let expected_path = dist_dir.join(relative);
