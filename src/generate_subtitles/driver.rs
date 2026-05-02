@@ -164,13 +164,14 @@ pub fn load_song(song_dir: &Path) -> Song {
             panic!("error: Cannot read an entry of directory {song_dir:?}: {error}")
         });
         let file_name = entry.file_name();
-        let Some(file_name) = file_name.to_str() else {
-            panic!(
-                "lyrics directory entry {:?} has a non-UTF-8 filename",
-                entry.path(),
-            );
-        };
         let middle = file_name
+            .to_str()
+            .unwrap_or_else(|| {
+                panic!(
+                    "lyrics directory entry {:?} has a non-UTF-8 filename",
+                    entry.path(),
+                )
+            })
             .strip_prefix("lyrics.")
             .and_then(|rest| rest.strip_suffix(LYRICS_TXT_SUFFIX));
         let Some(middle) = middle else {
