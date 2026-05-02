@@ -184,7 +184,12 @@ pub fn load_song(song_dir: &Path) -> Song {
             .unwrap_or_else(|error| panic!("error: Cannot read {lyrics_path:?}: {error}"));
         let cues = parse_lyrics(&content)
             .unwrap_or_else(|error| panic!("error: Failed to parse {lyrics_path:?}: {error}"));
-        languages.insert(language, LanguageBundle { language, cues });
+        let ejected = languages.insert(language, LanguageBundle { language, cues });
+        assert!(
+            ejected.is_none(),
+            "Unexpected language code duplication of {language}: {}",
+            lyrics_path.display(),
+        );
     }
 
     Song {
