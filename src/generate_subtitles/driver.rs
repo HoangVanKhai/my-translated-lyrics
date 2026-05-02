@@ -181,9 +181,10 @@ pub fn load_song(song_dir: &Path) -> Song {
         let language = middle.parse::<Language>().unwrap_or_else(|_| {
             panic!("error: lyrics file {lyrics_path:?} has unrecognized language code {middle:?}")
         });
-        let content = read_to_string(&lyrics_path)
-            .unwrap_or_else(|error| panic!("error: Cannot read {lyrics_path:?}: {error}"));
-        let cues = parse_lyrics(&content)
+        let cues = lyrics_path
+            .pipe_ref(read_to_string)
+            .unwrap_or_else(|error| panic!("error: Cannot read {lyrics_path:?}: {error}"))
+            .pipe_as_ref(parse_lyrics)
             .unwrap_or_else(|error| panic!("error: Failed to parse {lyrics_path:?}: {error}"));
         let ejected = languages.insert(language, LanguageBundle { language, cues });
         assert!(
