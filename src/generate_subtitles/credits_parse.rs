@@ -37,8 +37,8 @@ pub struct CreditPair<'a> {
     /// multi-space gutter round-trips), while other shapes such as
     /// `：` or `\u{3000}` collapse to a single ASCII space.
     pub separator: &'a str,
-    /// Decomposed name region, with bracketed highlights promoted
-    /// to structural segments.
+    /// Decomposed name region, with bracketed and unbracketed
+    /// segments.
     pub name_segments: Vec<NameSegment<'a>>,
 }
 
@@ -52,11 +52,7 @@ pub enum NameSegment<'a> {
     Bracketed(Bracketed<'a>),
 }
 
-/// A string that contains no parseable bracketed span. Mirrors
-/// [`Bracketed`] on the other side of the bracket boundary; both
-/// types wrap a `&str` slice into the source name region. The
-/// type is constructed by the credit-name parser; downstream
-/// readers extract the underlying slice via [`Unbracketed::as_str`].
+/// A string that contains no parseable bracketed span.
 #[derive(Debug, Display, Clone, Copy, PartialEq, Eq)]
 pub struct Unbracketed<'a>(&'a str);
 
@@ -67,6 +63,16 @@ impl<'a> Unbracketed<'a> {
     }
 }
 
+/// An item of the parsing process of [`NameSegment`]s.
+///
+/// This struct has no semantic significance, it is merely a
+/// consequence of the structure of the credit-line: The
+/// [unbracketed] segments and the [bracketed] segments are
+/// interleaving. So this struct is a pair before the final
+/// unpaired [unbracketed] segment.
+///
+/// [unbracketed]: Unbracketed
+/// [bracketed]: Bracketed
 #[derive(Debug, Clone, Copy)]
 struct NameSegmentPair<'a>(Unbracketed<'a>, Bracketed<'a>);
 
@@ -98,10 +104,7 @@ impl<'a> NameSegmentPair<'a> {
 
 /// A string that is guaranteed to open with a recognized bracket,
 /// close with its matching counterpart, and contain no further
-/// bracket characters in between. The type can only be obtained via
-/// [`Bracketed::take`], which follows the parse-don't-validate
-/// pattern: it consumes a prefix of the input and returns both the
-/// parsed value and the remaining unparsed tail.
+/// bracket characters in between.
 #[derive(Debug, Display, Clone, Copy, PartialEq, Eq)]
 pub struct Bracketed<'a>(&'a str);
 
