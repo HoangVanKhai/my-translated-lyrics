@@ -159,7 +159,7 @@ fn write_name_segments(output: &mut String, segments: &[NameSegment]) {
     for segment in segments {
         match segment {
             NameSegment::Unbracketed(text) => {
-                write!(output, "{}", Escaped(text)).unwrap();
+                write!(output, "{}", Escaped(text.as_str())).unwrap();
             }
             NameSegment::Bracketed(text) => {
                 write!(

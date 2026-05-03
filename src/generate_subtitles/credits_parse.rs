@@ -5,9 +5,8 @@
 //! the longest registered role at every cursor position. The bytes
 //! between a role match and the next role match (or end of line)
 //! form the associated name region, and name regions are scanned
-//! for bracketed highlight runs that become
-//! [`NameSegment::Bracketed`] values; anything else becomes
-//! [`NameSegment::Unbracketed`].
+//! for bracketed spans that become [`NameSegment::Bracketed`]
+//! values; anything else becomes [`NameSegment::Unbracketed`].
 //!
 //! A credit line whose first non-whitespace token is not a known
 //! role raises [`ParseCreditError::UnknownRole`]. This lets the
@@ -46,15 +45,31 @@ pub struct CreditPair<'a> {
 /// A unit within the name region of a credit pair.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NameSegment<'a> {
-    /// Text outside the brackets.
-    Unbracketed(&'a str),
-    /// Text inside the brackets such as `【...】`, `[...]`, or `(...)`.
+    /// A run of text that contains no parseable bracketed span.
+    Unbracketed(Unbracketed<'a>),
+    /// A bracketed span (`【...】`, `[...]`, or `(...)`), with the
+    /// surrounding brackets included in the wrapped slice.
     Bracketed(Bracketed<'a>),
+}
+
+/// A string that contains no parseable bracketed span. Mirrors
+/// [`Bracketed`] on the other side of the bracket boundary; both
+/// types wrap a `&str` slice into the source name region. The
+/// type is constructed by the credit-name parser; downstream
+/// readers extract the underlying slice via [`Unbracketed::as_str`].
+#[derive(Debug, Display, Clone, Copy, PartialEq, Eq)]
+pub struct Unbracketed<'a>(&'a str);
+
+impl<'a> Unbracketed<'a> {
+    /// The unbracketed text, exactly as it appeared in the source.
+    pub fn as_str(&self) -> &'a str {
+        self.0
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
 struct NameSegmentPair<'a> {
-    unbracketed: &'a str,
+    unbracketed: Unbracketed<'a>,
     bracketed: Bracketed<'a>,
 }
 
@@ -64,7 +79,7 @@ impl<'a> NameSegmentPair<'a> {
         let mut chars = input.chars();
         loop {
             if let Some((bracketed, rest)) = Bracketed::take(chars.as_str()) {
-                let unbracketed = &input[..unbracketed_end];
+                let unbracketed = Unbracketed(&input[..unbracketed_end]);
                 let pair = NameSegmentPair {
                     unbracketed,
                     bracketed,
@@ -81,11 +96,11 @@ impl<'a> NameSegmentPair<'a> {
 
     fn append_to(&self, target: &mut Vec<NameSegment<'a>>) {
         let NameSegmentPair {
-            unbracketed: plain,
+            unbracketed,
             bracketed,
         } = self;
-        if !plain.is_empty() {
-            target.push(NameSegment::Unbracketed(plain));
+        if !unbracketed.as_str().is_empty() {
+            target.push(NameSegment::Unbracketed(*unbracketed));
         }
         target.push(NameSegment::Bracketed(*bracketed));
     }
@@ -265,7 +280,7 @@ fn parse_name_region(region: &str) -> Vec<NameSegment<'_>> {
         rest = next_rest;
     }
     if !rest.is_empty() {
-        segments.push(NameSegment::Unbracketed(rest));
+        segments.push(NameSegment::Unbracketed(Unbracketed(rest)));
     }
     segments
 }

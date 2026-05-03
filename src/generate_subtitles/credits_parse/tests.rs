@@ -1,6 +1,6 @@
 use super::{
-    Bracketed, CreditsVocabulary, NameSegment, ParseBracketedError, ParseCreditError, UnknownRole,
-    parse_credit_line,
+    Bracketed, CreditsVocabulary, NameSegment, ParseBracketedError, ParseCreditError, Unbracketed,
+    UnknownRole, parse_credit_line,
 };
 use crate::credits_descriptor::CreditsDesc;
 use crate::video_descriptor::Language;
@@ -32,7 +32,7 @@ fn colon_separated_line_yields_one_pair_per_cell() {
     assert_eq!(parsed[0].separator, "：");
     assert_eq!(
         parsed[0].name_segments,
-        vec![NameSegment::Unbracketed("name-a")]
+        vec![NameSegment::Unbracketed(Unbracketed("name-a"))]
     );
     assert_eq!(parsed[1].role, "role-b");
     assert_eq!(parsed[2].role, "role-c");
@@ -47,7 +47,7 @@ fn two_space_separated_line_yields_one_pair_with_embedded_spaces() {
     assert_eq!(parsed[0].separator, "  ");
     assert_eq!(
         parsed[0].name_segments,
-        vec![NameSegment::Unbracketed("name-a  name-b")],
+        vec![NameSegment::Unbracketed(Unbracketed("name-a  name-b"))],
     );
 }
 
@@ -60,7 +60,7 @@ fn tolerates_runs_wider_than_two_spaces() {
     assert_eq!(parsed[0].separator, "   ");
     assert_eq!(
         parsed[0].name_segments,
-        vec![NameSegment::Unbracketed("name-a")]
+        vec![NameSegment::Unbracketed(Unbracketed("name-a"))]
     );
 }
 
@@ -91,7 +91,7 @@ fn recognizes_lenticular_highlight() {
     assert_eq!(
         parsed[0].name_segments,
         vec![
-            NameSegment::Unbracketed("name-a"),
+            NameSegment::Unbracketed(Unbracketed("name-a")),
             NameSegment::Bracketed("【label-a】".pipe(Bracketed::try_from).unwrap()),
         ],
     );
@@ -108,12 +108,12 @@ fn multiple_highlights_interleave_with_plain_text() {
                 .pipe(Bracketed::try_from)
                 .unwrap()
                 .pipe(NameSegment::Bracketed),
-            NameSegment::Unbracketed("name-a "),
+            NameSegment::Unbracketed(Unbracketed("name-a ")),
             "【label-b】"
                 .pipe(Bracketed::try_from)
                 .unwrap()
                 .pipe(NameSegment::Bracketed),
-            NameSegment::Unbracketed("name-b"),
+            NameSegment::Unbracketed(Unbracketed("name-b")),
         ],
     );
 }

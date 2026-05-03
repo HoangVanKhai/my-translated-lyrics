@@ -242,7 +242,7 @@ fn write_name_segments(output: &mut String, features: &mut Features, segments: &
     for segment in segments {
         match segment {
             NameSegment::Unbracketed(text) => {
-                write!(output, "{}", Escaped(text)).unwrap();
+                write!(output, "{}", Escaped(text.as_str())).unwrap();
             }
             NameSegment::Bracketed(text) => {
                 features.used_credit_special = true;
