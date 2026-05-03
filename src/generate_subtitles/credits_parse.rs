@@ -68,10 +68,7 @@ impl<'a> Unbracketed<'a> {
 }
 
 #[derive(Debug, Clone, Copy)]
-struct NameSegmentPair<'a> {
-    unbracketed: Unbracketed<'a>,
-    bracketed: Bracketed<'a>,
-}
+struct NameSegmentPair<'a>(Unbracketed<'a>, Bracketed<'a>);
 
 impl<'a> NameSegmentPair<'a> {
     fn take(input: &'a str) -> Option<(Self, &'a str)> {
@@ -80,11 +77,7 @@ impl<'a> NameSegmentPair<'a> {
         loop {
             if let Some((bracketed, rest)) = Bracketed::take(chars.as_str()) {
                 let unbracketed = Unbracketed(&input[..unbracketed_end]);
-                let pair = NameSegmentPair {
-                    unbracketed,
-                    bracketed,
-                };
-                return Some((pair, rest));
+                return Some((NameSegmentPair(unbracketed, bracketed), rest));
             }
             if let Some(char) = chars.next() {
                 unbracketed_end += char.len_utf8();
@@ -95,10 +88,7 @@ impl<'a> NameSegmentPair<'a> {
     }
 
     fn append_to(&self, target: &mut Vec<NameSegment<'a>>) {
-        let NameSegmentPair {
-            unbracketed,
-            bracketed,
-        } = self;
+        let NameSegmentPair(unbracketed, bracketed) = self;
         if !unbracketed.as_str().is_empty() {
             target.push(NameSegment::Unbracketed(*unbracketed));
         }
