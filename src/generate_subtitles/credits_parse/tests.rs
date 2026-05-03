@@ -8,7 +8,7 @@ use maplit::btreemap;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 
-fn descriptor(roles: &[&str]) -> CreditsDesc {
+fn make_descriptor(roles: &[&str]) -> CreditsDesc {
     CreditsDesc {
         credit_roles: roles
             .iter()
@@ -18,7 +18,7 @@ fn descriptor(roles: &[&str]) -> CreditsDesc {
     }
 }
 
-fn roles(descriptor: &CreditsDesc) -> CreditRoles<'_> {
+fn make_roles(descriptor: &CreditsDesc) -> CreditRoles<'_> {
     CreditRoles::from_descriptor(descriptor, &Language::Vietnamese)
 }
 
@@ -33,7 +33,7 @@ fn from_descriptor_deduplicates_non_adjacent_entries_and_orders_longest_first() 
     //   * `作詞` is 6 bytes (two CJK code points) and ranks above the
     //     3-byte ASCII entries, making byte length, not character
     //     count, the load-bearing measure.
-    let d = descriptor(&[
+    let descriptor = make_descriptor(&[
         "作詞",
         "long-role",
         "mid",
@@ -42,20 +42,20 @@ fn from_descriptor_deduplicates_non_adjacent_entries_and_orders_longest_first() 
         "long-role",
         "abc",
     ]);
-    let r = roles(&d);
+    let roles = make_roles(&descriptor);
     assert_eq!(
-        r.0,
+        roles.0,
         vec!["very-long-role", "long-role", "作詞", "abc", "mid"],
     );
 }
 
 #[test]
 fn colon_separated_line_yields_one_pair_per_cell() {
-    let d = descriptor(&["role-a", "role-b", "role-c"]);
-    let v = roles(&d);
+    let descriptor = make_descriptor(&["role-a", "role-b", "role-c"]);
+    let roles = make_roles(&descriptor);
     let parsed = parse_credit_line(
         "role-a：name-a\u{3000}role-b：name-b\u{3000}role-c：name-c",
-        &v,
+        &roles,
     )
     .unwrap();
     assert_eq!(parsed.len(), 3);
@@ -71,9 +71,9 @@ fn colon_separated_line_yields_one_pair_per_cell() {
 
 #[test]
 fn two_space_separated_line_yields_one_pair_with_embedded_spaces() {
-    let d = descriptor(&["role-a"]);
-    let v = roles(&d);
-    let parsed = parse_credit_line("role-a  name-a  name-b", &v).unwrap();
+    let descriptor = make_descriptor(&["role-a"]);
+    let roles = make_roles(&descriptor);
+    let parsed = parse_credit_line("role-a  name-a  name-b", &roles).unwrap();
     assert_eq!(parsed.len(), 1);
     assert_eq!(parsed[0].role, "role-a");
     assert_eq!(parsed[0].separator, "  ");
@@ -85,9 +85,9 @@ fn two_space_separated_line_yields_one_pair_with_embedded_spaces() {
 
 #[test]
 fn tolerates_runs_wider_than_two_spaces() {
-    let d = descriptor(&["role-a"]);
-    let v = roles(&d);
-    let parsed = parse_credit_line("role-a   name-a", &v).unwrap();
+    let descriptor = make_descriptor(&["role-a"]);
+    let roles = make_roles(&descriptor);
+    let parsed = parse_credit_line("role-a   name-a", &roles).unwrap();
     assert_eq!(parsed.len(), 1);
     assert_eq!(parsed[0].role, "role-a");
     assert_eq!(parsed[0].separator, "   ");
@@ -99,18 +99,18 @@ fn tolerates_runs_wider_than_two_spaces() {
 
 #[test]
 fn longer_role_wins_over_shorter_prefix() {
-    let d = descriptor(&["role", "role-a"]);
-    let v = roles(&d);
-    let parsed = parse_credit_line("role-a  name-a", &v).unwrap();
+    let descriptor = make_descriptor(&["role", "role-a"]);
+    let roles = make_roles(&descriptor);
+    let parsed = parse_credit_line("role-a  name-a", &roles).unwrap();
     assert_eq!(parsed[0].role, "role-a");
 }
 
 #[test]
 fn unknown_leading_text_errors() {
-    let d = descriptor(&["role-a"]);
-    let v = roles(&d);
+    let descriptor = make_descriptor(&["role-a"]);
+    let roles = make_roles(&descriptor);
     assert_eq!(
-        parse_credit_line("unknown  name-a", &v).unwrap_err(),
+        parse_credit_line("unknown  name-a", &roles).unwrap_err(),
         ParseCreditError::UnknownRole(UnknownRole {
             line: "unknown  name-a".to_string(),
             offset: 0,
@@ -120,9 +120,9 @@ fn unknown_leading_text_errors() {
 
 #[test]
 fn recognizes_lenticular_highlight() {
-    let d = descriptor(&["role-a"]);
-    let v = roles(&d);
-    let parsed = parse_credit_line("role-a  name-a【label-a】", &v).unwrap();
+    let descriptor = make_descriptor(&["role-a"]);
+    let roles = make_roles(&descriptor);
+    let parsed = parse_credit_line("role-a  name-a【label-a】", &roles).unwrap();
     assert_eq!(parsed.len(), 1);
     assert_eq!(
         parsed[0].name_segments,
@@ -135,9 +135,9 @@ fn recognizes_lenticular_highlight() {
 
 #[test]
 fn multiple_highlights_interleave_with_plain_text() {
-    let d = descriptor(&["role-a"]);
-    let v = roles(&d);
-    let parsed = parse_credit_line("role-a  【label-a】name-a 【label-b】name-b", &v).unwrap();
+    let descriptor = make_descriptor(&["role-a"]);
+    let roles = make_roles(&descriptor);
+    let parsed = parse_credit_line("role-a  【label-a】name-a 【label-b】name-b", &roles).unwrap();
     assert_eq!(
         parsed[0].name_segments,
         vec![
