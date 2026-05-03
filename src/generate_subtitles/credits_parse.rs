@@ -191,13 +191,15 @@ fn is_bracket_char(ch: char) -> bool {
 }
 
 /// The role vocabulary for one language, built from `credits.yaml`
-/// and reused across every credit cue in the song.
-pub struct CreditsVocabulary {
-    roles: Vec<String>,
+/// and reused across every credit cue in the song. Each role is
+/// borrowed from the [`CreditsDesc`] the vocabulary was built from,
+/// so the descriptor must outlive the vocabulary.
+pub struct CreditsVocabulary<'desc> {
+    roles: Vec<&'desc str>,
 }
 
-impl CreditsVocabulary {
-    fn new(roles: Vec<String>) -> Self {
+impl<'desc> CreditsVocabulary<'desc> {
+    fn new(roles: Vec<&'desc str>) -> Self {
         Self { roles }
     }
 
@@ -207,11 +209,11 @@ impl CreditsVocabulary {
     /// that still fits at the current cursor position.
     ///
     /// [`credit-roles`]: CreditsDesc::credit_roles
-    pub fn from_descriptor(descriptor: &CreditsDesc, language: &Language) -> Self {
+    pub fn from_descriptor(descriptor: &'desc CreditsDesc, language: &Language) -> Self {
         descriptor
             .credit_roles
             .iter()
-            .filter_map(|entry| entry.get(language).cloned())
+            .filter_map(|entry| entry.get(language).map(String::as_str))
             .collect::<Vec<_>>()
             .into_sorted_by(|a, b| b.len().cmp(&a.len()).then_with(|| a.cmp(b)))
             .into_deduped()
@@ -220,7 +222,7 @@ impl CreditsVocabulary {
 
     fn take_role<'a>(&self, input: &'a str) -> Option<(&'a str, &'a str)> {
         self.roles.iter().find_map(|role| {
-            let rest = input.strip_prefix(role.as_str())?;
+            let rest = input.strip_prefix(*role)?;
             is_role_boundary(rest).then_some(input.split_at(role.len()))
         })
     }

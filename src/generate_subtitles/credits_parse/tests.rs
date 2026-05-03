@@ -8,15 +8,18 @@ use maplit::btreemap;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 
-fn vocabulary(roles: &[&str]) -> CreditsVocabulary {
-    let descriptor = CreditsDesc {
+fn descriptor(roles: &[&str]) -> CreditsDesc {
+    CreditsDesc {
         credit_roles: roles
             .iter()
             .map(|role| btreemap! { Language::Vietnamese => role.to_string() })
             .collect(),
         credit_names: Vec::new(),
-    };
-    CreditsVocabulary::from_descriptor(&descriptor, &Language::Vietnamese)
+    }
+}
+
+fn vocabulary(descriptor: &CreditsDesc) -> CreditsVocabulary<'_> {
+    CreditsVocabulary::from_descriptor(descriptor, &Language::Vietnamese)
 }
 
 #[test]
@@ -30,7 +33,7 @@ fn vocabulary_deduplicates_non_adjacent_entries_and_orders_longest_first() {
     //   * `作詞` is 6 bytes (two CJK code points) and ranks above the
     //     3-byte ASCII entries, making byte length, not character
     //     count, the load-bearing measure.
-    let vocab = vocabulary(&[
+    let d = descriptor(&[
         "作詞",
         "long-role",
         "mid",
@@ -39,21 +42,17 @@ fn vocabulary_deduplicates_non_adjacent_entries_and_orders_longest_first() {
         "long-role",
         "abc",
     ]);
+    let vocab = vocabulary(&d);
     assert_eq!(
         vocab.roles,
-        vec![
-            "very-long-role".to_string(),
-            "long-role".to_string(),
-            "作詞".to_string(),
-            "abc".to_string(),
-            "mid".to_string(),
-        ],
+        vec!["very-long-role", "long-role", "作詞", "abc", "mid"],
     );
 }
 
 #[test]
 fn colon_separated_line_yields_one_pair_per_cell() {
-    let v = vocabulary(&["role-a", "role-b", "role-c"]);
+    let d = descriptor(&["role-a", "role-b", "role-c"]);
+    let v = vocabulary(&d);
     let parsed = parse_credit_line(
         "role-a：name-a\u{3000}role-b：name-b\u{3000}role-c：name-c",
         &v,
@@ -72,7 +71,8 @@ fn colon_separated_line_yields_one_pair_per_cell() {
 
 #[test]
 fn two_space_separated_line_yields_one_pair_with_embedded_spaces() {
-    let v = vocabulary(&["role-a"]);
+    let d = descriptor(&["role-a"]);
+    let v = vocabulary(&d);
     let parsed = parse_credit_line("role-a  name-a  name-b", &v).unwrap();
     assert_eq!(parsed.len(), 1);
     assert_eq!(parsed[0].role, "role-a");
@@ -85,7 +85,8 @@ fn two_space_separated_line_yields_one_pair_with_embedded_spaces() {
 
 #[test]
 fn tolerates_runs_wider_than_two_spaces() {
-    let v = vocabulary(&["role-a"]);
+    let d = descriptor(&["role-a"]);
+    let v = vocabulary(&d);
     let parsed = parse_credit_line("role-a   name-a", &v).unwrap();
     assert_eq!(parsed.len(), 1);
     assert_eq!(parsed[0].role, "role-a");
@@ -98,14 +99,16 @@ fn tolerates_runs_wider_than_two_spaces() {
 
 #[test]
 fn longer_role_wins_over_shorter_prefix() {
-    let v = vocabulary(&["role", "role-a"]);
+    let d = descriptor(&["role", "role-a"]);
+    let v = vocabulary(&d);
     let parsed = parse_credit_line("role-a  name-a", &v).unwrap();
     assert_eq!(parsed[0].role, "role-a");
 }
 
 #[test]
 fn unknown_leading_text_errors() {
-    let v = vocabulary(&["role-a"]);
+    let d = descriptor(&["role-a"]);
+    let v = vocabulary(&d);
     assert_eq!(
         parse_credit_line("unknown  name-a", &v).unwrap_err(),
         ParseCreditError::UnknownRole(UnknownRole {
@@ -117,7 +120,8 @@ fn unknown_leading_text_errors() {
 
 #[test]
 fn recognizes_lenticular_highlight() {
-    let v = vocabulary(&["role-a"]);
+    let d = descriptor(&["role-a"]);
+    let v = vocabulary(&d);
     let parsed = parse_credit_line("role-a  name-a【label-a】", &v).unwrap();
     assert_eq!(parsed.len(), 1);
     assert_eq!(
@@ -131,7 +135,8 @@ fn recognizes_lenticular_highlight() {
 
 #[test]
 fn multiple_highlights_interleave_with_plain_text() {
-    let v = vocabulary(&["role-a"]);
+    let d = descriptor(&["role-a"]);
+    let v = vocabulary(&d);
     let parsed = parse_credit_line("role-a  【label-a】name-a 【label-b】name-b", &v).unwrap();
     assert_eq!(
         parsed[0].name_segments,
