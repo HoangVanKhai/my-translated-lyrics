@@ -194,12 +194,12 @@ fn is_bracket_char(ch: char) -> bool {
 /// and reused across every credit cue in the song. Each role is
 /// borrowed from the [`CreditsDesc`] the vocabulary was built from,
 /// so the descriptor must outlive the vocabulary.
-pub struct CreditsVocabulary<'desc> {
-    roles: Vec<&'desc str>,
+pub struct CreditsVocabulary<'a> {
+    roles: Vec<&'a str>,
 }
 
-impl<'desc> CreditsVocabulary<'desc> {
-    fn new(roles: Vec<&'desc str>) -> Self {
+impl<'a> CreditsVocabulary<'a> {
+    fn new(roles: Vec<&'a str>) -> Self {
         Self { roles }
     }
 
@@ -209,7 +209,7 @@ impl<'desc> CreditsVocabulary<'desc> {
     /// that still fits at the current cursor position.
     ///
     /// [`credit-roles`]: CreditsDesc::credit_roles
-    pub fn from_descriptor(descriptor: &'desc CreditsDesc, language: &Language) -> Self {
+    pub fn from_descriptor(descriptor: &'a CreditsDesc, language: &Language) -> Self {
         descriptor
             .credit_roles
             .iter()
@@ -220,14 +220,14 @@ impl<'desc> CreditsVocabulary<'desc> {
             .pipe(CreditsVocabulary::new)
     }
 
-    fn take_role<'a>(&self, input: &'a str) -> Option<(&'a str, &'a str)> {
+    fn take_role<'input>(&self, input: &'input str) -> Option<(&'input str, &'input str)> {
         self.roles.iter().find_map(|role| {
             let rest = input.strip_prefix(*role)?;
             is_role_boundary(rest).then_some(input.split_at(role.len()))
         })
     }
 
-    fn take_until_role<'a>(&self, input: &'a str) -> (&'a str, &'a str) {
+    fn take_until_role<'input>(&self, input: &'input str) -> (&'input str, &'input str) {
         let mut cursor = 0;
         while cursor < input.len() && self.take_role(&input[cursor..]).is_none() {
             let Some(next_char) = input[cursor..].chars().next() else {
