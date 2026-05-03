@@ -26,17 +26,13 @@ const LYRICS_TXT_SUFFIX: &str = ".txt";
 #[derive(Debug, Clone, Parser)]
 #[clap(about = "Build `.srt` and `.vtt` subtitle files from the structured lyrics sources.")]
 struct Args {
-    /// Source directory that contains one song subdirectory per video
-    /// (typically the repository's `sources/` directory).
+    /// Source directory that contains one song subdirectory per video.
     sources: PathBuf,
 
-    /// Destination directory into which subtitle files are written
-    /// (typically the repository's `dist/` directory).
+    /// Destination directory into which subtitle files are written.
     dist: PathBuf,
 
-    /// Print the planned writes without touching the filesystem.
-    /// Mirrors the safety posture of `install-local-lyrics`, which
-    /// defaults to a dry run until `--execute` is given.
+    /// For safety reasons, this programs list actions by default, this flag makes the program take those actions.
     #[clap(long, short = 'x')]
     execute: bool,
 }
