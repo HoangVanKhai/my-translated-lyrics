@@ -196,6 +196,10 @@ pub struct CreditsVocabulary {
 }
 
 impl CreditsVocabulary {
+    fn new(roles: Vec<String>) -> Self {
+        Self { roles }
+    }
+
     /// Collects the language-specific labels from the
     /// [`credit-roles`] list in the descriptor and sorts them by
     /// descending length so the parser matches the longest role
@@ -203,12 +207,12 @@ impl CreditsVocabulary {
     ///
     /// [`credit-roles`]: CreditsDesc::credit_roles
     pub fn from_descriptor(descriptor: &CreditsDesc, language: &Language) -> Self {
-        let roles = descriptor
+        descriptor
             .credit_roles
             .iter()
             .filter_map(|entry| entry.get(language))
-            .pipe(deduplicate_longest_first);
-        CreditsVocabulary { roles }
+            .pipe(deduplicate_longest_first)
+            .pipe(CreditsVocabulary::new)
     }
 
     fn take_role<'a>(&self, input: &'a str) -> Option<(&'a str, &'a str)> {
