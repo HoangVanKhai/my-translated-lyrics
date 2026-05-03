@@ -158,10 +158,10 @@ fn render_credit_pair(output: &mut String, pair: &CreditPair) {
 fn write_name_segments(output: &mut String, segments: &[NameSegment]) {
     for segment in segments {
         match segment {
-            NameSegment::Plain(text) => {
+            NameSegment::Unbracketed(text) => {
                 write!(output, "{}", Escaped(text)).unwrap();
             }
-            NameSegment::Special(text) => {
+            NameSegment::Bracketed(text) => {
                 write!(
                     output,
                     r#"<font color="{CREDIT_SPECIAL_COLOR}">{}</font>"#,

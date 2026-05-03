@@ -30,7 +30,10 @@ fn colon_separated_line_yields_one_pair_per_cell() {
     assert_eq!(parsed.len(), 3);
     assert_eq!(parsed[0].role, "role-a");
     assert_eq!(parsed[0].separator, "：");
-    assert_eq!(parsed[0].name_segments, vec![NameSegment::Plain("name-a")]);
+    assert_eq!(
+        parsed[0].name_segments,
+        vec![NameSegment::Unbracketed("name-a")]
+    );
     assert_eq!(parsed[1].role, "role-b");
     assert_eq!(parsed[2].role, "role-c");
 }
@@ -44,7 +47,7 @@ fn two_space_separated_line_yields_one_pair_with_embedded_spaces() {
     assert_eq!(parsed[0].separator, "  ");
     assert_eq!(
         parsed[0].name_segments,
-        vec![NameSegment::Plain("name-a  name-b")],
+        vec![NameSegment::Unbracketed("name-a  name-b")],
     );
 }
 
@@ -55,7 +58,10 @@ fn tolerates_runs_wider_than_two_spaces() {
     assert_eq!(parsed.len(), 1);
     assert_eq!(parsed[0].role, "role-a");
     assert_eq!(parsed[0].separator, "   ");
-    assert_eq!(parsed[0].name_segments, vec![NameSegment::Plain("name-a")]);
+    assert_eq!(
+        parsed[0].name_segments,
+        vec![NameSegment::Unbracketed("name-a")]
+    );
 }
 
 #[test]
@@ -85,8 +91,8 @@ fn recognizes_lenticular_highlight() {
     assert_eq!(
         parsed[0].name_segments,
         vec![
-            NameSegment::Plain("name-a"),
-            NameSegment::Special("【label-a】".pipe(Bracketed::try_from).unwrap()),
+            NameSegment::Unbracketed("name-a"),
+            NameSegment::Bracketed("【label-a】".pipe(Bracketed::try_from).unwrap()),
         ],
     );
 }
@@ -101,13 +107,13 @@ fn multiple_highlights_interleave_with_plain_text() {
             "【label-a】"
                 .pipe(Bracketed::try_from)
                 .unwrap()
-                .pipe(NameSegment::Special),
-            NameSegment::Plain("name-a "),
+                .pipe(NameSegment::Bracketed),
+            NameSegment::Unbracketed("name-a "),
             "【label-b】"
                 .pipe(Bracketed::try_from)
                 .unwrap()
-                .pipe(NameSegment::Special),
-            NameSegment::Plain("name-b"),
+                .pipe(NameSegment::Bracketed),
+            NameSegment::Unbracketed("name-b"),
         ],
     );
 }

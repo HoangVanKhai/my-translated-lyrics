@@ -46,30 +46,33 @@ pub struct CreditPair<'a> {
 /// A unit within the name region of a credit pair.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NameSegment<'a> {
-    /// Plain text that did not match a highlight.
-    Plain(&'a str),
-    /// A bracketed highlight such as `【...】`, `[...]`, or `(...)`.
-    Special(Bracketed<'a>),
+    /// Text outside the brackets.
+    Unbracketed(&'a str),
+    /// Text inside the brackets such as `【...】`, `[...]`, or `(...)`.
+    Bracketed(Bracketed<'a>),
 }
 
 #[derive(Debug, Clone, Copy)]
 struct NameSegmentPair<'a> {
-    plain: &'a str,
+    unbracketed: &'a str,
     bracketed: Bracketed<'a>,
 }
 
 impl<'a> NameSegmentPair<'a> {
     fn take(input: &'a str) -> Option<(Self, &'a str)> {
-        let mut plain_end: usize = 0;
+        let mut unbracketed_end: usize = 0;
         let mut chars = input.chars();
         loop {
             if let Some((bracketed, rest)) = Bracketed::take(chars.as_str()) {
-                let plain = &input[..plain_end];
-                let pair = NameSegmentPair { plain, bracketed };
+                let unbracketed = &input[..unbracketed_end];
+                let pair = NameSegmentPair {
+                    unbracketed,
+                    bracketed,
+                };
                 return Some((pair, rest));
             }
             if let Some(char) = chars.next() {
-                plain_end += char.len_utf8();
+                unbracketed_end += char.len_utf8();
                 continue;
             }
             return None;
@@ -77,11 +80,14 @@ impl<'a> NameSegmentPair<'a> {
     }
 
     fn append_to(&self, target: &mut Vec<NameSegment<'a>>) {
-        let NameSegmentPair { plain, bracketed } = self;
+        let NameSegmentPair {
+            unbracketed: plain,
+            bracketed,
+        } = self;
         if !plain.is_empty() {
-            target.push(NameSegment::Plain(plain));
+            target.push(NameSegment::Unbracketed(plain));
         }
-        target.push(NameSegment::Special(*bracketed));
+        target.push(NameSegment::Bracketed(*bracketed));
     }
 }
 
@@ -259,7 +265,7 @@ fn parse_name_region(region: &str) -> Vec<NameSegment<'_>> {
         rest = next_rest;
     }
     if !rest.is_empty() {
-        segments.push(NameSegment::Plain(rest));
+        segments.push(NameSegment::Unbracketed(rest));
     }
     segments
 }

@@ -241,10 +241,10 @@ fn render_credit_pair(output: &mut String, features: &mut Features, pair: &Credi
 fn write_name_segments(output: &mut String, features: &mut Features, segments: &[NameSegment]) {
     for segment in segments {
         match segment {
-            NameSegment::Plain(text) => {
+            NameSegment::Unbracketed(text) => {
                 write!(output, "{}", Escaped(text)).unwrap();
             }
-            NameSegment::Special(text) => {
+            NameSegment::Bracketed(text) => {
                 features.used_credit_special = true;
                 write!(
                     output,
