@@ -30,7 +30,7 @@ fn colon_separated_line_yields_one_pair_per_cell() {
     assert_eq!(parsed.len(), 3);
     assert_eq!(parsed[0].role, "role-a");
     assert_eq!(parsed[0].separator, "：");
-    assert_eq!(parsed[0].name_segments, vec![NameSegment::Plain("name-a")],);
+    assert_eq!(parsed[0].name_segments, vec![NameSegment::Plain("name-a")]);
     assert_eq!(parsed[1].role, "role-b");
     assert_eq!(parsed[2].role, "role-c");
 }
@@ -55,7 +55,7 @@ fn tolerates_runs_wider_than_two_spaces() {
     assert_eq!(parsed.len(), 1);
     assert_eq!(parsed[0].role, "role-a");
     assert_eq!(parsed[0].separator, "   ");
-    assert_eq!(parsed[0].name_segments, vec![NameSegment::Plain("name-a")],);
+    assert_eq!(parsed[0].name_segments, vec![NameSegment::Plain("name-a")]);
 }
 
 #[test]
