@@ -40,10 +40,7 @@ jobs:
       - name: Test
         run: cargo test
 
-      - name: Doc test
-        run: cargo test --doc
-
-      - name: Rustdoc
+      - name: Doc
         env:
           RUSTDOCFLAGS: -D warnings
         run: cargo doc --no-deps --document-private-items
