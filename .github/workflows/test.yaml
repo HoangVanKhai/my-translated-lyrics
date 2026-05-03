@@ -40,6 +40,11 @@ jobs:
       - name: Test
         run: cargo test
 
+      - name: Doc
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --no-deps --document-private-items
+
       - name: Clean workspace artifacts before cache
         if: always()
         continue-on-error: true
