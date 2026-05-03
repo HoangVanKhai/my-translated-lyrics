@@ -214,7 +214,7 @@ enum SubtitleFormat {
 #[derive(Debug, Display, Error)]
 #[non_exhaustive]
 pub enum ParseLyricsFileNameError {
-    #[display("filename does not start with \"lyrics.\"")]
+    #[display(r#"filename does not start with "lyrics.""#)]
     NotLyricsFile,
     #[display("missing language code in lyrics filename")]
     MissingLanguageCode,
