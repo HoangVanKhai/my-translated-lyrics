@@ -18,12 +18,12 @@ fn descriptor(roles: &[&str]) -> CreditsDesc {
     }
 }
 
-fn vocabulary(descriptor: &CreditsDesc) -> CreditRoles<'_> {
+fn roles(descriptor: &CreditsDesc) -> CreditRoles<'_> {
     CreditRoles::from_descriptor(descriptor, &Language::Vietnamese)
 }
 
 #[test]
-fn vocabulary_deduplicates_non_adjacent_entries_and_orders_longest_first() {
+fn from_descriptor_deduplicates_non_adjacent_entries_and_orders_longest_first() {
     // The input exercises three contractual properties at once:
     //   * `作詞` and `long-role` each appear twice with other entries
     //     between them, so a refactor that relies on `Vec::dedup` or
@@ -42,9 +42,9 @@ fn vocabulary_deduplicates_non_adjacent_entries_and_orders_longest_first() {
         "long-role",
         "abc",
     ]);
-    let vocab = vocabulary(&d);
+    let r = roles(&d);
     assert_eq!(
-        vocab.0,
+        r.0,
         vec!["very-long-role", "long-role", "作詞", "abc", "mid"],
     );
 }
@@ -52,7 +52,7 @@ fn vocabulary_deduplicates_non_adjacent_entries_and_orders_longest_first() {
 #[test]
 fn colon_separated_line_yields_one_pair_per_cell() {
     let d = descriptor(&["role-a", "role-b", "role-c"]);
-    let v = vocabulary(&d);
+    let v = roles(&d);
     let parsed = parse_credit_line(
         "role-a：name-a\u{3000}role-b：name-b\u{3000}role-c：name-c",
         &v,
@@ -72,7 +72,7 @@ fn colon_separated_line_yields_one_pair_per_cell() {
 #[test]
 fn two_space_separated_line_yields_one_pair_with_embedded_spaces() {
     let d = descriptor(&["role-a"]);
-    let v = vocabulary(&d);
+    let v = roles(&d);
     let parsed = parse_credit_line("role-a  name-a  name-b", &v).unwrap();
     assert_eq!(parsed.len(), 1);
     assert_eq!(parsed[0].role, "role-a");
@@ -86,7 +86,7 @@ fn two_space_separated_line_yields_one_pair_with_embedded_spaces() {
 #[test]
 fn tolerates_runs_wider_than_two_spaces() {
     let d = descriptor(&["role-a"]);
-    let v = vocabulary(&d);
+    let v = roles(&d);
     let parsed = parse_credit_line("role-a   name-a", &v).unwrap();
     assert_eq!(parsed.len(), 1);
     assert_eq!(parsed[0].role, "role-a");
@@ -100,7 +100,7 @@ fn tolerates_runs_wider_than_two_spaces() {
 #[test]
 fn longer_role_wins_over_shorter_prefix() {
     let d = descriptor(&["role", "role-a"]);
-    let v = vocabulary(&d);
+    let v = roles(&d);
     let parsed = parse_credit_line("role-a  name-a", &v).unwrap();
     assert_eq!(parsed[0].role, "role-a");
 }
@@ -108,7 +108,7 @@ fn longer_role_wins_over_shorter_prefix() {
 #[test]
 fn unknown_leading_text_errors() {
     let d = descriptor(&["role-a"]);
-    let v = vocabulary(&d);
+    let v = roles(&d);
     assert_eq!(
         parse_credit_line("unknown  name-a", &v).unwrap_err(),
         ParseCreditError::UnknownRole(UnknownRole {
@@ -121,7 +121,7 @@ fn unknown_leading_text_errors() {
 #[test]
 fn recognizes_lenticular_highlight() {
     let d = descriptor(&["role-a"]);
-    let v = vocabulary(&d);
+    let v = roles(&d);
     let parsed = parse_credit_line("role-a  name-a【label-a】", &v).unwrap();
     assert_eq!(parsed.len(), 1);
     assert_eq!(
@@ -136,7 +136,7 @@ fn recognizes_lenticular_highlight() {
 #[test]
 fn multiple_highlights_interleave_with_plain_text() {
     let d = descriptor(&["role-a"]);
-    let v = vocabulary(&d);
+    let v = roles(&d);
     let parsed = parse_credit_line("role-a  【label-a】name-a 【label-b】name-b", &v).unwrap();
     assert_eq!(
         parsed[0].name_segments,

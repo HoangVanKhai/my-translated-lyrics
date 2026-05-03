@@ -30,7 +30,7 @@ pub fn render_srt(
     credits: &CreditsDesc,
     language: &Language,
 ) -> Result<String, RenderSrtError> {
-    let vocabulary = CreditRoles::from_descriptor(credits, language);
+    let roles = CreditRoles::from_descriptor(credits, language);
 
     let mut output = String::new();
     for (cue_index, cue) in cues.iter().enumerate() {
@@ -42,7 +42,7 @@ pub fn render_srt(
             end = SrtTime::from(cue.end),
         )
         .unwrap();
-        render_cue_body(&mut output, cue, markers, &vocabulary)?;
+        render_cue_body(&mut output, cue, markers, &roles)?;
         output.push_str("\n\n");
     }
     output.truncate(output.trim_end().len());
@@ -54,13 +54,13 @@ fn render_cue_body(
     output: &mut String,
     cue: &SubtitleCue,
     markers: &LineMarkersDesc,
-    vocabulary: &CreditRoles,
+    roles: &CreditRoles,
 ) -> Result<(), RenderSrtError> {
     for (index, part) in cue.parts.iter().enumerate() {
         if index > 0 {
             output.push('\n');
         }
-        render_cue_part(output, cue.start, part, markers, vocabulary)?;
+        render_cue_part(output, cue.start, part, markers, roles)?;
     }
     Ok(())
 }
@@ -70,7 +70,7 @@ fn render_cue_part(
     cue_start: Timestamp,
     part: &CuePart,
     markers: &LineMarkersDesc,
-    vocabulary: &CreditRoles,
+    roles: &CreditRoles,
 ) -> Result<(), RenderSrtError> {
     let marker = &part.marker;
 
@@ -79,7 +79,7 @@ fn render_cue_part(
             if index > 0 {
                 output.push('\n');
             }
-            let pairs = parse_credit_line(line.trim_start(), vocabulary).map_err(|cause| {
+            let pairs = parse_credit_line(line.trim_start(), roles).map_err(|cause| {
                 RenderSrtError::Credits(RenderSrtErrorCreditsPayload {
                     start: cue_start,
                     cause,

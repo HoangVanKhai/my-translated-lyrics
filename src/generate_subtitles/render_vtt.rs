@@ -79,12 +79,12 @@ pub fn render_vtt(
     credits: &CreditsDesc,
     language: &Language,
 ) -> Result<String, RenderVttError> {
-    let vocabulary = CreditRoles::from_descriptor(credits, language);
+    let roles = CreditRoles::from_descriptor(credits, language);
 
     let mut cue_renderings = Vec::<CueRendering>::with_capacity(cues.len());
     let mut features = Features::default();
     for cue in cues {
-        let rendering = render_cue(cue, markers, &vocabulary, language)?;
+        let rendering = render_cue(cue, markers, &roles, language)?;
         features |= rendering.features;
         cue_renderings.push(rendering);
     }
@@ -137,7 +137,7 @@ struct CueRendering {
 fn render_cue(
     cue: &SubtitleCue,
     markers: &LineMarkersDesc,
-    vocabulary: &CreditRoles,
+    roles: &CreditRoles,
     language: &Language,
 ) -> Result<CueRendering, RenderVttError> {
     let mut content = String::new();
@@ -153,7 +153,7 @@ fn render_cue(
             cue.start,
             part,
             markers,
-            vocabulary,
+            roles,
             language,
         )?;
     }
@@ -172,7 +172,7 @@ fn render_cue_part(
     cue_start: Timestamp,
     part: &CuePart,
     markers: &LineMarkersDesc,
-    vocabulary: &CreditRoles,
+    roles: &CreditRoles,
     language: &Language,
 ) -> Result<(), RenderVttError> {
     let marker = &part.marker;
@@ -198,7 +198,7 @@ fn render_cue_part(
             if index > 0 {
                 output.push('\n');
             }
-            let pairs = parse_credit_line(line.trim_start(), vocabulary).map_err(|cause| {
+            let pairs = parse_credit_line(line.trim_start(), roles).map_err(|cause| {
                 RenderVttError::Credits(RenderVttErrorCreditsPayload {
                     start: cue_start,
                     cause,
