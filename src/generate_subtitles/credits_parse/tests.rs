@@ -5,6 +5,7 @@ use super::{
 use crate::credits_descriptor::CreditsDesc;
 use crate::video_descriptor::Language;
 use maplit::btreemap;
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 
 fn vocabulary(roles: &[&str]) -> CreditsVocabulary {
@@ -91,7 +92,7 @@ fn recognizes_lenticular_highlight() {
         parsed[0].name_segments,
         vec![
             NameSegment::Plain("name-a".into()),
-            NameSegment::Special("【label-a】".parse().unwrap()),
+            NameSegment::Special("【label-a】".pipe(Bracketed::try_from).unwrap()),
         ],
     );
 }
@@ -103,9 +104,15 @@ fn multiple_highlights_interleave_with_plain_text() {
     assert_eq!(
         parsed[0].name_segments,
         vec![
-            NameSegment::Special("【label-a】".parse().unwrap()),
+            "【label-a】"
+                .pipe(Bracketed::try_from)
+                .unwrap()
+                .pipe(NameSegment::Special),
             NameSegment::Plain("name-a ".into()),
-            NameSegment::Special("【label-b】".parse().unwrap()),
+            "【label-b】"
+                .pipe(Bracketed::try_from)
+                .unwrap()
+                .pipe(NameSegment::Special),
             NameSegment::Plain("name-b".into()),
         ],
     );
@@ -139,7 +146,7 @@ fn bracketed_rejects_non_bracket_prefix_and_nested_or_unclosed_brackets() {
 
 #[test]
 fn bracketed_from_str_accepts_a_single_span() {
-    let parsed: Bracketed = "【label-a】".parse().unwrap();
+    let parsed: Bracketed = "【label-a】".try_into().unwrap();
     assert_eq!(parsed.as_str(), "【label-a】");
 }
 
@@ -151,7 +158,7 @@ fn bracketed_from_str_rejects_shape_mismatch() {
     // the close.
     for input in ["", "no bracket", "[open only", "【a【b】c】"] {
         assert_eq!(
-            input.parse::<Bracketed>().unwrap_err(),
+            input.pipe(Bracketed::try_from).unwrap_err(),
             ParseBracketedError::ShapeMismatch,
         );
     }
@@ -163,7 +170,7 @@ fn bracketed_from_str_rejects_unexpected_character_after_span() {
     // diagnostic reports; nothing else is needed to describe the
     // failure.
     assert_eq!(
-        "【label-a】trailing".parse::<Bracketed>().unwrap_err(),
+        "【label-a】trailing".pipe(Bracketed::try_from).unwrap_err(),
         ParseBracketedError::UnexpectedCharacter('t'),
     );
 }

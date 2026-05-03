@@ -23,7 +23,6 @@
 
 use crate::credits_descriptor::CreditsDesc;
 use crate::video_descriptor::Language;
-use core::str::FromStr;
 use derive_more::Display;
 use std::collections::BTreeSet;
 use std::mem;
@@ -41,16 +40,16 @@ pub struct CreditPair<'a> {
     pub separator: &'a str,
     /// Decomposed name region, with bracketed highlights promoted
     /// to structural segments.
-    pub name_segments: Vec<NameSegment>,
+    pub name_segments: Vec<NameSegment<'a>>,
 }
 
 /// A unit within the name region of a credit pair.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum NameSegment {
+pub enum NameSegment<'a> {
     /// Plain text that did not match a highlight.
     Plain(String),
     /// A bracketed highlight such as `【...】`, `[...]`, or `(...)`.
-    Special(Bracketed),
+    Special(Bracketed<'a>),
 }
 
 /// A string that is guaranteed to open with a recognized bracket,
@@ -60,23 +59,23 @@ pub enum NameSegment {
 /// pattern: it consumes a prefix of the input and returns both the
 /// parsed value and the remaining unparsed tail.
 #[derive(Debug, Display, Clone, PartialEq, Eq)]
-pub struct Bracketed(String);
+pub struct Bracketed<'a>(&'a str);
 
-impl Bracketed {
+impl<'a> Bracketed<'a> {
     /// Consumes a leading bracketed span. The three recognized
     /// pairs are `【...】`, `[...]`, and `(...)`. The bytes between
     /// the opening and closing characters must contain none of
     /// those six characters; if another bracket is encountered
     /// before the matching close, no value is produced and the
     /// caller is free to re-interpret the input as ordinary text.
-    pub fn take(input: &str) -> Option<(Self, &str)> {
+    pub fn take(input: &'a str) -> Option<(Self, &'a str)> {
         let mut chars = input.char_indices();
         let (_, open) = chars.next()?;
         let close = matching_close(open)?;
         for (offset, ch) in chars {
             if ch == close {
                 let end = offset + ch.len_utf8();
-                return Some((Bracketed(input[..end].to_string()), &input[end..]));
+                return Some((Bracketed(&input[..end]), &input[end..]));
             }
             if is_bracket_char(ch) {
                 return None;
@@ -86,14 +85,14 @@ impl Bracketed {
     }
 
     /// The bracketed text, including the surrounding brackets.
-    pub fn as_str(&self) -> &str {
-        &self.0
+    pub fn as_str(&self) -> &'a str {
+        self.0
     }
 }
 
-/// Reasons [`Bracketed::from_str`] can fail.
+/// Reasons [`Bracketed::try_from`] can fail.
 ///
-/// `FromStr` requires the entire input to denote a single
+/// `TryFrom` requires the entire input to denote a single
 /// bracketed span. The parser reuses [`Bracketed::take`] and then
 /// rejects any remaining input, so the error surface has two
 /// variants: a shape mismatch when the input does not form a
@@ -111,16 +110,16 @@ pub enum ParseBracketedError {
     /// The input begins with a valid bracketed span but carries
     /// an unexpected character where end of input was required.
     #[display(
-        "unexpected character {_0:?} after the bracketed span; `FromStr` requires end of input there"
+        "unexpected character {_0:?} after the bracketed span; `TryFrom` requires end of input there"
     )]
     UnexpectedCharacter(char),
 }
 
-impl FromStr for Bracketed {
-    type Err = ParseBracketedError;
+impl<'a> TryFrom<&'a str> for Bracketed<'a> {
+    type Error = ParseBracketedError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (value, trailing) = Bracketed::take(s).ok_or(ParseBracketedError::ShapeMismatch)?;
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+        let (value, trailing) = Bracketed::take(value).ok_or(ParseBracketedError::ShapeMismatch)?;
         match trailing.chars().next() {
             None => Ok(value),
             Some(character) => Err(ParseBracketedError::UnexpectedCharacter(character)),
@@ -217,7 +216,7 @@ pub fn parse_credit_line<'a>(
     Ok(pairs)
 }
 
-fn parse_name_region(region: &str) -> Vec<NameSegment> {
+fn parse_name_region(region: &str) -> Vec<NameSegment<'_>> {
     let mut segments = Vec::<NameSegment>::new();
     let mut plain = String::new();
     let mut rest = region;
