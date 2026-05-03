@@ -146,10 +146,10 @@ fn render_credit_pair(output: &mut String, pair: &CreditPair) {
     write!(
         output,
         r#"<font color="{CREDIT_ROLE_COLOR}">{}</font>"#,
-        Escaped(&pair.role),
+        Escaped(pair.role),
     )
     .unwrap();
-    append_separator_for_output(output, &pair.separator);
+    append_separator_for_output(output, pair.separator);
     write!(output, r#"<font color="{CREDIT_NAME_COLOR}">"#).unwrap();
     write_name_segments(output, &pair.name_segments);
     output.push_str("</font>");

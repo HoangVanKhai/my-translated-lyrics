@@ -231,8 +231,8 @@ fn render_credit_line(output: &mut String, features: &mut Features, pairs: &[Cre
 fn render_credit_pair(output: &mut String, features: &mut Features, pair: &CreditPair) {
     features.used_credit_role = true;
     features.used_credit_name = true;
-    write!(output, "<c.{CLASS_CREDIT_ROLE}>{}</c>", Escaped(&pair.role)).unwrap();
-    append_separator_for_output(output, &pair.separator);
+    write!(output, "<c.{CLASS_CREDIT_ROLE}>{}</c>", Escaped(pair.role)).unwrap();
+    append_separator_for_output(output, pair.separator);
     write!(output, "<c.{CLASS_CREDIT_NAME}>").unwrap();
     write_name_segments(output, features, &pair.name_segments);
     output.push_str("</c>");

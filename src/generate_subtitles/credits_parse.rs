@@ -30,15 +30,15 @@ use std::mem;
 
 /// A structural role/name pair extracted from one credit line.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CreditPair {
+pub struct CreditPair<'a> {
     /// The role cell, exactly as it appeared in the source line.
-    pub role: String,
+    pub role: &'a str,
     /// Raw separator text captured between the role cell and the
     /// name cell, preserved verbatim for the renderer to decide how
     /// to emit it: ASCII space/tab runs survive unchanged (so a
     /// multi-space gutter round-trips), while other shapes such as
     /// `：` or `\u{3000}` collapse to a single ASCII space.
-    pub separator: String,
+    pub separator: &'a str,
     /// Decomposed name region, with bracketed highlights promoted
     /// to structural segments.
     pub name_segments: Vec<NameSegment>,
@@ -185,10 +185,10 @@ impl CreditsVocabulary {
 
 /// Parses a credit line into ordered role-name pairs using the
 /// provided vocabulary. See the module docs for the algorithm.
-pub fn parse_credit_line(
-    line: &str,
+pub fn parse_credit_line<'a>(
+    line: &'a str,
     vocabulary: &CreditsVocabulary,
-) -> Result<Vec<CreditPair>, ParseCreditError> {
+) -> Result<Vec<CreditPair<'a>>, ParseCreditError> {
     let mut pairs = Vec::<CreditPair>::new();
     let (_, mut rest) = take_leading_whitespace(line);
 
@@ -205,8 +205,8 @@ pub fn parse_credit_line(
         let name_segments = parse_name_region(name_region);
 
         pairs.push(CreditPair {
-            role: role.to_string(),
-            separator: separator.to_string(),
+            role,
+            separator,
             name_segments,
         });
 
