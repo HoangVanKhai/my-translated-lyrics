@@ -26,6 +26,7 @@ use crate::video_descriptor::Language;
 use core::str::FromStr;
 use derive_more::Display;
 use std::collections::BTreeSet;
+use std::mem;
 
 /// A structural role/name pair extracted from one credit line.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -223,7 +224,7 @@ fn parse_name_region(region: &str) -> Vec<NameSegment> {
 
     let flush = |plain: &mut String, segments: &mut Vec<NameSegment>| {
         if !plain.is_empty() {
-            segments.push(NameSegment::Plain(std::mem::take(plain)));
+            segments.push(NameSegment::Plain(mem::take(plain)));
         }
     };
 
