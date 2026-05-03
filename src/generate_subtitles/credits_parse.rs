@@ -210,7 +210,7 @@ impl CreditsVocabulary {
         descriptor
             .credit_roles
             .iter()
-            .filter_map(|entry| entry.get(language))
+            .filter_map(|entry| entry.get(language).cloned())
             .pipe(deduplicate_longest_first)
             .pipe(CreditsVocabulary::new)
     }
@@ -281,17 +281,15 @@ fn parse_name_region(region: &str) -> Vec<NameSegment<'_>> {
     segments
 }
 
-fn deduplicate_longest_first<Iter, Item>(values: Iter) -> Vec<String>
+fn deduplicate_longest_first<Iter>(values: Iter) -> Vec<String>
 where
-    Iter: IntoIterator<Item = Item>,
-    Item: AsRef<str>,
+    Iter: IntoIterator<Item = String>,
 {
     let mut seen = BTreeSet::<String>::new();
     let mut collected = Vec::<String>::new();
     for value in values {
-        let owned = value.as_ref().to_string();
-        if seen.insert(owned.clone()) {
-            collected.push(owned);
+        if seen.insert(value.clone()) {
+            collected.push(value);
         }
     }
     collected.sort_by(|a, b| b.len().cmp(&a.len()).then_with(|| a.cmp(b)));
