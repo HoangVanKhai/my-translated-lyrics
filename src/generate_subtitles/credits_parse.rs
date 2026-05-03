@@ -185,6 +185,10 @@ fn is_bracket_char(ch: char) -> bool {
 
 /// The role set for one language, built from `credits.yaml` and
 /// reused across every credit cue in the song.
+///
+/// The roles are always sorted from longest to shortest.
+///
+/// There are no duplication amongst the roles.
 pub struct CreditRoles<'a>(Vec<&'a str>);
 
 impl<'a> CreditRoles<'a> {
