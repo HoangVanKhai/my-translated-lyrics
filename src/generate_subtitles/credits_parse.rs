@@ -216,29 +216,27 @@ pub fn parse_credit_line<'a>(
 }
 
 fn parse_name_region(region: &str) -> Vec<NameSegment<'_>> {
-    let mut segments = Vec::<NameSegment>::new();
-    let mut plain_start = 0;
-    let mut cursor = 0;
-
-    while cursor < region.len() {
-        if let Some((bracketed, _)) = Bracketed::take(&region[cursor..]) {
-            if plain_start < cursor {
-                segments.push(NameSegment::Plain(&region[plain_start..cursor]));
-            }
-            cursor += bracketed.as_str().len();
-            plain_start = cursor;
+    let mut segments = Vec::new();
+    let mut rest = region;
+    while !rest.is_empty() {
+        if let Some((bracketed, next_rest)) = Bracketed::take(rest) {
             segments.push(NameSegment::Special(bracketed));
-            continue;
+            rest = next_rest;
+        } else {
+            let (plain, next_rest) = take_plain(rest);
+            segments.push(NameSegment::Plain(plain));
+            rest = next_rest;
         }
-        let Some(next_char) = region[cursor..].chars().next() else {
-            break;
-        };
-        cursor += next_char.len_utf8();
-    }
-    if plain_start < cursor {
-        segments.push(NameSegment::Plain(&region[plain_start..cursor]));
     }
     segments
+}
+
+fn take_plain(input: &str) -> (&str, &str) {
+    let mut cursor = 0;
+    while cursor < input.len() && Bracketed::take(&input[cursor..]).is_none() {
+        cursor += input[cursor..].chars().next().unwrap().len_utf8();
+    }
+    input.split_at(cursor)
 }
 
 fn deduplicate_longest_first<Iter, Item>(values: Iter) -> Vec<String>
