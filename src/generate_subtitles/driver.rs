@@ -34,8 +34,8 @@ pub struct LanguageBundle {
     pub cues: Vec<SubtitleCue>,
 }
 
-pub struct Song {
-    pub directory_name: String,
+pub struct Song<'a> {
+    pub directory_name: &'a str,
     pub markers: LineMarkersDesc,
     pub credits: CreditsDesc,
     pub languages: Vec<LanguageBundle>,
@@ -69,7 +69,7 @@ enum WriteOutcome {
 }
 
 pub fn render_song(song: &Song, dist_dir: &Path, execute: bool) -> RenderCounts {
-    let destination_dir = dist_dir.join(&song.directory_name);
+    let destination_dir = dist_dir.join(song.directory_name);
     if execute {
         create_dir_all(&destination_dir).unwrap_or_else(|error| {
             panic!("error: Cannot create directory {destination_dir:?}: {error}")
@@ -124,12 +124,11 @@ fn write_subtitle(path: &Path, content: &str, execute: bool) -> WriteOutcome {
     outcome
 }
 
-pub fn load_song(song_dir: &Path) -> Song {
+pub fn load_song(song_dir: &Path) -> Song<'_> {
     let directory_name = song_dir
         .file_name()
         .and_then(|name| name.to_str())
-        .unwrap_or_else(|| panic!("error: song directory {song_dir:?} has a non-UTF-8 name"))
-        .to_string();
+        .unwrap_or_else(|| panic!("error: song directory {song_dir:?} has a non-UTF-8 name"));
 
     // `video.toml` is parsed purely to validate that the file exists
     // and is well-formed. None of its fields flow into the rendered
