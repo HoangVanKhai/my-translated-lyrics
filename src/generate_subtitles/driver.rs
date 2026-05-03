@@ -1,11 +1,3 @@
-//! Driver for the `generate-subtitles` binary.
-//!
-//! The driver walks the source directory, loads each song's descriptor
-//! files and per-language lyrics, renders them, and writes the output
-//! into the destination directory. A dry-run mode prints the planned
-//! writes and leaves the filesystem untouched; the equivalent of
-//! `install-local-lyrics`'s `--execute` flag opts into the actual write.
-
 use super::parse::{SubtitleCue, parse_lyrics};
 use super::render_srt::render_srt;
 use super::render_vtt::render_vtt;
@@ -37,13 +29,11 @@ struct Args {
     execute: bool,
 }
 
-/// Everything the renderers need for one song's one language.
 pub struct LanguageBundle {
     pub language: Language,
     pub cues: Vec<SubtitleCue>,
 }
 
-/// Parsed representation of a song directory, ready for rendering.
 pub struct Song {
     pub directory_name: String,
     pub markers: LineMarkersDesc,
@@ -51,25 +41,13 @@ pub struct Song {
     pub languages: Vec<LanguageBundle>,
 }
 
-/// Per-language counts produced by [`render_song`]. The renderer
-/// reports each rendered file as either an addition (no prior file
-/// at the target path) or an update (existing file replaced because
-/// the content changed). Files whose existing dist counterpart
-/// already matches the rendered content do not appear in either
-/// count.
 #[derive(Debug, Default, Clone, Copy, AddAssign)]
 pub struct RenderCounts {
-    /// Files created in `dist/` because no prior file existed at
-    /// the target path.
     pub added: usize,
-    /// Files whose existing dist content was replaced because the
-    /// rendered content differed.
     pub updated: usize,
 }
 
 impl RenderCounts {
-    /// Total number of files that were (or, in dry-run mode, would
-    /// be) written: `added + updated`.
     pub fn total(self) -> usize {
         self.added + self.updated
     }
@@ -83,25 +61,13 @@ impl RenderCounts {
     }
 }
 
-/// Outcome of a single [`write_subtitle`] call.
 #[derive(Debug, Clone, Copy)]
 enum WriteOutcome {
-    /// No prior file at the target path; a new file was written.
     Added,
-    /// Prior file existed at the target path with different content.
-    /// The file was overwritten.
     Updated,
-    /// Prior file existed at the target path with the same content.
-    /// No write was performed.
     Unchanged,
 }
 
-/// Builds the subtitles for a single song by rendering each language
-/// to both `.srt` and `.vtt` and writing the result into `dist_dir`
-/// when the rendered content differs from the existing dist file (or
-/// when no dist file exists yet). Files that already match their
-/// rendered counterpart are skipped silently. Returns the per-song
-/// [`RenderCounts`].
 pub fn render_song(song: &Song, dist_dir: &Path, execute: bool) -> RenderCounts {
     let destination_dir = dist_dir.join(&song.directory_name);
     if execute {
@@ -137,14 +103,6 @@ pub fn render_song(song: &Song, dist_dir: &Path, execute: bool) -> RenderCounts 
     counts
 }
 
-/// Writes `content` to `path`, distinguishing the three outcomes of
-/// the write: no prior file ([`WriteOutcome::Added`]), prior file
-/// with different content ([`WriteOutcome::Updated`]), or prior file
-/// with the same content ([`WriteOutcome::Unchanged`], the only path
-/// that touches neither the filesystem nor the announcement
-/// channel). In dry-run mode (`execute = false`) the function still
-/// performs the comparison and announces the planned action but
-/// leaves the filesystem untouched.
 fn write_subtitle(path: &Path, content: &str, execute: bool) -> WriteOutcome {
     let (verb, outcome) = if path.exists() {
         let snapshot = path
@@ -166,8 +124,6 @@ fn write_subtitle(path: &Path, content: &str, execute: bool) -> WriteOutcome {
     outcome
 }
 
-/// Loads all source artifacts for a single song into memory and parses
-/// each cue list.
 pub fn load_song(song_dir: &Path) -> Song {
     let directory_name = song_dir
         .file_name()
