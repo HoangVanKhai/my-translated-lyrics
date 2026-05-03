@@ -6,8 +6,8 @@
 //! between a role match and the next role match (or end of line)
 //! form the associated name region, and name regions are scanned
 //! for bracketed highlight runs that become
-//! [`NameSegment::Special`] values; anything else becomes
-//! [`NameSegment::Plain`].
+//! [`NameSegment::Bracketed`] values; anything else becomes
+//! [`NameSegment::Unbracketed`].
 //!
 //! A credit line whose first non-whitespace token is not a known
 //! role raises [`ParseCreditError::UnknownRole`]. This lets the
