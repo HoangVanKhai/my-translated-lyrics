@@ -1,5 +1,5 @@
 use crate::video_descriptor::Language;
-use derive_more::{Display, Error};
+use derive_more::Display;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -176,7 +176,7 @@ fn is_forbidden_voice_char(ch: char) -> bool {
     matches!(ch, '<' | '>' | '"' | '\\' | '\u{2028}' | '\u{2029}') || ch.is_control()
 }
 
-#[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum InvalidVoiceName {
     #[display("voice name must not be empty")]
@@ -184,18 +184,18 @@ pub enum InvalidVoiceName {
     #[display(
         r#"voice name must not contain {_0:?}; `<`, `>`, `"`, `\`, line separators, and control characters are reserved by WebVTT and CSS"#
     )]
-    ForbiddenCharacter(#[error(not(source))] char),
+    ForbiddenCharacter(char),
 }
 
-#[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum InvalidCssClassName {
     #[display("class name must not be empty")]
     Empty,
     #[display("class name must begin with an ASCII letter or `_`, got {_0:?}")]
-    InvalidLeadingCharacter(#[error(not(source))] char),
+    InvalidLeadingCharacter(char),
     #[display("class name must contain only ASCII letters, digits, `-`, and `_`, got {_0:?}")]
-    InvalidCharacter(#[error(not(source))] char),
+    InvalidCharacter(char),
 }
 
 #[cfg(test)]

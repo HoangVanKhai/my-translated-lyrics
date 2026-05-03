@@ -17,7 +17,7 @@ path = "cli/generate_subtitles.rs"
 
 [dependencies]
 clap = { version = "4.6.1", features = ["derive"] }
-derive_more = { version = "2.1.1", features = ["add_assign", "as_ref", "deref", "display", "error", "from", "into"] }
+derive_more = { version = "2.1.1", features = ["add_assign", "as_ref", "deref", "display", "from", "into"] }
 itertools = "0.14.0"
 pipe-trait = "0.4.0"
 reflink = "0.1.3"

@@ -21,7 +21,7 @@ use crate::line_markers_descriptor::LineMarkersDesc;
 use crate::timestamp::{SrtTime, Timestamp};
 use crate::video_descriptor::Language;
 use core::fmt::Write;
-use derive_more::{Display, Error};
+use derive_more::Display;
 
 /// Renders all cues for a single language into a complete `.srt` file.
 pub fn render_srt(
@@ -181,10 +181,10 @@ pub struct RenderSrtErrorCreditsPayload {
     pub cause: ParseCreditError,
 }
 
-#[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum RenderSrtError {
-    Credits(#[error(not(source))] RenderSrtErrorCreditsPayload),
+    Credits(RenderSrtErrorCreditsPayload),
 }
 
 #[cfg(test)]

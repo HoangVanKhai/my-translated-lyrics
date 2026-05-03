@@ -42,7 +42,7 @@ use crate::line_markers_descriptor::{LineMarkersDesc, VoiceName};
 use crate::timestamp::{Timestamp, VttTime};
 use crate::video_descriptor::Language;
 use core::fmt::Write;
-use derive_more::{BitOrAssign, Display, Error};
+use derive_more::{BitOrAssign, Display};
 use text_block_macros::text_block_fnl;
 
 /// Built-in class name for the role cell of a credit line.
@@ -362,10 +362,10 @@ pub struct RenderVttErrorCreditsPayload {
     pub cause: ParseCreditError,
 }
 
-#[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum RenderVttError {
-    Credits(#[error(not(source))] RenderVttErrorCreditsPayload),
+    Credits(RenderVttErrorCreditsPayload),
 }
 
 #[cfg(test)]

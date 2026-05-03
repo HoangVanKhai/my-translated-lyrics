@@ -13,7 +13,7 @@
 use crate::line_markers_descriptor::{CLEAR_MARKER, END_OF_VIDEO_MARKER};
 use crate::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
 use core::fmt;
-use derive_more::{Display, Error};
+use derive_more::Display;
 
 /// Indent width of a line that opens a new marker at the same start
 /// time as the cue immediately above. Equals the byte length of an
@@ -547,23 +547,23 @@ pub struct UnclosedCue {
     pub start: Timestamp,
 }
 
-#[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum ParseLyricsError {
-    TabIndentation(#[error(not(source))] TabIndentation),
-    MalformedIndentation(#[error(not(source))] MalformedIndentation),
-    MalformedHeader(#[error(not(source))] MalformedHeader),
-    InvalidTimestamp(#[error(not(source))] InvalidTimestamp),
-    MissingSeparatorAfterTimestamp(#[error(not(source))] MissingSeparatorAfterTimestamp),
-    ExtraTextAfterControlMarker(#[error(not(source))] ExtraTextAfterControlMarker),
-    RepeatedTimestamp(#[error(not(source))] RepeatedTimestamp),
-    OutOfOrder(#[error(not(source))] OutOfOrder),
-    CueTextReservedCharacter(#[error(not(source))] CueTextReservedCharacter),
-    MissingMarker(#[error(not(source))] MissingMarker),
-    ReservedControlMarker(#[error(not(source))] ReservedControlMarker),
-    EmptyCueBody(#[error(not(source))] EmptyCueBody),
-    OrphanedShorthandMarker(#[error(not(source))] OrphanedShorthandMarker),
-    UnclosedCue(#[error(not(source))] UnclosedCue),
+    TabIndentation(TabIndentation),
+    MalformedIndentation(MalformedIndentation),
+    MalformedHeader(MalformedHeader),
+    InvalidTimestamp(InvalidTimestamp),
+    MissingSeparatorAfterTimestamp(MissingSeparatorAfterTimestamp),
+    ExtraTextAfterControlMarker(ExtraTextAfterControlMarker),
+    RepeatedTimestamp(RepeatedTimestamp),
+    OutOfOrder(OutOfOrder),
+    CueTextReservedCharacter(CueTextReservedCharacter),
+    MissingMarker(MissingMarker),
+    ReservedControlMarker(ReservedControlMarker),
+    EmptyCueBody(EmptyCueBody),
+    OrphanedShorthandMarker(OrphanedShorthandMarker),
+    UnclosedCue(UnclosedCue),
 }
 
 /// Rejects any cue text (an opening line's body after the marker,

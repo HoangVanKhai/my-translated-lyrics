@@ -24,7 +24,7 @@
 use crate::credits_descriptor::CreditsDesc;
 use crate::video_descriptor::Language;
 use core::str::FromStr;
-use derive_more::{Display, Error};
+use derive_more::Display;
 use std::collections::BTreeSet;
 
 /// A structural role/name pair extracted from one credit line.
@@ -98,7 +98,7 @@ impl Bracketed {
 /// variants: a shape mismatch when the input does not form a
 /// bracketed span at all, and an unexpected-character error when
 /// a valid span is followed by further content.
-#[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum ParseBracketedError {
     /// The input does not form a valid bracketed span: it is
@@ -112,7 +112,7 @@ pub enum ParseBracketedError {
     #[display(
         "unexpected character {_0:?} after the bracketed span; `FromStr` requires end of input there"
     )]
-    UnexpectedCharacter(#[error(not(source))] char),
+    UnexpectedCharacter(char),
 }
 
 impl FromStr for Bracketed {
@@ -313,10 +313,10 @@ pub struct UnknownRole {
     pub offset: usize,
 }
 
-#[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum ParseCreditError {
-    UnknownRole(#[error(not(source))] UnknownRole),
+    UnknownRole(UnknownRole),
 }
 
 #[cfg(test)]

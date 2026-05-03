@@ -1,6 +1,6 @@
 use core::fmt;
 use core::str::FromStr;
-use derive_more::{Display, Error, From, Into};
+use derive_more::{Display, From, Into};
 
 /// Milliseconds in one second. The inner `u64` of [`Timestamp`] and
 /// the format widths of the `MM:SS.mmm` and `HH:MM:SS.mmm` shapes
@@ -253,7 +253,7 @@ pub struct SecondsOutOfRange {
 /// [`UnexpectedCharacter`](Self::UnexpectedCharacter) variant for
 /// inputs that started well but carry content past the nine
 /// consumed characters.
-#[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum ParseTimestampError {
     /// The input does not begin with an `MM:SS.mmm` shape.
@@ -261,16 +261,16 @@ pub enum ParseTimestampError {
     ShapeMismatch,
     /// The input begins with an `MM:SS.mmm` shape but the minutes
     /// component is out of range (reaches or exceeds 60).
-    MinutesOutOfRange(#[error(not(source))] MinutesOutOfRange),
+    MinutesOutOfRange(MinutesOutOfRange),
     /// The input begins with an `MM:SS.mmm` shape but the seconds
     /// component is out of range.
-    SecondsOutOfRange(#[error(not(source))] SecondsOutOfRange),
+    SecondsOutOfRange(SecondsOutOfRange),
     /// The input begins with a valid `MM:SS.mmm` prefix but has
     /// an unexpected character where end of input was required.
     #[display(
         "unexpected character {_0:?} after the `MM:SS.mmm` prefix; `FromStr` requires end of input there"
     )]
-    UnexpectedCharacter(#[error(not(source))] char),
+    UnexpectedCharacter(char),
 }
 
 impl FromStr for Timestamp {
@@ -301,7 +301,7 @@ impl FromStr for Timestamp {
 /// timestamp value (used by any future `FromStr`-style parser),
 /// while [`TakeTimestampError`] describes ways the `take` combinator
 /// fails to produce a `Timestamp` from the start of its input.
-#[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum TakeTimestampError {
     /// The input does not begin with an `MM:SS.mmm` shape.
@@ -309,10 +309,10 @@ pub enum TakeTimestampError {
     ShapeMismatch,
     /// The input begins with an `MM:SS.mmm` shape but the minutes
     /// component reaches or exceeds 60, breaking the one-hour cap.
-    MinutesOutOfRange(#[error(not(source))] MinutesOutOfRange),
+    MinutesOutOfRange(MinutesOutOfRange),
     /// The input begins with an `MM:SS.mmm` shape but the seconds
     /// component is out of range.
-    SecondsOutOfRange(#[error(not(source))] SecondsOutOfRange),
+    SecondsOutOfRange(SecondsOutOfRange),
 }
 
 #[cfg(test)]
