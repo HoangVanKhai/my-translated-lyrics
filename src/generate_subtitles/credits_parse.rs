@@ -24,7 +24,6 @@ use crate::credits_descriptor::CreditsDesc;
 use crate::video_descriptor::Language;
 use derive_more::Display;
 use pipe_trait::Pipe;
-use std::collections::HashSet;
 
 /// A structural role/name pair extracted from one credit line.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -285,10 +284,9 @@ fn deduplicate_longest_first<Iter>(values: Iter) -> Vec<String>
 where
     Iter: IntoIterator<Item = String>,
 {
-    let mut seen = HashSet::<String>::new();
     let mut collected = Vec::<String>::new();
     for value in values {
-        if seen.insert(value.clone()) {
+        if !collected.contains(&value) {
             collected.push(value);
         }
     }
