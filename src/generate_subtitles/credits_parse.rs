@@ -203,12 +203,11 @@ impl CreditsVocabulary {
     ///
     /// [`credit-roles`]: CreditsDesc::credit_roles
     pub fn from_descriptor(descriptor: &CreditsDesc, language: &Language) -> Self {
-        let roles = deduplicate_longest_first(
-            descriptor
-                .credit_roles
-                .iter()
-                .filter_map(|entry| entry.get(language)),
-        );
+        let roles = descriptor
+            .credit_roles
+            .iter()
+            .filter_map(|entry| entry.get(language))
+            .pipe(deduplicate_longest_first);
         CreditsVocabulary { roles }
     }
 
