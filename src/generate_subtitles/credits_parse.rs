@@ -23,7 +23,8 @@
 use crate::credits_descriptor::CreditsDesc;
 use crate::video_descriptor::Language;
 use derive_more::Display;
-use itertools::Itertools;
+use into_deduped::IntoDeduped;
+use into_sorted::IntoSorted;
 use pipe_trait::Pipe;
 
 /// A structural role/name pair extracted from one credit line.
@@ -211,9 +212,9 @@ impl CreditsVocabulary {
             .credit_roles
             .iter()
             .filter_map(|entry| entry.get(language).cloned())
-            .sorted_by(|a, b| b.len().cmp(&a.len()).then_with(|| a.cmp(b)))
-            .dedup()
             .collect::<Vec<_>>()
+            .into_sorted_by(|a, b| b.len().cmp(&a.len()).then_with(|| a.cmp(b)))
+            .into_deduped()
             .pipe(CreditsVocabulary::new)
     }
 

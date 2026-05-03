@@ -332,6 +332,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "into-deduped"
+version = "0.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f0508262c8ee5f6df12bd0f87cd2da59fce8eda2a594b1d958398daed3e38b0a"
+
+[[package]]
 name = "into-sorted"
 version = "0.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -736,6 +742,7 @@ dependencies = [
  "clap",
  "command-extra",
  "derive_more",
+ "into-deduped",
  "into-sorted",
  "itertools",
  "maplit",
