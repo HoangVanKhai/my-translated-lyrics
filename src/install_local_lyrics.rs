@@ -227,8 +227,9 @@ pub fn main() {
                     panic!("error: Cannot read file {:?}: {error}", source_file.clone())
                 });
 
+                let was_present = files_need_uninstall.remove(&target_file);
                 debug_assert!(
-                    files_need_uninstall.remove(&target_file),
+                    was_present,
                     "Expecting {target_file:?} to still exist but it doesn't"
                 );
 
