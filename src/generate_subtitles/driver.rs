@@ -16,7 +16,7 @@ use std::path::{Path, PathBuf};
 const LYRICS_TXT_SUFFIX: &str = ".txt";
 
 #[derive(Debug, Clone, Parser)]
-#[clap(about = "Build `.srt` and `.vtt` subtitle files from the structured lyrics sources.")]
+#[clap(about = "Generate the subtitles")]
 struct Args {
     /// Source directory that contains one song subdirectory per video.
     sources: PathBuf,
