@@ -8,9 +8,9 @@
 //! writes the result to the corresponding `dist/` directory.
 //!
 //! The credit-line parser uses the `credit-roles` list in
-//! `credits.yaml` as its role vocabulary; a credit line whose first
-//! non-whitespace token is not a known role fails the render with
-//! [`credits_parse::ParseCreditError`].
+//! `credits.yaml` as the recognized role set; a credit line whose
+//! first non-whitespace token is not a known role fails the render
+//! with [`credits_parse::ParseCreditError`].
 //!
 //! The entry point [`main`] is called from `cli/generate_subtitles.rs`.
 

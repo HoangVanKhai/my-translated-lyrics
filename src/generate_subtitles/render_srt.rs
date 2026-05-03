@@ -4,7 +4,7 @@
 //! is expressed as inline HTML-like tags. For each cue this renderer
 //! looks up the marker's style in the central [`super::styles`] table
 //! and wraps the text in `<font color="...">`, `<i>`, and/or `<b>`
-//! tags as required. Credit lines go through the same vocabulary
+//! tags as required. Credit lines go through the same role-driven
 //! parser as the VTT renderer and emit each role and name with a
 //! hardcoded palette because SRT has no central style definition.
 

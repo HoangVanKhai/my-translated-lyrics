@@ -1,6 +1,6 @@
-//! Vocabulary-driven credit-line parser.
+//! Role-driven credit-line parser.
 //!
-//! The parser takes the role vocabulary for one language from the
+//! The parser takes the [`CreditRoles`] for one language from the
 //! song's `credits.yaml` and walks the line left to right, matching
 //! the longest registered role at every cursor position. The bytes
 //! between a role match and the next role match (or end of line)
@@ -183,13 +183,12 @@ fn is_bracket_char(ch: char) -> bool {
     matches!(ch, '【' | '】' | '[' | ']' | '(' | ')')
 }
 
-/// The vocabulary for one language, built from `credits.yaml`
-/// and reused across every credit cue in the song.
+/// The role set for one language, built from `credits.yaml` and
+/// reused across every credit cue in the song.
 pub struct CreditRoles<'a>(Vec<&'a str>);
 
 impl<'a> CreditRoles<'a> {
-    /// Collects the language-specific labels from a descriptor to
-    /// create a vocabulary.
+    /// Collects the language-specific labels from a descriptor.
     pub fn from_descriptor(descriptor: &'a CreditsDesc, language: &Language) -> Self {
         descriptor
             .credit_roles
@@ -221,7 +220,7 @@ impl<'a> CreditRoles<'a> {
 }
 
 /// Parses a credit line into ordered role-name pairs using the
-/// provided vocabulary. See the module docs for the algorithm.
+/// provided [`CreditRoles`]. See the module docs for the algorithm.
 pub fn parse_credit_line<'a>(
     line: &'a str,
     vocabulary: &CreditRoles,
