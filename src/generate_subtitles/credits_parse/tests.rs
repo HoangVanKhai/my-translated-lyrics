@@ -102,6 +102,7 @@ fn longer_role_wins_over_shorter_prefix() {
     let descriptor = make_descriptor(&["role", "role-a"]);
     let roles = make_roles(&descriptor);
     let parsed = parse_credit_line("role-a  name-a", &roles).unwrap();
+    assert_eq!(parsed.len(), 1);
     assert_eq!(parsed[0].role, "role-a");
 }
 
@@ -138,6 +139,7 @@ fn multiple_highlights_interleave_with_plain_text() {
     let descriptor = make_descriptor(&["role-a"]);
     let roles = make_roles(&descriptor);
     let parsed = parse_credit_line("role-a  【label-a】name-a 【label-b】name-b", &roles).unwrap();
+    assert_eq!(parsed.len(), 1);
     assert_eq!(
         parsed[0].name_segments,
         [
