@@ -25,7 +25,6 @@ use crate::credits_descriptor::CreditsDesc;
 use crate::video_descriptor::Language;
 use derive_more::Display;
 use std::collections::BTreeSet;
-use std::mem;
 
 /// A structural role/name pair extracted from one credit line.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -47,7 +46,7 @@ pub struct CreditPair<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NameSegment<'a> {
     /// Plain text that did not match a highlight.
-    Plain(String),
+    Plain(&'a str),
     /// A bracketed highlight such as `【...】`, `[...]`, or `(...)`.
     Special(Bracketed<'a>),
 }
@@ -218,30 +217,27 @@ pub fn parse_credit_line<'a>(
 
 fn parse_name_region(region: &str) -> Vec<NameSegment<'_>> {
     let mut segments = Vec::<NameSegment>::new();
-    let mut plain = String::new();
-    let mut rest = region;
+    let mut plain_start = 0;
+    let mut cursor = 0;
 
-    let flush = |plain: &mut String, segments: &mut Vec<NameSegment>| {
-        if !plain.is_empty() {
-            segments.push(NameSegment::Plain(mem::take(plain)));
-        }
-    };
-
-    while !rest.is_empty() {
-        if let Some((bracketed, next_rest)) = Bracketed::take(rest) {
-            flush(&mut plain, &mut segments);
+    while cursor < region.len() {
+        if let Some((bracketed, _)) = Bracketed::take(&region[cursor..]) {
+            if plain_start < cursor {
+                segments.push(NameSegment::Plain(&region[plain_start..cursor]));
+            }
+            cursor += bracketed.as_str().len();
+            plain_start = cursor;
             segments.push(NameSegment::Special(bracketed));
-            rest = next_rest;
             continue;
         }
-        let Some(next_char) = rest.chars().next() else {
+        let Some(next_char) = region[cursor..].chars().next() else {
             break;
         };
-        let step = next_char.len_utf8();
-        plain.push_str(&rest[..step]);
-        rest = &rest[step..];
+        cursor += next_char.len_utf8();
     }
-    flush(&mut plain, &mut segments);
+    if plain_start < cursor {
+        segments.push(NameSegment::Plain(&region[plain_start..cursor]));
+    }
     segments
 }
 
