@@ -85,25 +85,6 @@ impl<'a> NameSegmentPair<'a> {
     }
 }
 
-/// Reasons [`Plain::try_from`] can fail.
-///
-/// `TryFrom` requires the entire input to denote a single plain
-/// run with no embedded bracketed span. The parser reuses
-/// [`Plain::take`] and then rejects any remaining input.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
-#[non_exhaustive]
-pub enum ParsePlainError {
-    /// The input does not yield any plain prefix: it is either
-    /// empty or begins with a parseable bracketed span.
-    #[display("input is not a valid plain run")]
-    ShapeMismatch,
-    /// The input begins with a valid plain run but is followed by
-    /// a bracketed span, breaking the requirement that `TryFrom`
-    /// consume the entire input.
-    #[display("the plain run is followed by a bracketed span")]
-    UnexpectedBracketed,
-}
-
 /// A string that is guaranteed to open with a recognized bracket,
 /// close with its matching counterpart, and contain no further
 /// bracket characters in between. The type can only be obtained via
