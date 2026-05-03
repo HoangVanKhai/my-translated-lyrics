@@ -88,11 +88,11 @@ impl RenderCounts {
 enum WriteOutcome {
     /// No prior file at the target path; a new file was written.
     Added,
-    /// Prior file existed at the target path with different
-    /// content; the file was overwritten.
+    /// Prior file existed at the target path with different content.
+    /// The file was overwritten.
     Updated,
-    /// Prior file existed at the target path with the same content;
-    /// no write was performed.
+    /// Prior file existed at the target path with the same content.
+    /// No write was performed.
     Unchanged,
 }
 
