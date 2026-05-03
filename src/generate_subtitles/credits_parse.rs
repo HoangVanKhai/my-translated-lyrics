@@ -24,6 +24,7 @@
 use crate::credits_descriptor::CreditsDesc;
 use crate::video_descriptor::Language;
 use derive_more::Display;
+use pipe_trait::Pipe;
 use std::collections::BTreeSet;
 
 /// A structural role/name pair extracted from one credit line.
@@ -118,7 +119,9 @@ impl<'a> TryFrom<&'a str> for Bracketed<'a> {
     type Error = ParseBracketedError;
 
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
-        let (value, trailing) = Bracketed::take(value).ok_or(ParseBracketedError::ShapeMismatch)?;
+        let (value, trailing) = value
+            .pipe(Bracketed::take)
+            .ok_or(ParseBracketedError::ShapeMismatch)?;
         match trailing.chars().next() {
             None => Ok(value),
             Some(character) => Err(ParseBracketedError::UnexpectedCharacter(character)),
