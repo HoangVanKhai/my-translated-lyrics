@@ -550,10 +550,6 @@ pub struct UnclosedCue {
 #[derive(Debug, Display, Error, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum ParseLyricsError {
-    // Per-line failures, grouped by parse stage. The
-    // indent-classifier guards (`TabIndentation`,
-    // `MalformedIndentation`) fire first; the header path follows;
-    // the shorthand path's diagnostic comes after.
     TabIndentation(#[error(not(source))] TabIndentation),
     MalformedIndentation(#[error(not(source))] MalformedIndentation),
     MalformedHeader(#[error(not(source))] MalformedHeader),
@@ -567,8 +563,6 @@ pub enum ParseLyricsError {
     ReservedControlMarker(#[error(not(source))] ReservedControlMarker),
     EmptyCueBody(#[error(not(source))] EmptyCueBody),
     OrphanedShorthandMarker(#[error(not(source))] OrphanedShorthandMarker),
-    // Post-pass failure, raised after `collect_events` returns
-    // when `resolve_cues` finds a cue with no following event.
     UnclosedCue(#[error(not(source))] UnclosedCue),
 }
 
