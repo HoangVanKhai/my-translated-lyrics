@@ -52,13 +52,65 @@ pub enum NameSegment<'a> {
     Special(Bracketed<'a>),
 }
 
+#[derive(Debug, Clone, Copy)]
+struct NameSegmentPair<'a> {
+    plain: &'a str,
+    bracketed: Bracketed<'a>,
+}
+
+impl<'a> NameSegmentPair<'a> {
+    fn take(input: &'a str) -> Option<(Self, &'a str)> {
+        let mut plain_end: usize = 0;
+        let mut chars = input.chars();
+        loop {
+            if let Some((bracketed, rest)) = Bracketed::take(chars.as_str()) {
+                let plain = &input[..plain_end];
+                let pair = NameSegmentPair { plain, bracketed };
+                return Some((pair, rest));
+            }
+            if let Some(char) = chars.next() {
+                plain_end += char.len_utf8();
+                continue;
+            }
+            return None;
+        }
+    }
+
+    fn append_to(&self, target: &mut Vec<NameSegment<'a>>) {
+        let NameSegmentPair { plain, bracketed } = self;
+        if !plain.is_empty() {
+            target.push(NameSegment::Plain(plain));
+        }
+        target.push(NameSegment::Special(*bracketed));
+    }
+}
+
+/// Reasons [`Plain::try_from`] can fail.
+///
+/// `TryFrom` requires the entire input to denote a single plain
+/// run with no embedded bracketed span. The parser reuses
+/// [`Plain::take`] and then rejects any remaining input.
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum ParsePlainError {
+    /// The input does not yield any plain prefix: it is either
+    /// empty or begins with a parseable bracketed span.
+    #[display("input is not a valid plain run")]
+    ShapeMismatch,
+    /// The input begins with a valid plain run but is followed by
+    /// a bracketed span, breaking the requirement that `TryFrom`
+    /// consume the entire input.
+    #[display("the plain run is followed by a bracketed span")]
+    UnexpectedBracketed,
+}
+
 /// A string that is guaranteed to open with a recognized bracket,
 /// close with its matching counterpart, and contain no further
 /// bracket characters in between. The type can only be obtained via
 /// [`Bracketed::take`], which follows the parse-don't-validate
 /// pattern: it consumes a prefix of the input and returns both the
 /// parsed value and the remaining unparsed tail.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Debug, Display, Clone, Copy, PartialEq, Eq)]
 pub struct Bracketed<'a>(&'a str);
 
 impl<'a> Bracketed<'a> {
@@ -221,25 +273,14 @@ pub fn parse_credit_line<'a>(
 fn parse_name_region(region: &str) -> Vec<NameSegment<'_>> {
     let mut segments = Vec::new();
     let mut rest = region;
-    while !rest.is_empty() {
-        if let Some((bracketed, next_rest)) = Bracketed::take(rest) {
-            segments.push(NameSegment::Special(bracketed));
-            rest = next_rest;
-        } else {
-            let (plain, next_rest) = take_plain(rest);
-            segments.push(NameSegment::Plain(plain));
-            rest = next_rest;
-        }
+    while let Some((pair, next_rest)) = NameSegmentPair::take(rest) {
+        pair.append_to(&mut segments);
+        rest = next_rest;
+    }
+    if !rest.is_empty() {
+        segments.push(NameSegment::Plain(rest));
     }
     segments
-}
-
-fn take_plain(input: &str) -> (&str, &str) {
-    let mut cursor = 0;
-    while cursor < input.len() && Bracketed::take(&input[cursor..]).is_none() {
-        cursor += input[cursor..].chars().next().unwrap().len_utf8();
-    }
-    input.split_at(cursor)
 }
 
 fn deduplicate_longest_first<Iter, Item>(values: Iter) -> Vec<String>
