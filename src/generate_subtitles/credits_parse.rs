@@ -227,20 +227,20 @@ impl<'a> CreditRoles<'a> {
 /// provided [`CreditRoles`]. See the module docs for the algorithm.
 pub fn parse_credit_line<'a>(
     line: &'a str,
-    vocabulary: &CreditRoles,
+    roles: &CreditRoles,
 ) -> Result<Vec<CreditPair<'a>>, ParseCreditError> {
     let mut pairs = Vec::<CreditPair>::new();
     let (_, mut rest) = take_leading_whitespace(line);
 
     while !rest.is_empty() {
-        let (role, after_role) = vocabulary.take_role(rest).ok_or_else(|| {
+        let (role, after_role) = roles.take_role(rest).ok_or_else(|| {
             ParseCreditError::UnknownRole(UnknownRole {
                 line: line.to_string(),
                 offset: line.len() - rest.len(),
             })
         })?;
         let (separator, after_separator) = take_cell_separator(after_role);
-        let (raw_name_region, after_name) = vocabulary.take_until_role(after_separator);
+        let (raw_name_region, after_name) = roles.take_until_role(after_separator);
         let name_region = trim_end_separator(raw_name_region);
         let name_segments = parse_name_region(name_region);
 
