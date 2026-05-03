@@ -20,6 +20,38 @@ fn vocabulary(roles: &[&str]) -> CreditsVocabulary {
 }
 
 #[test]
+fn vocabulary_deduplicates_non_adjacent_entries_and_orders_longest_first() {
+    // The input exercises three contractual properties at once:
+    //   * `作詞` and `long-role` each appear twice with other entries
+    //     between them, so a refactor that relies on `Vec::dedup` or
+    //     `Itertools::dedup` leaves the duplicates in.
+    //   * `abc` and `mid` are both 3 bytes long, so the ascending
+    //     lexicographic tiebreak is observable.
+    //   * `作詞` is 6 bytes (two CJK code points) and ranks above the
+    //     3-byte ASCII entries, making byte length, not character
+    //     count, the load-bearing measure.
+    let vocab = vocabulary(&[
+        "作詞",
+        "long-role",
+        "mid",
+        "very-long-role",
+        "作詞",
+        "long-role",
+        "abc",
+    ]);
+    assert_eq!(
+        vocab.roles,
+        vec![
+            "very-long-role".to_string(),
+            "long-role".to_string(),
+            "作詞".to_string(),
+            "abc".to_string(),
+            "mid".to_string(),
+        ],
+    );
+}
+
+#[test]
 fn colon_separated_line_yields_one_pair_per_cell() {
     let v = vocabulary(&["role-a", "role-b", "role-c"]);
     let parsed = parse_credit_line(
