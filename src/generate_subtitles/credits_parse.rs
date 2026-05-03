@@ -139,13 +139,6 @@ impl<'a> Bracketed<'a> {
 }
 
 /// Reasons [`Bracketed::try_from`] can fail.
-///
-/// `TryFrom` requires the entire input to denote a single
-/// bracketed span. The parser reuses [`Bracketed::take`] and then
-/// rejects any remaining input, so the error surface has two
-/// variants: a shape mismatch when the input does not form a
-/// bracketed span at all, and an unexpected-character error when
-/// a valid span is followed by further content.
 #[derive(Debug, Display, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum ParseBracketedError {
@@ -190,10 +183,8 @@ fn is_bracket_char(ch: char) -> bool {
     matches!(ch, '【' | '】' | '[' | ']' | '(' | ')')
 }
 
-/// The role vocabulary for one language, built from `credits.yaml`
-/// and reused across every credit cue in the song. Each role is
-/// borrowed from the [`CreditsDesc`] the vocabulary was built from,
-/// so the descriptor must outlive the vocabulary.
+/// The vocabulary for one language, built from `credits.yaml`
+/// and reused across every credit cue in the song.
 pub struct CreditsVocabulary<'a> {
     roles: Vec<&'a str>,
 }
@@ -203,12 +194,8 @@ impl<'a> CreditsVocabulary<'a> {
         Self { roles }
     }
 
-    /// Collects the language-specific labels from the
-    /// [`credit-roles`] list in the descriptor and sorts them by
-    /// descending length so the parser matches the longest role
-    /// that still fits at the current cursor position.
-    ///
-    /// [`credit-roles`]: CreditsDesc::credit_roles
+    /// Collects the language-specific labels from a descriptor to
+    /// create a vocabulary.
     pub fn from_descriptor(descriptor: &'a CreditsDesc, language: &Language) -> Self {
         descriptor
             .credit_roles
