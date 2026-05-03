@@ -1,5 +1,5 @@
 use super::{
-    Bracketed, CreditsVocabulary, NameSegment, ParseBracketedError, ParseCreditError, Unbracketed,
+    Bracketed, CreditRoles, NameSegment, ParseBracketedError, ParseCreditError, Unbracketed,
     UnknownRole, parse_credit_line,
 };
 use crate::credits_descriptor::CreditsDesc;
@@ -18,8 +18,8 @@ fn descriptor(roles: &[&str]) -> CreditsDesc {
     }
 }
 
-fn vocabulary(descriptor: &CreditsDesc) -> CreditsVocabulary<'_> {
-    CreditsVocabulary::from_descriptor(descriptor, &Language::Vietnamese)
+fn vocabulary(descriptor: &CreditsDesc) -> CreditRoles<'_> {
+    CreditRoles::from_descriptor(descriptor, &Language::Vietnamese)
 }
 
 #[test]
@@ -44,7 +44,7 @@ fn vocabulary_deduplicates_non_adjacent_entries_and_orders_longest_first() {
     ]);
     let vocab = vocabulary(&d);
     assert_eq!(
-        vocab.roles,
+        vocab.0,
         vec!["very-long-role", "long-role", "作詞", "abc", "mid"],
     );
 }

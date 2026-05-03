@@ -9,7 +9,7 @@
 //! hardcoded palette because SRT has no central style definition.
 
 use super::credits_parse::{
-    CreditPair, CreditsVocabulary, NameSegment, ParseCreditError, parse_credit_line,
+    CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,
 };
 use super::escape::{Escaped, append_separator_for_output};
 use super::parse::{CuePart, SubtitleCue};
@@ -30,7 +30,7 @@ pub fn render_srt(
     credits: &CreditsDesc,
     language: &Language,
 ) -> Result<String, RenderSrtError> {
-    let vocabulary = CreditsVocabulary::from_descriptor(credits, language);
+    let vocabulary = CreditRoles::from_descriptor(credits, language);
 
     let mut output = String::new();
     for (cue_index, cue) in cues.iter().enumerate() {
@@ -54,7 +54,7 @@ fn render_cue_body(
     output: &mut String,
     cue: &SubtitleCue,
     markers: &LineMarkersDesc,
-    vocabulary: &CreditsVocabulary,
+    vocabulary: &CreditRoles,
 ) -> Result<(), RenderSrtError> {
     for (index, part) in cue.parts.iter().enumerate() {
         if index > 0 {
@@ -70,7 +70,7 @@ fn render_cue_part(
     cue_start: Timestamp,
     part: &CuePart,
     markers: &LineMarkersDesc,
-    vocabulary: &CreditsVocabulary,
+    vocabulary: &CreditRoles,
 ) -> Result<(), RenderSrtError> {
     let marker = &part.marker;
 

@@ -30,7 +30,7 @@
 //! [`LineMarkersDesc::credits`]: crate::line_markers_descriptor::LineMarkersDesc::credits
 
 use super::credits_parse::{
-    CreditPair, CreditsVocabulary, NameSegment, ParseCreditError, parse_credit_line,
+    CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,
 };
 use super::escape::{Escaped, append_separator_for_output};
 use super::parse::{CuePart, SubtitleCue};
@@ -79,7 +79,7 @@ pub fn render_vtt(
     credits: &CreditsDesc,
     language: &Language,
 ) -> Result<String, RenderVttError> {
-    let vocabulary = CreditsVocabulary::from_descriptor(credits, language);
+    let vocabulary = CreditRoles::from_descriptor(credits, language);
 
     let mut cue_renderings = Vec::<CueRendering>::with_capacity(cues.len());
     let mut features = Features::default();
@@ -137,7 +137,7 @@ struct CueRendering {
 fn render_cue(
     cue: &SubtitleCue,
     markers: &LineMarkersDesc,
-    vocabulary: &CreditsVocabulary,
+    vocabulary: &CreditRoles,
     language: &Language,
 ) -> Result<CueRendering, RenderVttError> {
     let mut content = String::new();
@@ -172,7 +172,7 @@ fn render_cue_part(
     cue_start: Timestamp,
     part: &CuePart,
     markers: &LineMarkersDesc,
-    vocabulary: &CreditsVocabulary,
+    vocabulary: &CreditRoles,
     language: &Language,
 ) -> Result<(), RenderVttError> {
     let marker = &part.marker;

@@ -185,15 +185,9 @@ fn is_bracket_char(ch: char) -> bool {
 
 /// The vocabulary for one language, built from `credits.yaml`
 /// and reused across every credit cue in the song.
-pub struct CreditsVocabulary<'a> {
-    roles: Vec<&'a str>,
-}
+pub struct CreditRoles<'a>(Vec<&'a str>);
 
-impl<'a> CreditsVocabulary<'a> {
-    fn new(roles: Vec<&'a str>) -> Self {
-        Self { roles }
-    }
-
+impl<'a> CreditRoles<'a> {
     /// Collects the language-specific labels from a descriptor to
     /// create a vocabulary.
     pub fn from_descriptor(descriptor: &'a CreditsDesc, language: &Language) -> Self {
@@ -204,11 +198,11 @@ impl<'a> CreditsVocabulary<'a> {
             .collect::<Vec<_>>()
             .into_sorted_by(|a, b| b.len().cmp(&a.len()).then_with(|| a.cmp(b)))
             .into_deduped()
-            .pipe(CreditsVocabulary::new)
+            .pipe(CreditRoles)
     }
 
     fn take_role<'input>(&self, input: &'input str) -> Option<(&'input str, &'input str)> {
-        self.roles.iter().find_map(|role| {
+        self.0.iter().find_map(|role| {
             let rest = input.strip_prefix(*role)?;
             is_role_boundary(rest).then_some(input.split_at(role.len()))
         })
@@ -230,7 +224,7 @@ impl<'a> CreditsVocabulary<'a> {
 /// provided vocabulary. See the module docs for the algorithm.
 pub fn parse_credit_line<'a>(
     line: &'a str,
-    vocabulary: &CreditsVocabulary,
+    vocabulary: &CreditRoles,
 ) -> Result<Vec<CreditPair<'a>>, ParseCreditError> {
     let mut pairs = Vec::<CreditPair>::new();
     let (_, mut rest) = take_leading_whitespace(line);
