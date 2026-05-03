@@ -23,6 +23,7 @@
 use crate::credits_descriptor::CreditsDesc;
 use crate::video_descriptor::Language;
 use derive_more::Display;
+use itertools::Itertools;
 use pipe_trait::Pipe;
 
 /// A structural role/name pair extracted from one credit line.
@@ -210,7 +211,9 @@ impl CreditsVocabulary {
             .credit_roles
             .iter()
             .filter_map(|entry| entry.get(language).cloned())
-            .pipe(deduplicate_longest_first)
+            .sorted_by(|a, b| b.len().cmp(&a.len()).then_with(|| a.cmp(b)))
+            .dedup()
+            .collect::<Vec<_>>()
             .pipe(CreditsVocabulary::new)
     }
 
@@ -278,20 +281,6 @@ fn parse_name_region(region: &str) -> Vec<NameSegment<'_>> {
         segments.push(NameSegment::Unbracketed(Unbracketed(rest)));
     }
     segments
-}
-
-fn deduplicate_longest_first<Iter>(values: Iter) -> Vec<String>
-where
-    Iter: IntoIterator<Item = String>,
-{
-    let mut collected = Vec::<String>::new();
-    for value in values {
-        if !collected.contains(&value) {
-            collected.push(value);
-        }
-    }
-    collected.sort_by(|a, b| b.len().cmp(&a.len()).then_with(|| a.cmp(b)));
-    collected
 }
 
 fn take_leading_whitespace(input: &str) -> (&str, &str) {
