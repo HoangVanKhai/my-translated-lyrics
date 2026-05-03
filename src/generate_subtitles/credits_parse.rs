@@ -48,8 +48,7 @@ pub struct CreditPair {
 pub enum NameSegment {
     /// Plain text that did not match a highlight.
     Plain(String),
-    /// A bracketed highlight such as `【studio】`, `[note]`, or
-    /// `(remark)`.
+    /// A bracketed highlight such as `【...】`, `[...]`, or `(...)`.
     Special(Bracketed),
 }
 
