@@ -1,9 +1,10 @@
-use super::{
+use super::error::{
     CueTextReservedCharacter, EmptyCueBody, ExtraTextAfterControlMarker, InvalidTimestamp,
     MalformedHeader, MalformedIndentation, MissingMarker, MissingSeparatorAfterTimestamp,
     OrphanedShorthandMarker, OutOfOrder, ParseLyricsError, RepeatedTimestamp,
-    ReservedControlMarker, TabIndentation, UnclosedCue, parse_lyrics,
+    ReservedControlMarker, TabIndentation, UnclosedCue,
 };
+use super::parse_lyrics;
 use crate::timestamp::{SecondsOutOfRange, TakeTimestampError, Timestamp};
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
