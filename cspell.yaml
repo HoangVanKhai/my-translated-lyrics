@@ -9,8 +9,6 @@ ignorePaths:
   - 'cspell.yaml'
   - 'drafts/**/*.js'
   - 'drafts/**/*.json'
-  - 'sources/**/*.js'
-  - 'sources/**/*.json'
   - 'COPYRIGHT.md'
   - 'LICENSE.md'
   - 'package.json'
@@ -62,6 +60,7 @@ overrides:
       - WEBVTT
   - filename: '**/*.rs'
     words:
+      - btreemap
       - Feng
       - hardlink
       - maplit

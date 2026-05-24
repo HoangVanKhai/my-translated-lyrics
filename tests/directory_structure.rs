@@ -25,7 +25,7 @@ fn dist_drafts_and_sources_have_flat_structure() {
             .pipe(Path::new)
             .join(top_dir_name);
         if !top_dir.exists() {
-            assert_ne!(top_dir_name, "dist", "`dist/` directory must exist",);
+            assert_ne!(top_dir_name, "dist", "`dist/` directory must exist");
             continue;
         }
 

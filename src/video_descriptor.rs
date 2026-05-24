@@ -1,4 +1,4 @@
-use derive_more::{AsRef, Deref, Display, Error, Into};
+use derive_more::{AsRef, Deref, Display, Into};
 use itertools::Itertools;
 use pipe_trait::Pipe;
 use serde::{Deserialize, Serialize};
@@ -58,11 +58,11 @@ impl TryFrom<String> for CollectionName {
     }
 }
 
-#[derive(Debug, Display, Error)]
+#[derive(Debug, Display)]
 #[non_exhaustive]
 pub enum ParseCollectionNameError {
     #[display("unknown collection: {_0:?}")]
-    UnknownCollection(#[error(not(source))] String),
+    UnknownCollection(String),
 }
 
 /// Title of a video. The constructor enforces two invariants on the
@@ -90,7 +90,7 @@ impl TryFrom<String> for VideoTitle {
     }
 }
 
-#[derive(Debug, Display, Error)]
+#[derive(Debug, Display)]
 #[non_exhaustive]
 pub enum ParseVideoTitleError {
     #[display("video title must not contain backslashes")]
@@ -102,6 +102,7 @@ pub enum ParseVideoTitleError {
 #[derive(
     Debug,
     Clone,
+    Copy,
     strum::Display,
     PartialEq,
     Eq,
@@ -211,7 +212,7 @@ enum SubtitleFormat {
     WebVtt,
 }
 
-#[derive(Debug, Display, Error)]
+#[derive(Debug, Display)]
 #[non_exhaustive]
 pub enum ParseLyricsFileNameError {
     #[display(r#"filename does not start with "lyrics.""#)]
@@ -219,9 +220,9 @@ pub enum ParseLyricsFileNameError {
     #[display("missing language code in lyrics filename")]
     MissingLanguageCode,
     #[display("unsupported subtitle format: {_0:?} (expected one of {})", SubtitleFormat::VARIANTS.iter().format(", "))]
-    UnsupportedFormat(#[error(not(source))] String),
+    UnsupportedFormat(String),
     #[display("unrecognized language code: {_0:?}")]
-    UnrecognizedLanguage(#[error(not(source))] String),
+    UnrecognizedLanguage(String),
 }
 
 #[derive(Display)]
