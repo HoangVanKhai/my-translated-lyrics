@@ -13,7 +13,7 @@ fn escapes_angle_brackets_and_ampersand() {
     assert_eq!(Escaped("<a>").to_string(), "&lt;a&gt;");
     assert_eq!(
         Escaped("name-a & name-b").to_string(),
-        "name-a &amp; name-b"
+        "name-a &amp; name-b",
     );
     assert_eq!(Escaped("<<>>").to_string(), "&lt;&lt;&gt;&gt;");
 }

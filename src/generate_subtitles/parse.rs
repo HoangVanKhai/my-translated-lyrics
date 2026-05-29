@@ -135,7 +135,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                 &mut last_part_marker_prefix_width,
             )?;
         } else if last_part_marker_prefix_width
-            .is_some_and(|w| indent == TIMESTAMP_PREFIX_WIDTH + w)
+            .is_some_and(|width| indent == TIMESTAMP_PREFIX_WIDTH + width)
         {
             handle_continuation_line(body, line_number, &mut events, last_cue_index)?;
         } else {
@@ -145,7 +145,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                     actual: indent,
                     shorthand_indent: TIMESTAMP_PREFIX_WIDTH,
                     continuation_indent: last_part_marker_prefix_width
-                        .map(|w| TIMESTAMP_PREFIX_WIDTH + w),
+                        .map(|width| TIMESTAMP_PREFIX_WIDTH + width),
                 },
             ));
         }

@@ -203,7 +203,7 @@ impl fmt::Debug for Timestamp {
 /// `From`/`Into`; the inner `Timestamp` is not exposed directly so
 /// that every call site is a named conversion rather than a
 /// positional tuple access.
-#[derive(Display, From, Into, Clone, Copy)]
+#[derive(Display, Clone, Copy, From, Into)]
 #[display(
     "{hours:02}:{minutes:02}:{seconds:02},{milliseconds:03}",
     hours = _0.0 / MILLISECONDS_PER_HOUR,
@@ -216,7 +216,7 @@ pub struct SrtTime(Timestamp);
 /// Thin wrapper around [`Timestamp`] that renders in the WebVTT
 /// `HH:MM:SS.mmm` format. See [`SrtTime`] for the same construction
 /// and extraction story.
-#[derive(Display, From, Into, Clone, Copy)]
+#[derive(Display, Clone, Copy, From, Into)]
 #[display(
     "{hours:02}:{minutes:02}:{seconds:02}.{milliseconds:03}",
     hours = _0.0 / MILLISECONDS_PER_HOUR,
@@ -276,8 +276,8 @@ pub enum ParseTimestampError {
 impl FromStr for Timestamp {
     type Err = ParseTimestampError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match Timestamp::take(s) {
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        match Timestamp::take(input) {
             Ok((timestamp, trailing)) => match trailing.chars().next() {
                 None => Ok(timestamp),
                 Some(character) => Err(ParseTimestampError::UnexpectedCharacter(character)),

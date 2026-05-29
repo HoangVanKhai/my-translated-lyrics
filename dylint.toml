@@ -1,0 +1,24 @@
+[workspace.metadata.dylint]
+libraries = [
+  { git = "https://github.com/KSXGitHub/perfectionist", tag = "0.0.0-rc.17" },
+]
+
+[perfectionist]
+enable = ["derive_ordering"]
+
+["perfectionist::derive_ordering"]
+style = "prefix_then_alphabetical"
+prefix = [
+  "Debug", "Display", "Error",
+  "Default",
+  "Clone", "Copy",
+  "PartialEq", "Eq", "PartialOrd", "Ord",
+  "Hash",
+  "AsRef", "AsMut", "Deref", "DerefMut",
+  "From", "Into", "TryFrom", "TryInto", "FromStr",
+  "IntoIterator",
+  "Add", "AddAssign", "Sub", "SubAssign", "Mul", "MulAssign", "Div", "DivAssign",
+  "BitOr", "BitOrAssign", "BitAnd", "BitAndAssign", "BitXor", "BitXorAssign",
+  "Sum", "Product",
+  "LowerHex", "UpperHex", "Octal",
+]

@@ -3,7 +3,8 @@ use derive_more::{AsRef, Deref};
 use itertools::Itertools;
 use maplit::hashmap;
 use pipe_trait::Pipe;
-use rand::{RngExt, distr::Alphanumeric, rng};
+use rand::distr::Alphanumeric;
+use rand::{RngExt, rng};
 use std::env::temp_dir;
 use std::ffi::OsString;
 use std::fs::{
@@ -180,25 +181,25 @@ pub fn expected_stderr(
     let mut out = String::new();
     writeln!(
         out,
-        "info: There are currently {existing_count} existing files at the target location"
+        "info: There are currently {existing_count} existing files at the target location",
     )
     .unwrap();
     writeln!(
         out,
         "info: {} files would be removed from the target location",
-        removes.len()
+        removes.len(),
     )
     .unwrap();
     writeln!(
         out,
         "info: {} files would be added to the target location",
-        installs.len()
+        installs.len(),
     )
     .unwrap();
     writeln!(
         out,
         "info: {} files in the target location would be updated",
-        updates.len()
+        updates.len(),
     )
     .unwrap();
     writeln!(out).unwrap();
@@ -221,7 +222,7 @@ pub fn expected_stderr(
         writeln!(out, "info: No changes were actually made.").unwrap();
         writeln!(
             out,
-            "info: Run the command again with --execute to make actual changes."
+            "info: Run the command again with --execute to make actual changes.",
         )
         .unwrap();
     }

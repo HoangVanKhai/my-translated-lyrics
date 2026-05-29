@@ -34,7 +34,7 @@ pub struct VideoDesc {
 
 /// Name of a managed target-collection directory. Can only be
 /// constructed from values listed in [`SEPARATED_COLLECTIONS`].
-#[derive(Clone, AsRef, Deref, Display, Into, Deserialize, Serialize)]
+#[derive(Display, Clone, AsRef, Deref, Into, Deserialize, Serialize)]
 #[as_ref(forward)]
 #[deref(forward)]
 #[serde(try_from = "String", into = "String")]
@@ -69,7 +69,7 @@ pub enum ParseCollectionNameError {
 /// title: it must be a single normal path component (so it can be used
 /// directly as the stem of an output filename), and it must contain
 /// no backslashes (for cross-platform consistency).
-#[derive(Clone, AsRef, Deref, Display, Into, Deserialize, Serialize)]
+#[derive(Display, Clone, AsRef, Deref, Into, Deserialize, Serialize)]
 #[as_ref(forward)]
 #[deref(forward)]
 #[serde(try_from = "String", into = "String")]
@@ -101,17 +101,17 @@ pub enum ParseVideoTitleError {
 
 #[derive(
     Debug,
+    strum::Display,
     Clone,
     Copy,
-    strum::Display,
     PartialEq,
     Eq,
     PartialOrd,
     Ord,
     Hash,
     AsRefStr,
-    EnumString,
     Deserialize,
+    EnumString,
     Serialize,
 )]
 #[serde(try_from = "String", into = "String")]

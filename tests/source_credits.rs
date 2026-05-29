@@ -14,7 +14,7 @@ fn source_credits_descriptors() {
     assert!(
         sources_dir.is_dir(),
         "expected sources directory to exist: {}",
-        sources_dir.display()
+        sources_dir.display(),
     );
 
     let entries = sources_dir

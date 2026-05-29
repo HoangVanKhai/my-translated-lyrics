@@ -124,12 +124,12 @@ fn voice_name_rejects_control_and_line_separator_characters() {
 }
 
 /// Wrapper so `toml::from_str` has a root table to deserialize into.
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 struct CssClassHolder {
     value: CssClassName,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 struct VoiceNameHolder {
     value: VoiceName,
 }
