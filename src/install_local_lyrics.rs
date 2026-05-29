@@ -69,16 +69,6 @@ fn is_subtitle_file(entry: &DirEntry) -> bool {
             entry.path(),
         ),
         Ok(file_type) if !file_type.is_file() => return false,
-        // `FileType::is_file` is a pure, side-effect-free getter, so the
-        // debug-only evaluation that `macro_argument_binding` guards
-        // against is not a hazard here. The rule classifies the call as
-        // impure only because its curated pure-getter set does not list
-        // `is_file`. The suppression is wrapped in `cfg_attr(dylint_lib
-        // = "perfectionist", ...)` because a bare
-        // `#[expect(perfectionist::...)]` fails to compile under the
-        // stable toolchain with E0710 (the `perfectionist` tool is not
-        // registered outside the Dylint driver). See the upstream issue
-        // tracking the missing standard-library getters.
         #[cfg_attr(
             dylint_lib = "perfectionist",
             expect(
