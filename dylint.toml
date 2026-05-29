@@ -18,8 +18,8 @@ enable = ["derive_ordering"]
 # lists rather than a strictly alphabetical one: the common standard
 # derives are read first, then the comparison-trait quartet, then `Hash`,
 # then the `derive_more` operator and conversion traits. The
-# `prefix_then_alphabetical` style pins that grouping and alphabetises the
-# remaining tail, which is where the crate's `serde`, `clap`, and `strum`
+# `prefix_then_alphabetical` style pins that grouping and sorts the
+# remaining tail alphabetically, which is where the crate's `serde`, `clap`, and `strum`
 # derives land.
 ["perfectionist::derive_ordering"]
 style = "prefix_then_alphabetical"
