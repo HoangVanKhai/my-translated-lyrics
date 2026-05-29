@@ -2,7 +2,6 @@ import:
   - '@cspell/dict-vi-vn/cspell-ext.json'
 words:
   - dylint
-  - serde
 ignorePaths:
   - '**/credits.yaml'
   - '**/line-markers.toml'
