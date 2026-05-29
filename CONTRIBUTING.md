@@ -131,7 +131,7 @@ fn unix_only_types() { /* uses OsStrExt which only exists on unix */ }
 
 ### Test Module Imports
 
-Test modules appear in two shapes. An inline module lives in the same file as the code under test, introduced by `#[cfg(test)] mod tests { ... }`. An external module lives in a sibling file, declared with `#[cfg(test)] mod tests;` next to a companion `src/<module>/tests.rs`. The rules below apply identically to both; the choice between inline and external placement does not affect the import style.
+The rules below apply identically to inline and external test modules; placement, covered under [Unit Tests](#unit-tests), does not affect the import style.
 
 #### Prefer an explicit brace list over `use super::*;`
 
@@ -270,10 +270,6 @@ So far this behavior has only been observed with [Claude Code Web](https://claud
 ## Unit Tests
 
 A unit-test module may either sit inline as `mod tests { ... }` in its parent or live in a dedicated external `tests` submodule. The inline form is appropriate for short test modules; once the block grows long enough to noticeably extend the length of the parent and get in the way of reading the rest of the module, move the tests into an external file.
-
-### When the inline form is acceptable
-
-There is nothing wrong with `mod tests { ... }` by itself. Reserve the inline form for modules whose entire test suite fits in a small number of lines, so that the block does not noticeably extend the length of the parent. The problem that this convention addresses is a long inline block that extends the length of the main module and makes it harder to traverse. Use the number of lines as the deciding factor: once the inline tests grow long enough to get in the way of reading the rest of the module, move them into an external file.
 
 ### Where the external file sits
 
