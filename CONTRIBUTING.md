@@ -30,70 +30,6 @@ A merge commit message must also follow the Conventional Commits format. Wheneve
 
 Automated tools enforce formatting (`cargo fmt`) and linting (`cargo clippy --all-targets`). The following conventions are **not** enforced by those tools and must be followed manually.
 
-### Variable and Closure Parameter Naming
-
-Use **descriptive names** for variables and closure parameters by default. Single-letter names are permitted only in the specific cases listed below.
-
-#### When single-letter names are allowed
-
-- **Comparison closures:** `|a, b|` in `sort_by`, `cmp`, or similar two-argument comparison callbacks. This is idiomatic Rust.
-
-  ```rust
-  items.sort_by(|a, b| a.name.cmp(&b.name));
-  ```
-
-- **Conventional single-letter names:** `n` for a natural number (unsigned integer / count); `f` for a `fmt::Formatter`; and similar well-established conventions from math or the Rust standard library. Note: for indices, use `index`, `idx`, or `*_index`, not `n`. (For `i`/`j`/`k`, see the dedicated rule below.)
-
-  ```rust
-  fn with_capacity(n: usize) -> Self { todo!() }
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { todo!() }
-  ```
-
-- **Index variables (`i`, `j`, `k`):** These may only be used in two contexts: short closures and index-based loops. In all other cases, use `index`, `idx`, or `*_index`.
-
-- **Trivial single-expression closures:** A closure whose body is a single field access, method call, or wrapper may use a single letter when the type and purpose are obvious from context.
-
-  ```rust
-  .pipe(|x| vec![x])
-  ```
-
-- **Fold accumulators:** `acc` for the accumulator and a single letter for the element in trivial folds.
-
-  ```rust
-  .fold(PathBuf::new(), |acc, x| acc.join(x))
-  ```
-
-- **Test fixtures:** `let a`, `let b`, `let c` for interchangeable specimens with identical roles in equality or comparison tests. Do not use single letters when the variables have distinct roles; use `actual`/`expected` or similar descriptive names instead.
-
-#### When single-letter names are NOT allowed
-
-- **Multi-line functions and closures:** If a function or closure body spans multiple lines, use a descriptive name.
-
-  ```rust
-  // Good
-  .map(|entry| {
-      let file_name = entry.file_name();
-      target_dir.join(file_name)
-  })
-
-  // Bad
-  .map(|e| {
-      let file_name = e.file_name();
-      target_dir.join(file_name)
-  })
-  ```
-
-- **`let` bindings in non-test code:** Always use descriptive names.
-
-  ```rust
-  // Good
-  let metadata = entry.metadata()?;
-  // Bad
-  let m = entry.metadata()?;
-  ```
-
-- **Function and method parameters:** Always use descriptive names, except for conventional single-letter names listed above (`n`, `f`, etc.).
-
 ### Trait Bounds
 
 Prefer `where` clauses over inline bounds when there are multiple constraints:
@@ -131,7 +67,7 @@ fn unix_only_types() { /* uses OsStrExt which only exists on unix */ }
 
 ### Test Module Imports
 
-The rules below apply identically to inline and external test modules; placement, covered under [Unit Tests](#unit-tests), does not affect the import style.
+The rules below apply identically to inline and external test modules; placement does not affect the import style.
 
 #### Prefer an explicit brace list over `use super::*;`
 
@@ -266,26 +202,6 @@ perl -CSD -i -pe 's/\\u\{ff10\}/\x{ff10}/gi' path/to/file
 ```
 
 So far this behavior has only been observed with [Claude Code Web](https://claude.ai/code/).
-
-## Unit Tests
-
-A unit-test module may either sit inline as `mod tests { ... }` in its parent or live in a dedicated external `tests` submodule. The inline form is appropriate for short test modules; once the block grows long enough to noticeably extend the length of the parent and get in the way of reading the rest of the module, move the tests into an external file.
-
-### Where the external file sits
-
-When the tests live externally, the parent declares them at the end of the file with the standard declaration:
-
-```rust
-#[cfg(test)]
-mod tests;
-```
-
-The external file itself sits in a directory named after the parent, using the same path regardless of whether the parent has any other submodules. Concretely:
-
-- For `src/foo.rs`, the tests file is `src/foo/tests.rs`.
-- For `src/foo/bar.rs`, the tests file is `src/foo/bar/tests.rs`.
-
-Do not flatten the tests into a sibling file such as `src/foo_tests.rs`, and do not skip the intermediate directory when the parent currently has no other submodules. The existing sibling pair `src/video_descriptor.rs` and `src/video_descriptor/tests.rs` illustrates this layout.
 
 ## Setup
 
