@@ -22,19 +22,19 @@ fn takes_timestamp_at_exact_length() {
 fn new_composes_weighted_components() {
     assert_eq!(
         Timestamp::new(0, 0, 1).unwrap(),
-        Timestamp::new(0, 0, 1).unwrap()
+        Timestamp::new(0, 0, 1).unwrap(),
     );
     assert_eq!(
         Timestamp::new(0, 1, 0).unwrap(),
-        Timestamp::new(0, 0, 1_000).unwrap()
+        Timestamp::new(0, 0, 1_000).unwrap(),
     );
     assert_eq!(
         Timestamp::new(1, 0, 0).unwrap(),
-        Timestamp::new(0, 60, 0).unwrap()
+        Timestamp::new(0, 60, 0).unwrap(),
     );
     assert_eq!(
         Timestamp::new(0, 0, 2_500).unwrap(),
-        Timestamp::new(0, 2, 500).unwrap()
+        Timestamp::new(0, 2, 500).unwrap(),
     );
 }
 

@@ -199,7 +199,7 @@ pub fn load_song(song_dir: &Path) -> Song<'_> {
         let language = middle.parse::<Language>().unwrap_or_else(
             |strum::ParseError::VariantNotFound| {
                 panic!(
-                    "error: lyrics file {lyrics_path:?} has unrecognized language code {middle:?}"
+                    "error: lyrics file {lyrics_path:?} has unrecognized language code {middle:?}",
                 )
             },
         );

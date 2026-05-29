@@ -66,9 +66,26 @@ fn is_subtitle_file(entry: &DirEntry) -> bool {
     match entry.file_type() {
         Err(error) => panic!(
             "error: Cannot read file type of {:?}: {error}",
-            entry.path()
+            entry.path(),
         ),
         Ok(file_type) if !file_type.is_file() => return false,
+        // `FileType::is_file` is a pure, side-effect-free getter, so the
+        // debug-only evaluation that `macro_argument_binding` guards
+        // against is not a hazard here. The rule classifies the call as
+        // impure only because its curated pure-getter set does not list
+        // `is_file`. The suppression is wrapped in `cfg_attr(dylint_lib
+        // = "perfectionist", ...)` because a bare
+        // `#[expect(perfectionist::...)]` fails to compile under the
+        // stable toolchain with E0710 (the `perfectionist` tool is not
+        // registered outside the Dylint driver). See the upstream issue
+        // tracking the missing standard-library getters.
+        #[cfg_attr(
+            dylint_lib = "perfectionist",
+            expect(
+                perfectionist::macro_argument_binding,
+                reason = "FileType::is_file is a pure getter; binding it to a let would only force evaluation in release builds for no benefit",
+            )
+        )]
         Ok(file_type) => debug_assert!(file_type.is_file()),
     }
 
@@ -99,7 +116,7 @@ pub fn main() {
                 .unwrap_or_else(|error| {
                     panic!(
                         "error: Cannot read file type of {:?}: {error}",
-                        entry.path()
+                        entry.path(),
                     )
                 })
                 .is_dir()
@@ -143,7 +160,7 @@ pub fn main() {
         .collect();
     eprintln!(
         "info: There are currently {} existing files at the target location",
-        existing_target_files.len()
+        existing_target_files.len(),
     );
 
     let mut files_need_update: Vec<(PathBuf, PathBuf)> =
@@ -230,7 +247,7 @@ pub fn main() {
                 let was_present = files_need_uninstall.remove(&target_file);
                 debug_assert!(
                     was_present,
-                    "Expecting {target_file:?} to still exist but it doesn't"
+                    "Expecting {target_file:?} to still exist but it doesn't",
                 );
 
                 if target_file_snapshot.content_eq(source_file_snapshot) {
@@ -244,15 +261,15 @@ pub fn main() {
 
     eprintln!(
         "info: {} files would be removed from the target location",
-        files_need_uninstall.len()
+        files_need_uninstall.len(),
     );
     eprintln!(
         "info: {} files would be added to the target location",
-        files_need_install.len()
+        files_need_install.len(),
     );
     eprintln!(
         "info: {} files in the target location would be updated",
-        files_need_update.len()
+        files_need_update.len(),
     );
 
     eprintln!();

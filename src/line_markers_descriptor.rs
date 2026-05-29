@@ -61,7 +61,7 @@ pub struct LineMarkersDesc {
 /// class-name rules. It excludes whitespace, quotes, dots, braces,
 /// and anything outside basic ASCII, all of which would break the
 /// STYLE block or the inline tag if interpolated raw.
-#[derive(Debug, Display, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(Debug, Display, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
 #[serde(try_from = "String", into = "String")]
 pub struct CssClassName(String);
 
@@ -133,7 +133,7 @@ fn is_class_name_continue(ch: char) -> bool {
 /// renderer that name the destination grammar; each wrapper
 /// produces one of the two output shapes so the call site cannot
 /// cross them up.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
 #[serde(try_from = "String", into = "String")]
 pub struct VoiceName(String);
 

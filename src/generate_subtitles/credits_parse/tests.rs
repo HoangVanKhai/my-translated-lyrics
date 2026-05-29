@@ -63,7 +63,7 @@ fn colon_separated_line_yields_one_pair_per_cell() {
     assert_eq!(parsed[0].separator, "：");
     assert_eq!(
         parsed[0].name_segments,
-        [NameSegment::Unbracketed(Unbracketed("name-a"))]
+        [NameSegment::Unbracketed(Unbracketed("name-a"))],
     );
     assert_eq!(parsed[1].role, "role-b");
     assert_eq!(parsed[2].role, "role-c");
@@ -93,7 +93,7 @@ fn tolerates_runs_wider_than_two_spaces() {
     assert_eq!(parsed[0].separator, "   ");
     assert_eq!(
         parsed[0].name_segments,
-        [NameSegment::Unbracketed(Unbracketed("name-a"))]
+        [NameSegment::Unbracketed(Unbracketed("name-a"))],
     );
 }
 
