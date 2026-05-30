@@ -6,9 +6,6 @@ libraries = [
 [perfectionist]
 enable = ["derive_ordering"]
 
-["perfectionist::macro_argument_binding"]
-extra_pure_methods = ["is_file"]
-
 ["perfectionist::derive_ordering"]
 style = "prefix_then_alphabetical"
 prefix = [
@@ -25,3 +22,6 @@ prefix = [
   "Sum", "Product",
   "LowerHex", "UpperHex", "Octal",
 ]
+
+["perfectionist::macro_argument_binding"]
+extra_pure_methods = ["is_file"]
