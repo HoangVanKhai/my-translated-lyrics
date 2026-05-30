@@ -69,13 +69,6 @@ fn is_subtitle_file(entry: &DirEntry) -> bool {
             entry.path(),
         ),
         Ok(file_type) if !file_type.is_file() => return false,
-        #[cfg_attr(
-            dylint_lib = "perfectionist",
-            expect(
-                perfectionist::macro_argument_binding,
-                reason = "FileType::is_file is a pure getter; binding it to a let would only force evaluation in release builds for no benefit",
-            )
-        )]
         Ok(file_type) => debug_assert!(file_type.is_file()),
     }
 
