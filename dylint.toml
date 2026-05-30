@@ -6,12 +6,6 @@ libraries = [
 [perfectionist]
 enable = ["derive_ordering"]
 
-# `FileType::is_file` and its sibling getters report cached metadata without
-# observable side effects, so treat them as pure. This lets the
-# `macro_argument_binding` rule accept calls such as
-# `debug_assert!(file_type.is_file())` without demanding that the value be
-# bound to a `let` first, which would needlessly force evaluation in release
-# builds where `debug_assert!` expands to nothing.
 ["perfectionist::macro_argument_binding"]
 extra_pure_methods = ["is_file"]
 
