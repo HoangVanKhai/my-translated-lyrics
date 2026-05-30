@@ -22,3 +22,6 @@ prefix = [
   "Sum", "Product",
   "LowerHex", "UpperHex", "Octal",
 ]
+
+["perfectionist::macro_argument_binding"]
+extra_pure_methods = ["is_file"]
