@@ -40,21 +40,21 @@
 
 11
 00:00:36,340 --> 00:00:39,876
-<font color="#AAAA22">作曲：纯白P</font>
-<font color="#AAAA22">编曲：纯白P</font>
-<font color="#AAAA22">作词：举烛</font>
+<font color="#AAAA22">作曲</font> <font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">编曲</font> <font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">作词</font> <font color="#AAAAAA">举烛</font>
 
 12
 00:00:39,876 --> 00:00:44,038
-<font color="#AAAA22">演唱：洛天依/乐正绫</font>
-<font color="#AAAA22">调教：无形歌无形</font>
-<font color="#AAAA22">吉他：YK_Lin</font>
+<font color="#AAAA22">演唱</font> <font color="#AAAAAA">洛天依/乐正绫</font>
+<font color="#AAAA22">调教</font> <font color="#AAAAAA">无形歌无形</font>
+<font color="#AAAA22">吉他</font> <font color="#AAAAAA">YK_Lin</font>
 
 13
 00:00:44,038 --> 00:00:48,838
-<font color="#AAAA22">插画：巫烨</font>
-<font color="#AAAA22">混音：Irecorder</font>
-<font color="#AAAA22">映像：凌月尘</font>
+<font color="#AAAA22">插画</font> <font color="#AAAAAA">巫烨</font>
+<font color="#AAAA22">混音</font> <font color="#AAAAAA">Irecorder</font>
+<font color="#AAAA22">映像</font> <font color="#AAAAAA">凌月尘</font>
 
 14
 00:00:49,304 --> 00:00:52,614
@@ -134,21 +134,21 @@
 
 33
 00:01:59,249 --> 00:02:03,146
-<font color="#AAAA22">作曲：纯白P</font>
-<font color="#AAAA22">编曲：纯白P</font>
-<font color="#AAAA22">作词：举烛</font>
+<font color="#AAAA22">作曲</font> <font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">编曲</font> <font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">作词</font> <font color="#AAAAAA">举烛</font>
 
 34
 00:02:03,146 --> 00:02:06,913
-<font color="#AAAA22">演唱：洛天依/乐正绫</font>
-<font color="#AAAA22">调教：无形歌无形</font>
-<font color="#AAAA22">吉他：YK_Lin</font>
+<font color="#AAAA22">演唱</font> <font color="#AAAAAA">洛天依/乐正绫</font>
+<font color="#AAAA22">调教</font> <font color="#AAAAAA">无形歌无形</font>
+<font color="#AAAA22">吉他</font> <font color="#AAAAAA">YK_Lin</font>
 
 35
 00:02:06,913 --> 00:02:11,825
-<font color="#AAAA22">插画：巫烨</font>
-<font color="#AAAA22">混音：Irecorder</font>
-<font color="#AAAA22">映像：凌月尘</font>
+<font color="#AAAA22">插画</font> <font color="#AAAAAA">巫烨</font>
+<font color="#AAAA22">混音</font> <font color="#AAAAAA">Irecorder</font>
+<font color="#AAAA22">映像</font> <font color="#AAAAAA">凌月尘</font>
 
 36
 00:02:16,350 --> 00:02:20,370
@@ -224,21 +224,21 @@
 
 54
 00:03:22,600 --> 00:03:26,761
-<font color="#AAAA22">作曲：纯白P</font>
-<font color="#AAAA22">编曲：纯白P</font>
-<font color="#AAAA22">作词：举烛</font>
+<font color="#AAAA22">作曲</font> <font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">编曲</font> <font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">作词</font> <font color="#AAAAAA">举烛</font>
 
 55
 00:03:26,761 --> 00:03:30,751
-<font color="#AAAA22">演唱：洛天依/乐正绫</font>
-<font color="#AAAA22">调教：无形歌无形</font>
-<font color="#AAAA22">吉他：YK_Lin</font>
+<font color="#AAAA22">演唱</font> <font color="#AAAAAA">洛天依/乐正绫</font>
+<font color="#AAAA22">调教</font> <font color="#AAAAAA">无形歌无形</font>
+<font color="#AAAA22">吉他</font> <font color="#AAAAAA">YK_Lin</font>
 
 56
 00:03:30,751 --> 00:03:35,437
-<font color="#AAAA22">插画：巫烨</font>
-<font color="#AAAA22">混音：Irecorder</font>
-<font color="#AAAA22">映像：凌月尘</font>
+<font color="#AAAA22">插画</font> <font color="#AAAAAA">巫烨</font>
+<font color="#AAAA22">混音</font> <font color="#AAAAAA">Irecorder</font>
+<font color="#AAAA22">映像</font> <font color="#AAAAAA">凌月尘</font>
 
 57
 00:03:39,600 --> 00:03:43,500

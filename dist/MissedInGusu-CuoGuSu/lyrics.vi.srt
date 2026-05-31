@@ -40,21 +40,21 @@ Tựa dòng nước trôi hôn lên bãi sông
 
 11
 00:00:36,340 --> 00:00:39,876
-<font color="#AAAA22">Sáng tác: 纯白P</font>
-<font color="#AAAA22">Phối khí: 纯白P</font>
-<font color="#AAAA22">Viết lời: 举烛</font>
+<font color="#AAAA22">Sáng tác</font> <font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">Phối khí</font> <font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">Viết lời</font> <font color="#AAAAAA">举烛</font>
 
 12
 00:00:39,876 --> 00:00:44,038
-<font color="#AAAA22">Trình bày: Luo Tianyi/Yuezheng Ling</font>
-<font color="#AAAA22">Điều giáo: 无形歌无形</font>
-<font color="#AAAA22">Guitar: YK_Lin</font>
+<font color="#AAAA22">Trình bày</font> <font color="#AAAAAA">Luo Tianyi/Yuezheng Ling</font>
+<font color="#AAAA22">Điều giáo</font> <font color="#AAAAAA">无形歌无形</font>
+<font color="#AAAA22">Guitar</font> <font color="#AAAAAA">YK_Lin</font>
 
 13
 00:00:44,038 --> 00:00:48,838
-<font color="#AAAA22">Minh họa: 巫烨</font>
-<font color="#AAAA22">Mix: Irecorder</font>
-<font color="#AAAA22">Hình ảnh: 凌月尘</font>
+<font color="#AAAA22">Minh họa</font> <font color="#AAAAAA">巫烨</font>
+<font color="#AAAA22">Mix</font> <font color="#AAAAAA">Irecorder</font>
+<font color="#AAAA22">Hình ảnh</font> <font color="#AAAAAA">凌月尘</font>
 
 14
 00:00:49,304 --> 00:00:52,614
@@ -134,21 +134,21 @@ Tựa dòng nước trôi hôn lên bãi sông
 
 33
 00:01:59,249 --> 00:02:03,146
-<font color="#AAAA22">Sáng tác: 纯白P</font>
-<font color="#AAAA22">Phối khí: 纯白P</font>
-<font color="#AAAA22">Viết lời: 举烛</font>
+<font color="#AAAA22">Sáng tác</font> <font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">Phối khí</font> <font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">Viết lời</font> <font color="#AAAAAA">举烛</font>
 
 34
 00:02:03,146 --> 00:02:06,913
-<font color="#AAAA22">Trình bày: Luo Tianyi/Yuezheng Ling</font>
-<font color="#AAAA22">Điều giáo: 无形歌无形</font>
-<font color="#AAAA22">Guitar: YK_Lin</font>
+<font color="#AAAA22">Trình bày</font> <font color="#AAAAAA">Luo Tianyi/Yuezheng Ling</font>
+<font color="#AAAA22">Điều giáo</font> <font color="#AAAAAA">无形歌无形</font>
+<font color="#AAAA22">Guitar</font> <font color="#AAAAAA">YK_Lin</font>
 
 35
 00:02:06,913 --> 00:02:11,825
-<font color="#AAAA22">Minh họa: 巫烨</font>
-<font color="#AAAA22">Mix: Irecorder</font>
-<font color="#AAAA22">Hình ảnh: 凌月尘</font>
+<font color="#AAAA22">Minh họa</font> <font color="#AAAAAA">巫烨</font>
+<font color="#AAAA22">Mix</font> <font color="#AAAAAA">Irecorder</font>
+<font color="#AAAA22">Hình ảnh</font> <font color="#AAAAAA">凌月尘</font>
 
 36
 00:02:16,350 --> 00:02:20,370
@@ -224,21 +224,21 @@ Chỉ quẩn quanh non xanh trước cửa
 
 54
 00:03:22,600 --> 00:03:26,761
-<font color="#AAAA22">Sáng tác: 纯白P</font>
-<font color="#AAAA22">Phối khí: 纯白P</font>
-<font color="#AAAA22">Viết lời: 举烛</font>
+<font color="#AAAA22">Sáng tác</font> <font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">Phối khí</font> <font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">Viết lời</font> <font color="#AAAAAA">举烛</font>
 
 55
 00:03:26,761 --> 00:03:30,751
-<font color="#AAAA22">Trình bày: Luo Tianyi/Yuezheng Ling</font>
-<font color="#AAAA22">Điều giáo: 无形歌无形</font>
-<font color="#AAAA22">Guitar: YK_Lin</font>
+<font color="#AAAA22">Trình bày</font> <font color="#AAAAAA">Luo Tianyi/Yuezheng Ling</font>
+<font color="#AAAA22">Điều giáo</font> <font color="#AAAAAA">无形歌无形</font>
+<font color="#AAAA22">Guitar</font> <font color="#AAAAAA">YK_Lin</font>
 
 56
 00:03:30,751 --> 00:03:35,437
-<font color="#AAAA22">Minh họa: 巫烨</font>
-<font color="#AAAA22">Mix: Irecorder</font>
-<font color="#AAAA22">Hình ảnh: 凌月尘</font>
+<font color="#AAAA22">Minh họa</font> <font color="#AAAAAA">巫烨</font>
+<font color="#AAAA22">Mix</font> <font color="#AAAAAA">Irecorder</font>
+<font color="#AAAA22">Hình ảnh</font> <font color="#AAAAAA">凌月尘</font>
 
 57
 00:03:39,600 --> 00:03:43,500
