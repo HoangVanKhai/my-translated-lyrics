@@ -1,23 +1,23 @@
 1
 00:00:01,167 --> 00:00:04,433
-Soạn nhạc/Biên khúc: 洛雨辰p
-Trợ lý: 年糕
-Tác từ: 雷小晏
+<font color="#AAAA22">Soạn nhạc/Biên khúc:</font> <font color="#AAAAAA">洛雨辰p</font>
+<font color="#AAAA22">Trợ lý:</font> <font color="#AAAAAA">年糕</font>
+<font color="#AAAA22">Tác từ:</font> <font color="#AAAAAA">雷小晏</font>
 
 2
 00:00:04,433 --> 00:00:07,793
-Guitar điện/Acoustic: distantal
-Nhạc cụ dây: 海因喝水上火
+<font color="#AAAA22">Guitar điện/Acoustic:</font> <font color="#AAAAAA">distantal</font>
+<font color="#AAAA22">Nhạc cụ dây:</font> <font color="#AAAAAA">海因喝水上火</font>
 
 3
 00:00:07,793 --> 00:00:10,954
-Điều giáo: 鬼面p
-Mix nhạc: 蓝婉元漪
+<font color="#AAAA22">Điều giáo:</font> <font color="#AAAAAA">鬼面p</font>
+<font color="#AAAA22">Mix nhạc:</font> <font color="#AAAAAA">蓝婉元漪</font>
 
 4
 00:00:10,954 --> 00:00:14,210
-Minh họa: 山下鸭鸭窝
-Video: 梦游
+<font color="#AAAA22">Minh họa:</font> <font color="#AAAAAA">山下鸭鸭窝</font>
+<font color="#AAAA22">Video:</font> <font color="#AAAAAA">梦游</font>
 
 5
 00:00:20,729 --> 00:00:26,830
@@ -81,24 +81,24 @@ Nguyện cùng người chung bước dài lâu
 
 20
 00:01:59,445 --> 00:02:03,086
-Soạn nhạc/Biên khúc: 洛雨辰p
-Trợ lý: 年糕
-Tác từ: 雷小晏
+<font color="#AAAA22">Soạn nhạc/Biên khúc:</font> <font color="#AAAAAA">洛雨辰p</font>
+<font color="#AAAA22">Trợ lý:</font> <font color="#AAAAAA">年糕</font>
+<font color="#AAAA22">Tác từ:</font> <font color="#AAAAAA">雷小晏</font>
 
 21
 00:02:03,086 --> 00:02:06,392
-Guitar điện/Acoustic: distantal
-Nhạc cụ dây: 海因喝水上火
+<font color="#AAAA22">Guitar điện/Acoustic:</font> <font color="#AAAAAA">distantal</font>
+<font color="#AAAA22">Nhạc cụ dây:</font> <font color="#AAAAAA">海因喝水上火</font>
 
 22
 00:02:06,392 --> 00:02:09,449
-Điều giáo: 鬼面p
-Mix nhạc: 蓝婉元漪
+<font color="#AAAA22">Điều giáo:</font> <font color="#AAAAAA">鬼面p</font>
+<font color="#AAAA22">Mix nhạc:</font> <font color="#AAAAAA">蓝婉元漪</font>
 
 23
 00:02:09,449 --> 00:02:12,821
-Minh họa: 山下鸭鸭窝
-Video: 梦游
+<font color="#AAAA22">Minh họa:</font> <font color="#AAAAAA">山下鸭鸭窝</font>
+<font color="#AAAA22">Video:</font> <font color="#AAAAAA">梦游</font>
 
 24
 00:02:19,323 --> 00:02:25,387

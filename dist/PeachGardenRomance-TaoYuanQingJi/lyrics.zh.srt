@@ -1,23 +1,23 @@
 1
 00:00:01,167 --> 00:00:04,433
-曲/编：洛雨辰p
-协力：年糕
-作词：雷小晏
+<font color="#AAAA22">曲/编：</font><font color="#AAAAAA">洛雨辰p</font>
+<font color="#AAAA22">协力：</font><font color="#AAAAAA">年糕</font>
+<font color="#AAAA22">作词：</font><font color="#AAAAAA">雷小晏</font>
 
 2
 00:00:04,433 --> 00:00:07,793
-电/木吉他：distantal
-弦乐：海因喝水上火
+<font color="#AAAA22">电/木吉他：</font><font color="#AAAAAA">distantal</font>
+<font color="#AAAA22">弦乐：</font><font color="#AAAAAA">海因喝水上火</font>
 
 3
 00:00:07,793 --> 00:00:10,954
-调教：鬼面p
-混音：蓝婉元漪
+<font color="#AAAA22">调教：</font><font color="#AAAAAA">鬼面p</font>
+<font color="#AAAA22">混音：</font><font color="#AAAAAA">蓝婉元漪</font>
 
 4
 00:00:10,954 --> 00:00:14,210
-曲绘：山下鸭鸭窝
-视频：梦游
+<font color="#AAAA22">曲绘：</font><font color="#AAAAAA">山下鸭鸭窝</font>
+<font color="#AAAA22">视频：</font><font color="#AAAAAA">梦游</font>
 
 5
 00:00:20,729 --> 00:00:26,830
@@ -81,24 +81,24 @@
 
 20
 00:01:59,445 --> 00:02:03,086
-曲/编：洛雨辰p
-协力：年糕
-作词：雷小晏
+<font color="#AAAA22">曲/编：</font><font color="#AAAAAA">洛雨辰p</font>
+<font color="#AAAA22">协力：</font><font color="#AAAAAA">年糕</font>
+<font color="#AAAA22">作词：</font><font color="#AAAAAA">雷小晏</font>
 
 21
 00:02:03,086 --> 00:02:06,392
-电/木吉他：distantal
-弦乐：海因喝水上火
+<font color="#AAAA22">电/木吉他：</font><font color="#AAAAAA">distantal</font>
+<font color="#AAAA22">弦乐：</font><font color="#AAAAAA">海因喝水上火</font>
 
 22
 00:02:06,392 --> 00:02:09,449
-调教：鬼面p
-混音：蓝婉元漪
+<font color="#AAAA22">调教：</font><font color="#AAAAAA">鬼面p</font>
+<font color="#AAAA22">混音：</font><font color="#AAAAAA">蓝婉元漪</font>
 
 23
 00:02:09,449 --> 00:02:12,821
-曲绘：山下鸭鸭窝
-视频：梦游
+<font color="#AAAA22">曲绘：</font><font color="#AAAAAA">山下鸭鸭窝</font>
+<font color="#AAAA22">视频：</font><font color="#AAAAAA">梦游</font>
 
 24
 00:02:19,323 --> 00:02:25,387
