@@ -104,32 +104,30 @@
 
 27
 00:01:46,147 --> 00:01:48,387
-<font color="#AAAA22">作词：花间有鹿来</font>
+<font color="#AAAA22">作词：</font><font color="#AAAAAA">花间有鹿来</font>
 
 28
 00:01:48,387 --> 00:01:50,475
-<font color="#AAAA22">曲编混：砖厂浪人</font>
+<font color="#AAAA22">曲编混：</font><font color="#AAAAAA">砖厂浪人</font>
 
 29
 00:01:50,475 --> 00:01:52,438
-<font color="#AAAA22">调校：流绪</font>
+<font color="#AAAA22">调校：</font><font color="#AAAAAA">流绪</font>
 
 30
 00:01:52,438 --> 00:01:54,508
-<font color="#AAAA22">曲绘：甘小宁</font>
+<font color="#AAAA22">曲绘：</font><font color="#AAAAAA">甘小宁</font>
 
 31
 00:01:54,508 --> 00:01:56,532
-<font color="#AAAA22">视频：卷毛兔w</font>
+<font color="#AAAA22">视频：</font><font color="#AAAAAA">卷毛兔w</font>
 
 32
 00:01:56,532 --> 00:01:59,110
-<font color="#AAAA22">
-视频底图
-[疏楼曲] 青菏
-[不能画] 太阳暖暖
-[不能画] 行殊
-</font>
+<font color="#AAAA22">视频底图</font>
+<font color="#55ABCD">[疏楼曲]</font> <font color="#AAAAAA">青菏</font>
+<font color="#55ABCD">[不能画]</font> <font color="#AAAAAA">太阳暖暖</font>
+<font color="#55ABCD">[不能画]</font> <font color="#AAAAAA">行殊</font>
 
 33
 00:02:11,808 --> 00:02:15,107
@@ -149,32 +147,30 @@
 
 37
 00:02:25,873 --> 00:02:28,160
-<font color="#AAAA22">作词：花间有鹿来</font>
+<font color="#AAAA22">作词：</font><font color="#AAAAAA">花间有鹿来</font>
 
 38
 00:02:28,160 --> 00:02:30,292
-<font color="#AAAA22">曲编混：砖厂浪人</font>
+<font color="#AAAA22">曲编混：</font><font color="#AAAAAA">砖厂浪人</font>
 
 39
 00:02:30,292 --> 00:02:32,043
-<font color="#AAAA22">调校：流绪</font>
+<font color="#AAAA22">调校：</font><font color="#AAAAAA">流绪</font>
 
 40
 00:02:32,043 --> 00:02:34,184
-<font color="#AAAA22">曲绘：甘小宁</font>
+<font color="#AAAA22">曲绘：</font><font color="#AAAAAA">甘小宁</font>
 
 41
 00:02:34,184 --> 00:02:36,367
-<font color="#AAAA22">视频：卷毛兔w</font>
+<font color="#AAAA22">视频：</font><font color="#AAAAAA">卷毛兔w</font>
 
 42
 00:02:36,367 --> 00:02:38,969
-<font color="#AAAA22">
-视频底图
-[疏楼曲] 青菏
-[不能画] 太阳暖暖
-[不能画] 行殊
-</font>
+<font color="#AAAA22">视频底图</font>
+<font color="#55ABCD">[疏楼曲]</font> <font color="#AAAAAA">青菏</font>
+<font color="#55ABCD">[不能画]</font> <font color="#AAAAAA">太阳暖暖</font>
+<font color="#55ABCD">[不能画]</font> <font color="#AAAAAA">行殊</font>
 
 43
 00:02:59,165 --> 00:03:05,997
