@@ -26,6 +26,7 @@ overrides:
       - AXIDI
       - Dinstakovich
       - distantal
+      - Irecorder
       - khóa
       - khóe
       - nguôi
@@ -50,6 +51,7 @@ overrides:
     words:
       - AXIDI
       - distantal
+      - Irecorder
       - Tianyi
       - Vsinger
       - WOVOP
