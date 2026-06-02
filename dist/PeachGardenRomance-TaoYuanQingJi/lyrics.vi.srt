@@ -21,7 +21,7 @@
 
 5
 00:00:20,729 --> 00:00:26,830
-Đào Nguyên Tình Ký
+<b><font color="#FFD966">Đào Nguyên Tình Ký</font></b>
 
 6
 00:00:26,830 --> 00:00:40,037
@@ -102,7 +102,7 @@ Nguyện cùng người chung bước dài lâu
 
 24
 00:02:19,323 --> 00:02:25,387
-Đào Nguyên Tình Ký
+<b><font color="#FFD966">Đào Nguyên Tình Ký</font></b>
 
 25
 00:02:25,588 --> 00:02:29,156
