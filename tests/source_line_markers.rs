@@ -1,7 +1,8 @@
-use itertools::Itertools;
-use pipe_trait::Pipe;
 use std::fs::{DirEntry, read_dir, read_to_string};
 use std::path::Path;
+
+use itertools::Itertools;
+use pipe_trait::Pipe;
 use translated_lyrics::line_markers_descriptor::{LINE_MARKERS_CONFIG_FILE_NAME, LineMarkersDesc};
 
 /// Every `sources/*/line-markers.toml` must parse as a valid [`LineMarkersDesc`].

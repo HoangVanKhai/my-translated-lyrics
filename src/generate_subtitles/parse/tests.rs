@@ -6,6 +6,7 @@ use super::error::{
 };
 use super::parse_lyrics;
 use crate::timestamp::{SecondsOutOfRange, TakeTimestampError, Timestamp};
+
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
 

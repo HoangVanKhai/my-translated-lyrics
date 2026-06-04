@@ -1,10 +1,11 @@
-use clap::Parser;
-use pipe_trait::Pipe;
 use std::fmt;
 use std::fs::{File, read_to_string};
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
+
+use clap::Parser;
+use pipe_trait::Pipe;
 
 const SHARED: &str = include_str!("../template/ai-instructions/shared.md");
 const CLAUDE: &str = include_str!("../template/ai-instructions/claude.md");

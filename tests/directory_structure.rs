@@ -1,7 +1,8 @@
-use itertools::Itertools;
-use pipe_trait::Pipe;
 use std::fs::{DirEntry, read_dir};
 use std::path::Path;
+
+use itertools::Itertools;
+use pipe_trait::Pipe;
 use translated_lyrics::video_descriptor::{LyricsFileName, ParseLyricsFileNameError};
 
 /// Verify that `dist/`, `drafts/`, and `sources/` have a flat two-level structure:

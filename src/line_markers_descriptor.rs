@@ -1,7 +1,9 @@
+use std::collections::BTreeMap;
+
 use crate::video_descriptor::Language;
+
 use derive_more::Display;
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
 
 pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 
@@ -125,7 +127,7 @@ fn is_class_name_continue(ch: char) -> bool {
 /// and embedded spaces, the three categories that already appear in
 /// `sources/*/line-markers.toml`.
 ///
-/// `VoiceName` deliberately does not implement `Display`. The two
+/// [`VoiceName`] deliberately does not implement `Display`. The two
 /// destination contexts, the WebVTT cue tag and the CSS attribute
 /// selector, have incompatible quoting rules, and a single
 /// `Display` impl could only be correct in one of them. Rendering

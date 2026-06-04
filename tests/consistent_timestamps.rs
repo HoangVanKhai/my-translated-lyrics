@@ -1,9 +1,10 @@
-use itertools::Itertools;
-use pipe_trait::Pipe;
-use pretty_assertions::assert_eq;
 use std::collections::BTreeMap;
 use std::fs::{DirEntry, ReadDir, read_dir, read_to_string};
 use std::path::{Path, PathBuf};
+
+use itertools::Itertools;
+use pipe_trait::Pipe;
+use pretty_assertions::assert_eq;
 use translated_lyrics::video_descriptor::LyricsFileName;
 
 /// Collects all recognized lyrics files from the

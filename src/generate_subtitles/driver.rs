@@ -1,3 +1,7 @@
+use std::collections::BTreeMap;
+use std::fs::{DirEntry, create_dir_all, read_dir, read_to_string, write as write_file};
+use std::path::{Path, PathBuf};
+
 use super::parse::{SubtitleCue, parse_lyrics};
 use super::render_srt::render_srt;
 use super::render_vtt::render_vtt;
@@ -5,13 +9,11 @@ use crate::credits_descriptor::{CREDITS_CONFIG_FILE_NAME, CreditsDesc};
 use crate::file_snapshot::FileSnapshot;
 use crate::line_markers_descriptor::{LINE_MARKERS_CONFIG_FILE_NAME, LineMarkersDesc};
 use crate::video_descriptor::{Language, VIDEO_CONFIG_FILE_NAME, VideoDesc};
+
 use clap::Parser;
 use derive_more::AddAssign;
 use itertools::Itertools;
 use pipe_trait::Pipe;
-use std::collections::BTreeMap;
-use std::fs::{DirEntry, create_dir_all, read_dir, read_to_string, write as write_file};
-use std::path::{Path, PathBuf};
 
 const LYRICS_TXT_SUFFIX: &str = ".txt";
 

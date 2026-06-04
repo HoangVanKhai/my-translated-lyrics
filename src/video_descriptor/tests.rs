@@ -2,6 +2,7 @@ use super::{
     CollectionName, Language, LyricsFileName, ParseCollectionNameError, ParseLyricsFileNameError,
     ParseVideoTitleError, SEPARATED_COLLECTIONS, VideoTitle,
 };
+
 use pipe_trait::Pipe;
 
 #[test]

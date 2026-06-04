@@ -14,6 +14,7 @@ pub mod error;
 
 use crate::line_markers_descriptor::{CLEAR_MARKER, END_OF_VIDEO_MARKER};
 use crate::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
+
 use error::{
     CueTextReservedCharacter, EmptyCueBody, ExtraTextAfterControlMarker, InvalidTimestamp,
     MalformedHeader, MalformedIndentation, MissingMarker, MissingSeparatorAfterTimestamp,
@@ -62,7 +63,7 @@ pub struct CuePart {
 /// in the source file; the end time is resolved later by looking at
 /// the next event in the stream. The list of parts mirrors
 /// [`SubtitleCue::parts`]: a fresh timestamped header line opens a
-/// group with one part, a column-`TIMESTAMP_PREFIX_WIDTH` shorthand
+/// group with one part, a column-[`TIMESTAMP_PREFIX_WIDTH`] shorthand
 /// line appends a new part to that group, and a continuation line
 /// extends the most recent part's text.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -385,11 +386,11 @@ fn split_marker(body: &str) -> Option<(&str, &str)> {
 /// Reports the first offending character only. A line that
 /// carries both `<` and `>` (the common `<tag>` shape) would in
 /// principle benefit from a combined diagnostic, but a single
-/// report per line is the convention every other `ParseLyricsError`
+/// report per line is the convention every other [`ParseLyricsError`]
 /// variant follows, and the author almost always types the two
 /// angle brackets together; seeing the `<` once, fixing the whole
-/// tag, and rerunning is the same workflow as for `MissingMarker`
-/// or `ReservedControlMarker`.
+/// tag, and rerunning is the same workflow as for [`MissingMarker`]
+/// or [`ReservedControlMarker`].
 fn reject_reserved_cue_text_characters(
     text: &str,
     line_number: usize,
