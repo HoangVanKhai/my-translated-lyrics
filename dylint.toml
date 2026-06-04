@@ -23,5 +23,8 @@ prefix = [
   "LowerHex", "UpperHex", "Octal",
 ]
 
+["perfectionist::import_grouping"]
+style = "single_group"
+
 ["perfectionist::macro_argument_binding"]
 extra_pure_methods = ["is_file"]
