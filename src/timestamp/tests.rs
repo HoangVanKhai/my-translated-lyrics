@@ -2,7 +2,6 @@ use super::{
     MinutesOutOfRange, ParseTimestampError, SecondsOutOfRange, SrtTime, TIMESTAMP_STR_LEN,
     TakeTimestampError, Timestamp, VttTime,
 };
-
 use pretty_assertions::assert_eq;
 
 #[test]

@@ -14,7 +14,6 @@ pub mod error;
 
 use crate::line_markers_descriptor::{CLEAR_MARKER, END_OF_VIDEO_MARKER};
 use crate::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
-
 use error::{
     CueTextReservedCharacter, EmptyCueBody, ExtraTextAfterControlMarker, InvalidTimestamp,
     MalformedHeader, MalformedIndentation, MissingMarker, MissingSeparatorAfterTimestamp,

@@ -1,3 +1,10 @@
+use command_extra::CommandExtra;
+use derive_more::{AsRef, Deref};
+use itertools::Itertools;
+use maplit::hashmap;
+use pipe_trait::Pipe;
+use rand::distr::Alphanumeric;
+use rand::{RngExt, rng};
 use std::env::temp_dir;
 use std::ffi::OsString;
 use std::fs::{
@@ -7,14 +14,6 @@ use std::fs::{
 use std::iter::once;
 use std::path::PathBuf;
 use std::process::Command;
-
-use command_extra::CommandExtra;
-use derive_more::{AsRef, Deref};
-use itertools::Itertools;
-use maplit::hashmap;
-use pipe_trait::Pipe;
-use rand::distr::Alphanumeric;
-use rand::{RngExt, rng};
 use translated_lyrics::video_descriptor::{
     Language, SEPARATED_COLLECTIONS, UNIFIED_COLLECTION, VideoDesc, Visibility,
 };

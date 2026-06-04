@@ -1,9 +1,7 @@
-use std::collections::BTreeMap;
-
 use crate::video_descriptor::Language;
-
 use derive_more::Display;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 

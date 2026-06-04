@@ -1,8 +1,6 @@
-use std::collections::BTreeMap;
-
 use crate::video_descriptor::Language;
-
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 pub const CREDITS_CONFIG_FILE_NAME: &str = "credits.yaml";
 

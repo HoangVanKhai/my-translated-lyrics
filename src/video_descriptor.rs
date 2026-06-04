@@ -1,11 +1,10 @@
-use std::collections::HashMap;
-use std::path::{Component, Path};
-use std::str::FromStr;
-
 use derive_more::{AsRef, Deref, Display, Into};
 use itertools::Itertools;
 use pipe_trait::Pipe;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::path::{Component, Path};
+use std::str::FromStr;
 use strum::{AsRefStr, EnumString, VariantArray};
 
 pub const SEPARATED_COLLECTIONS: &[&str] = &[

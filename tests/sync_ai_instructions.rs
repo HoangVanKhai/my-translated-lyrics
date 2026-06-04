@@ -1,6 +1,5 @@
-use std::process::Command;
-
 use command_extra::CommandExtra;
+use std::process::Command;
 
 const LYRICS_AI_INSTRUCTIONS: &str = env!("CARGO_BIN_EXE_lyrics-ai-instructions");
 

@@ -1,9 +1,8 @@
 pub mod _utils;
-use std::fs::{read_to_string, write as write_file};
-
 pub use _utils::*;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
+use std::fs::{read_to_string, write as write_file};
 use translated_lyrics::video_descriptor::{UNIFIED_COLLECTION, Visibility};
 
 #[test]

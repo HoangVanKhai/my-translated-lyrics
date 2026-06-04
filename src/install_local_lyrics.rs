@@ -1,20 +1,18 @@
+use crate::file_snapshot::FileSnapshot;
+use crate::video_descriptor::{
+    LyricsFileName, ParseLyricsFileNameError, SEPARATED_COLLECTIONS, UNIFIED_COLLECTION,
+    VIDEO_CONFIG_FILE_NAME, VideoDesc, Visibility,
+};
+use clap::Parser;
+use itertools::Itertools;
+use pipe_trait::Pipe;
+use reflink::reflink_or_copy;
 use std::collections::{HashMap, HashSet};
 use std::fs::{DirEntry, hard_link, read_dir, read_to_string, remove_file};
 use std::io::{self, ErrorKind};
 use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
-
-use crate::file_snapshot::FileSnapshot;
-use crate::video_descriptor::{
-    LyricsFileName, ParseLyricsFileNameError, SEPARATED_COLLECTIONS, UNIFIED_COLLECTION,
-    VIDEO_CONFIG_FILE_NAME, VideoDesc, Visibility,
-};
-
-use clap::Parser;
-use itertools::Itertools;
-use pipe_trait::Pipe;
-use reflink::reflink_or_copy;
 
 #[derive(Debug, Clone, Parser)]
 #[clap(about = "Synchronize the lyrics")]

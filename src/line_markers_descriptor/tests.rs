@@ -1,5 +1,4 @@
 use super::{CssClassName, InvalidCssClassName, InvalidVoiceName, VoiceName};
-
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use serde::{Deserialize, Serialize};

@@ -29,8 +29,6 @@
 //! [`LineMarkersDesc::classes`]: crate::line_markers_descriptor::LineMarkersDesc::classes
 //! [`LineMarkersDesc::credits`]: crate::line_markers_descriptor::LineMarkersDesc::credits
 
-use core::fmt::Write;
-
 use super::credits_parse::{
     CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,
 };
@@ -43,7 +41,7 @@ use crate::credits_descriptor::CreditsDesc;
 use crate::line_markers_descriptor::{LineMarkersDesc, VoiceName};
 use crate::timestamp::{Timestamp, VttTime};
 use crate::video_descriptor::Language;
-
+use core::fmt::Write;
 use derive_more::{BitOrAssign, Display};
 use text_block_macros::text_block_fnl;
 

@@ -22,7 +22,6 @@
 
 use crate::credits_descriptor::CreditsDesc;
 use crate::video_descriptor::Language;
-
 use derive_more::Display;
 use into_deduped::IntoDeduped;
 use into_sorted::IntoSorted;

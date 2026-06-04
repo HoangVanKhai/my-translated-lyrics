@@ -8,8 +8,6 @@
 //! parser as the VTT renderer and emit each role and name with a
 //! hardcoded palette because SRT has no central style definition.
 
-use core::fmt::Write;
-
 use super::credits_parse::{
     CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,
 };
@@ -22,7 +20,7 @@ use crate::credits_descriptor::CreditsDesc;
 use crate::line_markers_descriptor::LineMarkersDesc;
 use crate::timestamp::{SrtTime, Timestamp};
 use crate::video_descriptor::Language;
-
+use core::fmt::Write;
 use derive_more::Display;
 
 /// Renders all cues for a single language into a complete `.srt` file.

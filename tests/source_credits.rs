@@ -1,10 +1,9 @@
-use std::fs::{DirEntry, read_dir, read_to_string};
-use std::path::Path;
-
 use into_sorted::IntoSorted;
 use itertools::Itertools;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
+use std::fs::{DirEntry, read_dir, read_to_string};
+use std::path::Path;
 use translated_lyrics::credits_descriptor::{CREDITS_CONFIG_FILE_NAME, CreditsDesc};
 
 /// Each `sources/*/credits.yaml` must parse as a valid [`CreditsDesc`] whose

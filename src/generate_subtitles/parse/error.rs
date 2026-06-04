@@ -9,11 +9,9 @@
 //!
 //! [`parse_lyrics`]: super::parse_lyrics
 
-use core::fmt;
-
 use super::TIMESTAMP_PREFIX_WIDTH;
 use crate::timestamp::{TakeTimestampError, Timestamp};
-
+use core::fmt;
 use derive_more::Display;
 
 /// Payload for [`ParseLyricsError::InvalidTimestamp`]. Wraps the

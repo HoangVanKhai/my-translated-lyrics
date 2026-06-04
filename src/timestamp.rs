@@ -1,6 +1,5 @@
 use core::fmt;
 use core::str::FromStr;
-
 use derive_more::{Display, From, Into};
 
 /// Milliseconds in one second. The inner `u64` of [`Timestamp`] and
