@@ -117,8 +117,8 @@ pub fn render_vtt(
 /// song's credits list includes a bracketed highlight (`【...】`,
 /// `[...]`, or `(...)`).
 ///
-/// The same shape is used at two levels: each `CueRendering` carries
-/// the per-cue flags, and `render_vtt` keeps a song-level
+/// The same shape is used at two levels: each [`CueRendering`] carries
+/// the per-cue flags, and [`render_vtt`] keeps a song-level
 /// accumulator that folds the per-cue flags in via `|=`.
 #[derive(Debug, Default, Clone, Copy, BitOrAssign)]
 struct Features {
@@ -307,7 +307,7 @@ fn write_style_block(
 /// `Display` wrapper that renders the CSS attribute selector
 /// `v[voice="{name}"]` for a [`VoiceName`].
 ///
-/// `VoiceName` does not implement `Display` on its own because the
+/// [`VoiceName`] does not implement `Display` on its own because the
 /// type is consumed in two contexts whose quoting rules disagree
 /// (the WebVTT cue tag and the CSS attribute selector), and a
 /// single `Display` impl could only be correct in one. This wrapper

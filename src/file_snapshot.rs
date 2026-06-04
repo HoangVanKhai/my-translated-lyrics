@@ -1,11 +1,10 @@
 use core::fmt;
+use pipe_trait::Pipe;
 use std::cell::OnceCell;
 use std::fs::{read_to_string, symlink_metadata};
 use std::io;
 use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
-
-use pipe_trait::Pipe;
 
 #[derive(Clone)]
 pub(crate) struct FileSnapshot {

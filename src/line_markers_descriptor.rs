@@ -125,7 +125,7 @@ fn is_class_name_continue(ch: char) -> bool {
 /// and embedded spaces, the three categories that already appear in
 /// `sources/*/line-markers.toml`.
 ///
-/// `VoiceName` deliberately does not implement `Display`. The two
+/// [`VoiceName`] deliberately does not implement `Display`. The two
 /// destination contexts, the WebVTT cue tag and the CSS attribute
 /// selector, have incompatible quoting rules, and a single
 /// `Display` impl could only be correct in one of them. Rendering

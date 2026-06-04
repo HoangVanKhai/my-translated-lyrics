@@ -1,6 +1,5 @@
 pub mod _utils;
 pub use _utils::*;
-
 use pretty_assertions::assert_eq;
 use std::fs::{remove_file, write as write_file};
 use text_block_macros::text_block_fnl;
