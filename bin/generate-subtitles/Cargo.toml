@@ -1,0 +1,19 @@
+[package]
+name = "generate-subtitles-bin"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "generate-subtitles"
+path = "src/main.rs"
+doc = false
+
+[dependencies]
+generate-subtitles.workspace = true
+clap.workspace = true
+itertools.workspace = true
+pipe-trait.workspace = true
+
+[lints]
+workspace = true
