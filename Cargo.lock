@@ -640,14 +640,25 @@ version = "0.0.0"
 dependencies = [
  "clap",
  "command-extra",
- "crossterm",
  "derive_more",
  "fuzzy-select",
  "lyrics-core",
  "play-with-lyrics",
+ "play-with-lyrics-tui",
  "pretty_assertions",
  "strum",
  "test-utils",
+]
+
+[[package]]
+name = "play-with-lyrics-tui"
+version = "0.0.0"
+dependencies = [
+ "crossterm",
+ "fuzzy-select",
+ "lyrics-core",
+ "play-with-lyrics",
+ "pretty_assertions",
 ]
 
 [[package]]

@@ -1,6 +1,9 @@
+#![cfg_attr(dylint_lib = "perfectionist", feature(register_tool))]
+#![cfg_attr(dylint_lib = "perfectionist", register_tool(perfectionist))]
+
 //! The interactive terminal selectors built on `crossterm`.
 //!
-//! This module renders the fuzzy table of titles and the simple list
+//! This crate renders the fuzzy table of titles and the simple list
 //! selectors for the player, language, and subtitle format. It reads key
 //! events and drives a [`Selector`] for the table. The rendering uses plain
 //! character counts for column widths, so wide CJK glyphs may not align

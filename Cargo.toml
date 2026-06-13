@@ -19,6 +19,7 @@ lyrics-core = { path = "lib/lyrics-core" }
 generate-subtitles = { path = "lib/generate-subtitles" }
 fuzzy-select = { path = "lib/fuzzy-select" }
 play-with-lyrics = { path = "lib/play-with-lyrics" }
+play-with-lyrics-tui = { path = "lib/play-with-lyrics-tui" }
 test-utils = { path = "lib/test-utils" }
 clap = { version = "4.6.1", features = ["derive"] }
 command-extra = "1.0.0"

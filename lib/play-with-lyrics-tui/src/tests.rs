@@ -1,4 +1,4 @@
-use crate::tui::{columns_line, fit, scroll_offset};
+use crate::{columns_line, fit, scroll_offset};
 use pretty_assertions::assert_eq;
 
 #[test]

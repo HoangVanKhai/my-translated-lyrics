@@ -10,8 +10,6 @@
 //! choice can be pre-selected with a command-line flag; any choice left
 //! unset is made through an interactive selector.
 
-mod tui;
-
 use clap::Parser;
 use derive_more::Display;
 use fuzzy_select::fuzzy::{ResolveError, resolve_unique};
@@ -22,6 +20,7 @@ use play_with_lyrics::library::{
     VideoLookupError, available_subtitles, find_video_file, subtitle_path,
 };
 use play_with_lyrics::player::{Player, SubtitleFormat};
+use play_with_lyrics_tui::{select_one, select_video};
 use std::io::{self, IsTerminal, Write};
 use std::path::PathBuf;
 use std::process::{Command, ExitCode};
@@ -176,7 +175,7 @@ fn resolve_video<'a>(args: &Args, catalog: &'a [Video]) -> Result<&'a Video, Fai
         }
         None => {
             require_terminal("a video title")?;
-            match tui::select_video(catalog).expect("interactive selection failed") {
+            match select_video(catalog).expect("interactive selection failed") {
                 Some(index) => Ok(&catalog[index]),
                 None => Err(Failure::Cancelled),
             }
@@ -212,9 +211,7 @@ fn resolve_language(
         .iter()
         .map(|language| format!("{} ({language})", language_label(*language)))
         .collect();
-    match tui::select_one("Select subtitle language", &labels)
-        .expect("interactive selection failed")
-    {
+    match select_one("Select subtitle language", &labels).expect("interactive selection failed") {
         Some(index) => Ok(languages[index]),
         None => Err(Failure::Cancelled),
     }
@@ -240,8 +237,7 @@ fn resolve_format(args: &Args, formats: &[SubtitleFormat]) -> Result<SubtitleFor
         .iter()
         .map(|format| format!("{} ({format})", format.full_name()))
         .collect();
-    match tui::select_one("Select subtitle format", &labels).expect("interactive selection failed")
-    {
+    match select_one("Select subtitle format", &labels).expect("interactive selection failed") {
         Some(index) => Ok(formats[index]),
         None => Err(Failure::Cancelled),
     }
@@ -261,7 +257,7 @@ fn resolve_player(args: &Args) -> Result<Player, Failure> {
     }
     require_terminal("a media player")?;
     let labels: Vec<String> = Player::VARIANTS.iter().map(ToString::to_string).collect();
-    match tui::select_one("Select media player", &labels).expect("interactive selection failed") {
+    match select_one("Select media player", &labels).expect("interactive selection failed") {
         Some(index) => Ok(Player::VARIANTS[index]),
         None => Err(Failure::Cancelled),
     }
