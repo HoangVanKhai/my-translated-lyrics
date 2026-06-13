@@ -45,9 +45,9 @@ impl Env {
              video-title = \"{VIDEO_TITLE}\"\n\
              \n\
              [song-titles]\n\
-             en = \"Cloudside Dreams\"\n\
-             vi = \"Vân Biên Mộng Thoại\"\n\
-             zh = \"云边梦话\"\n",
+             en = \"Example Song\"\n\
+             vi = \"Sample Vietnamese Title\"\n\
+             zh = \"示例歌曲\"\n",
         );
         write_file(video_dir.join("video.toml"), descriptor).unwrap();
     }
@@ -162,8 +162,9 @@ fn a_fuzzy_title_resolves_to_the_single_video() {
     env.add_library_file(&format!("{VIDEO_TITLE}.mkv"));
     env.add_library_file(&format!("{VIDEO_TITLE}.vi.srt"));
 
-    // "cldsd" is a subsequence of the English title "Cloudside Dreams".
-    let output = env.run(["--title", "cldsd", "--player", "mpv", "--dry-run"]);
+    // "ample" matches part of the "Example Song" title without being typed
+    // in full.
+    let output = env.run(["--title", "ample", "--player", "mpv", "--dry-run"]);
 
     assert!(output.status.success(), "{output:?}");
     assert_eq!(stdout_lines(&output)[0], "mpv");

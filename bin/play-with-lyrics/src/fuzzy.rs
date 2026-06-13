@@ -18,7 +18,7 @@ use derive_more::Display;
 /// query matches everything.
 ///
 /// This is the "fuzzy" match used to resolve a command-line flag value to
-/// a single candidate. For example, the query `clld` matches `celluloid`.
+/// a single candidate. For example, the query `cld` matches `celluloid`.
 pub fn fuzzy_subsequence(query: &str, text: &str) -> bool {
     let mut haystack = text.chars().map(lowercase_char);
     query

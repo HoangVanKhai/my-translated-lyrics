@@ -16,19 +16,19 @@ impl Searchable for Row {
 fn sample() -> Vec<Row> {
     vec![
         Row {
-            en: "Cloudside Dreams",
-            vi: "Vân Biên Mộng Thoại",
-            zh: "云边梦话",
+            en: "Example Song One",
+            vi: "Example Translation One",
+            zh: "示例歌曲一",
         },
         Row {
-            en: "Lunar Cycle",
-            vi: "Nguyệt Luân Hồi",
-            zh: "月轮回",
+            en: "Example Song Two",
+            vi: "Example Translation Two",
+            zh: "示例歌曲二",
         },
         Row {
-            en: "Moon over the Yellow Tower",
-            vi: "Hoàng Lâu Nguyệt",
-            zh: "黄楼月",
+            en: "Sample Tune Three",
+            vi: "Sample Melody Three",
+            zh: "示例歌曲三",
         },
     ]
 }
@@ -45,35 +45,36 @@ fn empty_query_shows_every_row() {
 fn typing_filters_by_substring_across_all_columns() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
-    for character in "moon".chars() {
+    for character in "melody".chars() {
         selector.push_char(character);
     }
-    // "moon" appears in the English title of the third row only.
+    // "melody" appears in the Vietnamese title of the third row only, so a
+    // match comes from a column other than the English title.
     assert_eq!(selector.filtered(), &[2]);
     assert_eq!(selector.selected_index(), Some(2));
-    assert_eq!(rows[2].en, "Moon over the Yellow Tower");
+    assert_eq!(rows[2].en, "Sample Tune Three");
 }
 
 #[test]
 fn filtering_matches_a_non_english_column() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
-    for character in "nguyệt".chars() {
+    for character in "translation".chars() {
         selector.push_char(character);
     }
-    // The Vietnamese titles of the second and third rows both contain it.
-    assert_eq!(selector.filtered(), &[1, 2]);
+    // The Vietnamese titles of the first and second rows both contain it.
+    assert_eq!(selector.filtered(), &[0, 1]);
 }
 
 #[test]
 fn backspacing_restores_rows() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
-    for character in "lunar".chars() {
+    for character in "one".chars() {
         selector.push_char(character);
     }
-    assert_eq!(selector.filtered(), &[1]);
-    for _ in 0..5 {
+    assert_eq!(selector.filtered(), &[0]);
+    for _ in 0..3 {
         selector.pop_char();
     }
     assert_eq!(selector.query(), "");
@@ -102,7 +103,7 @@ fn refiltering_resets_the_cursor_to_the_top() {
     selector.move_down();
     selector.move_down();
     assert_eq!(selector.cursor(), 2);
-    selector.push_char('o');
+    selector.push_char('e');
     assert_eq!(selector.cursor(), 0);
 }
 

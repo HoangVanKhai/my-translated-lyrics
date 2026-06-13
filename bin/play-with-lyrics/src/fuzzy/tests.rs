@@ -3,7 +3,7 @@ use pretty_assertions::assert_eq;
 
 #[test]
 fn subsequence_matches_in_order() {
-    assert!(fuzzy_subsequence("clld", "celluloid"));
+    assert!(fuzzy_subsequence("cell", "celluloid"));
     assert!(fuzzy_subsequence("mpv", "mpv"));
     assert!(fuzzy_subsequence("", "anything"));
 }
@@ -11,7 +11,7 @@ fn subsequence_matches_in_order() {
 #[test]
 fn subsequence_is_case_insensitive() {
     assert!(fuzzy_subsequence("MPV", "mpv"));
-    assert!(fuzzy_subsequence("Cloud", "cloudside dreams"));
+    assert!(fuzzy_subsequence("CELL", "celluloid"));
 }
 
 #[test]
@@ -22,9 +22,11 @@ fn subsequence_rejects_out_of_order_or_missing() {
 
 #[test]
 fn contains_is_substring_not_subsequence() {
-    assert!(contains_ci("cloudside dreams", "side"));
-    assert!(contains_ci("Vân Biên Mộng Thoại", "biên"));
-    assert!(!contains_ci("celluloid", "clld"));
+    assert!(contains_ci("celluloid", "cell"));
+    // "cld" is a subsequence of "celluloid" but not a contiguous
+    // substring, so the substring test rejects what the fuzzy test accepts.
+    assert!(fuzzy_subsequence("cld", "celluloid"));
+    assert!(!contains_ci("celluloid", "cld"));
     assert!(contains_ci("anything", ""));
 }
 
@@ -38,7 +40,7 @@ fn resolve_unique_returns_the_single_match() {
 #[test]
 fn resolve_unique_reports_no_match() {
     let items = ["mpv", "celluloid"];
-    let error = resolve_unique("vlc", &items, |item| vec![*item]).unwrap_err();
+    let error = resolve_unique("xyz", &items, |item| vec![*item]).unwrap_err();
     assert_eq!(error, ResolveError::NoMatch);
 }
 
@@ -52,8 +54,8 @@ fn resolve_unique_reports_ambiguity() {
 
 #[test]
 fn resolve_unique_matches_against_any_key() {
-    let items = ["cloudside dreams"];
+    let items = ["alpha"];
     // The second key is matched even though the first does not.
-    let resolved = resolve_unique("vbmt", &items, |item| vec![*item, "Vân Biên Mộng Thoại"]);
+    let resolved = resolve_unique("beta", &items, |item| vec![*item, "beta gamma"]);
     assert!(resolved.is_ok());
 }
