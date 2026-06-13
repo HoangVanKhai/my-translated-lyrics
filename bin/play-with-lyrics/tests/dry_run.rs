@@ -153,7 +153,7 @@ fn celluloid_receives_the_mpv_prefixed_flag() {
     assert_eq!(lines[0], "celluloid");
     assert_eq!(
         lines[1],
-        format!("--mpv-sub-file={}", path_string(&subtitle))
+        format!("--mpv-sub-file={}", path_string(&subtitle)),
     );
 }
 

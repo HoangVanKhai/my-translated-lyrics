@@ -60,7 +60,7 @@ pub fn load(source: &Path) -> Vec<Video> {
                 .unwrap_or_else(|error| {
                     panic!(
                         "error: Cannot read file type of {:?}: {error}",
-                        entry.path()
+                        entry.path(),
                     )
                 })
                 .is_dir()

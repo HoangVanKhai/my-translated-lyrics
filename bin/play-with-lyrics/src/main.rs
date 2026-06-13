@@ -81,7 +81,7 @@ fn main() {
 
     let available = available_subtitles(&collection_dir, video_title);
     if available.is_empty() {
-        eprintln!("error: No subtitles for {video_title:?} were found in {collection_dir:?}.",);
+        eprintln!("error: No subtitles for {video_title:?} were found in {collection_dir:?}.");
         exit(1);
     }
 

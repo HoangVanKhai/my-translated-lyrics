@@ -47,7 +47,7 @@ pub fn available_subtitles(
                 .unwrap_or_else(|error| {
                     panic!(
                         "error: Cannot read file type of {:?}: {error}",
-                        entry.path()
+                        entry.path(),
                     )
                 })
                 .is_file()
@@ -132,7 +132,7 @@ pub fn find_video_file(
                 .unwrap_or_else(|error| {
                     panic!(
                         "error: Cannot read file type of {:?}: {error}",
-                        entry.path()
+                        entry.path(),
                     )
                 })
                 .is_file()

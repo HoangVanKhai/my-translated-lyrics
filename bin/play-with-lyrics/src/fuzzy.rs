@@ -72,15 +72,15 @@ pub enum ResolveError {
 /// query as a subsequence. The result is an error when zero candidates
 /// match ([`ResolveError::NoMatch`]) or when more than one does
 /// ([`ResolveError::Ambiguous`]).
-pub fn resolve_unique<'a, T, Keys>(
+pub fn resolve_unique<'a, Item, Keys>(
     query: &str,
-    items: &'a [T],
+    items: &'a [Item],
     keys: Keys,
-) -> Result<&'a T, ResolveError>
+) -> Result<&'a Item, ResolveError>
 where
-    Keys: Fn(&'a T) -> Vec<&'a str>,
+    Keys: Fn(&'a Item) -> Vec<&'a str>,
 {
-    let mut found: Option<&'a T> = None;
+    let mut found: Option<&'a Item> = None;
     for item in items {
         let matched = keys(item)
             .into_iter()

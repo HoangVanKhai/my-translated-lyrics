@@ -8,7 +8,11 @@
 //! pixel-perfect columns.
 //!
 //! All drawing goes to standard error, leaving standard output free for the
-//! resolved command that `--dry-run` prints.
+//! resolved command that `--dry-run` prints. The commands are sent through
+//! the `QueueableCommand` and `ExecutableCommand` trait methods rather than
+//! the `queue!` and `execute!` macros.
+
+// cspell:ignore Queueable
 
 use crate::catalog::Video;
 use crate::selection::Selector;
@@ -19,7 +23,7 @@ use crossterm::terminal::{
     Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode,
     enable_raw_mode, size,
 };
-use crossterm::{execute, queue};
+use crossterm::{ExecutableCommand, QueueableCommand};
 use lyrics_core::video_descriptor::Language;
 use std::io::{self, Stderr, Write};
 
@@ -33,7 +37,7 @@ impl TerminalGuard {
     fn enter() -> io::Result<Self> {
         enable_raw_mode()?;
         let mut out = io::stderr();
-        execute!(out, EnterAlternateScreen, Hide)?;
+        out.execute(EnterAlternateScreen)?.execute(Hide)?;
         Ok(TerminalGuard { out })
     }
 }
@@ -41,7 +45,8 @@ impl TerminalGuard {
 impl Drop for TerminalGuard {
     fn drop(&mut self) {
         // Best effort: there is nothing useful to do if restoring fails.
-        let _ = execute!(self.out, Show, LeaveAlternateScreen);
+        let _ = self.out.execute(Show);
+        let _ = self.out.execute(LeaveAlternateScreen);
         let _ = disable_raw_mode();
     }
 }
@@ -118,19 +123,17 @@ fn render_table(out: &mut Stderr, selector: &Selector<Video>, videos: &[Video]) 
     let columns = columns as usize;
     let rows = rows as usize;
 
-    queue!(out, Clear(ClearType::All))?;
+    out.queue(Clear(ClearType::All))?;
 
     let prompt = format!("Search: {}", selector.query());
-    queue!(out, MoveTo(0, 0), Print(fit(&prompt, columns)))?;
+    out.queue(MoveTo(0, 0))?
+        .queue(Print(fit(&prompt, columns)))?;
 
     let header = columns_line("English", "Vietnamese", "Chinese", columns);
-    queue!(
-        out,
-        MoveTo(0, 1),
-        SetAttribute(Attribute::Bold),
-        Print(header),
-        SetAttribute(Attribute::Reset),
-    )?;
+    out.queue(MoveTo(0, 1))?
+        .queue(SetAttribute(Attribute::Bold))?
+        .queue(Print(header))?
+        .queue(SetAttribute(Attribute::Reset))?;
 
     let filtered = selector.filtered();
     let cursor = selector.cursor();
@@ -147,31 +150,28 @@ fn render_table(out: &mut Stderr, selector: &Selector<Video>, videos: &[Video]) 
             video.title(Language::Chinese).unwrap_or(""),
             columns,
         );
-        let y = (screen_index + 2) as u16;
-        queue!(out, MoveTo(0, y))?;
+        let screen_y = (screen_index + 2) as u16;
+        out.queue(MoveTo(0, screen_y))?;
         if filtered_position == cursor {
-            queue!(
-                out,
-                SetAttribute(Attribute::Reverse),
-                Print(line),
-                SetAttribute(Attribute::Reset),
-            )?;
+            out.queue(SetAttribute(Attribute::Reverse))?
+                .queue(Print(line))?
+                .queue(SetAttribute(Attribute::Reset))?;
         } else {
-            queue!(out, Print(line))?;
+            out.queue(Print(line))?;
         }
     }
 
     let help = "↑/↓ move · type to filter · Enter select · Esc cancel";
-    queue!(
-        out,
-        MoveTo(0, rows.saturating_sub(1) as u16),
-        SetAttribute(Attribute::Dim),
-        Print(fit(help, columns)),
-        SetAttribute(Attribute::Reset),
-    )?;
+    out.queue(MoveTo(0, rows.saturating_sub(1) as u16))?
+        .queue(SetAttribute(Attribute::Dim))?
+        .queue(Print(fit(help, columns)))?
+        .queue(SetAttribute(Attribute::Reset))?;
 
     out.flush()
 }
+
+#[cfg(test)]
+mod tests;
 
 /// Presents a simple single-column list of `labels` under `prompt` and
 /// returns the index of the chosen item. Returns `None` when the user
@@ -208,35 +208,26 @@ pub fn select_one(prompt: &str, labels: &[String]) -> io::Result<Option<usize>> 
     }
 }
 
-#[cfg(test)]
-mod tests;
-
 fn render_list(out: &mut Stderr, prompt: &str, labels: &[String], cursor: usize) -> io::Result<()> {
     let (columns, _) = size().unwrap_or((80, 24));
     let columns = columns as usize;
 
-    queue!(out, Clear(ClearType::All))?;
-    queue!(
-        out,
-        MoveTo(0, 0),
-        SetAttribute(Attribute::Bold),
-        Print(fit(prompt, columns)),
-        SetAttribute(Attribute::Reset),
-    )?;
+    out.queue(Clear(ClearType::All))?;
+    out.queue(MoveTo(0, 0))?
+        .queue(SetAttribute(Attribute::Bold))?
+        .queue(Print(fit(prompt, columns)))?
+        .queue(SetAttribute(Attribute::Reset))?;
 
     for (index, label) in labels.iter().enumerate() {
-        let y = (index + 1) as u16;
+        let screen_y = (index + 1) as u16;
         let line = fit(label, columns);
-        queue!(out, MoveTo(0, y))?;
+        out.queue(MoveTo(0, screen_y))?;
         if index == cursor {
-            queue!(
-                out,
-                SetAttribute(Attribute::Reverse),
-                Print(line),
-                SetAttribute(Attribute::Reset),
-            )?;
+            out.queue(SetAttribute(Attribute::Reverse))?
+                .queue(Print(line))?
+                .queue(SetAttribute(Attribute::Reset))?;
         } else {
-            queue!(out, Print(line))?;
+            out.queue(Print(line))?;
         }
     }
 

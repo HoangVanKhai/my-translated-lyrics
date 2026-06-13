@@ -15,8 +15,8 @@ pub trait Searchable {
 }
 
 /// The state of a selector over a borrowed slice of items.
-pub struct Selector<'a, T> {
-    items: &'a [T],
+pub struct Selector<'a, Item> {
+    items: &'a [Item],
     query: String,
     /// Indices into `items` that currently match `query`, in their
     /// original order.
@@ -25,12 +25,12 @@ pub struct Selector<'a, T> {
     cursor: usize,
 }
 
-impl<'a, T> Selector<'a, T>
+impl<'a, Item> Selector<'a, Item>
 where
-    T: Searchable,
+    Item: Searchable,
 {
     /// Creates a selector with an empty query, so every item is visible.
-    pub fn new(items: &'a [T]) -> Self {
+    pub fn new(items: &'a [Item]) -> Self {
         let filtered = (0..items.len()).collect();
         Selector {
             items,
