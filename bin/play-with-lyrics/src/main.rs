@@ -25,7 +25,7 @@ use clap::Parser;
 use lyrics_core::video_descriptor::Language;
 use std::io::{self, IsTerminal, Write};
 use std::path::PathBuf;
-use std::process::{Command, exit};
+use std::process::{Command, ExitCode};
 use strum::VariantArray;
 
 #[derive(Debug, Parser)]
@@ -63,7 +63,16 @@ struct Args {
     dry_run: bool,
 }
 
-fn main() {
+fn main() -> ExitCode {
+    match run() {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(code) => code,
+    }
+}
+
+/// Runs the command, returning the process exit code through the `Err`
+/// variant so that no path calls [`std::process::exit`] directly.
+fn run() -> Result<(), ExitCode> {
     let args = Args::parse();
 
     let catalog = load(&args.source);
@@ -72,54 +81,55 @@ fn main() {
             "error: No videos found in source directory {:?}.",
             args.source,
         );
-        exit(1);
+        return Err(ExitCode::FAILURE);
     }
 
-    let video = resolve_video(&args, &catalog);
+    let video = resolve_video(&args, &catalog)?;
     let collection_dir = args.target.join(&*video.desc.collection);
     let video_title = video.desc.video_title.as_ref();
 
     let available = available_subtitles(&collection_dir, video_title);
     if available.is_empty() {
         eprintln!("error: No subtitles for {video_title:?} were found in {collection_dir:?}.");
-        exit(1);
+        return Err(ExitCode::FAILURE);
     }
 
-    let language = resolve_language(&args, &available);
+    let language = resolve_language(&args, &available)?;
     let formats: Vec<SubtitleFormat> = available
         .iter()
         .filter(|(candidate, _)| *candidate == language)
         .map(|(_, format)| *format)
         .collect();
-    let format = resolve_format(&args, &formats);
-    let player = resolve_player(&args);
+    let format = resolve_format(&args, &formats)?;
+    let player = resolve_player(&args)?;
 
-    let video_file = find_video_file(&collection_dir, video_title).unwrap_or_else(|error| {
-        eprintln!("error: {error}");
-        exit(1);
-    });
+    let video_file = match find_video_file(&collection_dir, video_title) {
+        Ok(path) => path,
+        Err(error) => {
+            eprintln!("error: {error}");
+            return Err(ExitCode::FAILURE);
+        }
+    };
     let subtitle_file = subtitle_path(&collection_dir, video_title, language, format);
 
     let mut command = player.command(&video_file, &subtitle_file);
     if args.dry_run {
         print_command(&command);
-    } else {
-        launch(&mut command, player);
+        return Ok(());
     }
+    launch(&mut command, player)
 }
 
 /// Resolves the video from `--title` or through the interactive table.
-fn resolve_video<'a>(args: &Args, catalog: &'a [Video]) -> &'a Video {
+fn resolve_video<'a>(args: &Args, catalog: &'a [Video]) -> Result<&'a Video, ExitCode> {
     match &args.title {
-        Some(query) => match resolve_unique(query, catalog, Video::search_keys_for) {
-            Ok(video) => video,
-            Err(error) => exit_unresolved("--title", query, error),
-        },
+        Some(query) => resolve_unique(query, catalog, Video::search_keys_for)
+            .map_err(|error| unresolved("--title", query, error)),
         None => {
-            require_terminal("a video title");
+            require_terminal("a video title")?;
             match tui::select_video(catalog).expect("interactive selection failed") {
-                Some(index) => &catalog[index],
-                None => cancelled(),
+                Some(index) => Ok(&catalog[index]),
+                None => Err(cancelled()),
             }
         }
     }
@@ -127,22 +137,24 @@ fn resolve_video<'a>(args: &Args, catalog: &'a [Video]) -> &'a Video {
 
 /// Resolves the subtitle language from `--language`, automatically when
 /// only one is available, or through an interactive selector.
-fn resolve_language(args: &Args, available: &[(Language, SubtitleFormat)]) -> Language {
+fn resolve_language(
+    args: &Args,
+    available: &[(Language, SubtitleFormat)],
+) -> Result<Language, ExitCode> {
     let mut languages: Vec<Language> = available.iter().map(|(language, _)| *language).collect();
     languages.dedup();
 
     if let Some(query) = &args.language {
-        return match resolve_unique(query, &languages, |language| {
+        return resolve_unique(query, &languages, |language| {
             language_search_keys(*language)
-        }) {
-            Ok(language) => *language,
-            Err(error) => exit_unresolved("--language", query, error),
-        };
+        })
+        .copied()
+        .map_err(|error| unresolved("--language", query, error));
     }
     if let [only] = languages.as_slice() {
-        return *only;
+        return Ok(*only);
     }
-    require_terminal("a subtitle language");
+    require_terminal("a subtitle language")?;
     let labels: Vec<String> = languages
         .iter()
         .map(|language| format!("{} ({language})", language_label(*language)))
@@ -150,49 +162,47 @@ fn resolve_language(args: &Args, available: &[(Language, SubtitleFormat)]) -> La
     match tui::select_one("Select subtitle language", &labels)
         .expect("interactive selection failed")
     {
-        Some(index) => languages[index],
-        None => cancelled(),
+        Some(index) => Ok(languages[index]),
+        None => Err(cancelled()),
     }
 }
 
 /// Resolves the subtitle format from `--format`, automatically when only
 /// one is available, or through an interactive selector.
-fn resolve_format(args: &Args, formats: &[SubtitleFormat]) -> SubtitleFormat {
+fn resolve_format(args: &Args, formats: &[SubtitleFormat]) -> Result<SubtitleFormat, ExitCode> {
     if let Some(query) = &args.format {
-        return match resolve_unique(query, formats, |format| format.search_keys()) {
-            Ok(format) => *format,
-            Err(error) => exit_unresolved("--format", query, error),
-        };
+        return resolve_unique(query, formats, |format| format.search_keys())
+            .copied()
+            .map_err(|error| unresolved("--format", query, error));
     }
     if let [only] = formats {
-        return *only;
+        return Ok(*only);
     }
-    require_terminal("a subtitle format");
+    require_terminal("a subtitle format")?;
     let labels: Vec<String> = formats
         .iter()
         .map(|format| format!("{} ({format})", format.full_name()))
         .collect();
     match tui::select_one("Select subtitle format", &labels).expect("interactive selection failed")
     {
-        Some(index) => formats[index],
-        None => cancelled(),
+        Some(index) => Ok(formats[index]),
+        None => Err(cancelled()),
     }
 }
 
 /// Resolves the media player from `--player` or through an interactive
 /// selector.
-fn resolve_player(args: &Args) -> Player {
+fn resolve_player(args: &Args) -> Result<Player, ExitCode> {
     if let Some(query) = &args.player {
-        return match resolve_unique(query, Player::VARIANTS, |player| player.search_keys()) {
-            Ok(player) => *player,
-            Err(error) => exit_unresolved("--player", query, error),
-        };
+        return resolve_unique(query, Player::VARIANTS, |player| player.search_keys())
+            .copied()
+            .map_err(|error| unresolved("--player", query, error));
     }
-    require_terminal("a media player");
+    require_terminal("a media player")?;
     let labels: Vec<String> = Player::VARIANTS.iter().map(ToString::to_string).collect();
     match tui::select_one("Select media player", &labels).expect("interactive selection failed") {
-        Some(index) => Player::VARIANTS[index],
-        None => cancelled(),
+        Some(index) => Ok(Player::VARIANTS[index]),
+        None => Err(cancelled()),
     }
 }
 
@@ -207,37 +217,41 @@ fn print_command(command: &Command) {
     }
 }
 
-/// Launches the player and propagates a non-zero exit status.
-fn launch(command: &mut Command, player: Player) {
+/// Launches the player, returning its exit status as an [`ExitCode`].
+fn launch(command: &mut Command, player: Player) -> Result<(), ExitCode> {
     let status = command
         .status()
         .unwrap_or_else(|error| panic!("error: Failed to launch {player}: {error}"));
-    if !status.success() {
-        exit(status.code().unwrap_or(1));
+    if status.success() {
+        Ok(())
+    } else {
+        let code = u8::try_from(status.code().unwrap_or(1)).unwrap_or(1);
+        Err(ExitCode::from(code))
     }
 }
 
-/// Prints a resolution failure for a flag and exits.
-fn exit_unresolved(flag: &str, query: &str, error: fuzzy::ResolveError) -> ! {
+/// Prints a resolution failure for a flag and returns the failure code.
+fn unresolved(flag: &str, query: &str, error: fuzzy::ResolveError) -> ExitCode {
     eprintln!("error: {flag} {query:?}: {error}.");
-    exit(1);
+    ExitCode::FAILURE
 }
 
-/// Exits when an interactive selection is required but standard input is
-/// not a terminal.
-fn require_terminal(what: &str) {
-    if !io::stdin().is_terminal() {
-        eprintln!(
-            "error: {what} must be selected interactively, but stdin is not a terminal. Provide the corresponding flag instead.",
-        );
-        exit(1);
+/// Returns the failure code when an interactive selection is required but
+/// standard input is not a terminal.
+fn require_terminal(what: &str) -> Result<(), ExitCode> {
+    if io::stdin().is_terminal() {
+        return Ok(());
     }
+    eprintln!(
+        "error: {what} must be selected interactively, but stdin is not a terminal. Provide the corresponding flag instead.",
+    );
+    Err(ExitCode::FAILURE)
 }
 
-/// Exits cleanly after the user cancels an interactive selection.
-fn cancelled() -> ! {
+/// Reports a cancelled interactive selection and returns its exit code.
+fn cancelled() -> ExitCode {
     eprintln!("Cancelled.");
-    exit(130);
+    ExitCode::from(130)
 }
 
 impl Video {
