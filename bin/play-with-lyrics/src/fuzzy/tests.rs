@@ -1,5 +1,3 @@
-// cspell:ignore cloudside clld vbmt biên mộng thoại
-
 use crate::fuzzy::{ResolveError, contains_ci, fuzzy_subsequence, resolve_unique};
 use pretty_assertions::assert_eq;
 

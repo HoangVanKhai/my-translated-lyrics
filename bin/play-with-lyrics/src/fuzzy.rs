@@ -11,8 +11,6 @@
 //!   implements the subsequence test and [`resolve_unique`] enforces the
 //!   "exactly one" rule.
 
-// cspell:ignore clld
-
 use derive_more::Display;
 
 /// Returns `true` when every character of `query` appears in `text`, in

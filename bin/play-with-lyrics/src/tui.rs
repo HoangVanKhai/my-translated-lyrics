@@ -12,8 +12,6 @@
 //! the `QueueableCommand` and `ExecutableCommand` trait methods rather than
 //! the `queue!` and `execute!` macros.
 
-// cspell:ignore Queueable
-
 use crate::catalog::Video;
 use crate::selection::Selector;
 use crossterm::cursor::{Hide, MoveTo, Show};

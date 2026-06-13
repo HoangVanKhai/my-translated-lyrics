@@ -2,8 +2,6 @@
 //! they verify the resolution of titles, languages, formats, and players
 //! without launching a real media player.
 
-// cspell:ignore cloudside biên mộng thoại cldsd
-
 use command_extra::CommandExtra;
 use pretty_assertions::assert_eq;
 use std::ffi::OsStr;

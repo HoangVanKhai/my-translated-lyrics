@@ -65,14 +65,26 @@ overrides:
       - WEBVTT
   - filename: '**/*.rs'
     words:
+      - biên
       - btreemap
+      - cldsd
+      - clld
+      - cloudside
       - Feng
       - hardlink
+      - hoàng
+      - luân
       - maplit
+      - mộng
+      - nguyệt
+      - Queueable
       - rsplit
       - saphyr
+      - subrip
+      - thoại
       - Tianyi
       - Touhou
+      - vbmt
       - WEBVTT
       - Yuezheng
   - filename: '**/*.md'

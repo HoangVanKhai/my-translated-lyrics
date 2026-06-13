@@ -1,8 +1,6 @@
 //! The media players and subtitle formats this command understands, plus
 //! the construction of the player invocation.
 
-// cspell:ignore subrip
-
 use command_extra::CommandExtra;
 use std::path::Path;
 use std::process::Command;

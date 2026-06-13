@@ -1,5 +1,3 @@
-// cspell:ignore cloudside biên mộng thoại nguyệt luân hoàng
-
 use crate::selection::{Searchable, Selector};
 use pretty_assertions::assert_eq;
 
