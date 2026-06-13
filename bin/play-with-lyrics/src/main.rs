@@ -18,10 +18,11 @@ mod selection;
 mod tui;
 
 use crate::catalog::{Video, language_label, language_search_keys, load};
-use crate::fuzzy::resolve_unique;
-use crate::library::{available_subtitles, find_video_file, subtitle_path};
+use crate::fuzzy::{ResolveError, resolve_unique};
+use crate::library::{VideoLookupError, available_subtitles, find_video_file, subtitle_path};
 use crate::player::{Player, SubtitleFormat};
 use clap::Parser;
+use derive_more::Display;
 use lyrics_core::video_descriptor::Language;
 use std::io::{self, IsTerminal, Write};
 use std::path::PathBuf;
@@ -63,25 +64,72 @@ struct Args {
     dry_run: bool,
 }
 
-fn main() -> ExitCode {
-    match run() {
-        Ok(()) => ExitCode::SUCCESS,
-        Err(code) => code,
+/// A non-success outcome of [`run`]. Each variant carries the data needed
+/// to print a message through its [`Display`] implementation and to choose
+/// a process exit code through [`Failure::exit_code`].
+#[derive(Debug, Display)]
+enum Failure {
+    #[display("error: No videos found in source directory {_0:?}.")]
+    NoVideos(PathBuf),
+
+    #[display("error: No subtitles for {video_title:?} were found in {collection_dir:?}.")]
+    NoSubtitles {
+        video_title: String,
+        collection_dir: PathBuf,
+    },
+
+    #[display("error: {flag} {query:?}: {error}.")]
+    Unresolved {
+        flag: &'static str,
+        query: String,
+        error: ResolveError,
+    },
+
+    #[display(
+        "error: {_0} must be selected interactively, but stdin is not a terminal. Provide the corresponding flag instead."
+    )]
+    NotInteractive(&'static str),
+
+    #[display("error: {_0}")]
+    VideoLookup(VideoLookupError),
+
+    #[display("Cancelled.")]
+    Cancelled,
+
+    #[display("the media player exited with status {_0}.")]
+    PlayerExited(u8),
+}
+
+impl Failure {
+    /// The process exit code this failure maps to.
+    fn exit_code(&self) -> ExitCode {
+        match self {
+            // 130 is the conventional code for an action cancelled at the
+            // terminal (128 + SIGINT).
+            Failure::Cancelled => ExitCode::from(130),
+            Failure::PlayerExited(code) => ExitCode::from(*code),
+            _ => ExitCode::FAILURE,
+        }
     }
 }
 
-/// Runs the command, returning the process exit code through the `Err`
-/// variant so that no path calls [`std::process::exit`] directly.
-fn run() -> Result<(), ExitCode> {
+fn main() -> ExitCode {
+    match run() {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(failure) => {
+            eprintln!("{failure}");
+            failure.exit_code()
+        }
+    }
+}
+
+/// Runs the command, reporting any non-success outcome as a [`Failure`].
+fn run() -> Result<(), Failure> {
     let args = Args::parse();
 
     let catalog = load(&args.source);
     if catalog.is_empty() {
-        eprintln!(
-            "error: No videos found in source directory {:?}.",
-            args.source,
-        );
-        return Err(ExitCode::FAILURE);
+        return Err(Failure::NoVideos(args.source.clone()));
     }
 
     let video = resolve_video(&args, &catalog)?;
@@ -90,8 +138,10 @@ fn run() -> Result<(), ExitCode> {
 
     let available = available_subtitles(&collection_dir, video_title);
     if available.is_empty() {
-        eprintln!("error: No subtitles for {video_title:?} were found in {collection_dir:?}.");
-        return Err(ExitCode::FAILURE);
+        return Err(Failure::NoSubtitles {
+            video_title: video_title.to_string(),
+            collection_dir,
+        });
     }
 
     let language = resolve_language(&args, &available)?;
@@ -103,13 +153,7 @@ fn run() -> Result<(), ExitCode> {
     let format = resolve_format(&args, &formats)?;
     let player = resolve_player(&args)?;
 
-    let video_file = match find_video_file(&collection_dir, video_title) {
-        Ok(path) => path,
-        Err(error) => {
-            eprintln!("error: {error}");
-            return Err(ExitCode::FAILURE);
-        }
-    };
+    let video_file = find_video_file(&collection_dir, video_title).map_err(Failure::VideoLookup)?;
     let subtitle_file = subtitle_path(&collection_dir, video_title, language, format);
 
     let mut command = player.command(&video_file, &subtitle_file);
@@ -121,15 +165,20 @@ fn run() -> Result<(), ExitCode> {
 }
 
 /// Resolves the video from `--title` or through the interactive table.
-fn resolve_video<'a>(args: &Args, catalog: &'a [Video]) -> Result<&'a Video, ExitCode> {
+fn resolve_video<'a>(args: &Args, catalog: &'a [Video]) -> Result<&'a Video, Failure> {
     match &args.title {
-        Some(query) => resolve_unique(query, catalog, Video::search_keys_for)
-            .map_err(|error| unresolved("--title", query, error)),
+        Some(query) => resolve_unique(query, catalog, Video::search_keys_for).map_err(|error| {
+            Failure::Unresolved {
+                flag: "--title",
+                query: query.clone(),
+                error,
+            }
+        }),
         None => {
             require_terminal("a video title")?;
             match tui::select_video(catalog).expect("interactive selection failed") {
                 Some(index) => Ok(&catalog[index]),
-                None => Err(cancelled()),
+                None => Err(Failure::Cancelled),
             }
         }
     }
@@ -140,7 +189,7 @@ fn resolve_video<'a>(args: &Args, catalog: &'a [Video]) -> Result<&'a Video, Exi
 fn resolve_language(
     args: &Args,
     available: &[(Language, SubtitleFormat)],
-) -> Result<Language, ExitCode> {
+) -> Result<Language, Failure> {
     let mut languages: Vec<Language> = available.iter().map(|(language, _)| *language).collect();
     languages.dedup();
 
@@ -149,7 +198,11 @@ fn resolve_language(
             language_search_keys(*language)
         })
         .copied()
-        .map_err(|error| unresolved("--language", query, error));
+        .map_err(|error| Failure::Unresolved {
+            flag: "--language",
+            query: query.clone(),
+            error,
+        });
     }
     if let [only] = languages.as_slice() {
         return Ok(*only);
@@ -163,17 +216,21 @@ fn resolve_language(
         .expect("interactive selection failed")
     {
         Some(index) => Ok(languages[index]),
-        None => Err(cancelled()),
+        None => Err(Failure::Cancelled),
     }
 }
 
 /// Resolves the subtitle format from `--format`, automatically when only
 /// one is available, or through an interactive selector.
-fn resolve_format(args: &Args, formats: &[SubtitleFormat]) -> Result<SubtitleFormat, ExitCode> {
+fn resolve_format(args: &Args, formats: &[SubtitleFormat]) -> Result<SubtitleFormat, Failure> {
     if let Some(query) = &args.format {
         return resolve_unique(query, formats, |format| format.search_keys())
             .copied()
-            .map_err(|error| unresolved("--format", query, error));
+            .map_err(|error| Failure::Unresolved {
+                flag: "--format",
+                query: query.clone(),
+                error,
+            });
     }
     if let [only] = formats {
         return Ok(*only);
@@ -186,23 +243,27 @@ fn resolve_format(args: &Args, formats: &[SubtitleFormat]) -> Result<SubtitleFor
     match tui::select_one("Select subtitle format", &labels).expect("interactive selection failed")
     {
         Some(index) => Ok(formats[index]),
-        None => Err(cancelled()),
+        None => Err(Failure::Cancelled),
     }
 }
 
 /// Resolves the media player from `--player` or through an interactive
 /// selector.
-fn resolve_player(args: &Args) -> Result<Player, ExitCode> {
+fn resolve_player(args: &Args) -> Result<Player, Failure> {
     if let Some(query) = &args.player {
         return resolve_unique(query, Player::VARIANTS, |player| player.search_keys())
             .copied()
-            .map_err(|error| unresolved("--player", query, error));
+            .map_err(|error| Failure::Unresolved {
+                flag: "--player",
+                query: query.clone(),
+                error,
+            });
     }
     require_terminal("a media player")?;
     let labels: Vec<String> = Player::VARIANTS.iter().map(ToString::to_string).collect();
     match tui::select_one("Select media player", &labels).expect("interactive selection failed") {
         Some(index) => Ok(Player::VARIANTS[index]),
-        None => Err(cancelled()),
+        None => Err(Failure::Cancelled),
     }
 }
 
@@ -217,8 +278,8 @@ fn print_command(command: &Command) {
     }
 }
 
-/// Launches the player, returning its exit status as an [`ExitCode`].
-fn launch(command: &mut Command, player: Player) -> Result<(), ExitCode> {
+/// Launches the player, reporting a non-zero exit status as a [`Failure`].
+fn launch(command: &mut Command, player: Player) -> Result<(), Failure> {
     let status = command
         .status()
         .unwrap_or_else(|error| panic!("error: Failed to launch {player}: {error}"));
@@ -226,32 +287,18 @@ fn launch(command: &mut Command, player: Player) -> Result<(), ExitCode> {
         Ok(())
     } else {
         let code = u8::try_from(status.code().unwrap_or(1)).unwrap_or(1);
-        Err(ExitCode::from(code))
+        Err(Failure::PlayerExited(code))
     }
 }
 
-/// Prints a resolution failure for a flag and returns the failure code.
-fn unresolved(flag: &str, query: &str, error: fuzzy::ResolveError) -> ExitCode {
-    eprintln!("error: {flag} {query:?}: {error}.");
-    ExitCode::FAILURE
-}
-
-/// Returns the failure code when an interactive selection is required but
+/// Returns a [`Failure`] when an interactive selection is required but
 /// standard input is not a terminal.
-fn require_terminal(what: &str) -> Result<(), ExitCode> {
+fn require_terminal(what: &'static str) -> Result<(), Failure> {
     if io::stdin().is_terminal() {
-        return Ok(());
+        Ok(())
+    } else {
+        Err(Failure::NotInteractive(what))
     }
-    eprintln!(
-        "error: {what} must be selected interactively, but stdin is not a terminal. Provide the corresponding flag instead.",
-    );
-    Err(ExitCode::FAILURE)
-}
-
-/// Reports a cancelled interactive selection and returns its exit code.
-fn cancelled() -> ExitCode {
-    eprintln!("Cancelled.");
-    ExitCode::from(130)
 }
 
 impl Video {
