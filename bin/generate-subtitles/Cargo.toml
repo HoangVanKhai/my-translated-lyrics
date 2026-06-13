@@ -1,0 +1,23 @@
+[package]
+name = "generate-subtitles-bin"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "generate-subtitles"
+path = "src/main.rs"
+# The subtitle generation library crate already documents itself under
+# the `generate_subtitles` name. This binary is a thin command-line
+# wrapper, so skip its documentation to avoid an output filename
+# collision with the library during `cargo doc --workspace`.
+doc = false
+
+[dependencies]
+generate-subtitles.workspace = true
+clap.workspace = true
+itertools.workspace = true
+pipe-trait.workspace = true
+
+[lints]
+workspace = true

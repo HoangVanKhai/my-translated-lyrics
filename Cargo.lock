@@ -265,6 +265,36 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9c4f5dac5e15c24eb999c26181a6ca40b39fe946cbe4c263c7209467bc83af2"
 
 [[package]]
+name = "generate-subtitles"
+version = "0.0.0"
+dependencies = [
+ "derive_more",
+ "into-deduped",
+ "into-sorted",
+ "itertools",
+ "lyrics-core",
+ "maplit",
+ "pipe-trait",
+ "pretty_assertions",
+ "serde-saphyr",
+ "strum",
+ "test-utils",
+ "text-block-macros",
+ "toml",
+ "walkdir",
+]
+
+[[package]]
+name = "generate-subtitles-bin"
+version = "0.0.0"
+dependencies = [
+ "clap",
+ "generate-subtitles",
+ "itertools",
+ "pipe-trait",
+]
+
+[[package]]
 name = "getrandom"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -332,6 +362,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "install-local-lyrics"
+version = "0.0.0"
+dependencies = [
+ "clap",
+ "itertools",
+ "lyrics-core",
+ "pipe-trait",
+ "pretty_assertions",
+ "reflink",
+ "test-utils",
+ "text-block-macros",
+ "toml",
+]
+
+[[package]]
 name = "into-deduped"
 version = "0.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -391,6 +436,32 @@ name = "log"
 version = "0.4.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
+
+[[package]]
+name = "lyrics-ai-instructions"
+version = "0.0.0"
+dependencies = [
+ "clap",
+ "command-extra",
+ "pipe-trait",
+ "test-utils",
+]
+
+[[package]]
+name = "lyrics-core"
+version = "0.0.0"
+dependencies = [
+ "derive_more",
+ "into-sorted",
+ "itertools",
+ "pipe-trait",
+ "pretty_assertions",
+ "serde",
+ "serde-saphyr",
+ "strum",
+ "test-utils",
+ "toml",
+]
 
 [[package]]
 name = "maplit"
@@ -671,6 +742,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "test-utils"
+version = "0.0.0"
+dependencies = [
+ "command-extra",
+ "derive_more",
+ "itertools",
+ "lyrics-core",
+ "maplit",
+ "pipe-trait",
+ "rand",
+ "toml",
+]
+
+[[package]]
 name = "text-block-macros"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -734,29 +819,6 @@ name = "toml_writer"
 version = "1.1.1+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "756daf9b1013ebe47a8776667b466417e2d4c5679d441c26230efd9ef78692db"
-
-[[package]]
-name = "translated-lyrics"
-version = "0.0.0"
-dependencies = [
- "clap",
- "command-extra",
- "derive_more",
- "into-deduped",
- "into-sorted",
- "itertools",
- "maplit",
- "pipe-trait",
- "pretty_assertions",
- "rand",
- "reflink",
- "serde",
- "serde-saphyr",
- "strum",
- "text-block-macros",
- "toml",
- "walkdir",
-]
 
 [[package]]
 name = "unicode-ident"

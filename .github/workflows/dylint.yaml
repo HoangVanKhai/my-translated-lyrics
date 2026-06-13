@@ -56,7 +56,7 @@ jobs:
         shell: bash
         env:
           RUSTFLAGS: -D warnings
-        run: cargo dylint --all -- --all-targets
+        run: cargo dylint --all --workspace -- --all-targets
 
       - name: Clean workspace artifacts before cache
         if: always()

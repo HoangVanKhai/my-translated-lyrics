@@ -16,8 +16,8 @@ Read and follow the CONTRIBUTING.md file in this repository for all code style c
 - Prefer `#[cfg_attr(..., ignore = "reason")]` over `#[cfg(...)]` when skipping tests. Use `#[cfg]` on tests only when the code cannot compile under the condition, such as when it references types or functions that do not exist on other platforms.
 - In test modules, prefer explicit brace lists such as `use super::{Foo, Bar};` over `use super::*;` so each symbol under test is declared. Import items that live outside the direct parent module by their canonical path (for example, `use crate::bar::SomeType;`) rather than through a name the parent happens to bring into its own scope with `use` or `pub use`. These rules apply equally to inline `#[cfg(test)] mod tests { ... }` blocks and external `src/<module>/tests.rs` files.
 - Install the toolchain before running tests: `rustup toolchain install "$(< rust-toolchain)" && rustup component add --toolchain "$(< rust-toolchain)" rustfmt clippy`.
-- Validate changes with `cargo fmt -- --check && cargo clippy --all-targets && cargo test`.
-- **Always run the full Rust test suite** (`cargo fmt -- --check && cargo clippy --all-targets && cargo test`) before every commit. This rule applies to all changes, including documentation changes, comment edits, and config updates.
+- Validate changes with `cargo fmt -- --check && cargo clippy --workspace --all-targets && cargo test --workspace`.
+- **Always run the full Rust test suite** (`cargo fmt -- --check && cargo clippy --workspace --all-targets && cargo test --workspace`) before every commit. This rule applies to all changes, including documentation changes, comment edits, and config updates.
 - When a sync test fails, read its error message and run the exact command it reports.
 - Run the CSpell spell check when a change may introduce new words: `pnpm install --frozen-lockfile && pnpm exec cspell lint --gitignore '**'`.
 - When the user provides a diff to apply, run `git apply` rather than interpreting each hunk manually. When a diff is provided for context or discussion, respond accordingly.

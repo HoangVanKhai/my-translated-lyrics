@@ -14,9 +14,8 @@ continuous-integration configuration, and contributor documentation in
 this repository. Concretely, it covers every file under the following
 paths:
 
-- `src/`
-- `cli/`
-- `tests/`
+- `bin/`
+- `lib/`
 - `template/`
 - `.github/`
 - `**/*.js`

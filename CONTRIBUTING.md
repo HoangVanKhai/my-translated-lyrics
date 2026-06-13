@@ -28,7 +28,7 @@ A merge commit message must also follow the Conventional Commits format. Wheneve
 
 ## Code Style
 
-Automated tools enforce formatting (`cargo fmt`) and linting (`cargo clippy --all-targets`). The following conventions are **not** enforced by those tools and must be followed manually.
+Automated tools enforce formatting (`cargo fmt`) and linting (`cargo clippy --workspace --all-targets`). The following conventions are **not** enforced by those tools and must be followed manually.
 
 ### Trait Bounds
 
@@ -223,13 +223,13 @@ pnpm install --frozen-lockfile
 Before submitting, ensure:
 
 - `cargo fmt -- --check` passes
-- `cargo clippy --all-targets` passes
-- `cargo test` passes
+- `cargo clippy --workspace --all-targets` passes
+- `cargo test --workspace` passes
 
 You can run all of these with:
 
 ```sh
-cargo fmt -- --check && cargo clippy --all-targets && cargo test
+cargo fmt -- --check && cargo clippy --workspace --all-targets && cargo test --workspace
 ```
 
 > [!IMPORTANT]
