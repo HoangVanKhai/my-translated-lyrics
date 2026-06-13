@@ -12,8 +12,6 @@
 //! the `QueueableCommand` and `ExecutableCommand` trait methods rather than
 //! the `queue!` and `execute!` macros.
 
-use crate::catalog::Video;
-use crate::selection::Selector;
 use crossterm::cursor::{Hide, MoveTo, Show};
 use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers, read};
 use crossterm::style::{Attribute, Print, SetAttribute};
@@ -22,7 +20,9 @@ use crossterm::terminal::{
     enable_raw_mode, size,
 };
 use crossterm::{ExecutableCommand, QueueableCommand};
+use fuzzy_select::selection::Selector;
 use lyrics_core::video_descriptor::Language;
+use play_with_lyrics::catalog::Video;
 use std::io::{self, Stderr, Write};
 
 /// Restores the terminal to its normal state when dropped, even if the

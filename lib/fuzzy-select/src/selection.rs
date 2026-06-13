@@ -2,8 +2,8 @@
 //!
 //! [`Selector`] holds the typed query, the indices of the items that match
 //! it, and the cursor position. It contains no terminal handling, so its
-//! behavior can be unit tested without a TTY. The [`crate::tui`] module
-//! drives one of these while rendering and reading key events.
+//! behavior can be unit tested without a TTY. A terminal front-end drives
+//! one of these while rendering and reading key events.
 
 use crate::fuzzy::contains_ci;
 

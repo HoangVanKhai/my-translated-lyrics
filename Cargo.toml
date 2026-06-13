@@ -17,6 +17,8 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(dylint_lib, values("perfec
 [workspace.dependencies]
 lyrics-core = { path = "lib/lyrics-core" }
 generate-subtitles = { path = "lib/generate-subtitles" }
+fuzzy-select = { path = "lib/fuzzy-select" }
+play-with-lyrics = { path = "lib/play-with-lyrics" }
 test-utils = { path = "lib/test-utils" }
 clap = { version = "4.6.1", features = ["derive"] }
 command-extra = "1.0.0"

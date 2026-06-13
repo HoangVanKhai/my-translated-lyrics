@@ -311,6 +311,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9c4f5dac5e15c24eb999c26181a6ca40b39fe946cbe4c263c7209467bc83af2"
 
 [[package]]
+name = "fuzzy-select"
+version = "0.0.0"
+dependencies = [
+ "derive_more",
+ "pretty_assertions",
+]
+
+[[package]]
 name = "generate-subtitles"
 version = "0.0.0"
 dependencies = [
@@ -614,10 +622,9 @@ checksum = "c1be1ec9e59f0360aefe84efa6f699198b685ab0d5718081e9f72aa2344289e2"
 name = "play-with-lyrics"
 version = "0.0.0"
 dependencies = [
- "clap",
  "command-extra",
- "crossterm",
  "derive_more",
+ "fuzzy-select",
  "itertools",
  "lyrics-core",
  "pipe-trait",
@@ -625,6 +632,22 @@ dependencies = [
  "strum",
  "test-utils",
  "toml",
+]
+
+[[package]]
+name = "play-with-lyrics-bin"
+version = "0.0.0"
+dependencies = [
+ "clap",
+ "command-extra",
+ "crossterm",
+ "derive_more",
+ "fuzzy-select",
+ "lyrics-core",
+ "play-with-lyrics",
+ "pretty_assertions",
+ "strum",
+ "test-utils",
 ]
 
 [[package]]

@@ -7,7 +7,7 @@
 //! with the collection and video title used to locate the playable file in
 //! the media library.
 
-use crate::selection::Searchable;
+use fuzzy_select::selection::Searchable;
 use lyrics_core::video_descriptor::{Language, VIDEO_CONFIG_FILE_NAME, VideoDesc};
 use pipe_trait::Pipe;
 use std::fs::{read_dir, read_to_string};

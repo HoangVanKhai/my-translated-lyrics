@@ -1,25 +1,20 @@
 [package]
-name = "play-with-lyrics-bin"
+name = "play-with-lyrics"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true
 
-[[bin]]
-name = "play-with-lyrics"
-path = "src/main.rs"
-doc = false
-
 [dependencies]
-play-with-lyrics.workspace = true
-fuzzy-select.workspace = true
 lyrics-core.workspace = true
-clap.workspace = true
-crossterm.workspace = true
+fuzzy-select.workspace = true
+command-extra.workspace = true
 derive_more.workspace = true
+itertools.workspace = true
+pipe-trait.workspace = true
 strum.workspace = true
+toml.workspace = true
 
 [dev-dependencies]
-command-extra.workspace = true
 pretty_assertions.workspace = true
 test-utils.workspace = true
 

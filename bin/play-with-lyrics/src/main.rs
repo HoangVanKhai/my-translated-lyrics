@@ -10,20 +10,18 @@
 //! choice can be pre-selected with a command-line flag; any choice left
 //! unset is made through an interactive selector.
 
-mod catalog;
-mod fuzzy;
-mod library;
-mod player;
-mod selection;
 mod tui;
 
-use crate::catalog::{Video, language_label, language_search_keys, load};
-use crate::fuzzy::{ResolveError, resolve_unique};
-use crate::library::{VideoLookupError, available_subtitles, find_video_file, subtitle_path};
-use crate::player::{Player, SubtitleFormat};
 use clap::Parser;
 use derive_more::Display;
+use fuzzy_select::fuzzy::{ResolveError, resolve_unique};
+use fuzzy_select::selection::Searchable;
 use lyrics_core::video_descriptor::Language;
+use play_with_lyrics::catalog::{Video, language_label, language_search_keys, load};
+use play_with_lyrics::library::{
+    VideoLookupError, available_subtitles, find_video_file, subtitle_path,
+};
+use play_with_lyrics::player::{Player, SubtitleFormat};
 use std::io::{self, IsTerminal, Write};
 use std::path::PathBuf;
 use std::process::{Command, ExitCode};
@@ -167,13 +165,15 @@ fn run() -> Result<(), Failure> {
 /// Resolves the video from `--title` or through the interactive table.
 fn resolve_video<'a>(args: &Args, catalog: &'a [Video]) -> Result<&'a Video, Failure> {
     match &args.title {
-        Some(query) => resolve_unique(query, catalog, Video::search_keys_for).map_err(|error| {
-            Failure::Unresolved {
-                flag: "--title",
-                query: query.clone(),
-                error,
-            }
-        }),
+        Some(query) => {
+            resolve_unique(query, catalog, <Video as Searchable>::search_keys).map_err(|error| {
+                Failure::Unresolved {
+                    flag: "--title",
+                    query: query.clone(),
+                    error,
+                }
+            })
+        }
         None => {
             require_terminal("a video title")?;
             match tui::select_video(catalog).expect("interactive selection failed") {
@@ -298,13 +298,5 @@ fn require_terminal(what: &'static str) -> Result<(), Failure> {
         Ok(())
     } else {
         Err(Failure::NotInteractive(what))
-    }
-}
-
-impl Video {
-    /// Free-function form of [`selection::Searchable::search_keys`] usable
-    /// as a function pointer for [`resolve_unique`].
-    fn search_keys_for(&self) -> Vec<&str> {
-        crate::selection::Searchable::search_keys(self)
     }
 }
