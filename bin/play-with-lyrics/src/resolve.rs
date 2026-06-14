@@ -8,6 +8,7 @@ use crate::failure::{
 use fuzzy_select::fuzzy::resolve_unique;
 use fuzzy_select::selection::Searchable;
 use lyrics_core::video_descriptor::Language;
+use pipe_trait::Pipe;
 use play_with_lyrics::catalog::{Video, language_label};
 use play_with_lyrics::player::{Player, SubtitleFormat};
 use play_with_lyrics_tui::{select_one, select_video};
@@ -83,16 +84,18 @@ pub(crate) fn resolve_format(
 ) -> Result<SubtitleFormat, Termination> {
     if let Some(arg) = args.format {
         let requested = SubtitleFormat::from(arg);
-        return if formats.contains(&requested) {
-            Ok(requested)
-        } else {
-            Err(Failure::FormatUnavailable(FormatUnavailable {
-                language,
-                requested,
-                available: join_display(formats),
-            })
-            .into())
+        if formats.contains(&requested) {
+            return Ok(requested);
+        }
+        let error = FormatUnavailable {
+            language,
+            requested,
+            available: join_display(formats),
         };
+        return error
+            .pipe(Failure::FormatUnavailable)
+            .pipe(Termination::from)
+            .pipe(Err);
     }
     if let [only] = formats {
         return Ok(*only);

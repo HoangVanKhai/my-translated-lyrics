@@ -648,6 +648,7 @@ dependencies = [
  "exit-codes",
  "fuzzy-select",
  "lyrics-core",
+ "pipe-trait",
  "play-with-lyrics",
  "play-with-lyrics-tui",
  "pretty_assertions",
