@@ -46,20 +46,18 @@ pub enum Navigation {
 
 /// Reads the next input event from the terminal.
 ///
-/// This trait is the dependency-injection seam for the interactive loops.
-/// Production code runs them with [`Host`], which blocks on the real
-/// terminal, while a test runs them with a fake that replays a scripted
-/// sequence of key events. That makes the otherwise unreachable event
-/// handling testable without a TTY.
+/// A dependency-injection seam: production reads from the real terminal with
+/// [`Host`], while a test replays a scripted sequence of events, so the
+/// otherwise unreachable event handling is testable without a TTY.
 trait ReadEvent {
     fn read_event() -> io::Result<Event>;
 }
 
 /// Reports the terminal size as `(columns, rows)`.
 ///
-/// This is injected alongside [`ReadEvent`] so a test can render at a chosen
-/// size and exercise the width- and height-dependent layout deterministically,
-/// without a real terminal.
+/// A dependency-injection seam: a test reports a chosen size so the width- and
+/// height-dependent layout can be asserted deterministically, without a real
+/// terminal.
 trait WindowSize {
     fn window_size() -> io::Result<(u16, u16)>;
 }
@@ -67,9 +65,8 @@ trait WindowSize {
 /// Reports the current instant, for measuring the gap between two clicks when
 /// detecting a double click.
 ///
-/// Injected alongside [`ReadEvent`] and [`WindowSize`] so a test can freeze
-/// time and make double-click detection deterministic, rather than depending
-/// on how far apart a throttled machine happens to process the two clicks.
+/// A dependency-injection seam: a test reports a fixed time so double-click
+/// detection does not depend on how fast the clicks are processed.
 trait Clock {
     fn now() -> Instant;
 }
