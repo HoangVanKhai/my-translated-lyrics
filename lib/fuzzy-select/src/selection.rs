@@ -8,6 +8,10 @@
 use crate::fuzzy::contains_ci;
 use std::cmp::Ordering;
 
+/// A comparator that orders two items, held as a boxed closure so the selector
+/// can carry any ordering.
+type Comparator<'a, Item> = Box<dyn Fn(&Item, &Item) -> Ordering + 'a>;
+
 /// An item that an interactive selector can filter by a typed query.
 pub trait Searchable {
     /// The strings the query is matched against. A row matches when any
@@ -25,7 +29,7 @@ pub struct Selector<'a, Item> {
     /// Position of the highlighted row within `filtered`.
     cursor: usize,
     /// The comparator that sorts the visible items, when one is set.
-    order: Option<Box<dyn Fn(&Item, &Item) -> Ordering + 'a>>,
+    order: Option<Comparator<'a, Item>>,
 }
 
 impl<'a, Item> Selector<'a, Item>
