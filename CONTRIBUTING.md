@@ -187,7 +187,7 @@ Reach for a `take`-style parser in these situations.
 
 Prefer a simpler tool in these situations.
 
-- A single regex, or a single scan over the whole input, already expresses the rule and there is no leading-prefix or tail-threading structure to exploit.
+- A single straightforward pass already expresses the rule and there is no leading-prefix or tail-threading structure to exploit, for example a `split`, `trim`, or `strip_prefix` over the whole input.
 - The format is already covered by `serde`, `toml`, or a similar deserializer. Let the derive own the parse rather than hand-rolling one.
 
 #### Conventions
