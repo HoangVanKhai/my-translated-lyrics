@@ -46,20 +46,26 @@ fn contains_is_substring_not_subsequence() {
 
 #[test]
 fn an_unmarked_query_matches_marked_text() {
-    // cspell:words mưa xuân xuan
+    // cspell:words mưa mùa xuân xuan
     // Typing without diacritics finds a title that carries them.
     assert!(contains_ci("Mưa Xuân", "mua xuan"));
+    assert!(contains_ci("Mùa Xuân", "mua xuan"));
     assert!(fuzzy_subsequence("mua", "Mưa Xuân"));
+    assert!(fuzzy_subsequence("mua", "Mùa Xuân"));
 }
 
 #[test]
 fn a_marked_query_matches_only_that_mark() {
-    // cspell:words mưa xuân xuan
+    // cspell:words mưa mùa xuân xuan
     // Typing a diacritic narrows the match to exactly that form, so it
     // matches a title that carries the mark but not a bare one.
     assert!(contains_ci("Mưa Xuân", "mưa"));
     assert!(!contains_ci("Mua Xuan", "mưa"));
+    assert!(contains_ci("Mùa Xuân", "mùa"));
+    assert!(!contains_ci("Mua Xuan", "mùa"));
     assert!(fuzzy_subsequence("xuân", "Mưa Xuân"));
+    assert!(!fuzzy_subsequence("xuân", "Mua Xuan"));
+    assert!(fuzzy_subsequence("xuân", "Mùa Xuân"));
     assert!(!fuzzy_subsequence("xuân", "Mua Xuan"));
 }
 
