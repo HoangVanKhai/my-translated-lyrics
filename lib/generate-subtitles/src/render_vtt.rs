@@ -212,16 +212,32 @@ fn render_credit_line(output: &mut String, features: &mut Features, pairs: &[Cre
 }
 
 fn render_credit_pair(output: &mut String, features: &mut Features, pair: &CreditPair) {
-    features.used_credit_role = true;
-    features.used_credit_name = true;
     let style = pair.separator_style();
-    write!(
-        output,
-        "<c.{CLASS_CREDIT_ROLE}>{}{}</c>",
-        Escaped(pair.role),
-        style.role_span_suffix(),
-    )
-    .unwrap();
+    // Lead: a role-less line opens with a highlighted bracket; an
+    // ordinary line opens with the role and any Latin colon.
+    if let Some(bracket) = pair.special_lead {
+        features.used_credit_special = true;
+        write!(
+            output,
+            "<c.{CLASS_CREDIT_SPECIAL}>{}</c>",
+            Escaped(bracket.as_str()),
+        )
+        .unwrap();
+    } else {
+        features.used_credit_role = true;
+        write!(
+            output,
+            "<c.{CLASS_CREDIT_ROLE}>{}{}</c>",
+            Escaped(pair.role),
+            style.role_span_suffix(),
+        )
+        .unwrap();
+    }
+    // A role-only header line carries no name; emit just the lead.
+    if pair.name_segments.is_empty() {
+        return;
+    }
+    features.used_credit_name = true;
     style.append_between_spans(output);
     write!(output, "<c.{CLASS_CREDIT_NAME}>").unwrap();
     write_name_segments(output, features, &pair.name_segments);

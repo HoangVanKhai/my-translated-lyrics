@@ -70,6 +70,37 @@ fn cue_text_html_meta_characters_are_escaped() {
     );
 }
 
+/// A credit cue can mix a role-only header line with role-less bracket
+/// lines. The header renders as a bare role span, and each bracketed
+/// line renders its highlight in the credit-special color in place of
+/// a role span.
+#[test]
+fn role_only_header_and_role_less_lines_render() {
+    let cues = vec![SubtitleCue {
+        start: Timestamp::new(0, 0, 0).unwrap(),
+        end: Timestamp::new(0, 5, 0).unwrap(),
+        parts: vec![CuePart {
+            marker: "cre".to_string(),
+            text: "role-a\n[label-a] name-a".to_string(),
+        }],
+    }];
+    let output = render_srt(
+        &cues,
+        &markers_with_credit_trigger(),
+        &credits_with_one_role(),
+        &test_palette(),
+        &Language::Vietnamese,
+    )
+    .unwrap();
+    assert!(
+        output.contains(
+            "<font color=\"#AAAA22\">role-a</font>\n\
+             <font color=\"#55ABCD\">[label-a]</font> <font color=\"#AAAAAA\">name-a</font>",
+        ),
+        "header should be a bare role span followed by the role-less line:\n{output}",
+    );
+}
+
 #[test]
 fn unknown_role_in_credit_line_produces_credits_error() {
     let cues = vec![SubtitleCue {

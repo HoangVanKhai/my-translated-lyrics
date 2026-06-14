@@ -123,6 +123,43 @@ fn role_token_inside_a_name_does_not_split_it() {
     );
 }
 
+/// A role-less credit line opens with a bracketed highlight rather
+/// than a registered role. The bracket is captured as the pair's
+/// special lead, `role` is empty, and the remainder is the name, so a
+/// section entry such as `[label-a] name-a` parses without an
+/// unknown-role error.
+#[test]
+fn role_less_line_captures_a_bracket_lead() {
+    let descriptor = make_descriptor(&["role-a"]);
+    let roles = make_roles(&descriptor);
+    let parsed = parse_credit_line("[label-a] name-a", &roles).unwrap();
+    assert_eq!(parsed.len(), 1);
+    assert_eq!(parsed[0].role, "");
+    assert_eq!(
+        parsed[0].special_lead,
+        Some("[label-a]".pipe(Bracketed::try_from).unwrap()),
+    );
+    assert_eq!(
+        parsed[0].name_segments,
+        [NameSegment::Unbracketed(Unbracketed("name-a"))],
+    );
+}
+
+/// A role-only header line carries a role and no name. It parses to a
+/// single pair whose name region is empty and whose `special_lead` is
+/// absent, so the renderers can emit just the role span for a section
+/// header such as `视频底图`.
+#[test]
+fn role_only_header_line_has_no_name() {
+    let descriptor = make_descriptor(&["role-a"]);
+    let roles = make_roles(&descriptor);
+    let parsed = parse_credit_line("role-a", &roles).unwrap();
+    assert_eq!(parsed.len(), 1);
+    assert_eq!(parsed[0].role, "role-a");
+    assert_eq!(parsed[0].special_lead, None);
+    assert!(parsed[0].name_segments.is_empty());
+}
+
 #[test]
 fn unknown_leading_text_errors() {
     let descriptor = make_descriptor(&["role-a"]);

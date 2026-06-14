@@ -31,7 +31,14 @@ use pipe_trait::Pipe;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CreditPair<'a> {
     /// The role cell, exactly as it appeared in the source line.
+    /// Empty when the line is role-less and opens with a bracketed
+    /// span instead; see [`CreditPair::special_lead`].
     pub role: &'a str,
+    /// A bracketed span that opens a role-less credit line, for
+    /// example `[疏楼曲]` ahead of a contributor name. When present,
+    /// the renderers emit it in the credit highlight color in place of
+    /// a role span, and [`CreditPair::role`] is empty.
+    pub special_lead: Option<Bracketed<'a>>,
     /// Raw separator text captured between the role cell and the
     /// name cell, preserved verbatim so the renderer can decide how
     /// to emit it. [`CreditPair::separator_style`] reads this field
@@ -324,19 +331,28 @@ pub fn parse_credit_line<'a>(
     let (_, mut rest) = take_leading_whitespace(line);
 
     while !rest.is_empty() {
-        let (role, after_role) = roles.take_role(rest).ok_or_else(|| {
-            ParseCreditError::UnknownRole(UnknownRole {
-                line: line.to_string(),
-                offset: line.len() - rest.len(),
-            })
-        })?;
-        let (separator, after_separator) = take_cell_separator(after_role);
+        // A cell opens with a registered role, or, on a role-less
+        // line, with a bracketed span that the renderers highlight in
+        // place of a role. Anything else is unrecognized text.
+        let (role, special_lead, after_lead) =
+            if let Some((role, after_role)) = roles.take_role(rest) {
+                (role, None, after_role)
+            } else if let Some((bracket, after_bracket)) = Bracketed::take(rest) {
+                ("", Some(bracket), after_bracket)
+            } else {
+                return Err(ParseCreditError::UnknownRole(UnknownRole {
+                    line: line.to_string(),
+                    offset: line.len() - rest.len(),
+                }));
+            };
+        let (separator, after_separator) = take_cell_separator(after_lead);
         let (raw_name_region, after_name) = roles.take_until_role(after_separator);
         let name_region = trim_end_separator(raw_name_region);
         let name_segments = parse_name_region(name_region);
 
         pairs.push(CreditPair {
             role,
+            special_lead,
             separator,
             name_segments,
         });

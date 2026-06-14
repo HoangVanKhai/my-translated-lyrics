@@ -76,6 +76,36 @@ fn cue_text_html_meta_characters_are_escaped() {
     );
 }
 
+/// A credit cue can mix a role-only header line with role-less bracket
+/// lines. The header renders as a bare `creditRole` span, and each
+/// bracketed line renders a `creditSpecial` span in place of a role.
+#[test]
+fn role_only_header_and_role_less_lines_render() {
+    let cues = vec![SubtitleCue {
+        start: Timestamp::new(0, 0, 0).unwrap(),
+        end: Timestamp::new(0, 5, 0).unwrap(),
+        parts: vec![CuePart {
+            marker: "cre".to_string(),
+            text: "role-a\n[label-a] name-a".to_string(),
+        }],
+    }];
+    let output = render_vtt(
+        &cues,
+        &markers_with_credit_trigger(),
+        &credits_with_one_role(),
+        &test_palette(),
+        &Language::Vietnamese,
+    )
+    .unwrap();
+    assert!(
+        output.contains(
+            "<c.creditRole>role-a</c>\n\
+             <c.creditSpecial>[label-a]</c> <c.creditName>name-a</c>",
+        ),
+        "header should be a bare role span followed by the role-less line:\n{output}",
+    );
+}
+
 /// Regression for the bug where the voice name was passed
 /// through HTML-entity escape on the cue-tag side. The WebVTT
 /// cue-text parser decodes `&amp;` back to `&`, but the CSS
