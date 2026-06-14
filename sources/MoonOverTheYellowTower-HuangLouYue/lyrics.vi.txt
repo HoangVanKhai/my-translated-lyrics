@@ -1,0 +1,81 @@
+# clr: Xóa chữ trên màn hình
+# LRC: Lời bài hát (không rõ người trình bày)
+# ttl: Tiêu đề ca khúc
+# cre: Thông tin sản xuất
+# eov: Kết thúc MV
+
+00:00.000 LRC: Tỉnh cùng ngắm trăng, say cùng chung gối
+00:05.270 LRC: Non xanh nước biếc mặc tình lưu luyến
+00:08.749 LRC: Chí thiếu niên giữa nhân gian, tựa ánh thanh huy sáng soi
+00:12.640 LRC: Đợi ngày công thành danh toại, chớ để phụ lời hẹn này
+00:16.795 clr
+
+00:18.283 cre: Soạn nhạc/Biên khúc: 砖厂浪人
+               Lời: 萧暮雨
+               Trình bày: Luo Tianyi; Yuezheng Ling
+00:22.612 cre: Điều giáo: 折v; 跨海星尘
+               Mixing: 虎皮猫
+               Minh họa: 浮空茜
+               Video: 阿妍
+00:26.885 cre: Điều phối: 花间, 北山
+               Hỗ trợ kế hoạch: 星际
+               Giám chế âm thanh: 磷元素
+00:29.714 ttl: Hoàng Lâu Nguyệt
+00:31.939 LRC: Nhớ năm ấy hoa nở ngoài thành
+00:34.658 LRC: Lúc thênh thang dắt tay cùng dạo bến Hoán Khê
+00:39.429 LRC: Ngước nhìn trăng núi Nga Mi treo giữa trời
+00:42.129 LRC: Phù hộ ta chuyến đi về hướng Đông này vẹn toàn muôn sự
+00:46.829 LRC: Người đời nói bụng đầy ba ngàn pho kinh chữ
+00:49.558 LRC: Khi ấy cùng làm khách đất Trường An, ý khí biết bao nhiêu
+00:54.250 LRC: Mà nay gió xuân nơi điện ngọc thổi chưa khắp
+00:57.000 LRC: Ngờ đâu núi cao sông dài, một chuyến biệt ly
+01:01.679 LRC: Vầng trăng trên cao, lúc tròn lúc khuyết
+01:09.159 LRC: Ánh sáng lẻ loi vạn dặm, mấy phen bầu bạn cùng người
+01:15.359 LRC: Hẹn nhau đêm nào, gặp lại năm nao?
+01:19.180 LRC: Từ xưa đến nay chỉ có nỗi tương tư là chẳng đổi
+01:22.670 LRC: Giấc mộng Nam Kha bao giờ tỉnh, bao buồn vui đều thoảng qua
+01:26.540 LRC: Sương trong như tuyết, khóa chặt bóng chim én trong lầu
+01:30.199 LRC: Tỉnh cùng ngắm trăng, say cùng chung gối
+01:33.820 LRC: Chuyện cũ bỗng chốc tan tác tựa khói mây
+01:37.350 LRC: Nếu mai này toại nguyện, công thành thân thoái chốn sơn lâm
+01:41.280 LRC: Nhớ quay về thực hiện lời hẹn đối giường nghe mưa
+01:45.213 cre: Soạn nhạc/Biên khúc: 砖厂浪人
+               Lời: 萧暮雨
+               Trình bày: Luo Tianyi; Yuezheng Ling
+01:48.835 cre: Điều giáo: 折v; 跨海星尘
+               Mixing: 虎皮猫
+               Minh họa: 浮空茜
+               Video: 阿妍
+               Điều phối: 花间, 北山
+               Hỗ trợ kế hoạch: 星际
+               Giám chế âm thanh: 磷元素
+01:52.488 ttl: Hoàng Lâu Nguyệt
+01:56.445 clr
+
+01:57.140 LRC: Nhớ đêm mưa gió năm Nguyên Phong thứ hai
+01:59.880 LRC: Lặng nhìn hoa trong sân nở rồi tàn
+02:04.410 LRC: Trước bến sông còn ngoảnh đầu nhìn nhân thế
+02:07.250 LRC: Nào hay con thuyền nhỏ đi rồi, đã thành buổi vĩnh quyết
+02:12.150 LRC: Tuyết trên thềm sáng soi, cỏ thơm um tùm nay đã lặng
+02:19.349 LRC: Hồn mộng vạn dặm, chẳng thể cùng người trò chuyện nữa
+02:25.559 LRC: Hẹn nhau đêm nào, gặp lại năm nao?
+02:29.140 LRC: Từ xưa đến nay chỉ có nỗi tương tư là chẳng đổi
+02:32.860 LRC: Giấc mộng Nam Kha bao giờ tỉnh, bao buồn vui đều thoảng qua
+02:36.770 LRC: Chỉ sợ nước sông Thanh Hà, vẫn cứ chở nỗi biệt ly
+02:40.359 LRC: Tỉnh cùng ngắm trăng, say cùng chung gối
+02:44.030 LRC: Chuyện cũ bỗng chốc tan tác tựa khói mây
+02:47.529 LRC: Nếu mai này toại nguyện, công thành thân thoái chốn sơn lâm
+02:51.469 LRC: Nhớ quay về thực hiện lời hẹn đối giường nghe mưa
+02:55.220 LRC: Hình bóng mộng nay đâu thấy, tỉnh mộng đã là năm nào
+02:58.870 LRC: Bàng hoàng đã đi khắp chốn núi hồ
+03:02.400 LRC: Tuổi già sức yếu, tóc mai bạc như tuyết, sống nơi chân trời đã mỏi mệt
+03:06.250 LRC: Nhìn mòn con đường về quê cũ, chẳng thấy vầng trăng xưa
+03:09.879 LRC: Tương tư đêm nối đêm, hẹn ước năm dài thêm năm
+03:13.560 LRC: Ngoảnh lại nhân gian xuân đã muộn rồi
+03:16.970 LRC: Nếu tiến thoái chẳng thể vẹn toàn, mệnh trời ngăn cách không nơi gặp gỡ
+03:20.950 LRC: Chỉ nguyện nhân duyên kiếp này, kiếp sau lại kết chặt
+03:24.778 LRC: Đêm nay ngồi một mình trước giường, canh khuya cầm nến chẳng thể ngủ
+03:28.689 LRC: Trong sân mưa thu rả rích, còn ai giữ ước hẹn này?
+03:34.672 clr
+
+03:34.672 eov
