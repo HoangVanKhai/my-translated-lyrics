@@ -64,12 +64,12 @@ impl StylePalette {
 #[serde(deny_unknown_fields)]
 pub struct CreditPalette {
     /// Color used for the role cell of every credit line.
-    pub role: String,
+    pub role: Color,
     /// Color used for the name cell of every credit line.
-    pub name: String,
+    pub name: Color,
     /// Color used for a bracketed highlight (`【...】`, `[...]`, or
     /// `(...)`) inside a credit name.
-    pub special: String,
+    pub special: Color,
 }
 
 /// Presentation attributes applied to a run of cue text.
@@ -78,7 +78,7 @@ pub struct CreditPalette {
 pub struct Style {
     /// CSS color value, such as `"#FFD966"` or `"white"`.
     #[serde(default)]
-    pub color: Option<String>,
+    pub color: Option<Color>,
     /// Render the run in italics.
     #[serde(default)]
     pub italic: bool,
@@ -91,13 +91,76 @@ impl Style {
     /// A color-only style, with neither italics nor bold. Used to feed
     /// the credit-cell colors through the same rendering helpers as the
     /// voice and class styles.
-    pub fn color_only(color: String) -> Self {
+    pub fn color_only(color: Color) -> Self {
         Style {
             color: Some(color),
             italic: false,
             bold: false,
         }
     }
+}
+
+/// A CSS color value that is safe to splat into a `color: {...};`
+/// declaration and a `<font color="{...}">` attribute without escaping.
+///
+/// The value may be any non-empty string whose characters are none of
+/// `<`, `>`, `"`, `\`, `{`, `}`, `;`, `\u{2028}`, `\u{2029}`, and which
+/// contains no control character. This reject list captures every
+/// character that would terminate the surrounding CSS rule or the HTML
+/// attribute string. The shape is otherwise permissive, so hex literals
+/// such as `#FFD966`, color keywords such as `white`, and functional
+/// notations such as `rgb(0, 0, 0)` are all accepted. Validating the
+/// color at the data boundary keeps a typo in `styles.toml` from
+/// silently corrupting every rendered subtitle, mirroring the
+/// boundary checks on `CssClassName` and `VoiceName`.
+#[derive(Debug, Display, Clone, PartialEq, Eq, Deserialize)]
+#[serde(try_from = "String")]
+pub struct Color(String);
+
+impl Color {
+    /// Wraps `source` if and only if it satisfies the color shape above.
+    pub fn new(source: String) -> Result<Self, InvalidColor> {
+        if source.is_empty() {
+            return Err(InvalidColor::Empty);
+        }
+        for ch in source.chars() {
+            if is_forbidden_color_char(ch) {
+                return Err(InvalidColor::ForbiddenCharacter(ch));
+            }
+        }
+        Ok(Color(source))
+    }
+
+    /// The underlying color text.
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl TryFrom<String> for Color {
+    type Error = InvalidColor;
+
+    fn try_from(source: String) -> Result<Self, Self::Error> {
+        Color::new(source)
+    }
+}
+
+fn is_forbidden_color_char(ch: char) -> bool {
+    matches!(
+        ch,
+        '<' | '>' | '"' | '\\' | '{' | '}' | ';' | '\u{2028}' | '\u{2029}'
+    ) || ch.is_control()
+}
+
+#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum InvalidColor {
+    #[display("color must not be empty")]
+    Empty,
+    #[display(
+        "color must not contain the reserved character {_0:?}; CSS and HTML reserve angle brackets, the double quote, the backslash, braces, the semicolon, line separators, and control characters"
+    )]
+    ForbiddenCharacter(char),
 }
 
 /// A marker declared by a song but missing from the palette.

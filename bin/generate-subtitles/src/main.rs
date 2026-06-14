@@ -2,6 +2,7 @@
 #![cfg_attr(dylint_lib = "perfectionist", register_tool(perfectionist))]
 
 use clap::Parser;
+use generate_subtitles::styles::STYLE_PALETTE_FILE_NAME;
 use generate_subtitles::{RenderCounts, load_palette, load_song, render_song};
 use itertools::Itertools;
 use pipe_trait::Pipe;
@@ -18,7 +19,7 @@ struct Args {
     dist: PathBuf,
 
     /// Palette file mapping each voice marker and named class to its color and text decoration.
-    #[clap(long, default_value = "styles.toml")]
+    #[clap(long, default_value = STYLE_PALETTE_FILE_NAME)]
     styles: PathBuf,
 
     /// For safety reasons, this programs list actions by default, this flag makes the program take those actions.

@@ -1,6 +1,6 @@
 use super::{RenderVttError, render_vtt};
 use crate::parse::{CuePart, SubtitleCue};
-use crate::styles::{CreditPalette, MissingStyle, Style, StylePalette};
+use crate::styles::{Color, CreditPalette, MissingStyle, Style, StylePalette};
 use lyrics_core::credits_descriptor::CreditsDesc;
 use lyrics_core::line_markers_descriptor::{CssClassName, LineMarkersDesc, VoiceName};
 use lyrics_core::timestamp::Timestamp;
@@ -23,16 +23,23 @@ fn markers_with_credit_trigger() -> LineMarkersDesc {
     }
 }
 
+fn color(value: &str) -> Color {
+    value
+        .to_string()
+        .pipe(Color::new)
+        .expect("test fixture passes the color validator")
+}
+
 fn test_palette() -> StylePalette {
     StylePalette {
         credit: CreditPalette {
-            role: "#AAAA22".to_string(),
-            name: "#AAAAAA".to_string(),
-            special: "#55ABCD".to_string(),
+            role: color("#AAAA22"),
+            name: color("#AAAAAA"),
+            special: color("#55ABCD"),
         },
         voices: btreemap! {
             "vca".to_string() => Style {
-                color: Some("#66CCFF".to_string()),
+                color: Some(color("#66CCFF")),
                 italic: false,
                 bold: false,
             },
@@ -175,5 +182,40 @@ fn class_declared_without_palette_entry_produces_style_error() {
     match err {
         RenderVttError::Style(MissingStyle::Class(name)) => assert_eq!(name, "title"),
         other => panic!("expected a missing-class-style error, got {other:?}"),
+    }
+}
+
+#[test]
+fn voice_declared_without_palette_entry_produces_style_error() {
+    let voice_name = "Some Voice"
+        .to_string()
+        .pipe(VoiceName::new)
+        .expect("test fixture passes the voice-name validator");
+    let markers = LineMarkersDesc {
+        markers: vec!["unk".to_string()],
+        voices: btreemap! {
+            "unk".to_string() => btreemap! { Language::Vietnamese => voice_name },
+        },
+        ..Default::default()
+    };
+    let cues = vec![SubtitleCue {
+        start: Timestamp::new(0, 0, 0).unwrap(),
+        end: Timestamp::new(0, 5, 0).unwrap(),
+        parts: vec![CuePart {
+            marker: "unk".to_string(),
+            text: "body".to_string(),
+        }],
+    }];
+    let err = render_vtt(
+        &cues,
+        &markers,
+        &CreditsDesc::default(),
+        &test_palette(),
+        &Language::Vietnamese,
+    )
+    .unwrap_err();
+    match err {
+        RenderVttError::Style(MissingStyle::Voice(name)) => assert_eq!(name, "unk"),
+        other => panic!("expected a missing-voice-style error, got {other:?}"),
     }
 }
