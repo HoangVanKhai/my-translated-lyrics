@@ -6,11 +6,19 @@
 
 use command_extra::CommandExtra;
 use lyrics_core::video_descriptor::Visibility;
+use pipe_trait::Pipe;
 use std::ffi::OsStr;
 use std::fs::{create_dir, create_dir_all, write as write_file};
 use std::path::PathBuf;
 use std::process::{Command, Output, Stdio};
 use test_utils::{Temp, video_desc};
+
+#[cfg(unix)]
+use std::env::var;
+#[cfg(unix)]
+use std::fs::{Permissions, read_to_string, set_permissions};
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
 
 const PLAY_WITH_LYRICS: &str = env!("CARGO_BIN_EXE_play-with-lyrics");
 const COLLECTION: &str = "Feng Ling Yu Xiu";
@@ -66,7 +74,8 @@ impl Env {
         Args: IntoIterator,
         Args::Item: AsRef<OsStr>,
     {
-        Command::new(PLAY_WITH_LYRICS)
+        PLAY_WITH_LYRICS
+            .pipe(Command::new)
             .with_arg(&self.source)
             .with_arg(&self.target)
             .with_args(args)
@@ -94,7 +103,6 @@ impl Env {
     /// Installs a fake `mpv` and `celluloid`, each a script that records the
     /// arguments it is launched with.
     pub fn install_fake_players(&self) {
-        use std::os::unix::fs::PermissionsExt;
         let bin = self.bin_dir();
         create_dir_all(&bin).unwrap();
         let script = format!(
@@ -104,7 +112,7 @@ impl Env {
         for name in ["mpv", "celluloid"] {
             let path = bin.join(name);
             write_file(&path, &script).unwrap();
-            std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
+            set_permissions(&path, Permissions::from_mode(0o755)).unwrap();
         }
     }
 
@@ -116,8 +124,9 @@ impl Env {
         Args: IntoIterator,
         Args::Item: AsRef<OsStr>,
     {
-        let path = std::env::var("PATH").unwrap_or_default();
-        let output = Command::new(PLAY_WITH_LYRICS)
+        let path = var("PATH").unwrap_or_default();
+        let output = PLAY_WITH_LYRICS
+            .pipe(Command::new)
             .with_arg(&self.source)
             .with_arg(&self.target)
             .with_args(args)
@@ -125,7 +134,7 @@ impl Env {
             .with_stdin(Stdio::null())
             .output()
             .expect("failed to spawn play-with-lyrics");
-        let recorded = std::fs::read_to_string(self.record_path())
+        let recorded = read_to_string(self.record_path())
             .unwrap_or_default()
             .lines()
             .map(str::to_string)
