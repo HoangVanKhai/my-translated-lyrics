@@ -162,14 +162,30 @@ fn render_credit_line(output: &mut String, palette: &StylePalette, pairs: &[Cred
 
 fn render_credit_pair(output: &mut String, palette: &StylePalette, pair: &CreditPair) {
     let style = pair.separator_style();
-    write!(
-        output,
-        r#"<font color="{color}">{role}{colon}</font>"#,
-        color = palette.credit.role,
-        role = Escaped(pair.role),
-        colon = style.role_span_suffix(),
-    )
-    .unwrap();
+    // Lead: a role-less line opens with a highlighted bracket; an
+    // ordinary line opens with the role and any Latin colon.
+    if let Some(bracket) = pair.special_lead {
+        write!(
+            output,
+            r#"<font color="{color}">{text}</font>"#,
+            color = palette.credit.special,
+            text = Escaped(bracket.as_str()),
+        )
+        .unwrap();
+    } else {
+        write!(
+            output,
+            r#"<font color="{color}">{role}{colon}</font>"#,
+            color = palette.credit.role,
+            role = Escaped(pair.role),
+            colon = style.role_span_suffix(),
+        )
+        .unwrap();
+    }
+    // A role-only header line carries no name; emit just the lead.
+    if pair.name_segments.is_empty() {
+        return;
+    }
     style.append_between_spans(output);
     write!(output, r#"<font color="{}">"#, palette.credit.name).unwrap();
     write_name_segments(output, palette, &pair.name_segments);
