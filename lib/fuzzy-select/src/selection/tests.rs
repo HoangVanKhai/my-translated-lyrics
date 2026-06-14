@@ -1,3 +1,5 @@
+// cspell:locale en vi
+
 use crate::selection::{Searchable, Selector};
 use pretty_assertions::assert_eq;
 
@@ -18,7 +20,6 @@ impl Searchable for Row {
 // Bài Hát Mẫu), and "Sample Tune" (样本曲调 / Giai Điệu Mẫu). They
 // deliberately share words so a query can match one row or several.
 fn sample() -> Vec<Row> {
-    // cspell:words bài hát ví dụ mẫu giai điệu
     vec![
         Row {
             en: "Example Song",

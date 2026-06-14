@@ -7,6 +7,8 @@
 //! with the collection and video title used to locate the playable file in
 //! the media library.
 
+// cspell:locale en vi
+
 use fuzzy_select::selection::Searchable;
 use lyrics_core::video_descriptor::{Language, VIDEO_CONFIG_FILE_NAME, VideoDesc};
 use pipe_trait::Pipe;
@@ -90,7 +92,6 @@ fn sort_key(video: &Video) -> String {
 
 /// The human-readable name of a language, shown in the language selector.
 pub fn language_label(language: Language) -> &'static str {
-    // cspell:words Tiếng Việt
     match language {
         Language::English => "English",
         Language::Vietnamese => "Tiếng Việt",
