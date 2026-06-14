@@ -90,9 +90,10 @@ fn sort_key(video: &Video) -> String {
 
 /// The human-readable name of a language, shown in the language selector.
 pub fn language_label(language: Language) -> &'static str {
+    // cspell:words Tiếng Việt
     match language {
         Language::English => "English",
-        Language::Vietnamese => "Vietnamese",
-        Language::Chinese => "Chinese",
+        Language::Vietnamese => "Tiếng Việt",
+        Language::Chinese => "中文",
     }
 }
