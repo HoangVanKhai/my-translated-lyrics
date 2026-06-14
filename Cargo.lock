@@ -653,6 +653,7 @@ dependencies = [
  "pretty_assertions",
  "strum",
  "test-utils",
+ "toml",
 ]
 
 [[package]]

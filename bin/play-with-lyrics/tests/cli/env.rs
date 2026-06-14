@@ -1,14 +1,12 @@
 use command_extra::CommandExtra;
+use lyrics_core::video_descriptor::Visibility;
 use std::ffi::OsStr;
 use std::fs::{create_dir, create_dir_all, write as write_file};
 use std::path::PathBuf;
 use std::process::{Command, Output, Stdio};
-use test_utils::Temp;
+use test_utils::{Temp, video_desc};
 
 const PLAY_WITH_LYRICS: &str = env!("CARGO_BIN_EXE_play-with-lyrics");
-// These mirror the `collection` and `video-title` of the `video.toml`
-// fixture, so the file names built from them line up with what the binary
-// reads.
 const COLLECTION: &str = "Feng Ling Yu Xiu";
 pub(crate) const VIDEO_TITLE: &str = "Example Song [id]";
 
@@ -33,12 +31,14 @@ impl Env {
         }
     }
 
-    /// Writes the sample `video.toml`, copied verbatim from the fixture
-    /// next to this file.
+    /// Writes a `video.toml` serialized from a descriptor built with the
+    /// test collection and title.
     pub(crate) fn add_video(&self) {
         let video_dir = self.source.join("ExampleSong");
         create_dir_all(&video_dir).unwrap();
-        write_file(video_dir.join("video.toml"), include_str!("video.toml")).unwrap();
+        let descriptor = video_desc(COLLECTION, VIDEO_TITLE, Visibility::Visible);
+        let contents = toml::to_string(&descriptor).unwrap();
+        write_file(video_dir.join("video.toml"), contents).unwrap();
     }
 
     /// The collection directory inside the media library, created on first
