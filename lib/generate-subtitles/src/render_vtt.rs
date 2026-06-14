@@ -51,7 +51,7 @@ const CLASS_CREDIT_ROLE: &str = "creditRole";
 /// Built-in class name for the name cell of a credit line.
 const CLASS_CREDIT_NAME: &str = "creditName";
 /// Built-in class name for a bracketed highlight (`【...】`, `[...]`,
-/// or `(...)`) inside a credit name.
+/// `(...)`, or `（...）`) inside a credit name.
 const CLASS_CREDIT_SPECIAL: &str = "creditSpecial";
 
 /// Renders all cues for a single language into a complete `.vtt` file.
@@ -98,7 +98,7 @@ pub fn render_vtt(
 /// descriptor; the credit styles are emitted conditionally because
 /// the `creditSpecial` class, in particular, appears only when a
 /// song's credits list includes a bracketed highlight (`【...】`,
-/// `[...]`, or `(...)`).
+/// `[...]`, `(...)`, or `（...）`).
 ///
 /// The same shape is used at two levels: each `CueRendering` carries
 /// the per-cue flags, and `render_vtt` keeps a song-level

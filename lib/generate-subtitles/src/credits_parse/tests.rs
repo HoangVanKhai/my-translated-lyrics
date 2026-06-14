@@ -184,7 +184,7 @@ fn separator_style_follows_the_colon_glyph() {
 }
 
 #[test]
-fn bracketed_accepts_three_pair_kinds() {
+fn bracketed_accepts_four_pair_kinds() {
     let (lenticular, rest) = Bracketed::take("【gold】tail").unwrap();
     assert_eq!(lenticular.as_str(), "【gold】");
     assert_eq!(rest, "tail");
@@ -195,6 +195,10 @@ fn bracketed_accepts_three_pair_kinds() {
 
     let (round, rest) = Bracketed::take("(bronze)tail").unwrap();
     assert_eq!(round.as_str(), "(bronze)");
+    assert_eq!(rest, "tail");
+
+    let (full_width_round, rest) = Bracketed::take("（铜）tail").unwrap();
+    assert_eq!(full_width_round.as_str(), "（铜）");
     assert_eq!(rest, "tail");
 }
 

@@ -67,8 +67,8 @@ pub struct CreditPalette {
     pub role: Color,
     /// Color used for the name cell of every credit line.
     pub name: Color,
-    /// Color used for a bracketed highlight (`【...】`, `[...]`, or
-    /// `(...)`) inside a credit name.
+    /// Color used for a bracketed highlight (`【...】`, `[...]`,
+    /// `(...)`, or `（...）`) inside a credit name.
     pub special: Color,
 }
 

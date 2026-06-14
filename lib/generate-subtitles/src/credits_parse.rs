@@ -92,8 +92,8 @@ pub enum SeparatorStyle<'a> {
 pub enum NameSegment<'a> {
     /// A run of text that contains no parseable bracketed span.
     Unbracketed(Unbracketed<'a>),
-    /// A bracketed span (`【...】`, `[...]`, or `(...)`), with the
-    /// surrounding brackets included in the wrapped slice.
+    /// A bracketed span (`【...】`, `[...]`, `(...)`, or `（...）`),
+    /// with the surrounding brackets included in the wrapped slice.
     Bracketed(Bracketed<'a>),
 }
 
@@ -154,12 +154,13 @@ impl<'a> NameSegmentPair<'a> {
 pub struct Bracketed<'a>(&'a str);
 
 impl<'a> Bracketed<'a> {
-    /// Consumes a leading bracketed span. The three recognized
-    /// pairs are `【...】`, `[...]`, and `(...)`. The bytes between
-    /// the opening and closing characters must contain none of
-    /// those six characters; if another bracket is encountered
-    /// before the matching close, no value is produced and the
-    /// caller is free to re-interpret the input as ordinary text.
+    /// Consumes a leading bracketed span. The four recognized
+    /// pairs are `【...】`, `[...]`, `(...)`, and the full-width
+    /// `（...）`. The bytes between the opening and closing
+    /// characters must contain none of those eight characters; if
+    /// another bracket is encountered before the matching close, no
+    /// value is produced and the caller is free to re-interpret the
+    /// input as ordinary text.
     pub fn take(input: &'a str) -> Option<(Self, &'a str)> {
         let mut chars = input.char_indices();
         let (_, open) = chars.next()?;
@@ -219,12 +220,13 @@ fn matching_close(open: char) -> Option<char> {
         '【' => Some('】'),
         '[' => Some(']'),
         '(' => Some(')'),
+        '（' => Some('）'),
         _ => None,
     }
 }
 
 fn is_bracket_char(ch: char) -> bool {
-    matches!(ch, '【' | '】' | '[' | ']' | '(' | ')')
+    matches!(ch, '【' | '】' | '[' | ']' | '(' | ')' | '（' | '）')
 }
 
 /// The role set for one language, built from `credits.yaml` and
