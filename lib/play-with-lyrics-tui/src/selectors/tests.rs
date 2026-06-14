@@ -1700,3 +1700,39 @@ fn render_header_marks_the_sorted_and_hovered_columns() {
     let vietnamese_start = column_spans(80)[1].start as u16;
     assert_eq!(buffer.style_at(vietnamese_start, HEADER_ROW), Style::BOLD);
 }
+
+/// The search bar shows a magnifier with the italic "Search:" label and the
+/// typed query in bold.
+#[test]
+fn the_search_bar_shows_a_magnifier_with_styled_parts() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_701_987_654)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![english_video("Alpha")];
+    EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
+    let mut buffer = Vec::new();
+    let mut query = "alpha".to_string();
+    select_video_loop::<Scripted>(&mut buffer, &videos, &mut query, None).unwrap();
+    let rendered = String::from_utf8_lossy(&buffer);
+    assert!(rendered.contains('🔍'), "{rendered:?}");
+    assert!(rendered.contains("Search:"), "{rendered:?}");
+    // The italic attribute (SGR 3) is applied to the label.
+    assert!(rendered.contains("\u{1b}[3m"), "{rendered:?}");
+    // The bold attribute (SGR 1) precedes the typed query.
+    let bold = "\u{1b}[1m";
+    assert!(rendered.contains(&format!("{bold}alpha")), "{rendered:?}");
+}

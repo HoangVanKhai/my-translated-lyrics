@@ -123,6 +123,9 @@ fn set_style(output: &mut impl Write, current: &mut Style, target: Style) -> io:
     if target.contains(Style::REVERSE) {
         output.queue(SetAttribute(Attribute::Reverse))?;
     }
+    if target.contains(Style::ITALIC) {
+        output.queue(SetAttribute(Attribute::Italic))?;
+    }
     *current = target;
     Ok(())
 }

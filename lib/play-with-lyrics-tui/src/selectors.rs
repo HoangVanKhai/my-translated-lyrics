@@ -21,6 +21,7 @@ use std::cmp::Ordering;
 use std::io::{self, Write};
 use std::time::SystemTime;
 use terminal_screen::{Buffer, Screen, Style};
+use unicode_width::UnicodeWidthStr;
 
 /// Presents the fuzzy table of titles and reports the chosen row, a request
 /// to go back, or a request to quit. This is the first page, so going back
@@ -255,8 +256,13 @@ where
     // not available here.
     render_top_bar(buffer, columns, "Select a Video", false, hover);
 
-    let prompt = format!("Search: {}", selector.query());
-    buffer.set_string(0, 1, &fit(&prompt, columns), Style::PLAIN);
+    // The magnifier and "Search:" label are italic; the typed query is bold.
+    // \u{FE0E} is a variation selector that asks for the magnifier's text form.
+    let label = "🔍\u{FE0E} Search: ";
+    buffer.set_string(0, 1, label, Style::ITALIC);
+    let query_start = label.width();
+    let query = fit(selector.query(), columns.saturating_sub(query_start));
+    buffer.set_string(query_start as u16, 1, &query, Style::BOLD);
 
     render_header(buffer, columns, sort, hover);
 

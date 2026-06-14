@@ -11,6 +11,7 @@ impl Style {
     pub const DIM: Style = Style(1 << 1);
     pub const UNDERLINE: Style = Style(1 << 2);
     pub const REVERSE: Style = Style(1 << 3);
+    pub const ITALIC: Style = Style(1 << 4);
 
     /// The union of two attribute sets, for combining a base style with an
     /// extra attribute such as an underline on a matched character.
