@@ -20,8 +20,11 @@
 //!   `<c.className>...</c>`, with the class name read from the map.
 //! * Markers in [`LineMarkersDesc::credits`] go through the credit
 //!   parser in [`super::credits_parse`] and emit one
-//!   `<c.creditRole>role</c> <c.creditName>name</c>` pair per
-//!   recognized cell.
+//!   `<c.creditRole>role</c><sep><c.creditName>name</c>` pair per
+//!   recognized cell, where `<sep>` follows
+//!   [`CreditPair::separator_style`]: a full-width colon between the
+//!   spans, an ASCII colon inside the lead class before a single
+//!   space, or a verbatim ASCII space gutter.
 //! * Any other marker emits the cue text unwrapped.
 //!
 //! [`LineMarkersDesc`]: lyrics_core::line_markers_descriptor::LineMarkersDesc
@@ -30,9 +33,9 @@
 //! [`LineMarkersDesc::credits`]: lyrics_core::line_markers_descriptor::LineMarkersDesc::credits
 
 use super::credits_parse::{
-    CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,
+    CreditLead, CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,
 };
-use super::escape::{Escaped, append_separator_for_output};
+use super::escape::Escaped;
 use super::parse::{CuePart, SubtitleCue};
 use super::styles::{MissingStyle, Style, StylePalette};
 use core::fmt::Write;
@@ -48,7 +51,7 @@ const CLASS_CREDIT_ROLE: &str = "creditRole";
 /// Built-in class name for the name cell of a credit line.
 const CLASS_CREDIT_NAME: &str = "creditName";
 /// Built-in class name for a bracketed highlight (`【...】`, `[...]`,
-/// or `(...)`) inside a credit name.
+/// `(...)`, or `（...）`) inside a credit name.
 const CLASS_CREDIT_SPECIAL: &str = "creditSpecial";
 
 /// Renders all cues for a single language into a complete `.vtt` file.
@@ -95,7 +98,7 @@ pub fn render_vtt(
 /// descriptor; the credit styles are emitted conditionally because
 /// the `creditSpecial` class, in particular, appears only when a
 /// song's credits list includes a bracketed highlight (`【...】`,
-/// `[...]`, or `(...)`).
+/// `[...]`, `(...)`, or `（...）`).
 ///
 /// The same shape is used at two levels: each `CueRendering` carries
 /// the per-cue flags, and `render_vtt` keeps a song-level
@@ -209,10 +212,33 @@ fn render_credit_line(output: &mut String, features: &mut Features, pairs: &[Cre
 }
 
 fn render_credit_pair(output: &mut String, features: &mut Features, pair: &CreditPair) {
-    features.used_credit_role = true;
+    let style = pair.separator_style();
+    // The lead is a role (creditRole) or, on a role-less line, a
+    // bracket highlight (creditSpecial); either carries any Latin
+    // colon inside its own span.
+    let (class, text) = match pair.lead {
+        CreditLead::Role(role) => {
+            features.used_credit_role = true;
+            (CLASS_CREDIT_ROLE, role)
+        }
+        CreditLead::Special(bracket) => {
+            features.used_credit_special = true;
+            (CLASS_CREDIT_SPECIAL, bracket.as_str())
+        }
+    };
+    write!(
+        output,
+        "<c.{class}>{text}{colon}</c>",
+        text = Escaped(text),
+        colon = style.lead_span_suffix(),
+    )
+    .unwrap();
+    // A role-only header line carries no name; emit just the lead.
+    if pair.name_segments.is_empty() {
+        return;
+    }
     features.used_credit_name = true;
-    write!(output, "<c.{CLASS_CREDIT_ROLE}>{}</c>", Escaped(pair.role)).unwrap();
-    append_separator_for_output(output, pair.separator);
+    style.append_between_spans(output);
     write!(output, "<c.{CLASS_CREDIT_NAME}>").unwrap();
     write_name_segments(output, features, &pair.name_segments);
     output.push_str("</c>");

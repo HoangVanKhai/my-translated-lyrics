@@ -108,12 +108,12 @@
 
 28
 00:01:59,715 --> 00:02:07,075
-<font color="#AAAA22">作词</font> <font color="#AAAAAA">雨観</font> <font color="#AAAA22">编曲</font> <font color="#AAAAAA">雨观</font> <font color="#AAAA22">VSINGER</font> <font color="#AAAAAA">洛天依X楽正绫</font> <font color="#AAAA22">笛子</font> <font color="#AAAAAA">再也不上课</font>
-<font color="#AAAA22">作曲</font> <font color="#AAAAAA">雨観</font> <font color="#AAAA22">演唱</font> <font color="#AAAAAA">雨観X溪里</font> <font color="#AAAA22">调校</font> <font color="#AAAAAA">鬼面P</font>
+<font color="#AAAA22">作词</font>：<font color="#AAAAAA">雨観</font> <font color="#AAAA22">编曲</font>：<font color="#AAAAAA">雨观</font> <font color="#AAAA22">VSINGER</font>：<font color="#AAAAAA">洛天依X楽正绫</font> <font color="#AAAA22">笛子</font>：<font color="#AAAAAA">再也不上课</font>
+<font color="#AAAA22">作曲</font>：<font color="#AAAAAA">雨観</font> <font color="#AAAA22">演唱</font>：<font color="#AAAAAA">雨観X溪里</font> <font color="#AAAA22">调校</font>：<font color="#AAAAAA">鬼面P</font>
 
 29
 00:02:07,075 --> 00:02:10,720
-<font color="#AAAA22">制作人</font> <font color="#AAAAAA">雨观</font> <font color="#AAAA22">Ｖ家曲绘</font> <font color="#AAAAAA">Vsinger团队</font> <font color="#AAAA22">美术</font> <font color="#AAAAAA">碎夊</font> <font color="#AAAA22">PV</font> <font color="#AAAAAA">超级水水</font> <font color="#AAAA22">鸣谢素材</font> <font color="#AAAAAA">山晚樵渔</font>
+<font color="#AAAA22">制作人</font>：<font color="#AAAAAA">雨观</font> <font color="#AAAA22">Ｖ家曲绘</font>：<font color="#AAAAAA">Vsinger团队</font> <font color="#AAAA22">美术</font>：<font color="#AAAAAA">碎夊</font> <font color="#AAAA22">PV</font>：<font color="#AAAAAA">超级水水</font> <font color="#AAAA22">鸣谢素材</font>：<font color="#AAAAAA">山晚樵渔</font>
 
 30
 00:02:15,000 --> 00:02:18,475

@@ -1,6 +1,6 @@
 use super::{
-    Bracketed, CreditRoles, NameSegment, ParseBracketedError, ParseCreditError, Unbracketed,
-    UnknownRole, parse_credit_line,
+    Bracketed, CreditLead, CreditRoles, NameSegment, ParseBracketedError, ParseCreditError,
+    SeparatorStyle, Unbracketed, UnknownRole, parse_credit_line,
 };
 use lyrics_core::credits_descriptor::CreditsDesc;
 use lyrics_core::video_descriptor::Language;
@@ -59,14 +59,14 @@ fn colon_separated_line_yields_one_pair_per_cell() {
     )
     .unwrap();
     assert_eq!(parsed.len(), 3);
-    assert_eq!(parsed[0].role, "role-a");
+    assert_eq!(parsed[0].lead, CreditLead::Role("role-a"));
     assert_eq!(parsed[0].separator, "：");
     assert_eq!(
         parsed[0].name_segments,
         [NameSegment::Unbracketed(Unbracketed("name-a"))],
     );
-    assert_eq!(parsed[1].role, "role-b");
-    assert_eq!(parsed[2].role, "role-c");
+    assert_eq!(parsed[1].lead, CreditLead::Role("role-b"));
+    assert_eq!(parsed[2].lead, CreditLead::Role("role-c"));
 }
 
 #[test]
@@ -75,7 +75,7 @@ fn two_space_separated_line_yields_one_pair_with_embedded_spaces() {
     let roles = make_roles(&descriptor);
     let parsed = parse_credit_line("role-a  name-a  name-b", &roles).unwrap();
     assert_eq!(parsed.len(), 1);
-    assert_eq!(parsed[0].role, "role-a");
+    assert_eq!(parsed[0].lead, CreditLead::Role("role-a"));
     assert_eq!(parsed[0].separator, "  ");
     assert_eq!(
         parsed[0].name_segments,
@@ -89,7 +89,7 @@ fn tolerates_runs_wider_than_two_spaces() {
     let roles = make_roles(&descriptor);
     let parsed = parse_credit_line("role-a   name-a", &roles).unwrap();
     assert_eq!(parsed.len(), 1);
-    assert_eq!(parsed[0].role, "role-a");
+    assert_eq!(parsed[0].lead, CreditLead::Role("role-a"));
     assert_eq!(parsed[0].separator, "   ");
     assert_eq!(
         parsed[0].name_segments,
@@ -103,7 +103,73 @@ fn longer_role_wins_over_shorter_prefix() {
     let roles = make_roles(&descriptor);
     let parsed = parse_credit_line("role-a  name-a", &roles).unwrap();
     assert_eq!(parsed.len(), 1);
-    assert_eq!(parsed[0].role, "role-a");
+    assert_eq!(parsed[0].lead, CreditLead::Role("role-a"));
+}
+
+/// The name `name-role-a` ends with the registered role token
+/// `role-a`, but that token sits mid-name rather than at a cell
+/// boundary, so it must not be split off as a second role cell: the
+/// line is one pair whose name is the whole `name-role-a`.
+#[test]
+fn role_token_inside_a_name_does_not_split_it() {
+    let descriptor = make_descriptor(&["role-a"]);
+    let roles = make_roles(&descriptor);
+    let parsed = parse_credit_line("role-a: name-role-a", &roles).unwrap();
+    assert_eq!(parsed.len(), 1);
+    assert_eq!(parsed[0].lead, CreditLead::Role("role-a"));
+    assert_eq!(
+        parsed[0].name_segments,
+        [NameSegment::Unbracketed(Unbracketed("name-role-a"))],
+    );
+}
+
+/// A role-less credit line opens with a bracketed highlight rather
+/// than a registered role. The bracket is captured as the lead and the
+/// remainder is the name, so a section entry such as `[label-a] name-a`
+/// parses without an unknown-role error.
+#[test]
+fn role_less_line_captures_a_bracket_lead() {
+    let descriptor = make_descriptor(&["role-a"]);
+    let roles = make_roles(&descriptor);
+    let parsed = parse_credit_line("[label-a] name-a", &roles).unwrap();
+    assert_eq!(parsed.len(), 1);
+    assert_eq!(
+        parsed[0].lead,
+        CreditLead::Special("[label-a]".pipe(Bracketed::try_from).unwrap()),
+    );
+    assert_eq!(
+        parsed[0].name_segments,
+        [NameSegment::Unbracketed(Unbracketed("name-a"))],
+    );
+}
+
+/// A bare bracket line is a role-less lead with no name: the lead is
+/// the bracket and the name region is empty, so the renderers emit
+/// just the highlight span.
+#[test]
+fn bare_bracket_line_is_a_role_less_header() {
+    let descriptor = make_descriptor(&["role-a"]);
+    let roles = make_roles(&descriptor);
+    let parsed = parse_credit_line("[label-a]", &roles).unwrap();
+    assert_eq!(parsed.len(), 1);
+    assert_eq!(
+        parsed[0].lead,
+        CreditLead::Special("[label-a]".pipe(Bracketed::try_from).unwrap()),
+    );
+    assert!(parsed[0].name_segments.is_empty());
+}
+
+/// A role-only header line carries a role and no name. The lead is the
+/// role and the name region is empty, so the renderers can emit just
+/// the role span for a section header.
+#[test]
+fn role_only_header_line_has_no_name() {
+    let descriptor = make_descriptor(&["role-a"]);
+    let roles = make_roles(&descriptor);
+    let parsed = parse_credit_line("role-a", &roles).unwrap();
+    assert_eq!(parsed.len(), 1);
+    assert_eq!(parsed[0].lead, CreditLead::Role("role-a"));
+    assert!(parsed[0].name_segments.is_empty());
 }
 
 #[test]
@@ -158,7 +224,56 @@ fn multiple_highlights_interleave_with_plain_text() {
 }
 
 #[test]
-fn bracketed_accepts_three_pair_kinds() {
+fn separator_style_follows_the_colon_glyph() {
+    let descriptor = make_descriptor(&["role-a"]);
+    let roles = make_roles(&descriptor);
+
+    // A full-width colon selects the CJK layout, even when an ASCII
+    // colon shares the run, because the full-width glyph takes
+    // priority.
+    let full_width = parse_credit_line("role-a：name-a", &roles).unwrap();
+    assert_eq!(
+        full_width[0].separator_style(),
+        SeparatorStyle::FullWidthColon,
+    );
+    let mixed = parse_credit_line("role-a:：name-a", &roles).unwrap();
+    assert_eq!(mixed[0].separator_style(), SeparatorStyle::FullWidthColon);
+
+    // A lone ASCII colon selects the Latin layout.
+    let ascii = parse_credit_line("role-a: name-a", &roles).unwrap();
+    assert_eq!(ascii[0].separator_style(), SeparatorStyle::AsciiColon);
+
+    // A colon-free separator carries its captured run through for the
+    // renderer to reproduce verbatim.
+    let spaces = parse_credit_line("role-a  name-a", &roles).unwrap();
+    assert_eq!(spaces[0].separator_style(), SeparatorStyle::Spaces("  "));
+}
+
+#[test]
+fn lead_span_suffix_emits_a_colon_only_for_the_latin_layout() {
+    assert_eq!(SeparatorStyle::AsciiColon.lead_span_suffix(), ":");
+    assert_eq!(SeparatorStyle::FullWidthColon.lead_span_suffix(), "");
+    assert_eq!(SeparatorStyle::Spaces("  ").lead_span_suffix(), "");
+}
+
+#[test]
+fn between_span_separator_follows_the_layout() {
+    let emit = |style: SeparatorStyle<'_>| {
+        let mut output = String::new();
+        style.append_between_spans(&mut output);
+        output
+    };
+    assert_eq!(emit(SeparatorStyle::AsciiColon), " ");
+    assert_eq!(emit(SeparatorStyle::FullWidthColon), "：");
+    // A colon-free ASCII gutter round-trips verbatim.
+    assert_eq!(emit(SeparatorStyle::Spaces("  ")), "  ");
+    // `\u{3000}` IDEOGRAPHIC SPACE is not an ASCII gutter, so it
+    // collapses to a single ASCII space.
+    assert_eq!(emit(SeparatorStyle::Spaces("\u{3000}")), " ");
+}
+
+#[test]
+fn bracketed_accepts_four_pair_kinds() {
     let (lenticular, rest) = Bracketed::take("【gold】tail").unwrap();
     assert_eq!(lenticular.as_str(), "【gold】");
     assert_eq!(rest, "tail");
@@ -169,6 +284,10 @@ fn bracketed_accepts_three_pair_kinds() {
 
     let (round, rest) = Bracketed::take("(bronze)tail").unwrap();
     assert_eq!(round.as_str(), "(bronze)");
+    assert_eq!(rest, "tail");
+
+    let (full_width_round, rest) = Bracketed::take("（copper）tail").unwrap();
+    assert_eq!(full_width_round.as_str(), "（copper）");
     assert_eq!(rest, "tail");
 }
 

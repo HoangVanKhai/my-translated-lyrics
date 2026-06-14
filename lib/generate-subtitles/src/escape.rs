@@ -1,5 +1,4 @@
-//! Small text-to-tag-body helpers shared by the SRT and WebVTT
-//! renderers.
+//! HTML-style escaping for SRT and WebVTT cue-tag bodies.
 //!
 //! [`Escaped`] is an HTML-style escape for characters that would
 //! otherwise terminate a WebVTT or SRT tag (`<`, `>`) or open an HTML
@@ -8,11 +7,6 @@
 //! text. SRT has no formal spec, but every mainstream player accepts
 //! the same HTML entity references in practice, so one helper covers
 //! both renderers.
-//!
-//! [`append_separator_for_output`] reproduces the between-tag
-//! separator captured from the credit source line. ASCII space/tab
-//! runs round-trip verbatim so a multi-space gutter survives; every
-//! other separator shape collapses to a single ASCII space.
 
 use core::fmt::{self, Write};
 
@@ -34,20 +28,6 @@ impl fmt::Display for Escaped<'_> {
             }
         }
         Ok(())
-    }
-}
-
-/// Appends the separator run from a credit source line into the
-/// renderer's output buffer. ASCII space/tab runs pass through
-/// verbatim so a multi-space gutter survives round-tripping; any
-/// other separator shape (`：`, `\u{3000}`, mixed whitespace, or
-/// punctuation that the credit parser accepted) collapses to a
-/// single ASCII space on output.
-pub fn append_separator_for_output(output: &mut String, raw: &str) {
-    if !raw.is_empty() && raw.chars().all(|ch| ch == ' ' || ch == '\t') {
-        output.push_str(raw);
-    } else {
-        output.push(' ');
     }
 }
 

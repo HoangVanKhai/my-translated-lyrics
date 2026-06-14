@@ -8,10 +8,13 @@
 //! for bracketed spans that become [`NameSegment::Bracketed`]
 //! values; anything else becomes [`NameSegment::Unbracketed`].
 //!
-//! A credit line whose first non-whitespace token is not a known
-//! role raises [`ParseCreditError::UnknownRole`]. This lets the
-//! integration tests catch typos such as `作詞` vs `作词` before
-//! they ever reach `dist/`.
+//! A credit line normally opens with a registered role, but a
+//! role-less line may instead open with a bracketed span (a
+//! [`CreditLead::Special`] highlight) that stands in for the role. A
+//! line whose first non-whitespace token is neither a known role nor a
+//! bracketed span raises [`ParseCreditError::UnknownRole`], which lets
+//! the integration tests catch a mistyped role label before it ever
+//! reaches `dist/`.
 //!
 //! Only the `credit-roles` list is consumed by this parser. The
 //! `credit-names` list on [`CreditsDesc`] is loaded and carried
@@ -27,20 +30,108 @@ use lyrics_core::credits_descriptor::CreditsDesc;
 use lyrics_core::video_descriptor::Language;
 use pipe_trait::Pipe;
 
-/// A structural role/name pair extracted from one credit line.
+/// A structural lead/name pair extracted from one credit line.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CreditPair<'a> {
-    /// The role cell, exactly as it appeared in the source line.
-    pub role: &'a str,
-    /// Raw separator text captured between the role cell and the
-    /// name cell, preserved verbatim for the renderer to decide how
-    /// to emit it: ASCII space/tab runs survive unchanged (so a
-    /// multi-space gutter round-trips), while other shapes such as
-    /// `：` or `\u{3000}` collapse to a single ASCII space.
+    /// What opens the line: a role, or a role-less bracket highlight.
+    pub lead: CreditLead<'a>,
+    /// Raw separator text captured between the lead cell and the
+    /// name cell, preserved verbatim so the renderer can decide how
+    /// to emit it. [`CreditPair::separator_style`] reads this field
+    /// to choose between a CJK colon, a Latin colon, or a verbatim
+    /// space gutter.
     pub separator: &'a str,
     /// Decomposed name region, with bracketed and unbracketed
-    /// segments.
+    /// segments. Empty for a header line that carries no name, whether
+    /// a role-only header or a bare bracket-lead line.
     pub name_segments: Vec<NameSegment<'a>>,
+}
+
+/// What opens a credit line.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CreditLead<'a> {
+    /// A registered role, rendered in the credit role color.
+    Role(&'a str),
+    /// A bracketed span that opens a role-less line (a highlighted
+    /// label ahead of a contributor name), rendered in the credit
+    /// highlight color in place of a role span.
+    Special(Bracketed<'a>),
+}
+
+impl<'a> CreditPair<'a> {
+    /// Classifies this pair's separator into the layout the renderers
+    /// should produce. The choice of colon glyph in the source line
+    /// selects the layout, so the policy stays data-driven and
+    /// symmetric with the separator-tolerant parser: a full-width
+    /// colon yields [`SeparatorStyle::FullWidthColon`], a lone ASCII
+    /// colon yields [`SeparatorStyle::AsciiColon`], and a colon-free
+    /// separator yields [`SeparatorStyle::Spaces`].
+    pub fn separator_style(&self) -> SeparatorStyle<'a> {
+        if self.separator.contains('：') {
+            SeparatorStyle::FullWidthColon
+        } else if self.separator.contains(':') {
+            SeparatorStyle::AsciiColon
+        } else {
+            SeparatorStyle::Spaces(self.separator)
+        }
+    }
+}
+
+/// How a credit pair's role-to-name separator is presented in the
+/// rendered output. The variant is derived from [`CreditPair::separator`]
+/// by [`CreditPair::separator_style`]. Authors pick the layout by
+/// typing the matching colon in the source: full-width `：` in CJK
+/// lyrics, ASCII `:` in Latin-script lyrics.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SeparatorStyle<'a> {
+    /// The separator carried a full-width colon (`：`). The renderer
+    /// emits a full-width colon between the lead and name spans with
+    /// no surrounding spaces, the convention for CJK credit lines.
+    FullWidthColon,
+    /// The separator carried an ASCII colon (`:`) and no full-width
+    /// colon. The renderer tucks an ASCII colon inside the lead span
+    /// and follows it with one ASCII space, the convention for
+    /// Latin-script credit lines.
+    AsciiColon,
+    /// The separator was free of colons. The captured run is carried
+    /// through verbatim so an ASCII space or tab gutter round-trips;
+    /// any other whitespace shape collapses to a single ASCII space.
+    /// See [`SeparatorStyle::append_between_spans`].
+    Spaces(&'a str),
+}
+
+impl SeparatorStyle<'_> {
+    /// The colon, if any, that belongs inside the lead's styled span
+    /// (a role or a role-less bracket highlight). A Latin-script credit
+    /// line ([`SeparatorStyle::AsciiColon`]) tucks an ASCII colon
+    /// inside the lead's color; the CJK and colon-free layouts
+    /// contribute nothing here and place their separator between the
+    /// spans with [`SeparatorStyle::append_between_spans`].
+    pub fn lead_span_suffix(self) -> &'static str {
+        match self {
+            SeparatorStyle::AsciiColon => ":",
+            SeparatorStyle::FullWidthColon | SeparatorStyle::Spaces(_) => "",
+        }
+    }
+
+    /// Appends the separator that sits between the lead span and the
+    /// name span: one ASCII space after a Latin colon, a full-width
+    /// colon for the CJK layout, or the colon-free gutter. An ASCII
+    /// space or tab gutter round-trips verbatim; any other whitespace
+    /// shape collapses to a single ASCII space.
+    pub fn append_between_spans(self, output: &mut String) {
+        match self {
+            SeparatorStyle::AsciiColon => output.push(' '),
+            SeparatorStyle::FullWidthColon => output.push('：'),
+            SeparatorStyle::Spaces(raw) => {
+                if !raw.is_empty() && raw.chars().all(|ch| ch == ' ' || ch == '\t') {
+                    output.push_str(raw);
+                } else {
+                    output.push(' ');
+                }
+            }
+        }
+    }
 }
 
 /// A unit within the name region of a credit pair.
@@ -48,8 +139,8 @@ pub struct CreditPair<'a> {
 pub enum NameSegment<'a> {
     /// A run of text that contains no parseable bracketed span.
     Unbracketed(Unbracketed<'a>),
-    /// A bracketed span (`【...】`, `[...]`, or `(...)`), with the
-    /// surrounding brackets included in the wrapped slice.
+    /// A bracketed span (`【...】`, `[...]`, `(...)`, or `（...）`),
+    /// with the surrounding brackets included in the wrapped slice.
     Bracketed(Bracketed<'a>),
 }
 
@@ -110,12 +201,13 @@ impl<'a> NameSegmentPair<'a> {
 pub struct Bracketed<'a>(&'a str);
 
 impl<'a> Bracketed<'a> {
-    /// Consumes a leading bracketed span. The three recognized
-    /// pairs are `【...】`, `[...]`, and `(...)`. The bytes between
-    /// the opening and closing characters must contain none of
-    /// those six characters; if another bracket is encountered
-    /// before the matching close, no value is produced and the
-    /// caller is free to re-interpret the input as ordinary text.
+    /// Consumes a leading bracketed span. The four recognized
+    /// pairs are `【...】`, `[...]`, `(...)`, and the full-width
+    /// `（...）`. The bytes between the opening and closing
+    /// characters must contain none of those eight characters; if
+    /// another bracket is encountered before the matching close, no
+    /// value is produced and the caller is free to re-interpret the
+    /// input as ordinary text.
     pub fn take(input: &'a str) -> Option<(Self, &'a str)> {
         let mut chars = input.char_indices();
         let (_, open) = chars.next()?;
@@ -175,12 +267,13 @@ fn matching_close(open: char) -> Option<char> {
         '【' => Some('】'),
         '[' => Some(']'),
         '(' => Some(')'),
+        '（' => Some('）'),
         _ => None,
     }
 }
 
 fn is_bracket_char(ch: char) -> bool {
-    matches!(ch, '【' | '】' | '[' | ']' | '(' | ')')
+    matches!(ch, '【' | '】' | '[' | ']' | '(' | ')' | '（' | '）')
 }
 
 /// The role set for one language, built from `credits.yaml` and
@@ -213,7 +306,21 @@ impl<'a> CreditRoles<'a> {
 
     fn take_until_role<'input>(&self, input: &'input str) -> (&'input str, &'input str) {
         let mut cursor = 0;
-        while cursor < input.len() && self.take_role(&input[cursor..]).is_none() {
+        while cursor < input.len() {
+            // A registered role only opens a new cell when it begins at
+            // a cell boundary: the start of the name region (which
+            // already follows the previous cell's separator) or right
+            // after a separator character. A role token that appears
+            // inside a name rather than at a cell boundary is part of
+            // the name and must not split it.
+            let at_cell_boundary = cursor == 0
+                || input[..cursor]
+                    .chars()
+                    .next_back()
+                    .is_some_and(is_separator_char);
+            if at_cell_boundary && self.take_role(&input[cursor..]).is_some() {
+                break;
+            }
             let Some(next_char) = input[cursor..].chars().next() else {
                 break;
             };
@@ -233,19 +340,26 @@ pub fn parse_credit_line<'a>(
     let (_, mut rest) = take_leading_whitespace(line);
 
     while !rest.is_empty() {
-        let (role, after_role) = roles.take_role(rest).ok_or_else(|| {
-            ParseCreditError::UnknownRole(UnknownRole {
+        // A cell opens with a registered role, or, on a role-less
+        // line, with a bracketed span that the renderers highlight in
+        // place of a role. Anything else is unrecognized text.
+        let (lead, after_lead) = if let Some((role, after_role)) = roles.take_role(rest) {
+            (CreditLead::Role(role), after_role)
+        } else if let Some((bracket, after_bracket)) = Bracketed::take(rest) {
+            (CreditLead::Special(bracket), after_bracket)
+        } else {
+            return Err(ParseCreditError::UnknownRole(UnknownRole {
                 line: line.to_string(),
                 offset: line.len() - rest.len(),
-            })
-        })?;
-        let (separator, after_separator) = take_cell_separator(after_role);
+            }));
+        };
+        let (separator, after_separator) = take_cell_separator(after_lead);
         let (raw_name_region, after_name) = roles.take_until_role(after_separator);
         let name_region = trim_end_separator(raw_name_region);
         let name_segments = parse_name_region(name_region);
 
         pairs.push(CreditPair {
-            role,
+            lead,
             separator,
             name_segments,
         });

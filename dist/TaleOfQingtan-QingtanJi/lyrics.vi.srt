@@ -108,12 +108,12 @@
 
 28
 00:01:59,715 --> 00:02:07,075
-<font color="#AAAA22">Tác từ</font> <font color="#AAAAAA">雨観</font> <font color="#AAAA22">Biên khúc</font> <font color="#AAAAAA">雨観</font> <font color="#AAAA22">VSINGER</font> <font color="#AAAAAA">Luo Tianyi X Yuezheng Ling</font> <font color="#AAAA22">Sáo</font> <font color="#AAAAAA">再也不上课</font>
-<font color="#AAAA22">Tác khúc</font> <font color="#AAAAAA">雨観</font> <font color="#AAAA22">Trình bày</font> <font color="#AAAAAA">雨観X溪里</font> <font color="#AAAA22">Điều giáo</font> <font color="#AAAAAA">鬼面P</font>
+<font color="#AAAA22">Tác từ:</font> <font color="#AAAAAA">雨観</font> <font color="#AAAA22">Biên khúc:</font> <font color="#AAAAAA">雨観</font> <font color="#AAAA22">VSINGER:</font> <font color="#AAAAAA">Luo Tianyi X Yuezheng Ling</font> <font color="#AAAA22">Sáo:</font> <font color="#AAAAAA">再也不上课</font>
+<font color="#AAAA22">Tác khúc:</font> <font color="#AAAAAA">雨観</font> <font color="#AAAA22">Trình bày:</font> <font color="#AAAAAA">雨観X溪里</font> <font color="#AAAA22">Điều giáo:</font> <font color="#AAAAAA">鬼面P</font>
 
 29
 00:02:07,075 --> 00:02:10,720
-<font color="#AAAA22">Sản xuất</font> <font color="#AAAAAA">雨観</font> <font color="#AAAA22">Hình ảnh</font> <font color="#AAAAAA">Vsinger团队</font> <font color="#AAAA22">Mỹ thuật</font> <font color="#AAAAAA">碎夊</font> <font color="#AAAA22">PV</font> <font color="#AAAAAA">超级水水</font> <font color="#AAAA22">Cảm ơn</font> <font color="#AAAAAA">山晚樵渔</font>
+<font color="#AAAA22">Sản xuất:</font> <font color="#AAAAAA">雨観</font> <font color="#AAAA22">Hình ảnh:</font> <font color="#AAAAAA">Vsinger团队</font> <font color="#AAAA22">Mỹ thuật:</font> <font color="#AAAAAA">碎夊</font> <font color="#AAAA22">PV:</font> <font color="#AAAAAA">超级水水</font> <font color="#AAAA22">Cảm ơn:</font> <font color="#AAAAAA">山晚樵渔</font>
 
 30
 00:02:15,000 --> 00:02:18,475

@@ -7,11 +7,15 @@
 //! Credit lines go through the same role-driven parser as the VTT
 //! renderer and emit each role and name with the palette's credit
 //! colors, repeated inline because SRT has no central style definition.
+//! The lead-to-name separator follows [`CreditPair::separator_style`]:
+//! a full-width colon sits uncolored between the two spans, an ASCII
+//! colon rides inside the lead's `<font>` before a single space, and a
+//! colon-free gutter reproduces its ASCII spacing verbatim.
 
 use super::credits_parse::{
-    CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,
+    CreditLead, CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,
 };
-use super::escape::{Escaped, append_separator_for_output};
+use super::escape::Escaped;
 use super::parse::{CuePart, SubtitleCue};
 use super::styles::{MissingStyle, Style, StylePalette};
 use core::fmt::Write;
@@ -157,14 +161,26 @@ fn render_credit_line(output: &mut String, palette: &StylePalette, pairs: &[Cred
 }
 
 fn render_credit_pair(output: &mut String, palette: &StylePalette, pair: &CreditPair) {
+    let style = pair.separator_style();
+    // The lead is a role (role color) or, on a role-less line, a
+    // bracket highlight (special color); either carries any Latin
+    // colon inside its own span.
+    let (color, text) = match pair.lead {
+        CreditLead::Role(role) => (&palette.credit.role, role),
+        CreditLead::Special(bracket) => (&palette.credit.special, bracket.as_str()),
+    };
     write!(
         output,
-        r#"<font color="{color}">{text}</font>"#,
-        color = palette.credit.role,
-        text = Escaped(pair.role),
+        r#"<font color="{color}">{text}{colon}</font>"#,
+        text = Escaped(text),
+        colon = style.lead_span_suffix(),
     )
     .unwrap();
-    append_separator_for_output(output, pair.separator);
+    // A role-only header line carries no name; emit just the lead.
+    if pair.name_segments.is_empty() {
+        return;
+    }
+    style.append_between_spans(output);
     write!(output, r#"<font color="{}">"#, palette.credit.name).unwrap();
     write_name_segments(output, palette, &pair.name_segments);
     output.push_str("</font>");
