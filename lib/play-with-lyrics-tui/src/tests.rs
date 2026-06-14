@@ -19,7 +19,7 @@ use unicode_width::UnicodeWidthStr;
 /// different row or a late click is not.
 #[test]
 fn is_double_click_needs_the_same_row_within_the_window() {
-    let first = SystemTime::UNIX_EPOCH;
+    let first = SystemTime::UNIX_EPOCH + Duration::from_secs(1_590_373_467);
     assert!(is_double_click(
         Some((first, 3)),
         first + Duration::from_millis(100),
@@ -228,7 +228,7 @@ fn select_one_returns_the_highlighted_row() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_669_457_355)
         }
     }
     impl WindowSize for Scripted {
@@ -258,7 +258,7 @@ fn select_one_cancels_on_escape() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_617_613_607)
         }
     }
     impl WindowSize for Scripted {
@@ -284,7 +284,7 @@ fn select_one_cancels_on_ctrl_c() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_684_364_767)
         }
     }
     impl WindowSize for Scripted {
@@ -310,7 +310,7 @@ fn select_one_keeps_the_cursor_within_bounds() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_587_858_250)
         }
     }
     impl WindowSize for Scripted {
@@ -343,7 +343,7 @@ fn select_one_ignores_non_press_events() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_632_765_214)
         }
     }
     impl WindowSize for Scripted {
@@ -378,7 +378,7 @@ fn select_one_enter_is_a_no_op_for_an_empty_list() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_660_150_297)
         }
     }
     impl WindowSize for Scripted {
@@ -408,7 +408,7 @@ fn select_video_filters_then_selects() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_762_678_056)
         }
     }
     impl WindowSize for Scripted {
@@ -442,7 +442,7 @@ fn select_video_backspace_widens_the_query() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_688_012_705)
         }
     }
     impl WindowSize for Scripted {
@@ -475,7 +475,7 @@ fn select_video_cancels_on_escape() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_646_430_706)
         }
     }
     impl WindowSize for Scripted {
@@ -502,7 +502,7 @@ fn select_video_quits_on_ctrl_q() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_645_457_949)
         }
     }
     impl WindowSize for Scripted {
@@ -530,7 +530,7 @@ fn select_video_quits_on_ctrl_q_upper_case() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_611_722_613)
         }
     }
     impl WindowSize for Scripted {
@@ -558,7 +558,7 @@ fn select_video_treats_a_bare_q_as_a_filter_character() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_680_338_900)
         }
     }
     impl WindowSize for Scripted {
@@ -590,7 +590,7 @@ fn select_one_quits_on_q() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_602_298_170)
         }
     }
     impl WindowSize for Scripted {
@@ -616,7 +616,7 @@ fn select_one_quits_on_shift_q() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_684_603_475)
         }
     }
     impl WindowSize for Scripted {
@@ -642,7 +642,7 @@ fn select_one_quits_on_ctrl_q() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_724_331_079)
         }
     }
     impl WindowSize for Scripted {
@@ -682,7 +682,7 @@ fn select_video_header_shows_native_language_names() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_668_062_428)
         }
     }
     impl WindowSize for Scripted {
@@ -715,7 +715,7 @@ fn select_video_header_truncates_in_a_narrow_terminal() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_628_105_030)
         }
     }
     impl WindowSize for Scripted {
@@ -747,7 +747,7 @@ fn select_video_renders_only_the_visible_window() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_722_259_165)
         }
     }
     impl WindowSize for Scripted {
@@ -786,7 +786,7 @@ fn select_video_renders_with_a_fallback_size_when_size_is_unavailable() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_728_497_133)
         }
     }
     impl WindowSize for Scripted {
@@ -816,7 +816,7 @@ fn select_video_ctrl_backspace_goes_back() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_762_452_348)
         }
     }
     impl WindowSize for Scripted {
@@ -844,7 +844,7 @@ fn select_video_plain_backspace_does_not_go_back() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_705_233_553)
         }
     }
     impl WindowSize for Scripted {
@@ -876,7 +876,7 @@ fn select_one_selects_on_space() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_648_099_508)
         }
     }
     impl WindowSize for Scripted {
@@ -905,7 +905,7 @@ fn select_one_backspace_goes_back() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_715_598_825)
         }
     }
     impl WindowSize for Scripted {
@@ -931,7 +931,7 @@ fn select_one_ctrl_backspace_goes_back() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_661_191_560)
         }
     }
     impl WindowSize for Scripted {
@@ -958,7 +958,7 @@ fn select_video_underlines_matched_characters() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_761_568_740)
         }
     }
     impl WindowSize for Scripted {
@@ -991,7 +991,7 @@ fn select_video_does_not_underline_without_a_query() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_757_755_084)
         }
     }
     impl WindowSize for Scripted {
@@ -1020,7 +1020,7 @@ fn select_video_footer_shows_delete_and_back() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_641_715_796)
         }
     }
     impl WindowSize for Scripted {
@@ -1050,7 +1050,7 @@ fn select_one_starts_on_the_given_row() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_682_507_444)
         }
     }
     impl WindowSize for Scripted {
@@ -1077,7 +1077,7 @@ fn select_one_clamps_an_out_of_range_start() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_721_678_388)
         }
     }
     impl WindowSize for Scripted {
@@ -1104,7 +1104,7 @@ fn select_video_starts_on_the_selected_video() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_737_077_732)
         }
     }
     impl WindowSize for Scripted {
@@ -1137,7 +1137,7 @@ fn select_video_starts_with_the_given_query() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_696_011_440)
         }
     }
     impl WindowSize for Scripted {
@@ -1165,7 +1165,7 @@ fn select_video_writes_back_the_final_query() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_762_767_185)
         }
     }
     impl WindowSize for Scripted {
@@ -1196,7 +1196,7 @@ fn select_one_single_click_highlights_the_clicked_row() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_616_532_322)
         }
     }
     impl WindowSize for Scripted {
@@ -1227,7 +1227,7 @@ fn select_one_single_click_does_not_select() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_682_756_276)
         }
     }
     impl WindowSize for Scripted {
@@ -1256,7 +1256,7 @@ fn select_one_double_click_selects_the_clicked_row() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_726_468_386)
         }
     }
     impl WindowSize for Scripted {
@@ -1282,7 +1282,7 @@ fn select_one_scroll_moves_the_cursor() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_752_709_849)
         }
     }
     impl WindowSize for Scripted {
@@ -1312,7 +1312,7 @@ fn select_video_single_click_highlights_the_clicked_row() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_715_200_158)
         }
     }
     impl WindowSize for Scripted {
@@ -1349,7 +1349,7 @@ fn select_video_single_click_does_not_select() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_599_322_043)
         }
     }
     impl WindowSize for Scripted {
@@ -1379,7 +1379,7 @@ fn select_video_double_click_selects_the_clicked_row() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_758_333_602)
         }
     }
     impl WindowSize for Scripted {
@@ -1410,7 +1410,7 @@ fn select_video_click_above_the_rows_does_nothing() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_767_187_724)
         }
     }
     impl WindowSize for Scripted {
@@ -1440,7 +1440,7 @@ fn select_video_scroll_moves_the_cursor() {
     }
     impl Clock for Scripted {
         fn now() -> SystemTime {
-            SystemTime::UNIX_EPOCH
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_745_793_916)
         }
     }
     impl WindowSize for Scripted {

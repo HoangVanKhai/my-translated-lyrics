@@ -67,8 +67,9 @@ trait WindowSize {
 ///
 /// A dependency-injection seam: a test reports a fixed time so double-click
 /// detection does not depend on how fast the clicks are processed. `SystemTime`
-/// is used rather than `Instant` so the fake can return the `UNIX_EPOCH`
-/// constant; the clock is read only to compare two clicks moments apart, where
+/// is used rather than `Instant` because it can be built at compile time from
+/// the `UNIX_EPOCH` constant, which lets a fake return a fixed moment without a
+/// real clock; the time is read only to compare two clicks moments apart, where
 /// `SystemTime`'s lack of monotonicity does not matter in practice.
 trait Clock {
     fn now() -> SystemTime;
