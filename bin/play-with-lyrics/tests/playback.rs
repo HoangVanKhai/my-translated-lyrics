@@ -16,14 +16,10 @@ fn launches_mpv_with_the_resolved_files() {
     env.install_fake_players();
 
     let (output, recorded) = env.run_played([
-        "--title",
-        "example",
-        "--language",
-        "vi",
-        "--format",
-        "srt",
-        "--player",
-        "mpv",
+        "--title=example",
+        "--language=vi",
+        "--format=srt",
+        "--player=mpv",
     ]);
 
     assert!(output.status.success(), "{output:?}");
@@ -47,14 +43,10 @@ fn launches_celluloid_with_the_mpv_prefixed_flag() {
     env.install_fake_players();
 
     let (output, recorded) = env.run_played([
-        "--title",
-        "example",
-        "--language",
-        "zh",
-        "--format",
-        "vtt",
-        "--player",
-        "celluloid",
+        "--title=example",
+        "--language=zh",
+        "--format=vtt",
+        "--player=celluloid",
     ]);
 
     assert!(output.status.success(), "{output:?}");
@@ -78,7 +70,7 @@ fn a_single_language_and_format_are_selected_automatically() {
     env.install_fake_players();
 
     // Only one language and format are available, so neither flag is needed.
-    let (output, recorded) = env.run_played(["--title", "example", "--player", "mpv"]);
+    let (output, recorded) = env.run_played(["--title=example", "--player=mpv"]);
 
     assert!(output.status.success(), "{output:?}");
     let subtitle = env.library_path(&format!("{VIDEO_TITLE}.vi.srt"));
