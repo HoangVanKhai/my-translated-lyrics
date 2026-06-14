@@ -75,11 +75,11 @@ impl From<PlayerArg> for Player {
 /// [`Language`], with the two-letter codes accepted as aliases.
 #[derive(Debug, Clone, Copy, ValueEnum)]
 enum LanguageArg {
-    #[value(alias = "en")]
+    #[value(name = "en", aliases = ["eng", "english"])]
     English,
-    #[value(alias = "vi")]
+    #[value(name = "vi", aliases = ["vie", "vietnamese"])]
     Vietnamese,
-    #[value(alias = "zh")]
+    #[value(name = "zh", aliases = ["zho", "chinese"])]
     Chinese,
 }
 
@@ -97,9 +97,9 @@ impl From<LanguageArg> for Language {
 /// [`SubtitleFormat`], with the file extensions accepted as aliases.
 #[derive(Debug, Clone, Copy, ValueEnum)]
 enum FormatArg {
-    #[value(alias = "srt")]
+    #[value(name = "srt", alias = "sub-rip")]
     SubRip,
-    #[value(alias = "vtt")]
+    #[value(name = "vtt", alias = "web-vtt")]
     WebVtt,
 }
 
