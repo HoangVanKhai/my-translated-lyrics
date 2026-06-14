@@ -5,10 +5,9 @@
 //!
 //! This crate renders the fuzzy table of titles and the simple list
 //! selectors for the player, language, and subtitle format. It reads key
-//! events and drives a [`Selector`] for the table. The rendering uses plain
-//! character counts for column widths, so wide CJK glyphs may not align
-//! perfectly; the goal here is a readable, navigable list rather than
-//! pixel-perfect columns.
+//! events and drives a [`Selector`] for the table. Column widths follow the
+//! Unicode display width, so a wide glyph such as a CJK ideograph occupies
+//! two columns and the columns stay aligned.
 //!
 //! All drawing goes to standard error, so standard output stays clean. The
 //! commands are sent through the `QueueableCommand` and `ExecutableCommand`
@@ -26,6 +25,7 @@ use fuzzy_select::selection::Selector;
 use lyrics_core::video_descriptor::Language;
 use play_with_lyrics::catalog::Video;
 use std::io::{self, Stderr, Write};
+use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 /// Restores the terminal to its normal state when dropped, even if the
 /// caller returns early or panics.
@@ -51,27 +51,41 @@ impl Drop for TerminalGuard {
     }
 }
 
-/// Pads or truncates `text` to exactly `width` characters, appending an
-/// ellipsis when it has to cut the text short.
+/// Pads or truncates `text` to exactly `width` display columns, appending
+/// an ellipsis when it has to cut the text short. Column counts follow the
+/// Unicode display width, so a wide glyph such as a CJK ideograph counts as
+/// two columns.
 fn fit(text: &str, width: usize) -> String {
-    let characters: Vec<char> = text.chars().collect();
-    if characters.len() <= width {
+    let text_width = text.width();
+    if text_width <= width {
         let mut padded = text.to_string();
-        padded.extend(std::iter::repeat_n(' ', width - characters.len()));
+        padded.extend(std::iter::repeat_n(' ', width - text_width));
         return padded;
     }
     if width == 0 {
         return String::new();
     }
-    let mut truncated: String = characters[..width - 1].iter().collect();
+    // Keep whole characters until the next one would not leave room for the
+    // one-column ellipsis, then pad the column a wide glyph could not fill.
+    let mut truncated = String::new();
+    let mut used = 0;
+    for character in text.chars() {
+        let character_width = character.width().unwrap_or(0);
+        if used + character_width > width - 1 {
+            break;
+        }
+        truncated.push(character);
+        used += character_width;
+    }
     truncated.push('…');
+    truncated.extend(std::iter::repeat_n(' ', width - used - 1));
     truncated
 }
 
 /// Lays out three cells into a single line that fits `total` columns.
 fn columns_line(english: &str, vietnamese: &str, chinese: &str, total: usize) -> String {
     let separator = " │ ";
-    let available = total.saturating_sub(separator.chars().count() * 2);
+    let available = total.saturating_sub(separator.width() * 2);
     let each = (available / 3).max(1);
     format!(
         "{}{separator}{}{separator}{}",

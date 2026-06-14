@@ -1,5 +1,6 @@
 use crate::{columns_line, fit, scroll_offset};
 use pretty_assertions::assert_eq;
+use unicode_width::UnicodeWidthStr;
 
 #[test]
 fn fit_pads_short_text() {
@@ -16,11 +17,25 @@ fn fit_handles_zero_width() {
     assert_eq!(fit("abc", 0), "");
 }
 
-/// Each accented or CJK character counts as one column, not one byte.
+/// Width is measured in display columns: an accented letter is one column,
+/// a CJK ideograph is two.
 #[test]
-fn fit_counts_characters_not_bytes() {
+fn fit_measures_display_width() {
+    // "café" is four single-column characters.
     assert_eq!(fit("café", 4), "café");
-    assert_eq!(fit("示例", 3), "示例 ");
+    // Each ideograph occupies two columns, so "示例" fills four exactly.
+    assert_eq!(fit("示例", 4), "示例");
+    // Padding accounts for the double-width glyphs.
+    assert_eq!(fit("示例", 6), "示例  ");
+}
+
+/// Truncation counts each glyph's width, never overflows the budget, and
+/// pads the column a wide glyph could not fill before the ellipsis.
+#[test]
+fn fit_truncates_wide_characters_to_the_column_budget() {
+    // "示例例" is six columns; in four, one ideograph and the ellipsis fit
+    // and a single padding column fills the rest.
+    assert_eq!(fit("示例例", 4), "示… ");
 }
 
 #[test]
@@ -31,6 +46,15 @@ fn columns_line_splits_the_width_three_ways() {
     assert_eq!(line.matches('│').count(), 2);
     let cells: Vec<&str> = line.split('│').map(str::trim).collect();
     assert_eq!(cells, vec!["alpha", "beta", "gamma"]);
+}
+
+/// Cells with wide glyphs are measured by display width, so the line still
+/// fills exactly `total` columns rather than overrunning the terminal.
+#[test]
+fn columns_line_aligns_wide_characters() {
+    // cspell:locale en vi
+    let line = columns_line("中文", "Tiếng Việt", "示例歌曲", 30);
+    assert_eq!(line.width(), 30);
 }
 
 #[test]

@@ -667,6 +667,7 @@ dependencies = [
  "lyrics-core",
  "play-with-lyrics",
  "pretty_assertions",
+ "unicode-width",
 ]
 
 [[package]]

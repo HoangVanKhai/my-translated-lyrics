@@ -9,6 +9,7 @@ crossterm.workspace = true
 fuzzy-select.workspace = true
 lyrics-core.workspace = true
 play-with-lyrics.workspace = true
+unicode-width.workspace = true
 
 [dev-dependencies]
 pretty_assertions.workspace = true
