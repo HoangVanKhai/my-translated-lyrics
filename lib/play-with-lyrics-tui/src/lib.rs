@@ -30,23 +30,23 @@ use std::io::{self, Stderr, Write};
 /// Restores the terminal to its normal state when dropped, even if the
 /// caller returns early or panics.
 struct TerminalGuard {
-    out: Stderr,
+    output: Stderr,
 }
 
 impl TerminalGuard {
     fn enter() -> io::Result<Self> {
         enable_raw_mode()?;
-        let mut out = io::stderr();
-        out.execute(EnterAlternateScreen)?.execute(Hide)?;
-        Ok(TerminalGuard { out })
+        let mut output = io::stderr();
+        output.execute(EnterAlternateScreen)?.execute(Hide)?;
+        Ok(TerminalGuard { output })
     }
 }
 
 impl Drop for TerminalGuard {
     fn drop(&mut self) {
         // Best effort: there is nothing useful to do if restoring fails.
-        let _ = self.out.execute(Show);
-        let _ = self.out.execute(LeaveAlternateScreen);
+        let _ = self.output.execute(Show);
+        let _ = self.output.execute(LeaveAlternateScreen);
         let _ = disable_raw_mode();
     }
 }
@@ -92,7 +92,7 @@ pub fn select_video(videos: &[Video]) -> io::Result<Option<usize>> {
     let mut guard = TerminalGuard::enter()?;
     let mut selector = Selector::new(videos);
     loop {
-        render_table(&mut guard.out, &selector, videos)?;
+        render_table(&mut guard.output, &selector, videos)?;
         let Event::Key(key) = read()? else {
             continue;
         };
@@ -118,19 +118,25 @@ pub fn select_video(videos: &[Video]) -> io::Result<Option<usize>> {
     }
 }
 
-fn render_table(out: &mut Stderr, selector: &Selector<Video>, videos: &[Video]) -> io::Result<()> {
+fn render_table(
+    output: &mut Stderr,
+    selector: &Selector<Video>,
+    videos: &[Video],
+) -> io::Result<()> {
     let (columns, rows) = size().unwrap_or((80, 24));
     let columns = columns as usize;
     let rows = rows as usize;
 
-    out.queue(Clear(ClearType::All))?;
+    output.queue(Clear(ClearType::All))?;
 
     let prompt = format!("Search: {}", selector.query());
-    out.queue(MoveTo(0, 0))?
+    output
+        .queue(MoveTo(0, 0))?
         .queue(Print(fit(&prompt, columns)))?;
 
     let header = columns_line("English", "Vietnamese", "Chinese", columns);
-    out.queue(MoveTo(0, 1))?
+    output
+        .queue(MoveTo(0, 1))?
         .queue(SetAttribute(Attribute::Bold))?
         .queue(Print(header))?
         .queue(SetAttribute(Attribute::Reset))?;
@@ -151,23 +157,25 @@ fn render_table(out: &mut Stderr, selector: &Selector<Video>, videos: &[Video]) 
             columns,
         );
         let screen_y = (screen_index + 2) as u16;
-        out.queue(MoveTo(0, screen_y))?;
+        output.queue(MoveTo(0, screen_y))?;
         if filtered_position == cursor {
-            out.queue(SetAttribute(Attribute::Reverse))?
+            output
+                .queue(SetAttribute(Attribute::Reverse))?
                 .queue(Print(line))?
                 .queue(SetAttribute(Attribute::Reset))?;
         } else {
-            out.queue(Print(line))?;
+            output.queue(Print(line))?;
         }
     }
 
     let help = "↑/↓ move · type to filter · Enter select · Esc cancel";
-    out.queue(MoveTo(0, rows.saturating_sub(1) as u16))?
+    output
+        .queue(MoveTo(0, rows.saturating_sub(1) as u16))?
         .queue(SetAttribute(Attribute::Dim))?
         .queue(Print(fit(help, columns)))?
         .queue(SetAttribute(Attribute::Reset))?;
 
-    out.flush()
+    output.flush()
 }
 
 #[cfg(test)]
@@ -180,7 +188,7 @@ pub fn select_one(prompt: &str, labels: &[String]) -> io::Result<Option<usize>> 
     let mut guard = TerminalGuard::enter()?;
     let mut cursor = 0;
     loop {
-        render_list(&mut guard.out, prompt, labels, cursor)?;
+        render_list(&mut guard.output, prompt, labels, cursor)?;
         let Event::Key(key) = read()? else {
             continue;
         };
@@ -208,12 +216,18 @@ pub fn select_one(prompt: &str, labels: &[String]) -> io::Result<Option<usize>> 
     }
 }
 
-fn render_list(out: &mut Stderr, prompt: &str, labels: &[String], cursor: usize) -> io::Result<()> {
+fn render_list(
+    output: &mut Stderr,
+    prompt: &str,
+    labels: &[String],
+    cursor: usize,
+) -> io::Result<()> {
     let (columns, _) = size().unwrap_or((80, 24));
     let columns = columns as usize;
 
-    out.queue(Clear(ClearType::All))?;
-    out.queue(MoveTo(0, 0))?
+    output.queue(Clear(ClearType::All))?;
+    output
+        .queue(MoveTo(0, 0))?
         .queue(SetAttribute(Attribute::Bold))?
         .queue(Print(fit(prompt, columns)))?
         .queue(SetAttribute(Attribute::Reset))?;
@@ -221,15 +235,16 @@ fn render_list(out: &mut Stderr, prompt: &str, labels: &[String], cursor: usize)
     for (index, label) in labels.iter().enumerate() {
         let screen_y = (index + 1) as u16;
         let line = fit(label, columns);
-        out.queue(MoveTo(0, screen_y))?;
+        output.queue(MoveTo(0, screen_y))?;
         if index == cursor {
-            out.queue(SetAttribute(Attribute::Reverse))?
+            output
+                .queue(SetAttribute(Attribute::Reverse))?
                 .queue(Print(line))?
                 .queue(SetAttribute(Attribute::Reset))?;
         } else {
-            out.queue(Print(line))?;
+            output.queue(Print(line))?;
         }
     }
 
-    out.flush()
+    output.flush()
 }
