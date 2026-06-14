@@ -23,7 +23,7 @@ use crossterm::terminal::{
 use crossterm::{ExecutableCommand, QueueableCommand};
 use fuzzy_select::selection::Selector;
 use lyrics_core::video_descriptor::Language;
-use play_with_lyrics::catalog::Video;
+use play_with_lyrics::catalog::{Video, language_label};
 use std::io::{self, Stderr, Write};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
@@ -183,7 +183,12 @@ fn render_table(
         .queue(MoveTo(0, 0))?
         .queue(Print(fit(&prompt, columns)))?;
 
-    let header = columns_line("English", "Vietnamese", "Chinese", columns);
+    let header = columns_line(
+        language_label(Language::English),
+        language_label(Language::Vietnamese),
+        language_label(Language::Chinese),
+        columns,
+    );
     output
         .queue(MoveTo(0, 1))?
         .queue(SetAttribute(Attribute::Bold))?
