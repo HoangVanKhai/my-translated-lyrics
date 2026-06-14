@@ -8,9 +8,12 @@
 //! for bracketed spans that become [`NameSegment::Bracketed`]
 //! values; anything else becomes [`NameSegment::Unbracketed`].
 //!
-//! A credit line whose first non-whitespace token is not a known
-//! role raises [`ParseCreditError::UnknownRole`]. This lets the
-//! integration tests catch typos such as `作詞` vs `作词` before
+//! A credit line normally opens with a registered role, but a
+//! role-less line may instead open with a bracketed span (a
+//! [`CreditLead::Special`] highlight) that stands in for the role. A
+//! line whose first non-whitespace token is neither a known role nor a
+//! bracketed span raises [`ParseCreditError::UnknownRole`], which lets
+//! the integration tests catch typos such as `作詞` vs `作词` before
 //! they ever reach `dist/`.
 //!
 //! Only the `credit-roles` list is consumed by this parser. The
