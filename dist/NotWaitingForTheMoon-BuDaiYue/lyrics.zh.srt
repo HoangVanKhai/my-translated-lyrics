@@ -124,7 +124,10 @@
 
 32
 00:01:56,532 --> 00:01:59,110
-<font color="#AAAA22">视频底图</font>  <font color="#AAAAAA"><font color="#55ABCD">[疏楼曲]</font>青菏 <font color="#55ABCD">[不能画]</font>太阳暖暖 <font color="#55ABCD">[不能画]</font>行殊</font>
+<font color="#AAAA22">视频底图</font>
+<font color="#55ABCD">[疏楼曲]</font> <font color="#AAAAAA">青菏</font>
+<font color="#55ABCD">[不能画]</font> <font color="#AAAAAA">太阳暖暖</font>
+<font color="#55ABCD">[不能画]</font> <font color="#AAAAAA">行殊</font>
 
 33
 00:02:11,808 --> 00:02:15,107
@@ -164,7 +167,10 @@
 
 42
 00:02:36,367 --> 00:02:38,969
-<font color="#AAAA22">视频底图</font>  <font color="#AAAAAA"><font color="#55ABCD">[疏楼曲]</font>青菏 <font color="#55ABCD">[不能画]</font>太阳暖暖 <font color="#55ABCD">[不能画]</font>行殊</font>
+<font color="#AAAA22">视频底图</font>
+<font color="#55ABCD">[疏楼曲]</font> <font color="#AAAAAA">青菏</font>
+<font color="#55ABCD">[不能画]</font> <font color="#AAAAAA">太阳暖暖</font>
+<font color="#55ABCD">[不能画]</font> <font color="#AAAAAA">行殊</font>
 
 43
 00:02:59,165 --> 00:03:05,997

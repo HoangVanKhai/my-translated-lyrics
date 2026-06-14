@@ -45,7 +45,10 @@
 01:50.475 cre: Điều giáo: 流绪
 01:52.438 cre: Minh họa: 甘小宁
 01:54.508 cre: Video: 卷毛兔w
-01:56.532 cre: Nền Video  [疏楼曲]青菏 [不能画]太阳暖暖 [不能画]行殊
+01:56.532 cre: Nền Video:
+               [疏楼曲] 青菏
+               [不能画] 太阳暖暖
+               [不能画] 行殊
 01:59.110 clr
 
 02:11.808 LRC: Ngước mắt nhìn trời, một cây hoa lửa hóa thành luồng sáng
@@ -57,7 +60,10 @@
 02:30.292 cre: Điều giáo: 流绪
 02:32.043 cre: Minh họa: 甘小宁
 02:34.184 cre: Video: 卷毛兔w
-02:36.367 cre: Nền Video  [疏楼曲]青菏 [不能画]太阳暖暖 [不能画]行殊
+02:36.367 cre: Nền Video:
+               [疏楼曲] 青菏
+               [不能画] 太阳暖暖
+               [不能画] 行殊
 02:38.969 clr
 
 02:59.165 ttl: Chẳng Đợi Trăng
