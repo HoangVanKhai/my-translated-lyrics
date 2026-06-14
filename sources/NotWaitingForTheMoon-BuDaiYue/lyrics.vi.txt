@@ -1,0 +1,66 @@
+# clr: Xóa chữ trên màn hình
+# LRC: Lời bài hát (không rõ người trình bày)
+# ttl: Tiêu đề ca khúc
+# cre: Thông tin sản xuất
+# eov: Kết thúc MV
+
+00:07.366 ttl: Chẳng Đợi Trăng
+00:12.762 LRC: Ngẩng đầu thấy trăng sáng bên mình, mới hay trời đã tối
+00:16.005 LRC: Một ngày thanh nhàn trôi qua, vui đùa cùng mèo nhỏ
+00:19.040 LRC: Muốn hướng về phố dài, xách theo một chiếc đèn hoa
+00:22.334 LRC: Đường đá xanh vừa lấm bùn, cành sen lại thêm vài phần sắc thắm
+00:26.120 LRC: Tiếng sáo lại gần, tiếng trà lâu mời khách chậm rãi vang lên
+00:29.239 LRC: Bánh hoa gạo nếp nhà ai, tỏa hương khiến lòng thèm thuồng
+00:32.604 LRC: Thấy bạn tay cầm xâu kẹo hồ lô
+00:35.747 LRC: Lén giấu một viên, che miệng hỏi xem ai đang đuổi theo
+00:39.095 LRC: Sánh bước thành đôi, đèn lồng nơi phố thị khẽ đung đưa
+00:42.459 clr
+
+00:42.462 LRC: Quạt tròn khẽ che, đếm bao đóa hoa cài tóc, dạo qua ngõ nhỏ
+00:45.758 clr
+
+00:45.763 LRC: Cùng ngắm lưu ly, vạt áo đầy gió mang theo hương thơm còn sót lại
+00:49.111 LRC: Gặp gỡ khó thay, khóe mày đưa tình, thủ thỉ chuyện trò miên man
+00:53.191 clr
+
+01:00.255 ttl: Chẳng Đợi Trăng
+01:05.821 LRC: Nắm tay bên cầu đá, sắc hồ nhạt nhòa
+01:09.015 LRC: Tựa sát bên thuyền hoa, khẽ chạm thử nước ven bờ
+01:12.399 LRC: Cùng bạn chèo thuyền, nghe tiếng mái chèo đẩy sóng
+01:15.246 LRC: Sóng gợn như tiếng hát khẽ khàng, cùng tiếng cười nói thấm ướt bên tai
+01:19.007 LRC: Chốn non nước mờ ảo níu ánh mắt đôi ta lưu luyến
+01:22.315 LRC: Tâm ý thời trẻ dại, ai biết được một khắc vui thú này
+01:25.648 LRC: Tâm tình lúc này, qua bao năm nhìn lại cũng thành chuyện thường
+01:28.698 LRC: Cảnh đẹp trước mắt, nhưng lại nói chuyện hợp tan của gió trăng
+01:32.026 LRC: Người qua kẻ lại ồn ào, hóa ra là tiếng sáo trống họa thành nhạc điệu
+01:35.382 clr
+
+01:35.412 LRC: Tiếng hát trên thuyền vang vọng, một khúc nhạc của Tạ Nương làm động lòng người
+01:38.681 clr
+
+01:38.705 LRC: Hào hứng nhất là lúc ngắm trăng, khẽ chỉnh lại y phục
+01:42.030 LRC: Thuyền quay về chốn cũ, năm tháng trôi qua vẫn còn kể lại
+01:46.147 cre: Tác từ: 花间有鹿来
+01:48.387 cre: Nhạc/Biên khúc/Mix: 砖厂浪人
+01:50.475 cre: Điều giáo: 流绪
+01:52.438 cre: Minh họa: 甘小宁
+01:54.508 cre: Video: 卷毛兔w
+01:56.532 cre: Nền Video  [疏楼曲]青菏 [不能画]太阳暖暖 [不能画]行殊
+01:59.110 clr
+
+02:11.808 LRC: Ngước mắt nhìn trời, một cây hoa lửa hóa thành luồng sáng
+02:15.107 LRC: Gửi gắm nguyện ước, mắt dõi theo sao rơi trong gió
+02:18.434 LRC: Thẫn thờ tựa lan can, đôi tay đan chặt mong đừng quên nhau
+02:21.695 LRC: Giấc mộng thanh khiết dần lay tỉnh, tình ý này gửi về phương nào giữa nhân gian?
+02:25.873 cre: Tác từ: 花间有鹿来
+02:28.160 cre: Nhạc/Biên khúc/Mix: 砖厂浪人
+02:30.292 cre: Điều giáo: 流绪
+02:32.043 cre: Minh họa: 甘小宁
+02:34.184 cre: Video: 卷毛兔w
+02:36.367 cre: Nền Video  [疏楼曲]青菏 [不能画]太阳暖暖 [不能画]行殊
+02:38.969 clr
+
+02:59.165 ttl: Chẳng Đợi Trăng
+03:05.997 clr
+
+03:05.997 eov
