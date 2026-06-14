@@ -1,4 +1,4 @@
-// cspell:ignore mưa xuân trăng thu
+// cspell:ignore bài hát ví dụ mẫu giai điệu
 
 use crate::selection::{Searchable, Selector};
 use pretty_assertions::assert_eq;
@@ -15,26 +15,26 @@ impl Searchable for Row {
     }
 }
 
-// The three placeholder titles say the same thing in each language:
-// "Spring Rain" (春雨 / Mưa Xuân), "Spring Moon" (春月 / Trăng Xuân), and
-// "Autumn Moon" (秋月 / Trăng Thu). They deliberately share words so a
-// query can match one row or several.
+// Each placeholder title says the same thing in every language:
+// "Example Song" (示例歌曲 / Bài Hát Ví Dụ), "Sample Song" (样本歌曲 /
+// Bài Hát Mẫu), and "Sample Tune" (样本曲调 / Giai Điệu Mẫu). They
+// deliberately share words so a query can match one row or several.
 fn sample() -> Vec<Row> {
     vec![
         Row {
-            en: "Spring Rain",
-            vi: "Mưa Xuân",
-            zh: "春雨",
+            en: "Example Song",
+            vi: "Bài Hát Ví Dụ",
+            zh: "示例歌曲",
         },
         Row {
-            en: "Spring Moon",
-            vi: "Trăng Xuân",
-            zh: "春月",
+            en: "Sample Song",
+            vi: "Bài Hát Mẫu",
+            zh: "样本歌曲",
         },
         Row {
-            en: "Autumn Moon",
-            vi: "Trăng Thu",
-            zh: "秋月",
+            en: "Sample Tune",
+            vi: "Giai Điệu Mẫu",
+            zh: "样本曲调",
         },
     ]
 }
@@ -51,21 +51,21 @@ fn empty_query_shows_every_row() {
 fn typing_filters_by_substring_across_all_columns() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
-    for character in "mưa".chars() {
+    for character in "ví".chars() {
         selector.push_char(character);
     }
-    // "mưa" appears in the Vietnamese title of the first row only, so a
+    // "ví" appears in the Vietnamese title of the first row only, so a
     // match comes from a column other than the English title.
     assert_eq!(selector.filtered(), &[0]);
     assert_eq!(selector.selected_index(), Some(0));
-    assert_eq!(rows[0].en, "Spring Rain");
+    assert_eq!(rows[0].en, "Example Song");
 }
 
 #[test]
 fn filtering_matches_a_non_english_column() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
-    for character in "trăng".chars() {
+    for character in "mẫu".chars() {
         selector.push_char(character);
     }
     // The Vietnamese titles of the second and third rows both contain it.
@@ -76,11 +76,11 @@ fn filtering_matches_a_non_english_column() {
 fn backspacing_restores_rows() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
-    for character in "rain".chars() {
+    for character in "example".chars() {
         selector.push_char(character);
     }
     assert_eq!(selector.filtered(), &[0]);
-    for _ in 0..4 {
+    for _ in 0.."example".len() {
         selector.pop_char();
     }
     assert_eq!(selector.query(), "");
@@ -109,9 +109,9 @@ fn refiltering_resets_the_cursor_to_the_top() {
     selector.move_down();
     selector.move_down();
     assert_eq!(selector.cursor(), 2);
-    // Every title contains an "n", so the rows stay visible and only the
-    // cursor resets.
-    selector.push_char('n');
+    // Every English title contains an "e", so the rows stay visible and
+    // only the cursor resets.
+    selector.push_char('e');
     assert_eq!(selector.cursor(), 0);
 }
 

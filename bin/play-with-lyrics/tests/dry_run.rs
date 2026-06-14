@@ -2,7 +2,7 @@
 //! they verify the resolution of titles, languages, formats, and players
 //! without launching a real media player.
 
-// cspell:ignore mưa xuân
+// cspell:ignore bài hát ví dụ
 
 use command_extra::CommandExtra;
 use pretty_assertions::assert_eq;
@@ -47,9 +47,9 @@ impl Env {
              video-title = \"{VIDEO_TITLE}\"\n\
              \n\
              [song-titles]\n\
-             en = \"Spring Rain\"\n\
-             vi = \"Mưa Xuân\"\n\
-             zh = \"春雨\"\n",
+             en = \"Example Song\"\n\
+             vi = \"Bài Hát Ví Dụ\"\n\
+             zh = \"示例歌曲\"\n",
         );
         write_file(video_dir.join("video.toml"), descriptor).unwrap();
     }
@@ -164,9 +164,9 @@ fn a_fuzzy_title_resolves_to_the_single_video() {
     env.add_library_file(&format!("{VIDEO_TITLE}.mkv"));
     env.add_library_file(&format!("{VIDEO_TITLE}.vi.srt"));
 
-    // "rain" matches the English title "Spring Rain" without being typed in
-    // full.
-    let output = env.run(["--title", "rain", "--player", "mpv", "--dry-run"]);
+    // "ample" matches part of the "Example Song" title without being typed
+    // in full.
+    let output = env.run(["--title", "ample", "--player", "mpv", "--dry-run"]);
 
     assert!(output.status.success(), "{output:?}");
     assert_eq!(stdout_lines(&output)[0], "mpv");
