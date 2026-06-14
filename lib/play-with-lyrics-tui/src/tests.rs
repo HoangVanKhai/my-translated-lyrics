@@ -659,10 +659,10 @@ fn select_video_renders_with_a_fallback_size_when_size_is_unavailable() {
     assert!(rendered.contains("Tiếng Việt"), "{rendered}");
 }
 
-/// On the song page, Backspace with an empty query goes back, which on this
-/// first page is the way out.
+/// On the song page, Ctrl-Backspace goes back, which on this first page is
+/// the way out.
 #[test]
-fn select_video_backspace_on_an_empty_query_goes_back() {
+fn select_video_ctrl_backspace_goes_back() {
     static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
     struct Scripted;
     impl ReadEvent for Scripted {
@@ -676,10 +676,37 @@ fn select_video_backspace_on_an_empty_query_goes_back() {
         }
     }
     let videos = vec![video("Alpha")];
-    EVENTS.lock().unwrap().extend([press(KeyCode::Backspace)]);
+    EVENTS.lock().unwrap().extend([control(KeyCode::Backspace)]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
     assert_eq!(chosen, Navigation::Back);
+}
+
+/// On the song page, plain Backspace only deletes, so an empty query plus
+/// Backspace does not go back; clearing the box by holding it never exits.
+#[test]
+fn select_video_plain_backspace_does_not_go_back() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![video("Alpha")];
+    // Backspace on the empty box is a no-op; only the following quit ends it.
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([press(KeyCode::Backspace), control(KeyCode::Char('q'))]);
+    let chosen =
+        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
+    assert_eq!(chosen, Navigation::Quit);
 }
 
 /// On a non-typing list page, Space confirms the highlighted row just like
@@ -724,6 +751,27 @@ fn select_one_backspace_goes_back() {
     }
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([press(KeyCode::Backspace)]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    assert_eq!(chosen, Navigation::Back);
+}
+
+/// Ctrl-Backspace, the universal back key, also goes back on a list page.
+#[test]
+fn select_one_ctrl_backspace_goes_back() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    EVENTS.lock().unwrap().extend([control(KeyCode::Backspace)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Back);
 }
@@ -780,10 +828,10 @@ fn select_video_does_not_underline_without_a_query() {
     assert!(!rendered.contains("\u{1b}[4m"), "{rendered:?}");
 }
 
-/// With an empty query, the footer offers Backspace as a way back, not a
-/// delete.
+/// The typing-page footer shows Backspace as delete and Ctrl-Backspace as the
+/// way back.
 #[test]
-fn select_video_footer_offers_back_when_the_query_is_empty() {
+fn select_video_footer_shows_delete_and_back() {
     static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
     struct Scripted;
     impl ReadEvent for Scripted {
@@ -801,34 +849,8 @@ fn select_video_footer_offers_back_when_the_query_is_empty() {
     let mut buffer = Vec::new();
     select_video_loop::<Scripted>(&mut buffer, &videos, &mut String::new(), None).unwrap();
     let rendered = String::from_utf8_lossy(&buffer);
-    assert!(rendered.contains("⌫ back"), "{rendered:?}");
-    assert!(!rendered.contains("⌫ delete"), "{rendered:?}");
-}
-
-/// Once a query is typed, the footer offers Backspace as a delete.
-#[test]
-fn select_video_footer_offers_delete_once_text_is_typed() {
-    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
-    struct Scripted;
-    impl ReadEvent for Scripted {
-        fn read_event() -> io::Result<Event> {
-            pop_scripted(&EVENTS)
-        }
-    }
-    impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
-            standard_size()
-        }
-    }
-    let videos = vec![english_video("Alpha")];
-    EVENTS
-        .lock()
-        .unwrap()
-        .extend([press(KeyCode::Char('a')), control(KeyCode::Char('q'))]);
-    let mut buffer = Vec::new();
-    select_video_loop::<Scripted>(&mut buffer, &videos, &mut String::new(), None).unwrap();
-    let rendered = String::from_utf8_lossy(&buffer);
     assert!(rendered.contains("⌫ delete"), "{rendered:?}");
+    assert!(rendered.contains("^⌫ back"), "{rendered:?}");
 }
 
 /// The list starts with the cursor on `start`, to restore a prior choice; an

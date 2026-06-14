@@ -14,11 +14,14 @@
 //! trait methods rather than the `queue!` and `execute!` macros.
 
 use crossterm::cursor::{Hide, MoveTo, Show};
-use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers, read};
+use crossterm::event::{
+    Event, KeyCode, KeyEventKind, KeyModifiers, KeyboardEnhancementFlags,
+    PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags, read,
+};
 use crossterm::style::{Attribute, Print, SetAttribute};
 use crossterm::terminal::{
     Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode,
-    enable_raw_mode, size,
+    enable_raw_mode, size, supports_keyboard_enhancement,
 };
 use crossterm::{ExecutableCommand, QueueableCommand};
 use fuzzy_select::fuzzy::match_mask;
@@ -78,6 +81,9 @@ impl WindowSize for Host {
 /// caller returns early or panics.
 struct TerminalGuard {
     output: Stderr,
+    /// Whether the keyboard enhancement protocol was enabled, so it is only
+    /// popped when it was pushed.
+    enhanced: bool,
 }
 
 impl TerminalGuard {
@@ -85,13 +91,26 @@ impl TerminalGuard {
         enable_raw_mode()?;
         let mut output = io::stderr();
         output.execute(EnterAlternateScreen)?.execute(Hide)?;
-        Ok(TerminalGuard { output })
+        // Request the keyboard enhancement protocol so modified keys such as
+        // Ctrl-Backspace arrive with their modifier. Terminals that do not
+        // support it are left untouched, and Ctrl-Backspace simply has no
+        // effect there.
+        let enhanced = matches!(supports_keyboard_enhancement(), Ok(true));
+        if enhanced {
+            output.execute(PushKeyboardEnhancementFlags(
+                KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES,
+            ))?;
+        }
+        Ok(TerminalGuard { output, enhanced })
     }
 }
 
 impl Drop for TerminalGuard {
     fn drop(&mut self) {
         // Best effort: there is nothing useful to do if restoring fails.
+        if self.enhanced {
+            let _ = self.output.execute(PopKeyboardEnhancementFlags);
+        }
         let _ = self.output.execute(Show);
         let _ = self.output.execute(LeaveAlternateScreen);
         let _ = disable_raw_mode();
@@ -267,14 +286,12 @@ where
             }
             KeyCode::Up => selector.move_up(),
             KeyCode::Down => selector.move_down(),
-            // Backspace deletes a character while one is typed, and goes back
-            // once the query is empty.
-            KeyCode::Backspace => {
-                if selector.query().is_empty() {
-                    break Navigation::Back;
-                }
-                selector.pop_char();
+            // Ctrl-Backspace goes back. Plain Backspace only deletes, so
+            // holding it to clear the search box never exits the page.
+            KeyCode::Backspace if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                break Navigation::Back;
             }
+            KeyCode::Backspace => selector.pop_char(),
             KeyCode::Char(char) => selector.push_char(char),
             KeyCode::Enter => {
                 if let Some(index) = selector.selected_index() {
@@ -346,12 +363,7 @@ where
         print_highlighted_line(output, &line, filtered_position == cursor)?;
     }
 
-    // Backspace deletes while a query is typed, and goes back once it is empty.
-    let help = if selector.query().is_empty() {
-        "↑/↓ move · type to search · ⌫ back · ⏎ select · Esc/^Q quit"
-    } else {
-        "↑/↓ move · type to search · ⌫ delete · ⏎ select · Esc/^Q quit"
-    };
+    let help = "↑/↓ move · type to search · ⌫ delete · ^⌫ back · ⏎ select · Esc/^Q quit";
     output
         .queue(MoveTo(0, rows.saturating_sub(1) as u16))?
         .queue(SetAttribute(Attribute::Dim))?
