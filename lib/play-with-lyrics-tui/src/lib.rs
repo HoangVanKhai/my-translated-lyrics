@@ -219,28 +219,35 @@ fn print_highlighted_line(
 /// Presents the fuzzy table of titles and reports the chosen row, a request
 /// to go back, or a request to quit. This is the first page, so going back
 /// from an empty query is the way out of it.
-pub fn select_video(videos: &[Video], selected: Option<usize>) -> io::Result<Navigation> {
+pub fn select_video(
+    videos: &[Video],
+    query: &mut String,
+    selected: Option<usize>,
+) -> io::Result<Navigation> {
     let mut guard = TerminalGuard::enter()?;
-    select_video_loop::<Host>(&mut guard.output, videos, selected)
+    select_video_loop::<Host>(&mut guard.output, videos, query, selected)
 }
 
 /// Drives the fuzzy-table selector, reading events from `Sys`. Splitting
 /// this out from [`select_video`] lets a test replay scripted events and
-/// render to a buffer, exercising the loop without a terminal. `selected` is
-/// the original index to highlight at first, to restore a previous choice.
+/// render to a buffer, exercising the loop without a terminal. `query` seeds
+/// the search box and receives the final text, and `selected` is the original
+/// index to highlight at first, so a previous visit can be restored.
 fn select_video_loop<Sys>(
     output: &mut impl Write,
     videos: &[Video],
+    query: &mut String,
     selected: Option<usize>,
 ) -> io::Result<Navigation>
 where
     Sys: ReadEvent + WindowSize,
 {
     let mut selector = Selector::new(videos);
+    selector.set_query(query);
     if let Some(index) = selected {
         selector.focus(index);
     }
-    loop {
+    let outcome = loop {
         render_table::<Sys>(output, &selector, videos)?;
         let Event::Key(key) = Sys::read_event()? else {
             continue;
@@ -249,14 +256,14 @@ where
             continue;
         }
         match key.code {
-            KeyCode::Esc => return Ok(Navigation::Quit),
+            KeyCode::Esc => break Navigation::Quit,
             KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                return Ok(Navigation::Quit);
+                break Navigation::Quit;
             }
             // Ctrl-Q quits. Both cases are matched so that Shift or Caps
             // Lock, which we cannot reliably tell apart, never change this.
             KeyCode::Char('q' | 'Q') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                return Ok(Navigation::Quit);
+                break Navigation::Quit;
             }
             KeyCode::Up => selector.move_up(),
             KeyCode::Down => selector.move_down(),
@@ -264,19 +271,22 @@ where
             // once the query is empty.
             KeyCode::Backspace => {
                 if selector.query().is_empty() {
-                    return Ok(Navigation::Back);
+                    break Navigation::Back;
                 }
                 selector.pop_char();
             }
             KeyCode::Char(char) => selector.push_char(char),
             KeyCode::Enter => {
                 if let Some(index) = selector.selected_index() {
-                    return Ok(Navigation::Selected(index));
+                    break Navigation::Selected(index);
                 }
             }
             _ => {}
         }
-    }
+    };
+    // Hand the final query back so the caller can restore it on a later visit.
+    *query = selector.query().to_string();
+    Ok(outcome)
 }
 
 fn render_table<Sys>(

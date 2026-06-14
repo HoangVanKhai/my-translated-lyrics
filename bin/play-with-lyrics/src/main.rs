@@ -69,6 +69,7 @@ fn run() -> Result<(), Termination> {
 
     let mut stage = Stage::Video;
     let mut history: Vec<Stage> = Vec::new();
+    let mut video_query = String::new();
     let mut video_index: Option<usize> = None;
     let mut available: Vec<(Language, SubtitleFormat)> = Vec::new();
     let mut language: Option<Language> = None;
@@ -76,7 +77,7 @@ fn run() -> Result<(), Termination> {
 
     let player = loop {
         match stage {
-            Stage::Video => match resolve_video(&args, &catalog, video_index)? {
+            Stage::Video => match resolve_video(&args, &catalog, &mut video_query, video_index)? {
                 Resolution::Auto(chosen) => {
                     video_index = Some(chosen);
                     stage = Stage::Language;

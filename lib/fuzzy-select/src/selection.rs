@@ -45,6 +45,13 @@ where
         &self.query
     }
 
+    /// Replaces the whole query and refilters. Used to restore a previous
+    /// search; the cursor returns to the top, as after any refilter.
+    pub fn set_query(&mut self, query: &str) {
+        self.query = query.to_string();
+        self.refilter();
+    }
+
     /// Appends a character to the query and refilters.
     pub fn push_char(&mut self, char: char) {
         self.query.push(char);

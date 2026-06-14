@@ -44,13 +44,14 @@ fn from_selection<Value>(
 pub(crate) fn resolve_video(
     args: &Args,
     catalog: &[Video],
+    query: &mut String,
     previous: Option<usize>,
 ) -> Result<Resolution<usize>, Termination> {
-    if let Some(query) = &args.title {
-        let video = resolve_unique(query, catalog, <Video as Searchable>::search_keys).map_err(
+    if let Some(title) = &args.title {
+        let video = resolve_unique(title, catalog, <Video as Searchable>::search_keys).map_err(
             |error| {
                 Failure::UnresolvedTitle(UnresolvedTitle {
-                    query: query.clone(),
+                    query: title.clone(),
                     error,
                 })
             },
@@ -62,7 +63,7 @@ pub(crate) fn resolve_video(
         return Ok(Resolution::Auto(index));
     }
     require_terminal("a video title")?;
-    from_selection(select_video(catalog, previous), |index| index)
+    from_selection(select_video(catalog, query, previous), |index| index)
 }
 
 /// Resolves the subtitle language from `--language`, automatically when

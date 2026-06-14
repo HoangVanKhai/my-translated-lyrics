@@ -159,3 +159,12 @@ fn focusing_a_filtered_out_item_is_a_no_op() {
     selector.focus(2);
     assert_eq!(selector.selected_index(), Some(0));
 }
+
+/// Setting the whole query filters the same as typing it would.
+#[test]
+fn setting_the_query_filters_like_typing() {
+    let rows = sample();
+    let mut selector = Selector::new(&rows);
+    selector.set_query("example");
+    assert_eq!(selector.filtered(), &[0]);
+}
