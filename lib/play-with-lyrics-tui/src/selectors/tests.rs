@@ -50,6 +50,16 @@ fn click(row: u16) -> Event {
     click_at(0, row)
 }
 
+/// A pointer movement to `column`, `row`, with no button held.
+fn hover_at(column: u16, row: u16) -> Event {
+    Event::Mouse(MouseEvent {
+        kind: MouseEventKind::Moved,
+        column,
+        row,
+        modifiers: KeyModifiers::NONE,
+    })
+}
+
 /// A scroll-wheel-down event.
 fn scroll_down() -> Event {
     Event::Mouse(MouseEvent {
@@ -1542,4 +1552,71 @@ fn select_one_shows_the_page_title_in_the_top_bar() {
     select_one_loop::<Scripted>(&mut buffer, "Select a Language", &labels, 0).unwrap();
     let rendered = String::from_utf8_lossy(&buffer);
     assert!(rendered.contains("Select a Language"), "{rendered}");
+}
+
+/// Moving the pointer over a label draws it bold, the hover effect for a
+/// selectable item, and the movement alone triggers the redraw.
+#[test]
+fn select_one_bolds_the_label_under_the_pointer() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_690_123_456)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels = label_list(&["alpha", "beta", "gamma"]);
+    // "beta" is at row 2 (index 1, below the top bar). The cursor starts on
+    // "alpha", so a bold run can only come from the hover.
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([hover_at(0, 2), press(KeyCode::Esc)]);
+    let mut buffer = Vec::new();
+    select_one_loop::<Scripted>(&mut buffer, "Select a Language", &labels, 0).unwrap();
+    let rendered = String::from_utf8_lossy(&buffer);
+    assert!(rendered.contains("\u{1b}[1m"), "{rendered:?}");
+}
+
+/// Moving the pointer over a control button draws it in reverse video.
+#[test]
+fn select_one_reverses_the_button_under_the_pointer() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_695_678_901)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    // An empty list has no cursor row to reverse, so the only reverse run can
+    // come from the hovered button.
+    let labels: Vec<String> = Vec::new();
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([hover_at(5, 0), control(KeyCode::Char('c'))]);
+    let mut buffer = Vec::new();
+    select_one_loop::<Scripted>(&mut buffer, "Select a Language", &labels, 0).unwrap();
+    let rendered = String::from_utf8_lossy(&buffer);
+    assert!(rendered.contains("\u{1b}[7m"), "{rendered:?}");
 }

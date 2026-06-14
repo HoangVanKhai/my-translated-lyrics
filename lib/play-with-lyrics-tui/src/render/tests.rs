@@ -141,13 +141,14 @@ fn visible_rows_reserves_the_chrome_lines() {
 #[test]
 fn top_bar_draws_the_buttons_and_title() {
     let mut buffer = Buffer::new(80, 1);
-    render_top_bar(&mut buffer, 80, "Play with Lyrics", true);
+    render_top_bar(&mut buffer, 80, "Play with Lyrics", true, None);
     let row = buffer.row_text(0);
     assert!(row.contains("[ ← Go back ]"), "{row}");
     assert!(row.contains("[ → Forward ]"), "{row}");
     assert!(row.contains("[ ✕ Exit ]"), "{row}");
     assert!(row.contains("Play with Lyrics"), "{row}");
-    // With going back available, the Back button is drawn plainly, not dimmed.
+    // With going back available and no pointer over it, the Back button is
+    // drawn plainly.
     assert_eq!(buffer.style_at(0, 0), Style::PLAIN);
 }
 
@@ -155,9 +156,26 @@ fn top_bar_draws_the_buttons_and_title() {
 #[test]
 fn top_bar_dims_the_disabled_go_back_button() {
     let mut buffer = Buffer::new(80, 1);
-    render_top_bar(&mut buffer, 80, "Play with Lyrics", false);
+    render_top_bar(&mut buffer, 80, "Play with Lyrics", false, None);
     // Every cell of the Go back button, here its opening bracket, carries the
     // dim style.
+    assert_eq!(buffer.style_at(0, 0), Style::DIM);
+}
+
+/// A button under the pointer is drawn in reverse video.
+#[test]
+fn top_bar_reverses_the_hovered_button() {
+    let mut buffer = Buffer::new(80, 1);
+    // Column 5 on the top row falls on the Go back button.
+    render_top_bar(&mut buffer, 80, "Play with Lyrics", true, Some((5, 0)));
+    assert_eq!(buffer.style_at(0, 0), Style::REVERSE);
+}
+
+/// The disabled Back button stays dimmed even under the pointer.
+#[test]
+fn top_bar_keeps_the_disabled_button_dimmed_under_the_pointer() {
+    let mut buffer = Buffer::new(80, 1);
+    render_top_bar(&mut buffer, 80, "Play with Lyrics", false, Some((5, 0)));
     assert_eq!(buffer.style_at(0, 0), Style::DIM);
 }
 

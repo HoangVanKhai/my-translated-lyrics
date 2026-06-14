@@ -7,8 +7,7 @@ use crate::Navigation;
 use crate::host::{Clock, Host, ReadEvent, WindowSize};
 use crate::render::{
     Button, DATA_ROW_OFFSET, LIST_ROW_OFFSET, button_at, columns_line, columns_line_highlighted,
-    draw_highlighted_line, draw_highlighted_line_reverse, fit, is_double_click, render_top_bar,
-    scroll_offset, visible_rows,
+    draw_highlighted_line, fit, is_double_click, render_top_bar, scroll_offset, visible_rows,
 };
 use crate::screen::{Screen, Style};
 use crate::terminal::TerminalGuard;
@@ -52,11 +51,13 @@ where
         selector.focus(index);
     }
     let mut last_click: Option<(SystemTime, u16)> = None;
+    let mut hover: Option<(u16, u16)> = None;
     let mut screen = Screen::new();
     // Draw once up front, then redraw only after an event that changes what is
-    // shown. The double-buffered screen sends only the cells that change, so a
-    // redraw never clears the whole screen and the display does not flicker.
-    render_table::<Sys>(&mut screen, output, &selector, videos)?;
+    // shown, including a mouse movement that changes the hover highlight. The
+    // double-buffered screen sends only the cells that change, so a redraw never
+    // clears the whole screen and the display does not flicker.
+    render_table::<Sys>(&mut screen, output, &selector, videos, hover)?;
     let outcome = loop {
         match Sys::read_event()? {
             Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
@@ -87,53 +88,77 @@ where
                 },
                 _ => continue,
             },
-            Event::Mouse(mouse) => match mouse.kind {
-                MouseEventKind::ScrollUp => selector.move_up(),
-                MouseEventKind::ScrollDown => selector.move_down(),
-                // A single click highlights the video on the clicked row; a
-                // double click on the same row also selects it.
-                MouseEventKind::Down(MouseButton::Left) => {
-                    let (columns, rows) = Sys::window_size().unwrap_or((80, 24));
-                    // A click on the top bar acts on the button under the
-                    // pointer, where "Forward" matches pressing Enter.
-                    if mouse.row == 0 {
-                        match button_at(columns as usize, mouse.column as usize) {
-                            Some(Button::Exit) => break Navigation::Quit,
-                            // Go back is disabled on the first page, so a click
-                            // on its dimmed button does nothing.
-                            Some(Button::Back) => continue,
-                            Some(Button::Forward) => match selector.selected_index() {
-                                Some(index) => break Navigation::Selected(index),
-                                None => continue,
-                            },
-                            None => continue,
+            Event::Mouse(mouse) => {
+                // Track the pointer so the hovered button and row are highlighted
+                // on the redraw that follows.
+                hover = Some((mouse.column, mouse.row));
+                match mouse.kind {
+                    MouseEventKind::ScrollUp => selector.move_up(),
+                    MouseEventKind::ScrollDown => selector.move_down(),
+                    // A single click highlights the video on the clicked row; a
+                    // double click on the same row also selects it.
+                    MouseEventKind::Down(MouseButton::Left) => {
+                        let (columns, rows) = Sys::window_size().unwrap_or((80, 24));
+                        // A click on the top bar acts on the button under the
+                        // pointer, where "Forward" matches pressing Enter.
+                        if mouse.row == 0 {
+                            match button_at(columns as usize, mouse.column as usize) {
+                                Some(Button::Exit) => break Navigation::Quit,
+                                // Go back is disabled on the first page.
+                                Some(Button::Back) | None => {}
+                                Some(Button::Forward) => {
+                                    if let Some(index) = selector.selected_index() {
+                                        break Navigation::Selected(index);
+                                    }
+                                }
+                            }
+                        } else {
+                            let visible = visible_rows(rows as usize);
+                            let offset = scroll_offset(selector.cursor(), visible);
+                            let clicked = (mouse.row as usize)
+                                .checked_sub(DATA_ROW_OFFSET)
+                                .and_then(|screen_index| {
+                                    selector.filtered().get(offset + screen_index).copied()
+                                });
+                            if let Some(index) = clicked {
+                                let now = Sys::now();
+                                let confirm = is_double_click(last_click, now, mouse.row);
+                                last_click = Some((now, mouse.row));
+                                selector.focus(index);
+                                if confirm {
+                                    break Navigation::Selected(index);
+                                }
+                            }
                         }
                     }
-                    let visible = visible_rows(rows as usize);
-                    let offset = scroll_offset(selector.cursor(), visible);
-                    let clicked = (mouse.row as usize).checked_sub(DATA_ROW_OFFSET).and_then(
-                        |screen_index| selector.filtered().get(offset + screen_index).copied(),
-                    );
-                    let Some(index) = clicked else { continue };
-                    let now = Sys::now();
-                    let confirm = is_double_click(last_click, now, mouse.row);
-                    last_click = Some((now, mouse.row));
-                    selector.focus(index);
-                    if confirm {
-                        break Navigation::Selected(index);
-                    }
+                    // Any other mouse event, such as a movement, only updates the
+                    // hover highlight, which the redraw below applies.
+                    _ => {}
                 }
-                _ => continue,
-            },
+            }
             // A resize changes the layout, so redraw; any other event does not.
             Event::Resize(..) => {}
             _ => continue,
         }
-        render_table::<Sys>(&mut screen, output, &selector, videos)?;
+        render_table::<Sys>(&mut screen, output, &selector, videos, hover)?;
     };
     // Hand the final query back so the caller can restore it on a later visit.
     *query = selector.query().to_string();
     Ok(outcome)
+}
+
+/// The base style for a selectable row at screen `row`: reverse video when it
+/// is the current selection, with bold added when the pointer hovers over it.
+fn row_style(selected: bool, hover: Option<(u16, u16)>, row: u16) -> Style {
+    let mut style = if selected {
+        Style::REVERSE
+    } else {
+        Style::PLAIN
+    };
+    if hover.is_some_and(|(_, hovered_row)| hovered_row == row) {
+        style = style.with(Style::BOLD);
+    }
+    style
 }
 
 fn render_table<Sys>(
@@ -141,6 +166,7 @@ fn render_table<Sys>(
     output: &mut impl Write,
     selector: &Selector<Video>,
     videos: &[Video],
+    hover: Option<(u16, u16)>,
 ) -> io::Result<()>
 where
     Sys: WindowSize,
@@ -152,7 +178,7 @@ where
 
     // The top bar names the page; the table is the first page, so going back is
     // not available here.
-    render_top_bar(buffer, columns, "Select a Video", false);
+    render_top_bar(buffer, columns, "Select a Video", false, hover);
 
     let prompt = format!("Search: {}", selector.query());
     buffer.set_string(0, 1, &fit(&prompt, columns), Style::PLAIN);
@@ -187,11 +213,8 @@ where
             columns,
         );
         let screen_y = (screen_index + DATA_ROW_OFFSET) as u16;
-        if filtered_position == cursor {
-            draw_highlighted_line_reverse(buffer, screen_y, &line);
-        } else {
-            draw_highlighted_line(buffer, screen_y, &line);
-        }
+        let base = row_style(filtered_position == cursor, hover, screen_y);
+        draw_highlighted_line(buffer, screen_y, &line, base);
     }
 
     let help = "↑/↓ move · type to search · ⌫ delete · ^⌫ back · ⏎ select · Esc/^Q quit";
@@ -223,11 +246,13 @@ where
 {
     let mut cursor = start.min(labels.len().saturating_sub(1));
     let mut last_click: Option<(SystemTime, u16)> = None;
+    let mut hover: Option<(u16, u16)> = None;
     let mut screen = Screen::new();
     // Draw once up front, then redraw only after an event that changes what is
-    // shown. The double-buffered screen sends only the cells that change, so a
-    // redraw never clears the whole screen and the display does not flicker.
-    render_list::<Sys>(&mut screen, output, title, labels, cursor)?;
+    // shown, including a mouse movement that changes the hover highlight. The
+    // double-buffered screen sends only the cells that change, so a redraw never
+    // clears the whole screen and the display does not flicker.
+    render_list::<Sys>(&mut screen, output, title, labels, cursor, hover)?;
     loop {
         match Sys::read_event()? {
             Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
@@ -259,51 +284,57 @@ where
                 }
                 _ => continue,
             },
-            Event::Mouse(mouse) => match mouse.kind {
-                MouseEventKind::ScrollUp => cursor = cursor.saturating_sub(1),
-                MouseEventKind::ScrollDown => {
-                    if cursor + 1 < labels.len() {
-                        cursor += 1;
-                    }
-                }
-                // A single click highlights the label on the clicked row; a
-                // double click on the same row also selects it.
-                MouseEventKind::Down(MouseButton::Left) => {
-                    let (columns, _) = Sys::window_size().unwrap_or((80, 24));
-                    // A click on the top bar acts on the button under the
-                    // pointer, where "Forward" matches pressing Enter.
-                    if mouse.row == 0 {
-                        match button_at(columns as usize, mouse.column as usize) {
-                            Some(Button::Exit) => return Ok(Navigation::Quit),
-                            Some(Button::Back) => return Ok(Navigation::Back),
-                            Some(Button::Forward) => {
-                                if !labels.is_empty() {
-                                    return Ok(Navigation::Selected(cursor));
-                                }
-                                continue;
-                            }
-                            None => continue,
+            Event::Mouse(mouse) => {
+                // Track the pointer so the hovered button and label are
+                // highlighted on the redraw that follows.
+                hover = Some((mouse.column, mouse.row));
+                match mouse.kind {
+                    MouseEventKind::ScrollUp => cursor = cursor.saturating_sub(1),
+                    MouseEventKind::ScrollDown => {
+                        if cursor + 1 < labels.len() {
+                            cursor += 1;
                         }
                     }
-                    let clicked = (mouse.row as usize).checked_sub(LIST_ROW_OFFSET);
-                    let Some(index) = clicked.filter(|&index| index < labels.len()) else {
-                        continue;
-                    };
-                    let now = Sys::now();
-                    let confirm = is_double_click(last_click, now, mouse.row);
-                    last_click = Some((now, mouse.row));
-                    cursor = index;
-                    if confirm {
-                        return Ok(Navigation::Selected(index));
+                    // A single click highlights the label on the clicked row; a
+                    // double click on the same row also selects it.
+                    MouseEventKind::Down(MouseButton::Left) => {
+                        let (columns, _) = Sys::window_size().unwrap_or((80, 24));
+                        // A click on the top bar acts on the button under the
+                        // pointer, where "Forward" matches pressing Enter.
+                        if mouse.row == 0 {
+                            match button_at(columns as usize, mouse.column as usize) {
+                                Some(Button::Exit) => return Ok(Navigation::Quit),
+                                Some(Button::Back) => return Ok(Navigation::Back),
+                                Some(Button::Forward) => {
+                                    if !labels.is_empty() {
+                                        return Ok(Navigation::Selected(cursor));
+                                    }
+                                }
+                                None => {}
+                            }
+                        } else if let Some(index) = (mouse.row as usize)
+                            .checked_sub(LIST_ROW_OFFSET)
+                            .filter(|&index| index < labels.len())
+                        {
+                            let now = Sys::now();
+                            let confirm = is_double_click(last_click, now, mouse.row);
+                            last_click = Some((now, mouse.row));
+                            cursor = index;
+                            if confirm {
+                                return Ok(Navigation::Selected(index));
+                            }
+                        }
                     }
+                    // Any other mouse event, such as a movement, only updates the
+                    // hover highlight, which the redraw below applies.
+                    _ => {}
                 }
-                _ => continue,
-            },
+            }
             // A resize changes the layout, so redraw; any other event does not.
             Event::Resize(..) => {}
             _ => continue,
         }
-        render_list::<Sys>(&mut screen, output, title, labels, cursor)?;
+        render_list::<Sys>(&mut screen, output, title, labels, cursor, hover)?;
     }
 }
 
@@ -313,6 +344,7 @@ fn render_list<Sys>(
     title: &str,
     labels: &[String],
     cursor: usize,
+    hover: Option<(u16, u16)>,
 ) -> io::Result<()>
 where
     Sys: WindowSize,
@@ -323,16 +355,12 @@ where
 
     // The top bar names the page; a list page always follows an earlier page,
     // so going back is available.
-    render_top_bar(buffer, columns, title, true);
+    render_top_bar(buffer, columns, title, true, hover);
 
     for (index, label) in labels.iter().enumerate() {
         let screen_y = (index + LIST_ROW_OFFSET) as u16;
         let line = fit(label, columns);
-        let style = if index == cursor {
-            Style::REVERSE
-        } else {
-            Style::PLAIN
-        };
+        let style = row_style(index == cursor, hover, screen_y);
         buffer.set_string(0, screen_y, &line, style);
     }
 

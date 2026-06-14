@@ -125,21 +125,16 @@ pub(crate) fn visible_rows(rows: usize) -> usize {
     rows.saturating_sub(4).max(1)
 }
 
-/// Draws a line of `(character, highlighted)` pairs into `buffer` at `row`,
-/// underlining the highlighted characters. When `reverse` is set the whole
-/// line is drawn in reverse video, for the row under the cursor; the underline
-/// composes with it.
-pub(crate) fn draw_highlighted_line(buffer: &mut Buffer, row: u16, line: &[(char, bool)]) {
-    draw_styled_line(buffer, row, line, Style::PLAIN);
-}
-
-/// As [`draw_highlighted_line`], but drawing the whole line in reverse video,
-/// for the row under the cursor.
-pub(crate) fn draw_highlighted_line_reverse(buffer: &mut Buffer, row: u16, line: &[(char, bool)]) {
-    draw_styled_line(buffer, row, line, Style::REVERSE);
-}
-
-fn draw_styled_line(buffer: &mut Buffer, row: u16, line: &[(char, bool)], base: Style) {
+/// Draws a line of `(character, highlighted)` pairs into `buffer` at `row` over
+/// the row's `base` style, underlining the matched characters. The caller sets
+/// `base` to reverse video for the row under the cursor and adds bold for a row
+/// under the pointer; the underline composes with either.
+pub(crate) fn draw_highlighted_line(
+    buffer: &mut Buffer,
+    row: u16,
+    line: &[(char, bool)],
+    base: Style,
+) {
     let mut col = 0;
     for &(character, highlight) in line {
         let style = if highlight {
@@ -216,12 +211,24 @@ pub(crate) fn button_at(width: usize, column: usize) -> Option<Button> {
 /// Draws the top bar into `buffer` at the first row: the Back and Forward
 /// buttons on the left, the Exit button on the right, and `title` centered
 /// between them. When `back_enabled` is false the Back button is disabled,
-/// drawn dimmed to show that there is no previous page to return to.
-pub(crate) fn render_top_bar(buffer: &mut Buffer, width: usize, title: &str, back_enabled: bool) {
+/// drawn dimmed to show that there is no previous page to return to. The button
+/// under the pointer at `hover`, given as `(column, row)`, is drawn in reverse
+/// video, except the disabled Back button, which stays dimmed.
+pub(crate) fn render_top_bar(
+    buffer: &mut Buffer,
+    width: usize,
+    title: &str,
+    back_enabled: bool,
+    hover: Option<(u16, u16)>,
+) {
     let columns = button_columns(width);
     for (button, range) in &columns {
-        let style = if matches!(button, Button::Back) && !back_enabled {
+        let disabled = matches!(button, Button::Back) && !back_enabled;
+        let hovered = hover.is_some_and(|(col, row)| row == 0 && range.contains(&usize::from(col)));
+        let style = if disabled {
             Style::DIM
+        } else if hovered {
+            Style::REVERSE
         } else {
             Style::PLAIN
         };
