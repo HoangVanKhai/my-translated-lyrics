@@ -315,3 +315,6 @@ where
 
     output.flush()
 }
+
+#[cfg(test)]
+mod tests;

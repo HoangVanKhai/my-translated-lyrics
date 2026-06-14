@@ -20,9 +20,6 @@ mod render;
 mod selectors;
 mod terminal;
 
-#[cfg(test)]
-mod tests;
-
 pub use selectors::{select_one, select_video};
 
 /// The outcome of an interactive selector.

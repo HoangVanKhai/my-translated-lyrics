@@ -159,3 +159,6 @@ pub(crate) fn print_highlighted_line(
     output.queue(SetAttribute(Attribute::Reset))?;
     Ok(())
 }
+
+#[cfg(test)]
+mod tests;
