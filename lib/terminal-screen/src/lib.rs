@@ -6,9 +6,8 @@
 //!
 //! A frame is drawn into an in-memory [`Buffer`] of character cells. The buffer
 //! is compared against the one currently on screen, and only the differing
-//! cells are sent to the terminal, which avoids clearing and repainting the
-//! whole screen on every change. The two buffers are swapped after each frame,
-//! so no per-cell copy is needed.
+//! cells are sent to the terminal, leaving unchanged regions as they are. The
+//! two buffers are swapped after each frame, so no per-cell copy is needed.
 //!
 //! The crate is the rendering core, independent of any particular interface: a
 //! caller draws text with a [`Style`] into the back buffer through
@@ -45,12 +44,12 @@ impl Style {
     }
 }
 
-/// One character cell of the screen.
+/// One character cell of the screen: an empty cell, a styled glyph, or the
+/// trailing column of a double-width glyph.
 ///
-/// A bare `char` is not enough: a cell also carries its [`Style`], and the
-/// trailing column of a double-width glyph needs to be marked so the diff does
-/// not overwrite the glyph's right half with a blank. An `Empty` cell, the
-/// equivalent of a `NUL` character, is drawn as a blank with the default style.
+/// `Empty` cells are drawn as blanks with the default style. A double-width
+/// glyph occupies two columns, held as the glyph followed by `Trailing`, so the
+/// grid keeps one cell per terminal column.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 enum Cell {
     #[default]
@@ -111,8 +110,8 @@ impl Buffer {
     pub fn set_string(&mut self, col: u16, row: u16, text: &str, style: Style) {
         let mut cursor = col;
         for ch in text.chars() {
-            // A zero-width character cannot stand in its own cell; composed
-            // (NFC) text has none on their own, which is what callers pass.
+            // A zero-width character has no column of its own, so skip it;
+            // composed (NFC) text has no standalone combining marks.
             if ch.width().unwrap_or(0) == 0 {
                 continue;
             }

@@ -1,7 +1,7 @@
 //! The interactive selector pages: the fuzzy table of titles and the simple
 //! single-column list. Each page enters the terminal, then drives a loop that
-//! reads events and redraws only after a change, so a mouse movement does not
-//! make the screen flicker.
+//! reads events and redraws the screen after each event that changes what is
+//! shown.
 
 use crate::Navigation;
 use crate::host::{Clock, Host, ReadEvent, WindowSize};
@@ -53,10 +53,10 @@ where
     let mut last_click: Option<(SystemTime, u16)> = None;
     let mut hover: Option<(u16, u16)> = None;
     let mut screen = Screen::new();
-    // Draw once up front, then redraw only after an event that changes what is
+    // Draw once up front, then redraw after any event that changes what is
     // shown, including a mouse movement that changes the hover highlight. The
-    // double-buffered screen sends only the cells that change, so a redraw never
-    // clears the whole screen and the display does not flicker.
+    // double-buffered screen sends only the cells that differ, so redrawing this
+    // often stays cheap.
     render_table::<Sys>(&mut screen, output, &selector, videos, hover)?;
     let outcome = loop {
         match Sys::read_event()? {
@@ -248,10 +248,10 @@ where
     let mut last_click: Option<(SystemTime, u16)> = None;
     let mut hover: Option<(u16, u16)> = None;
     let mut screen = Screen::new();
-    // Draw once up front, then redraw only after an event that changes what is
+    // Draw once up front, then redraw after any event that changes what is
     // shown, including a mouse movement that changes the hover highlight. The
-    // double-buffered screen sends only the cells that change, so a redraw never
-    // clears the whole screen and the display does not flicker.
+    // double-buffered screen sends only the cells that differ, so redrawing this
+    // often stays cheap.
     render_list::<Sys>(&mut screen, output, title, labels, cursor, hover)?;
     loop {
         match Sys::read_event()? {
