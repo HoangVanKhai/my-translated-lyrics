@@ -1,6 +1,6 @@
 use super::{
-    Bracketed, CreditRoles, NameSegment, ParseBracketedError, ParseCreditError, SeparatorStyle,
-    Unbracketed, UnknownRole, parse_credit_line,
+    Bracketed, CreditLead, CreditRoles, NameSegment, ParseBracketedError, ParseCreditError,
+    SeparatorStyle, Unbracketed, UnknownRole, parse_credit_line,
 };
 use lyrics_core::credits_descriptor::CreditsDesc;
 use lyrics_core::video_descriptor::Language;
@@ -59,14 +59,14 @@ fn colon_separated_line_yields_one_pair_per_cell() {
     )
     .unwrap();
     assert_eq!(parsed.len(), 3);
-    assert_eq!(parsed[0].role, "role-a");
+    assert_eq!(parsed[0].lead, CreditLead::Role("role-a"));
     assert_eq!(parsed[0].separator, "：");
     assert_eq!(
         parsed[0].name_segments,
         [NameSegment::Unbracketed(Unbracketed("name-a"))],
     );
-    assert_eq!(parsed[1].role, "role-b");
-    assert_eq!(parsed[2].role, "role-c");
+    assert_eq!(parsed[1].lead, CreditLead::Role("role-b"));
+    assert_eq!(parsed[2].lead, CreditLead::Role("role-c"));
 }
 
 #[test]
@@ -75,7 +75,7 @@ fn two_space_separated_line_yields_one_pair_with_embedded_spaces() {
     let roles = make_roles(&descriptor);
     let parsed = parse_credit_line("role-a  name-a  name-b", &roles).unwrap();
     assert_eq!(parsed.len(), 1);
-    assert_eq!(parsed[0].role, "role-a");
+    assert_eq!(parsed[0].lead, CreditLead::Role("role-a"));
     assert_eq!(parsed[0].separator, "  ");
     assert_eq!(
         parsed[0].name_segments,
@@ -89,7 +89,7 @@ fn tolerates_runs_wider_than_two_spaces() {
     let roles = make_roles(&descriptor);
     let parsed = parse_credit_line("role-a   name-a", &roles).unwrap();
     assert_eq!(parsed.len(), 1);
-    assert_eq!(parsed[0].role, "role-a");
+    assert_eq!(parsed[0].lead, CreditLead::Role("role-a"));
     assert_eq!(parsed[0].separator, "   ");
     assert_eq!(
         parsed[0].name_segments,
@@ -103,7 +103,7 @@ fn longer_role_wins_over_shorter_prefix() {
     let roles = make_roles(&descriptor);
     let parsed = parse_credit_line("role-a  name-a", &roles).unwrap();
     assert_eq!(parsed.len(), 1);
-    assert_eq!(parsed[0].role, "role-a");
+    assert_eq!(parsed[0].lead, CreditLead::Role("role-a"));
 }
 
 /// The name `name-role-a` ends with the registered role token
@@ -116,7 +116,7 @@ fn role_token_inside_a_name_does_not_split_it() {
     let roles = make_roles(&descriptor);
     let parsed = parse_credit_line("role-a: name-role-a", &roles).unwrap();
     assert_eq!(parsed.len(), 1);
-    assert_eq!(parsed[0].role, "role-a");
+    assert_eq!(parsed[0].lead, CreditLead::Role("role-a"));
     assert_eq!(
         parsed[0].name_segments,
         [NameSegment::Unbracketed(Unbracketed("name-role-a"))],
@@ -124,20 +124,18 @@ fn role_token_inside_a_name_does_not_split_it() {
 }
 
 /// A role-less credit line opens with a bracketed highlight rather
-/// than a registered role. The bracket is captured as the pair's
-/// special lead, `role` is empty, and the remainder is the name, so a
-/// section entry such as `[label-a] name-a` parses without an
-/// unknown-role error.
+/// than a registered role. The bracket is captured as the lead and the
+/// remainder is the name, so a section entry such as `[label-a] name-a`
+/// parses without an unknown-role error.
 #[test]
 fn role_less_line_captures_a_bracket_lead() {
     let descriptor = make_descriptor(&["role-a"]);
     let roles = make_roles(&descriptor);
     let parsed = parse_credit_line("[label-a] name-a", &roles).unwrap();
     assert_eq!(parsed.len(), 1);
-    assert_eq!(parsed[0].role, "");
     assert_eq!(
-        parsed[0].special_lead,
-        Some("[label-a]".pipe(Bracketed::try_from).unwrap()),
+        parsed[0].lead,
+        CreditLead::Special("[label-a]".pipe(Bracketed::try_from).unwrap()),
     );
     assert_eq!(
         parsed[0].name_segments,
@@ -145,18 +143,32 @@ fn role_less_line_captures_a_bracket_lead() {
     );
 }
 
-/// A role-only header line carries a role and no name. It parses to a
-/// single pair whose name region is empty and whose `special_lead` is
-/// absent, so the renderers can emit just the role span for a section
-/// header such as `视频底图`.
+/// A bare bracket line is a role-less lead with no name: the lead is
+/// the bracket and the name region is empty, so the renderers emit
+/// just the highlight span.
+#[test]
+fn bare_bracket_line_is_a_role_less_header() {
+    let descriptor = make_descriptor(&["role-a"]);
+    let roles = make_roles(&descriptor);
+    let parsed = parse_credit_line("[label-a]", &roles).unwrap();
+    assert_eq!(parsed.len(), 1);
+    assert_eq!(
+        parsed[0].lead,
+        CreditLead::Special("[label-a]".pipe(Bracketed::try_from).unwrap()),
+    );
+    assert!(parsed[0].name_segments.is_empty());
+}
+
+/// A role-only header line carries a role and no name. The lead is the
+/// role and the name region is empty, so the renderers can emit just
+/// the role span for a section header such as `视频底图`.
 #[test]
 fn role_only_header_line_has_no_name() {
     let descriptor = make_descriptor(&["role-a"]);
     let roles = make_roles(&descriptor);
     let parsed = parse_credit_line("role-a", &roles).unwrap();
     assert_eq!(parsed.len(), 1);
-    assert_eq!(parsed[0].role, "role-a");
-    assert_eq!(parsed[0].special_lead, None);
+    assert_eq!(parsed[0].lead, CreditLead::Role("role-a"));
     assert!(parsed[0].name_segments.is_empty());
 }
 
@@ -238,10 +250,10 @@ fn separator_style_follows_the_colon_glyph() {
 }
 
 #[test]
-fn role_span_suffix_emits_a_colon_only_for_the_latin_layout() {
-    assert_eq!(SeparatorStyle::AsciiColon.role_span_suffix(), ":");
-    assert_eq!(SeparatorStyle::FullWidthColon.role_span_suffix(), "");
-    assert_eq!(SeparatorStyle::Spaces("  ").role_span_suffix(), "");
+fn lead_span_suffix_emits_a_colon_only_for_the_latin_layout() {
+    assert_eq!(SeparatorStyle::AsciiColon.lead_span_suffix(), ":");
+    assert_eq!(SeparatorStyle::FullWidthColon.lead_span_suffix(), "");
+    assert_eq!(SeparatorStyle::Spaces("  ").lead_span_suffix(), "");
 }
 
 #[test]

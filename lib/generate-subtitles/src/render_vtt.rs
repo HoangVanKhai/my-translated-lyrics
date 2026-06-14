@@ -23,7 +23,7 @@
 //!   `<c.creditRole>role</c><sep><c.creditName>name</c>` pair per
 //!   recognized cell, where `<sep>` follows
 //!   [`CreditPair::separator_style`]: a full-width colon between the
-//!   spans, an ASCII colon inside the role class before a single
+//!   spans, an ASCII colon inside the lead class before a single
 //!   space, or a verbatim ASCII space gutter.
 //! * Any other marker emits the cue text unwrapped.
 //!
@@ -33,7 +33,7 @@
 //! [`LineMarkersDesc::credits`]: lyrics_core::line_markers_descriptor::LineMarkersDesc::credits
 
 use super::credits_parse::{
-    CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,
+    CreditLead, CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,
 };
 use super::escape::Escaped;
 use super::parse::{CuePart, SubtitleCue};
@@ -213,26 +213,26 @@ fn render_credit_line(output: &mut String, features: &mut Features, pairs: &[Cre
 
 fn render_credit_pair(output: &mut String, features: &mut Features, pair: &CreditPair) {
     let style = pair.separator_style();
-    // Lead: a role-less line opens with a highlighted bracket; an
-    // ordinary line opens with the role and any Latin colon.
-    if let Some(bracket) = pair.special_lead {
-        features.used_credit_special = true;
-        write!(
-            output,
-            "<c.{CLASS_CREDIT_SPECIAL}>{}</c>",
-            Escaped(bracket.as_str()),
-        )
-        .unwrap();
-    } else {
-        features.used_credit_role = true;
-        write!(
-            output,
-            "<c.{CLASS_CREDIT_ROLE}>{}{}</c>",
-            Escaped(pair.role),
-            style.role_span_suffix(),
-        )
-        .unwrap();
-    }
+    // The lead is a role (creditRole) or, on a role-less line, a
+    // bracket highlight (creditSpecial); either carries any Latin
+    // colon inside its own span.
+    let (class, text) = match pair.lead {
+        CreditLead::Role(role) => {
+            features.used_credit_role = true;
+            (CLASS_CREDIT_ROLE, role)
+        }
+        CreditLead::Special(bracket) => {
+            features.used_credit_special = true;
+            (CLASS_CREDIT_SPECIAL, bracket.as_str())
+        }
+    };
+    write!(
+        output,
+        "<c.{class}>{text}{colon}</c>",
+        text = Escaped(text),
+        colon = style.lead_span_suffix(),
+    )
+    .unwrap();
     // A role-only header line carries no name; emit just the lead.
     if pair.name_segments.is_empty() {
         return;

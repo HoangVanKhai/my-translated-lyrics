@@ -8,9 +8,12 @@
 //! for bracketed spans that become [`NameSegment::Bracketed`]
 //! values; anything else becomes [`NameSegment::Unbracketed`].
 //!
-//! A credit line whose first non-whitespace token is not a known
-//! role raises [`ParseCreditError::UnknownRole`]. This lets the
-//! integration tests catch typos such as `作詞` vs `作词` before
+//! A credit line normally opens with a registered role, but a
+//! role-less line may instead open with a bracketed span (a
+//! [`CreditLead::Special`] highlight) that stands in for the role. A
+//! line whose first non-whitespace token is neither a known role nor a
+//! bracketed span raises [`ParseCreditError::UnknownRole`], which lets
+//! the integration tests catch typos such as `作詞` vs `作词` before
 //! they ever reach `dist/`.
 //!
 //! Only the `credit-roles` list is consumed by this parser. The
@@ -27,27 +30,32 @@ use lyrics_core::credits_descriptor::CreditsDesc;
 use lyrics_core::video_descriptor::Language;
 use pipe_trait::Pipe;
 
-/// A structural role/name pair extracted from one credit line.
+/// A structural lead/name pair extracted from one credit line.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CreditPair<'a> {
-    /// The role cell, exactly as it appeared in the source line.
-    /// Empty when the line is role-less and opens with a bracketed
-    /// span instead; see [`CreditPair::special_lead`].
-    pub role: &'a str,
-    /// A bracketed span that opens a role-less credit line, for
-    /// example `[疏楼曲]` ahead of a contributor name. When present,
-    /// the renderers emit it in the credit highlight color in place of
-    /// a role span, and [`CreditPair::role`] is empty.
-    pub special_lead: Option<Bracketed<'a>>,
-    /// Raw separator text captured between the role cell and the
+    /// What opens the line: a role, or a role-less bracket highlight.
+    pub lead: CreditLead<'a>,
+    /// Raw separator text captured between the lead cell and the
     /// name cell, preserved verbatim so the renderer can decide how
     /// to emit it. [`CreditPair::separator_style`] reads this field
     /// to choose between a CJK colon, a Latin colon, or a verbatim
     /// space gutter.
     pub separator: &'a str,
     /// Decomposed name region, with bracketed and unbracketed
-    /// segments.
+    /// segments. Empty for a header line that carries no name, whether
+    /// a role-only header or a bare bracket-lead line.
     pub name_segments: Vec<NameSegment<'a>>,
+}
+
+/// What opens a credit line.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CreditLead<'a> {
+    /// A registered role, rendered in the credit role color.
+    Role(&'a str),
+    /// A bracketed span that opens a role-less line, for example
+    /// `[疏楼曲]` ahead of a contributor name, rendered in the credit
+    /// highlight color in place of a role span.
+    Special(Bracketed<'a>),
 }
 
 impl<'a> CreditPair<'a> {
@@ -77,11 +85,11 @@ impl<'a> CreditPair<'a> {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SeparatorStyle<'a> {
     /// The separator carried a full-width colon (`：`). The renderer
-    /// emits a full-width colon between the role and name spans with
+    /// emits a full-width colon between the lead and name spans with
     /// no surrounding spaces, the convention for CJK credit lines.
     FullWidthColon,
     /// The separator carried an ASCII colon (`:`) and no full-width
-    /// colon. The renderer tucks an ASCII colon inside the role span
+    /// colon. The renderer tucks an ASCII colon inside the lead span
     /// and follows it with one ASCII space, the convention for
     /// Latin-script credit lines.
     AsciiColon,
@@ -93,19 +101,20 @@ pub enum SeparatorStyle<'a> {
 }
 
 impl SeparatorStyle<'_> {
-    /// The colon, if any, that belongs inside the role's styled span.
-    /// A Latin-script credit line ([`SeparatorStyle::AsciiColon`])
-    /// tucks an ASCII colon inside the role color; the CJK and
-    /// colon-free layouts contribute nothing here and place their
-    /// separator between the spans with [`SeparatorStyle::append_between_spans`].
-    pub fn role_span_suffix(self) -> &'static str {
+    /// The colon, if any, that belongs inside the lead's styled span
+    /// (a role or a role-less bracket highlight). A Latin-script credit
+    /// line ([`SeparatorStyle::AsciiColon`]) tucks an ASCII colon
+    /// inside the lead's color; the CJK and colon-free layouts
+    /// contribute nothing here and place their separator between the
+    /// spans with [`SeparatorStyle::append_between_spans`].
+    pub fn lead_span_suffix(self) -> &'static str {
         match self {
             SeparatorStyle::AsciiColon => ":",
             SeparatorStyle::FullWidthColon | SeparatorStyle::Spaces(_) => "",
         }
     }
 
-    /// Appends the separator that sits between the role span and the
+    /// Appends the separator that sits between the lead span and the
     /// name span: one ASCII space after a Latin colon, a full-width
     /// colon for the CJK layout, or the colon-free gutter. An ASCII
     /// space or tab gutter round-trips verbatim; any other whitespace
@@ -334,25 +343,23 @@ pub fn parse_credit_line<'a>(
         // A cell opens with a registered role, or, on a role-less
         // line, with a bracketed span that the renderers highlight in
         // place of a role. Anything else is unrecognized text.
-        let (role, special_lead, after_lead) =
-            if let Some((role, after_role)) = roles.take_role(rest) {
-                (role, None, after_role)
-            } else if let Some((bracket, after_bracket)) = Bracketed::take(rest) {
-                ("", Some(bracket), after_bracket)
-            } else {
-                return Err(ParseCreditError::UnknownRole(UnknownRole {
-                    line: line.to_string(),
-                    offset: line.len() - rest.len(),
-                }));
-            };
+        let (lead, after_lead) = if let Some((role, after_role)) = roles.take_role(rest) {
+            (CreditLead::Role(role), after_role)
+        } else if let Some((bracket, after_bracket)) = Bracketed::take(rest) {
+            (CreditLead::Special(bracket), after_bracket)
+        } else {
+            return Err(ParseCreditError::UnknownRole(UnknownRole {
+                line: line.to_string(),
+                offset: line.len() - rest.len(),
+            }));
+        };
         let (separator, after_separator) = take_cell_separator(after_lead);
         let (raw_name_region, after_name) = roles.take_until_role(after_separator);
         let name_region = trim_end_separator(raw_name_region);
         let name_segments = parse_name_region(name_region);
 
         pairs.push(CreditPair {
-            role,
-            special_lead,
+            lead,
             separator,
             name_segments,
         });
