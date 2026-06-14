@@ -107,6 +107,24 @@ fn longer_role_wins_over_shorter_prefix() {
 }
 
 #[test]
+fn role_token_inside_a_name_does_not_split_it() {
+    // `二胡` is registered as a role (an instrument) and also appears
+    // inside the personal name `陆二胡`. The trailing `二胡` sits
+    // mid-name, not at a cell boundary, so it must not be parsed as a
+    // second role cell: the line is one pair whose name is the whole
+    // `陆二胡`.
+    let descriptor = make_descriptor(&["二胡", "作词"]);
+    let roles = make_roles(&descriptor);
+    let parsed = parse_credit_line("二胡：陆二胡", &roles).unwrap();
+    assert_eq!(parsed.len(), 1);
+    assert_eq!(parsed[0].role, "二胡");
+    assert_eq!(
+        parsed[0].name_segments,
+        [NameSegment::Unbracketed(Unbracketed("陆二胡"))],
+    );
+}
+
+#[test]
 fn unknown_leading_text_errors() {
     let descriptor = make_descriptor(&["role-a"]);
     let roles = make_roles(&descriptor);

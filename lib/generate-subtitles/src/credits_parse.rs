@@ -290,7 +290,21 @@ impl<'a> CreditRoles<'a> {
 
     fn take_until_role<'input>(&self, input: &'input str) -> (&'input str, &'input str) {
         let mut cursor = 0;
-        while cursor < input.len() && self.take_role(&input[cursor..]).is_none() {
+        while cursor < input.len() {
+            // A registered role only opens a new cell when it begins at
+            // a cell boundary: the start of the name region (which
+            // already follows the previous cell's separator) or right
+            // after a separator character. A role token sitting mid-name,
+            // such as the `二胡` inside the personal name `陆二胡`, is part
+            // of the name and must not split it.
+            let at_cell_boundary = cursor == 0
+                || input[..cursor]
+                    .chars()
+                    .next_back()
+                    .is_some_and(is_separator_char);
+            if at_cell_boundary && self.take_role(&input[cursor..]).is_some() {
+                break;
+            }
             let Some(next_char) = input[cursor..].chars().next() else {
                 break;
             };
