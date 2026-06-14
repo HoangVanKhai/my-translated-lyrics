@@ -147,10 +147,8 @@ fn a_spaced_query_requires_the_spacing_to_match() {
 fn match_mask_marks_every_single_character_occurrence() {
     // cspell:words booo
     // "Foo Bo Booo" carries six "o" letters across its three words.
-    assert_eq!(
-        marked(&match_mask("Foo Bo Booo", "o")),
-        vec![1, 2, 5, 8, 9, 10]
-    );
+    let marks = marked(&match_mask("Foo Bo Booo", "o"));
+    assert_eq!(marks, vec![1, 2, 5, 8, 9, 10]);
 }
 
 /// A multi-character query marks non-overlapping runs, scanning left to
@@ -174,17 +172,13 @@ fn match_mask_marks_nothing_for_an_empty_query() {
 /// skipped space unmarked.
 #[test]
 fn match_mask_marks_across_word_boundaries() {
-    assert_eq!(
-        marked(&match_mask("Abc Def", "abcdef")),
-        vec![0, 1, 2, 4, 5, 6]
-    );
+    let marks = marked(&match_mask("Abc Def", "abcdef"));
+    assert_eq!(marks, vec![0, 1, 2, 4, 5, 6]);
 }
 
 /// A query that keeps a space marks the space in place along with the rest.
 #[test]
 fn match_mask_marks_a_spaced_query_in_place() {
-    assert_eq!(
-        marked(&match_mask("Abc Def", "abc def")),
-        vec![0, 1, 2, 3, 4, 5, 6]
-    );
+    let marks = marked(&match_mask("Abc Def", "abc def"));
+    assert_eq!(marks, vec![0, 1, 2, 3, 4, 5, 6]);
 }
