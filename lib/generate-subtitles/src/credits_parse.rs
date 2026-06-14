@@ -81,9 +81,8 @@ pub enum SeparatorStyle<'a> {
     /// The separator was free of colons. The captured run is carried
     /// through verbatim so an ASCII space or tab gutter round-trips;
     /// any other whitespace shape collapses to a single ASCII space.
-    /// See [`append_separator_for_output`].
-    ///
-    /// [`append_separator_for_output`]: crate::escape::append_separator_for_output
+    /// The renderers route this case through the `escape` module's
+    /// `append_separator_for_output` helper.
     Spaces(&'a str),
 }
 
