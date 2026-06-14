@@ -71,36 +71,43 @@ impl From<PlayerArg> for Player {
     }
 }
 
-/// The subtitle language chosen on the command line.
+/// The subtitle language chosen on the command line. The variants mirror
+/// [`Language`], with the two-letter codes accepted as aliases.
 #[derive(Debug, Clone, Copy, ValueEnum)]
 enum LanguageArg {
-    En,
-    Vi,
-    Zh,
+    #[value(alias = "en")]
+    English,
+    #[value(alias = "vi")]
+    Vietnamese,
+    #[value(alias = "zh")]
+    Chinese,
 }
 
 impl From<LanguageArg> for Language {
     fn from(arg: LanguageArg) -> Self {
         match arg {
-            LanguageArg::En => Language::English,
-            LanguageArg::Vi => Language::Vietnamese,
-            LanguageArg::Zh => Language::Chinese,
+            LanguageArg::English => Language::English,
+            LanguageArg::Vietnamese => Language::Vietnamese,
+            LanguageArg::Chinese => Language::Chinese,
         }
     }
 }
 
-/// The subtitle format chosen on the command line.
+/// The subtitle format chosen on the command line. The variants mirror
+/// [`SubtitleFormat`], with the file extensions accepted as aliases.
 #[derive(Debug, Clone, Copy, ValueEnum)]
 enum FormatArg {
-    Srt,
-    Vtt,
+    #[value(alias = "srt")]
+    SubRip,
+    #[value(alias = "vtt")]
+    WebVtt,
 }
 
 impl From<FormatArg> for SubtitleFormat {
     fn from(arg: FormatArg) -> Self {
         match arg {
-            FormatArg::Srt => SubtitleFormat::SubRip,
-            FormatArg::Vtt => SubtitleFormat::WebVtt,
+            FormatArg::SubRip => SubtitleFormat::SubRip,
+            FormatArg::WebVtt => SubtitleFormat::WebVtt,
         }
     }
 }

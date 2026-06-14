@@ -125,8 +125,9 @@ fn an_unavailable_language_is_an_error() {
     env.add_library_file(&format!("{VIDEO_TITLE}.mkv"));
     env.add_library_file(&format!("{VIDEO_TITLE}.vi.srt"));
 
-    // Only Vietnamese is available, so English is rejected.
-    let output = env.run(["--title", "example", "--language", "en"]);
+    // Only Vietnamese is available, so English is rejected. The full
+    // language name is given here, exercising the canonical value name.
+    let output = env.run(["--title", "example", "--language", "english"]);
 
     assert!(!output.status.success());
     assert!(stderr(&output).contains("available: vi"), "{output:?}");
@@ -139,8 +140,16 @@ fn an_unavailable_format_is_an_error() {
     env.add_library_file(&format!("{VIDEO_TITLE}.mkv"));
     env.add_library_file(&format!("{VIDEO_TITLE}.vi.srt"));
 
-    // Only SubRip is available for Vietnamese, so WebVTT is rejected.
-    let output = env.run(["--title", "example", "--language", "vi", "--format", "vtt"]);
+    // Only SubRip is available for Vietnamese, so WebVTT is rejected. The
+    // "vi" alias and the canonical "web-vtt" name are exercised here.
+    let output = env.run([
+        "--title",
+        "example",
+        "--language",
+        "vi",
+        "--format",
+        "web-vtt",
+    ]);
 
     assert!(!output.status.success());
     assert!(stderr(&output).contains("available: srt"), "{output:?}");
