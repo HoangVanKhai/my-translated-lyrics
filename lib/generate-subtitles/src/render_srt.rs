@@ -15,7 +15,7 @@
 use super::credits_parse::{
     CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,
 };
-use super::escape::{Escaped, append_role_name_separator, role_span_suffix};
+use super::escape::Escaped;
 use super::parse::{CuePart, SubtitleCue};
 use super::styles::{MissingStyle, Style, StylePalette};
 use core::fmt::Write;
@@ -167,10 +167,10 @@ fn render_credit_pair(output: &mut String, palette: &StylePalette, pair: &Credit
         r#"<font color="{color}">{role}{colon}</font>"#,
         color = palette.credit.role,
         role = Escaped(pair.role),
-        colon = role_span_suffix(style),
+        colon = style.role_span_suffix(),
     )
     .unwrap();
-    append_role_name_separator(output, style);
+    style.append_between_spans(output);
     write!(output, r#"<font color="{}">"#, palette.credit.name).unwrap();
     write_name_segments(output, palette, &pair.name_segments);
     output.push_str("</font>");

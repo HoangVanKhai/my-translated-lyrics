@@ -81,9 +81,41 @@ pub enum SeparatorStyle<'a> {
     /// The separator was free of colons. The captured run is carried
     /// through verbatim so an ASCII space or tab gutter round-trips;
     /// any other whitespace shape collapses to a single ASCII space.
-    /// The renderers route this case through the `escape` module's
-    /// `append_separator_for_output` helper.
+    /// See [`SeparatorStyle::append_between_spans`].
     Spaces(&'a str),
+}
+
+impl SeparatorStyle<'_> {
+    /// The colon, if any, that belongs inside the role's styled span.
+    /// A Latin-script credit line ([`SeparatorStyle::AsciiColon`])
+    /// tucks an ASCII colon inside the role color; the CJK and
+    /// colon-free layouts contribute nothing here and place their
+    /// separator between the spans with [`SeparatorStyle::append_between_spans`].
+    pub fn role_span_suffix(self) -> &'static str {
+        match self {
+            SeparatorStyle::AsciiColon => ":",
+            SeparatorStyle::FullWidthColon | SeparatorStyle::Spaces(_) => "",
+        }
+    }
+
+    /// Appends the separator that sits between the role span and the
+    /// name span: one ASCII space after a Latin colon, a full-width
+    /// colon for the CJK layout, or the colon-free gutter. An ASCII
+    /// space or tab gutter round-trips verbatim; any other whitespace
+    /// shape collapses to a single ASCII space.
+    pub fn append_between_spans(self, output: &mut String) {
+        match self {
+            SeparatorStyle::AsciiColon => output.push(' '),
+            SeparatorStyle::FullWidthColon => output.push('：'),
+            SeparatorStyle::Spaces(raw) => {
+                if !raw.is_empty() && raw.chars().all(|ch| ch == ' ' || ch == '\t') {
+                    output.push_str(raw);
+                } else {
+                    output.push(' ');
+                }
+            }
+        }
+    }
 }
 
 /// A unit within the name region of a credit pair.

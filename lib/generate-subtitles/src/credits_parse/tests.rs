@@ -184,6 +184,29 @@ fn separator_style_follows_the_colon_glyph() {
 }
 
 #[test]
+fn role_span_suffix_emits_a_colon_only_for_the_latin_layout() {
+    assert_eq!(SeparatorStyle::AsciiColon.role_span_suffix(), ":");
+    assert_eq!(SeparatorStyle::FullWidthColon.role_span_suffix(), "");
+    assert_eq!(SeparatorStyle::Spaces("  ").role_span_suffix(), "");
+}
+
+#[test]
+fn between_span_separator_follows_the_layout() {
+    let emit = |style: SeparatorStyle<'_>| {
+        let mut output = String::new();
+        style.append_between_spans(&mut output);
+        output
+    };
+    assert_eq!(emit(SeparatorStyle::AsciiColon), " ");
+    assert_eq!(emit(SeparatorStyle::FullWidthColon), "：");
+    // A colon-free ASCII gutter round-trips verbatim.
+    assert_eq!(emit(SeparatorStyle::Spaces("  ")), "  ");
+    // `\u{3000}` IDEOGRAPHIC SPACE is not an ASCII gutter, so it
+    // collapses to a single ASCII space.
+    assert_eq!(emit(SeparatorStyle::Spaces("\u{3000}")), " ");
+}
+
+#[test]
 fn bracketed_accepts_four_pair_kinds() {
     let (lenticular, rest) = Bracketed::take("【gold】tail").unwrap();
     assert_eq!(lenticular.as_str(), "【gold】");
