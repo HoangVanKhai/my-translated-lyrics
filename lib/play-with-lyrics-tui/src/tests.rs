@@ -1,7 +1,10 @@
-use crate::{
-    Clock, Navigation, ReadEvent, WindowSize, columns_line, columns_line_highlighted, fit,
-    fit_chars, is_double_click, scroll_offset, select_one_loop, select_video_loop, visible_rows,
+use crate::Navigation;
+use crate::host::{Clock, ReadEvent, WindowSize};
+use crate::render::{
+    columns_line, columns_line_highlighted, fit, fit_chars, is_double_click, scroll_offset,
+    visible_rows,
 };
+use crate::selectors::{select_one_loop, select_video_loop};
 use crossterm::event::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
 };
