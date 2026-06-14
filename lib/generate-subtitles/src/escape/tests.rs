@@ -18,12 +18,12 @@ fn escapes_angle_brackets_and_ampersand() {
     assert_eq!(Escaped("<<>>").to_string(), "&lt;&lt;&gt;&gt;");
 }
 
+/// A raw `&lt;` in the source must become `&amp;lt;`, because the
+/// `&` is a literal ampersand that itself needs to be escaped;
+/// otherwise the output would be indistinguishable from a cue that
+/// intended a `<` character.
 #[test]
 fn escapes_pre_existing_entity_references() {
-    // A raw `&lt;` in the source must become `&amp;lt;`, because the
-    // `&` is a literal ampersand that itself needs to be escaped;
-    // otherwise the output would be indistinguishable from a cue that
-    // intended a `<` character.
     assert_eq!(Escaped("&lt;").to_string(), "&amp;lt;");
     assert_eq!(Escaped("&amp;").to_string(), "&amp;amp;");
 }

@@ -22,17 +22,17 @@ fn make_roles(descriptor: &CreditsDesc) -> CreditRoles<'_> {
     CreditRoles::from_descriptor(descriptor, &Language::Vietnamese)
 }
 
+/// The input exercises three contractual properties at once:
+///   * `作詞` and `long-role` each appear twice with other entries
+///     between them, so a refactor that relies on `Vec::dedup` or
+///     `Itertools::dedup` leaves the duplicates in.
+///   * `abc` and `mid` are both 3 bytes long, so the ascending
+///     lexicographic tiebreak is observable.
+///   * `作詞` is 6 bytes (two CJK code points) and ranks above the
+///     3-byte ASCII entries, making byte length, not character
+///     count, the load-bearing measure.
 #[test]
 fn from_descriptor_deduplicates_non_adjacent_entries_and_orders_longest_first() {
-    // The input exercises three contractual properties at once:
-    //   * `作詞` and `long-role` each appear twice with other entries
-    //     between them, so a refactor that relies on `Vec::dedup` or
-    //     `Itertools::dedup` leaves the duplicates in.
-    //   * `abc` and `mid` are both 3 bytes long, so the ascending
-    //     lexicographic tiebreak is observable.
-    //   * `作詞` is 6 bytes (two CJK code points) and ranks above the
-    //     3-byte ASCII entries, making byte length, not character
-    //     count, the load-bearing measure.
     let descriptor = make_descriptor(&[
         "作詞",
         "long-role",
@@ -106,21 +106,20 @@ fn longer_role_wins_over_shorter_prefix() {
     assert_eq!(parsed[0].role, "role-a");
 }
 
+/// The name `name-role-a` ends with the registered role token
+/// `role-a`, but that token sits mid-name rather than at a cell
+/// boundary, so it must not be split off as a second role cell: the
+/// line is one pair whose name is the whole `name-role-a`.
 #[test]
 fn role_token_inside_a_name_does_not_split_it() {
-    // `二胡` is registered as a role (an instrument) and also appears
-    // inside the personal name `陆二胡`. The trailing `二胡` sits
-    // mid-name, not at a cell boundary, so it must not be parsed as a
-    // second role cell: the line is one pair whose name is the whole
-    // `陆二胡`.
-    let descriptor = make_descriptor(&["二胡", "作词"]);
+    let descriptor = make_descriptor(&["role-a"]);
     let roles = make_roles(&descriptor);
-    let parsed = parse_credit_line("二胡：陆二胡", &roles).unwrap();
+    let parsed = parse_credit_line("role-a: name-role-a", &roles).unwrap();
     assert_eq!(parsed.len(), 1);
-    assert_eq!(parsed[0].role, "二胡");
+    assert_eq!(parsed[0].role, "role-a");
     assert_eq!(
         parsed[0].name_segments,
-        [NameSegment::Unbracketed(Unbracketed("陆二胡"))],
+        [NameSegment::Unbracketed(Unbracketed("name-role-a"))],
     );
 }
 
@@ -260,12 +259,12 @@ fn bracketed_from_str_accepts_a_single_span() {
     assert_eq!(parsed.as_str(), "【label-a】");
 }
 
+/// Whatever `take` would report as `None` maps to `ShapeMismatch`
+/// for `FromStr`: empty input, no opening bracket, nested
+/// bracket before the matching close, or end of input before
+/// the close.
 #[test]
 fn bracketed_from_str_rejects_shape_mismatch() {
-    // Whatever `take` would report as `None` maps to `ShapeMismatch`
-    // for `FromStr`: empty input, no opening bracket, nested
-    // bracket before the matching close, or end of input before
-    // the close.
     for input in ["", "no bracket", "[open only", "【a【b】c】"] {
         assert_eq!(
             input.pipe(Bracketed::try_from).unwrap_err(),
@@ -274,11 +273,11 @@ fn bracketed_from_str_rejects_shape_mismatch() {
     }
 }
 
+/// The first character past the closing bracket is what the
+/// diagnostic reports; nothing else is needed to describe the
+/// failure.
 #[test]
 fn bracketed_from_str_rejects_unexpected_character_after_span() {
-    // The first character past the closing bracket is what the
-    // diagnostic reports; nothing else is needed to describe the
-    // failure.
     assert_eq!(
         "【label-a】trailing".pipe(Bracketed::try_from).unwrap_err(),
         ParseBracketedError::UnexpectedCharacter('t'),
