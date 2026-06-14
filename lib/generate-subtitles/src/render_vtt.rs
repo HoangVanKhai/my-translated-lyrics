@@ -33,9 +33,9 @@
 //! [`LineMarkersDesc::credits`]: lyrics_core::line_markers_descriptor::LineMarkersDesc::credits
 
 use super::credits_parse::{
-    CreditPair, CreditRoles, NameSegment, ParseCreditError, SeparatorStyle, parse_credit_line,
+    CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,
 };
-use super::escape::{Escaped, append_separator_for_output};
+use super::escape::Escaped;
 use super::parse::{CuePart, SubtitleCue};
 use super::styles::{MissingStyle, Style, StylePalette};
 use core::fmt::Write;
@@ -215,16 +215,14 @@ fn render_credit_pair(output: &mut String, features: &mut Features, pair: &Credi
     features.used_credit_role = true;
     features.used_credit_name = true;
     let style = pair.separator_style();
-    write!(output, "<c.{CLASS_CREDIT_ROLE}>{}", Escaped(pair.role)).unwrap();
-    if let SeparatorStyle::AsciiColon = style {
-        output.push(':');
-    }
-    output.push_str("</c>");
-    match style {
-        SeparatorStyle::AsciiColon => output.push(' '),
-        SeparatorStyle::FullWidthColon => output.push('：'),
-        SeparatorStyle::Spaces(raw) => append_separator_for_output(output, raw),
-    }
+    write!(
+        output,
+        "<c.{CLASS_CREDIT_ROLE}>{}{}</c>",
+        Escaped(pair.role),
+        style.role_span_suffix(),
+    )
+    .unwrap();
+    style.append_between_spans(output);
     write!(output, "<c.{CLASS_CREDIT_NAME}>").unwrap();
     write_name_segments(output, features, &pair.name_segments);
     output.push_str("</c>");
