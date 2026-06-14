@@ -38,12 +38,27 @@ trait ReadEvent {
     fn read_event() -> io::Result<Event>;
 }
 
+/// Reports the terminal size as `(columns, rows)`.
+///
+/// This is injected alongside [`ReadEvent`] so a test can render at a chosen
+/// size and exercise the width- and height-dependent layout deterministically,
+/// without a real terminal.
+trait WindowSize {
+    fn window_size() -> io::Result<(u16, u16)>;
+}
+
 /// The production provider: it reads from the real terminal.
 struct Host;
 
 impl ReadEvent for Host {
     fn read_event() -> io::Result<Event> {
         read()
+    }
+}
+
+impl WindowSize for Host {
+    fn window_size() -> io::Result<(u16, u16)> {
+        size()
     }
 }
 
@@ -120,6 +135,13 @@ fn scroll_offset(cursor: usize, visible: usize) -> usize {
     cursor.saturating_sub(visible.saturating_sub(1))
 }
 
+/// The number of title rows that fit in a terminal `rows` rows tall, after
+/// reserving the prompt line, the header line, and the help line. At least
+/// one row is always reported, so the table never collapses to nothing.
+fn visible_rows(rows: usize) -> usize {
+    rows.saturating_sub(3).max(1)
+}
+
 /// Presents the fuzzy table of titles and returns the index, into `videos`,
 /// of the chosen row. Returns `None` when the user cancels.
 pub fn select_video(videos: &[Video]) -> io::Result<Option<usize>> {
@@ -132,11 +154,11 @@ pub fn select_video(videos: &[Video]) -> io::Result<Option<usize>> {
 /// render to a buffer, exercising the loop without a terminal.
 fn select_video_loop<Sys>(output: &mut impl Write, videos: &[Video]) -> io::Result<Option<usize>>
 where
-    Sys: ReadEvent,
+    Sys: ReadEvent + WindowSize,
 {
     let mut selector = Selector::new(videos);
     loop {
-        render_table(output, &selector, videos)?;
+        render_table::<Sys>(output, &selector, videos)?;
         let Event::Key(key) = Sys::read_event()? else {
             continue;
         };
@@ -167,12 +189,15 @@ where
     }
 }
 
-fn render_table(
+fn render_table<Sys>(
     output: &mut impl Write,
     selector: &Selector<Video>,
     videos: &[Video],
-) -> io::Result<()> {
-    let (columns, rows) = size().unwrap_or((80, 24));
+) -> io::Result<()>
+where
+    Sys: WindowSize,
+{
+    let (columns, rows) = Sys::window_size().unwrap_or((80, 24));
     let columns = columns as usize;
     let rows = rows as usize;
 
@@ -197,7 +222,7 @@ fn render_table(
 
     let filtered = selector.filtered();
     let cursor = selector.cursor();
-    let visible = rows.saturating_sub(3).max(1);
+    let visible = visible_rows(rows);
     let offset = scroll_offset(cursor, visible);
 
     for (screen_index, filtered_position) in
@@ -252,11 +277,11 @@ fn select_one_loop<Sys>(
     labels: &[String],
 ) -> io::Result<Option<usize>>
 where
-    Sys: ReadEvent,
+    Sys: ReadEvent + WindowSize,
 {
     let mut cursor = 0;
     loop {
-        render_list(output, prompt, labels, cursor)?;
+        render_list::<Sys>(output, prompt, labels, cursor)?;
         let Event::Key(key) = Sys::read_event()? else {
             continue;
         };
@@ -288,13 +313,16 @@ where
     }
 }
 
-fn render_list(
+fn render_list<Sys>(
     output: &mut impl Write,
     prompt: &str,
     labels: &[String],
     cursor: usize,
-) -> io::Result<()> {
-    let (columns, _) = size().unwrap_or((80, 24));
+) -> io::Result<()>
+where
+    Sys: WindowSize,
+{
+    let (columns, _) = Sys::window_size().unwrap_or((80, 24));
     let columns = columns as usize;
 
     output.queue(Clear(ClearType::All))?;
