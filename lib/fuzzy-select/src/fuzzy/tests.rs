@@ -10,9 +10,9 @@ fn subsequence_matches_in_order() {
     assert!(fuzzy_subsequence("", "anything"));
 }
 
+/// An all-lowercase or all-uppercase query matches any case of the text.
 #[test]
 fn a_uniformly_cased_query_folds_case() {
-    // An all-lowercase or all-uppercase query matches any case of the text.
     for query in ["foo bar baz", "FOO BAR BAZ"] {
         for text in ["Foo Bar Baz", "foo bar baz", "FOO BAR BAZ"] {
             assert!(contains_ci(text, query), "{query:?} should match {text:?}");
@@ -22,9 +22,9 @@ fn a_uniformly_cased_query_folds_case() {
     assert!(fuzzy_subsequence("cell", "CELLULOID"));
 }
 
+/// A deliberately mixed-case query matches only that exact case.
 #[test]
 fn a_mixed_case_query_is_taken_literally() {
-    // A deliberately mixed-case query matches only that exact case.
     assert!(contains_ci("Foo Bar Baz", "Foo Bar Baz"));
     assert!(!contains_ci("foo bar baz", "Foo Bar Baz"));
     assert!(!contains_ci("FOO BAR BAZ", "Foo Bar Baz"));
@@ -46,19 +46,19 @@ fn contains_is_substring_not_subsequence() {
     assert!(contains_ci("anything", ""));
 }
 
+/// Typing without diacritics finds a title that carries them.
 #[test]
 fn an_unmarked_query_matches_marked_text() {
-    // Typing without diacritics finds a title that carries them.
     assert!(contains_ci("Mưa Xuân", "mua xuan"));
     assert!(contains_ci("Mùa Xuân", "mua xuan"));
     assert!(fuzzy_subsequence("mua", "Mưa Xuân"));
     assert!(fuzzy_subsequence("mua", "Mùa Xuân"));
 }
 
+/// Typing a diacritic narrows the match to exactly that form, so it
+/// matches a title that carries the mark but not a bare one.
 #[test]
 fn a_marked_query_matches_only_that_mark() {
-    // Typing a diacritic narrows the match to exactly that form, so it
-    // matches a title that carries the mark but not a bare one.
     assert!(contains_ci("Mưa Xuân", "mưa"));
     assert!(!contains_ci("Mua Xuan", "mưa"));
     assert!(contains_ci("Mùa Xuân", "mùa"));

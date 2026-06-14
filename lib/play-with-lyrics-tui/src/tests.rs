@@ -16,9 +16,9 @@ fn fit_handles_zero_width() {
     assert_eq!(fit("abc", 0), "");
 }
 
+/// Each accented or CJK character counts as one column, not one byte.
 #[test]
 fn fit_counts_characters_not_bytes() {
-    // Each accented or CJK character counts as one column, not one byte.
     assert_eq!(fit("café", 4), "café");
     assert_eq!(fit("示例", 3), "示例 ");
 }

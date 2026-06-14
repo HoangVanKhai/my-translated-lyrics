@@ -61,11 +61,11 @@ fn typing_filters_by_substring_across_all_columns() {
     assert_eq!(rows[0].en, "Example Song");
 }
 
+/// The Vietnamese title "Bài Hát Ví Dụ" may be typed without its marks.
 #[test]
 fn filtering_ignores_diacritics() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
-    // The Vietnamese title "Bài Hát Ví Dụ" may be typed without its marks.
     for char in "vi du".chars() {
         selector.push_char(char);
     }
