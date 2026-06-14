@@ -1,5 +1,29 @@
-use super::Escaped;
+use super::{Escaped, append_role_name_separator, role_span_suffix};
+use crate::credits_parse::SeparatorStyle;
 use pretty_assertions::assert_eq;
+
+#[test]
+fn role_span_suffix_emits_a_colon_only_for_the_latin_layout() {
+    assert_eq!(role_span_suffix(SeparatorStyle::AsciiColon), ":");
+    assert_eq!(role_span_suffix(SeparatorStyle::FullWidthColon), "");
+    assert_eq!(role_span_suffix(SeparatorStyle::Spaces("  ")), "");
+}
+
+#[test]
+fn between_span_separator_follows_the_layout() {
+    let emit = |style| {
+        let mut output = String::new();
+        append_role_name_separator(&mut output, style);
+        output
+    };
+    assert_eq!(emit(SeparatorStyle::AsciiColon), " ");
+    assert_eq!(emit(SeparatorStyle::FullWidthColon), "：");
+    // A colon-free ASCII gutter round-trips verbatim.
+    assert_eq!(emit(SeparatorStyle::Spaces("  ")), "  ");
+    // `\u{3000}` IDEOGRAPHIC SPACE is not an ASCII gutter, so it
+    // collapses to a single ASCII space.
+    assert_eq!(emit(SeparatorStyle::Spaces("\u{3000}")), " ");
+}
 
 #[test]
 fn plain_text_passes_through() {

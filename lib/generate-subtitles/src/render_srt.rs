@@ -13,9 +13,9 @@
 //! colon-free gutter reproduces its ASCII spacing verbatim.
 
 use super::credits_parse::{
-    CreditPair, CreditRoles, NameSegment, ParseCreditError, SeparatorStyle, parse_credit_line,
+    CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,
 };
-use super::escape::{Escaped, append_separator_for_output};
+use super::escape::{Escaped, append_role_name_separator, role_span_suffix};
 use super::parse::{CuePart, SubtitleCue};
 use super::styles::{MissingStyle, Style, StylePalette};
 use core::fmt::Write;
@@ -162,17 +162,15 @@ fn render_credit_line(output: &mut String, palette: &StylePalette, pairs: &[Cred
 
 fn render_credit_pair(output: &mut String, palette: &StylePalette, pair: &CreditPair) {
     let style = pair.separator_style();
-    write!(output, r#"<font color="{}">"#, palette.credit.role).unwrap();
-    write!(output, "{}", Escaped(pair.role)).unwrap();
-    if let SeparatorStyle::AsciiColon = style {
-        output.push(':');
-    }
-    output.push_str("</font>");
-    match style {
-        SeparatorStyle::AsciiColon => output.push(' '),
-        SeparatorStyle::FullWidthColon => output.push('：'),
-        SeparatorStyle::Spaces(raw) => append_separator_for_output(output, raw),
-    }
+    write!(
+        output,
+        r#"<font color="{color}">{role}{colon}</font>"#,
+        color = palette.credit.role,
+        role = Escaped(pair.role),
+        colon = role_span_suffix(style),
+    )
+    .unwrap();
+    append_role_name_separator(output, style);
     write!(output, r#"<font color="{}">"#, palette.credit.name).unwrap();
     write_name_segments(output, palette, &pair.name_segments);
     output.push_str("</font>");
