@@ -1,5 +1,3 @@
-// cspell:ignore bài hát ví dụ
-
 use command_extra::CommandExtra;
 use std::ffi::OsStr;
 use std::fs::{create_dir, create_dir_all, write as write_file};
@@ -8,6 +6,9 @@ use std::process::{Command, Output, Stdio};
 use test_utils::Temp;
 
 const PLAY_WITH_LYRICS: &str = env!("CARGO_BIN_EXE_play-with-lyrics");
+// These mirror the `collection` and `video-title` of the `video.toml`
+// fixture, so the file names built from them line up with what the binary
+// reads.
 const COLLECTION: &str = "Feng Ling Yu Xiu";
 pub(crate) const VIDEO_TITLE: &str = "Example Song [id]";
 
@@ -32,22 +33,12 @@ impl Env {
         }
     }
 
-    /// Writes a `video.toml` describing the sample video, with all three
-    /// titles present.
+    /// Writes the sample `video.toml`, copied verbatim from the fixture
+    /// next to this file.
     pub(crate) fn add_video(&self) {
         let video_dir = self.source.join("ExampleSong");
         create_dir_all(&video_dir).unwrap();
-        let descriptor = format!(
-            r#"collection = "{COLLECTION}"
-video-title = "{VIDEO_TITLE}"
-
-[song-titles]
-en = "Example Song"
-vi = "Bài Hát Ví Dụ"
-zh = "示例歌曲"
-"#,
-        );
-        write_file(video_dir.join("video.toml"), descriptor).unwrap();
+        write_file(video_dir.join("video.toml"), include_str!("video.toml")).unwrap();
     }
 
     /// The collection directory inside the media library, created on first
