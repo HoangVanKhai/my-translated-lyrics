@@ -2,6 +2,7 @@ use super::{
     Button, button_at, columns_line, columns_line_highlighted, fit, fit_chars, is_double_click,
     render_top_bar, scroll_offset, visible_rows,
 };
+use crate::screen::{Buffer, Style};
 use pretty_assertions::assert_eq;
 use std::time::{Duration, SystemTime};
 use unicode_width::UnicodeWidthStr;
@@ -139,25 +140,25 @@ fn visible_rows_reserves_the_chrome_lines() {
 /// The top bar draws the three buttons and the centered title.
 #[test]
 fn top_bar_draws_the_buttons_and_title() {
-    let mut buffer = Vec::new();
-    render_top_bar(&mut buffer, 80, "Play with Lyrics", true).unwrap();
-    let rendered = String::from_utf8_lossy(&buffer);
-    assert!(rendered.contains("[ ← Go back ]"), "{rendered}");
-    assert!(rendered.contains("[ → Forward ]"), "{rendered}");
-    assert!(rendered.contains("[ ✕ Exit ]"), "{rendered}");
-    assert!(rendered.contains("Play with Lyrics"), "{rendered}");
-    // With going back available, the button is drawn plainly, not dimmed.
-    assert!(!rendered.contains("\u{1b}[2m"), "{rendered:?}");
+    let mut buffer = Buffer::new(80, 1);
+    render_top_bar(&mut buffer, 80, "Play with Lyrics", true);
+    let row = buffer.row_text(0);
+    assert!(row.contains("[ ← Go back ]"), "{row}");
+    assert!(row.contains("[ → Forward ]"), "{row}");
+    assert!(row.contains("[ ✕ Exit ]"), "{row}");
+    assert!(row.contains("Play with Lyrics"), "{row}");
+    // With going back available, the Back button is drawn plainly, not dimmed.
+    assert_eq!(buffer.style_at(0, 0), Style::PLAIN);
 }
 
 /// When going back is disabled, the Go back button is drawn dimmed.
 #[test]
 fn top_bar_dims_the_disabled_go_back_button() {
-    let mut buffer = Vec::new();
-    render_top_bar(&mut buffer, 80, "Play with Lyrics", false).unwrap();
-    let rendered = String::from_utf8_lossy(&buffer);
-    // The dim attribute (SGR 2) wraps the Go back button.
-    assert!(rendered.contains("\u{1b}[2m[ ← Go back ]"), "{rendered:?}");
+    let mut buffer = Buffer::new(80, 1);
+    render_top_bar(&mut buffer, 80, "Play with Lyrics", false);
+    // Every cell of the Go back button, here its opening bracket, carries the
+    // dim style.
+    assert_eq!(buffer.style_at(0, 0), Style::DIM);
 }
 
 /// In an 80-column bar, a column lands on the button drawn there. Back and

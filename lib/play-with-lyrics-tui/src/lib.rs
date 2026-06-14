@@ -17,6 +17,7 @@
 
 mod host;
 mod render;
+mod screen;
 mod selectors;
 mod terminal;
 

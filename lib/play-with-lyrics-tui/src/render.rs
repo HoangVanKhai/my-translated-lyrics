@@ -1,12 +1,9 @@
-//! The layout and printing primitives the selector pages draw with: fitting
-//! text to a column budget, laying out the three-column title line, printing a
-//! highlighted line, and the small geometry helpers the pages share with the
-//! click handling.
+//! The layout primitives the selector pages draw with: fitting text to a
+//! column budget, laying out the three-column title line, drawing a highlighted
+//! line into the frame buffer, and the small geometry helpers the pages share
+//! with the click handling.
 
-use crossterm::QueueableCommand;
-use crossterm::cursor::MoveTo;
-use crossterm::style::{Attribute, Print, SetAttribute};
-use std::io::{self, Write};
+use crate::screen::{Buffer, Style};
 use std::ops::Range;
 use std::time::{Duration, SystemTime};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
@@ -131,40 +128,30 @@ pub(crate) fn visible_rows(rows: usize) -> usize {
     rows.saturating_sub(4).max(1)
 }
 
-/// Prints a line of `(character, highlighted)` pairs, underlining the
-/// highlighted characters. When `reverse` is set the whole line is drawn in
-/// reverse video, for the row under the cursor; the underline composes with
-/// it. A single reset at the end clears both attributes.
-pub(crate) fn print_highlighted_line(
-    output: &mut impl Write,
-    line: &[(char, bool)],
-    reverse: bool,
-) -> io::Result<()> {
-    if reverse {
-        output.queue(SetAttribute(Attribute::Reverse))?;
-    }
-    let mut underlined = false;
-    let mut run = String::new();
+/// Draws a line of `(character, highlighted)` pairs into `buffer` at `row`,
+/// underlining the highlighted characters. When `reverse` is set the whole
+/// line is drawn in reverse video, for the row under the cursor; the underline
+/// composes with it.
+pub(crate) fn draw_highlighted_line(buffer: &mut Buffer, row: u16, line: &[(char, bool)]) {
+    draw_styled_line(buffer, row, line, Style::PLAIN);
+}
+
+/// As [`draw_highlighted_line`], but drawing the whole line in reverse video,
+/// for the row under the cursor.
+pub(crate) fn draw_highlighted_line_reverse(buffer: &mut Buffer, row: u16, line: &[(char, bool)]) {
+    draw_styled_line(buffer, row, line, Style::REVERSE);
+}
+
+fn draw_styled_line(buffer: &mut Buffer, row: u16, line: &[(char, bool)], base: Style) {
+    let mut col = 0;
     for &(character, highlight) in line {
-        if highlight != underlined {
-            if !run.is_empty() {
-                output.queue(Print(std::mem::take(&mut run)))?;
-            }
-            underlined = highlight;
-            let attribute = if underlined {
-                Attribute::Underlined
-            } else {
-                Attribute::NoUnderline
-            };
-            output.queue(SetAttribute(attribute))?;
-        }
-        run.push(character);
+        let style = if highlight {
+            base.with(Style::UNDERLINE)
+        } else {
+            base
+        };
+        col += buffer.set_glyph(col, row, character, style);
     }
-    if !run.is_empty() {
-        output.queue(Print(run))?;
-    }
-    output.queue(SetAttribute(Attribute::Reset))?;
-    Ok(())
 }
 
 /// A clickable button shown in the top bar, paired with the action a click on
@@ -229,44 +216,34 @@ pub(crate) fn button_at(width: usize, column: usize) -> Option<Button> {
         .find_map(|(button, range)| range.contains(&column).then_some(button))
 }
 
-/// Draws the top bar at the first row: the Back and Forward buttons on the
-/// left, the Exit button on the right, and `title` centered between them. When
-/// `back_enabled` is false the Back button is disabled, drawn dimmed to show
-/// that there is no previous page to return to.
-pub(crate) fn render_top_bar(
-    output: &mut impl Write,
-    width: usize,
-    title: &str,
-    back_enabled: bool,
-) -> io::Result<()> {
+/// Draws the top bar into `buffer` at the first row: the Back and Forward
+/// buttons on the left, the Exit button on the right, and `title` centered
+/// between them. When `back_enabled` is false the Back button is disabled,
+/// drawn dimmed to show that there is no previous page to return to.
+pub(crate) fn render_top_bar(buffer: &mut Buffer, width: usize, title: &str, back_enabled: bool) {
     let columns = button_columns(width);
     for (button, range) in &columns {
-        output.queue(MoveTo(range.start as u16, 0))?;
-        if matches!(button, Button::Back) && !back_enabled {
-            output
-                .queue(SetAttribute(Attribute::Dim))?
-                .queue(Print(button.draw()))?
-                .queue(SetAttribute(Attribute::Reset))?;
+        let style = if matches!(button, Button::Back) && !back_enabled {
+            Style::DIM
         } else {
-            output.queue(Print(button.draw()))?;
-        }
+            Style::PLAIN
+        };
+        buffer.set_string(range.start as u16, 0, &button.draw(), style);
     }
-    // Center the title in the space between the Forward and Exit buttons.
+    // Center the title in the space between the Forward and Exit buttons,
+    // truncating it there if it does not fit.
     let gap_start = columns[1].1.end;
     let gap_end = columns[2].1.start;
     if gap_end > gap_start {
         let region = gap_end - gap_start;
         let title_width = title.width();
-        let centered = if title_width >= region {
-            fit(title, region)
+        let (column, text) = if title_width >= region {
+            (gap_start, fit(title, region))
         } else {
-            format!("{}{title}", " ".repeat((region - title_width) / 2))
+            (gap_start + (region - title_width) / 2, title.to_string())
         };
-        output
-            .queue(MoveTo(gap_start as u16, 0))?
-            .queue(Print(centered))?;
+        buffer.set_string(column as u16, 0, &text, Style::PLAIN);
     }
-    Ok(())
 }
 
 #[cfg(test)]

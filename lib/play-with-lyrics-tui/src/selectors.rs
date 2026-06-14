@@ -7,15 +7,12 @@ use crate::Navigation;
 use crate::host::{Clock, Host, ReadEvent, WindowSize};
 use crate::render::{
     Button, DATA_ROW_OFFSET, LIST_ROW_OFFSET, PROGRAM_TITLE, button_at, columns_line,
-    columns_line_highlighted, fit, is_double_click, print_highlighted_line, render_top_bar,
-    scroll_offset, visible_rows,
+    columns_line_highlighted, draw_highlighted_line, draw_highlighted_line_reverse, fit,
+    is_double_click, render_top_bar, scroll_offset, visible_rows,
 };
+use crate::screen::{Screen, Style};
 use crate::terminal::TerminalGuard;
-use crossterm::QueueableCommand;
-use crossterm::cursor::MoveTo;
 use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers, MouseButton, MouseEventKind};
-use crossterm::style::{Attribute, Print, SetAttribute};
-use crossterm::terminal::{Clear, ClearType};
 use fuzzy_select::fuzzy::match_mask;
 use fuzzy_select::selection::Selector;
 use lyrics_core::video_descriptor::Language;
@@ -55,10 +52,11 @@ where
         selector.focus(index);
     }
     let mut last_click: Option<(SystemTime, u16)> = None;
+    let mut screen = Screen::new();
     // Draw once up front, then redraw only after an event that changes what is
-    // shown. Events that leave the state untouched, such as a mouse movement,
-    // `continue` without redrawing, so the screen does not flicker.
-    render_table::<Sys>(output, &selector, videos)?;
+    // shown. The double-buffered screen sends only the cells that change, so a
+    // redraw never clears the whole screen and the display does not flicker.
+    render_table::<Sys>(&mut screen, output, &selector, videos)?;
     let outcome = loop {
         match Sys::read_event()? {
             Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
@@ -131,7 +129,7 @@ where
             Event::Resize(..) => {}
             _ => continue,
         }
-        render_table::<Sys>(output, &selector, videos)?;
+        render_table::<Sys>(&mut screen, output, &selector, videos)?;
     };
     // Hand the final query back so the caller can restore it on a later visit.
     *query = selector.query().to_string();
@@ -139,6 +137,7 @@ where
 }
 
 fn render_table<Sys>(
+    screen: &mut Screen,
     output: &mut impl Write,
     selector: &Selector<Video>,
     videos: &[Video],
@@ -146,19 +145,16 @@ fn render_table<Sys>(
 where
     Sys: WindowSize,
 {
-    let (columns, rows) = Sys::window_size().unwrap_or((80, 24));
-    let columns = columns as usize;
-    let rows = rows as usize;
-
-    output.queue(Clear(ClearType::All))?;
+    let (width, height) = Sys::window_size().unwrap_or((80, 24));
+    let buffer = screen.begin(width, height, output)?;
+    let columns = width as usize;
+    let rows = height as usize;
 
     // The table is the first page, so going back is not available here.
-    render_top_bar(output, columns, PROGRAM_TITLE, false)?;
+    render_top_bar(buffer, columns, PROGRAM_TITLE, false);
 
     let prompt = format!("Search: {}", selector.query());
-    output
-        .queue(MoveTo(0, 1))?
-        .queue(Print(fit(&prompt, columns)))?;
+    buffer.set_string(0, 1, &fit(&prompt, columns), Style::PLAIN);
 
     let header = columns_line(
         language_label(Language::English),
@@ -166,11 +162,7 @@ where
         language_label(Language::Chinese),
         columns,
     );
-    output
-        .queue(MoveTo(0, 2))?
-        .queue(SetAttribute(Attribute::Bold))?
-        .queue(Print(header))?
-        .queue(SetAttribute(Attribute::Reset))?;
+    buffer.set_string(0, 2, &header, Style::BOLD);
 
     let filtered = selector.filtered();
     let cursor = selector.cursor();
@@ -194,18 +186,17 @@ where
             columns,
         );
         let screen_y = (screen_index + DATA_ROW_OFFSET) as u16;
-        output.queue(MoveTo(0, screen_y))?;
-        print_highlighted_line(output, &line, filtered_position == cursor)?;
+        if filtered_position == cursor {
+            draw_highlighted_line_reverse(buffer, screen_y, &line);
+        } else {
+            draw_highlighted_line(buffer, screen_y, &line);
+        }
     }
 
     let help = "↑/↓ move · type to search · ⌫ delete · ^⌫ back · ⏎ select · Esc/^Q quit";
-    output
-        .queue(MoveTo(0, rows.saturating_sub(1) as u16))?
-        .queue(SetAttribute(Attribute::Dim))?
-        .queue(Print(fit(help, columns)))?
-        .queue(SetAttribute(Attribute::Reset))?;
+    buffer.set_string(0, height.saturating_sub(1), &fit(help, columns), Style::DIM);
 
-    output.flush()
+    screen.flush(output)
 }
 
 /// Presents a simple single-column list of `labels` under `prompt` and
@@ -231,10 +222,11 @@ where
 {
     let mut cursor = start.min(labels.len().saturating_sub(1));
     let mut last_click: Option<(SystemTime, u16)> = None;
+    let mut screen = Screen::new();
     // Draw once up front, then redraw only after an event that changes what is
-    // shown. Events that leave the state untouched, such as a mouse movement,
-    // `continue` without redrawing, so the screen does not flicker.
-    render_list::<Sys>(output, prompt, labels, cursor)?;
+    // shown. The double-buffered screen sends only the cells that change, so a
+    // redraw never clears the whole screen and the display does not flicker.
+    render_list::<Sys>(&mut screen, output, prompt, labels, cursor)?;
     loop {
         match Sys::read_event()? {
             Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
@@ -310,11 +302,12 @@ where
             Event::Resize(..) => {}
             _ => continue,
         }
-        render_list::<Sys>(output, prompt, labels, cursor)?;
+        render_list::<Sys>(&mut screen, output, prompt, labels, cursor)?;
     }
 }
 
 fn render_list<Sys>(
+    screen: &mut Screen,
     output: &mut impl Write,
     prompt: &str,
     labels: &[String],
@@ -323,42 +316,30 @@ fn render_list<Sys>(
 where
     Sys: WindowSize,
 {
-    let (columns, rows) = Sys::window_size().unwrap_or((80, 24));
-    let columns = columns as usize;
-
-    output.queue(Clear(ClearType::All))?;
+    let (width, height) = Sys::window_size().unwrap_or((80, 24));
+    let buffer = screen.begin(width, height, output)?;
+    let columns = width as usize;
 
     // A list page always follows an earlier page, so going back is available.
-    render_top_bar(output, columns, PROGRAM_TITLE, true)?;
+    render_top_bar(buffer, columns, PROGRAM_TITLE, true);
 
-    output
-        .queue(MoveTo(0, 1))?
-        .queue(SetAttribute(Attribute::Bold))?
-        .queue(Print(fit(prompt, columns)))?
-        .queue(SetAttribute(Attribute::Reset))?;
+    buffer.set_string(0, 1, &fit(prompt, columns), Style::BOLD);
 
     for (index, label) in labels.iter().enumerate() {
         let screen_y = (index + LIST_ROW_OFFSET) as u16;
         let line = fit(label, columns);
-        output.queue(MoveTo(0, screen_y))?;
-        if index == cursor {
-            output
-                .queue(SetAttribute(Attribute::Reverse))?
-                .queue(Print(line))?
-                .queue(SetAttribute(Attribute::Reset))?;
+        let style = if index == cursor {
+            Style::REVERSE
         } else {
-            output.queue(Print(line))?;
-        }
+            Style::PLAIN
+        };
+        buffer.set_string(0, screen_y, &line, style);
     }
 
     let help = "↑/↓ move · ⌫/Esc back · ⏎/␣ select · ^Q quit";
-    output
-        .queue(MoveTo(0, rows.saturating_sub(1)))?
-        .queue(SetAttribute(Attribute::Dim))?
-        .queue(Print(fit(help, columns)))?
-        .queue(SetAttribute(Attribute::Reset))?;
+    buffer.set_string(0, height.saturating_sub(1), &fit(help, columns), Style::DIM);
 
-    output.flush()
+    screen.flush(output)
 }
 
 #[cfg(test)]
