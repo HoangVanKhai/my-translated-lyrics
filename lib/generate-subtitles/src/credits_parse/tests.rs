@@ -250,10 +250,10 @@ fn separator_style_follows_the_colon_glyph() {
 }
 
 #[test]
-fn role_span_suffix_emits_a_colon_only_for_the_latin_layout() {
-    assert_eq!(SeparatorStyle::AsciiColon.role_span_suffix(), ":");
-    assert_eq!(SeparatorStyle::FullWidthColon.role_span_suffix(), "");
-    assert_eq!(SeparatorStyle::Spaces("  ").role_span_suffix(), "");
+fn lead_span_suffix_emits_a_colon_only_for_the_latin_layout() {
+    assert_eq!(SeparatorStyle::AsciiColon.lead_span_suffix(), ":");
+    assert_eq!(SeparatorStyle::FullWidthColon.lead_span_suffix(), "");
+    assert_eq!(SeparatorStyle::Spaces("  ").lead_span_suffix(), "");
 }
 
 #[test]

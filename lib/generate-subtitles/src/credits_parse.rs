@@ -81,11 +81,11 @@ impl<'a> CreditPair<'a> {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SeparatorStyle<'a> {
     /// The separator carried a full-width colon (`：`). The renderer
-    /// emits a full-width colon between the role and name spans with
+    /// emits a full-width colon between the lead and name spans with
     /// no surrounding spaces, the convention for CJK credit lines.
     FullWidthColon,
     /// The separator carried an ASCII colon (`:`) and no full-width
-    /// colon. The renderer tucks an ASCII colon inside the role span
+    /// colon. The renderer tucks an ASCII colon inside the lead span
     /// and follows it with one ASCII space, the convention for
     /// Latin-script credit lines.
     AsciiColon,
@@ -97,19 +97,20 @@ pub enum SeparatorStyle<'a> {
 }
 
 impl SeparatorStyle<'_> {
-    /// The colon, if any, that belongs inside the role's styled span.
-    /// A Latin-script credit line ([`SeparatorStyle::AsciiColon`])
-    /// tucks an ASCII colon inside the role color; the CJK and
-    /// colon-free layouts contribute nothing here and place their
-    /// separator between the spans with [`SeparatorStyle::append_between_spans`].
-    pub fn role_span_suffix(self) -> &'static str {
+    /// The colon, if any, that belongs inside the lead's styled span
+    /// (a role or a role-less bracket highlight). A Latin-script credit
+    /// line ([`SeparatorStyle::AsciiColon`]) tucks an ASCII colon
+    /// inside the lead's color; the CJK and colon-free layouts
+    /// contribute nothing here and place their separator between the
+    /// spans with [`SeparatorStyle::append_between_spans`].
+    pub fn lead_span_suffix(self) -> &'static str {
         match self {
             SeparatorStyle::AsciiColon => ":",
             SeparatorStyle::FullWidthColon | SeparatorStyle::Spaces(_) => "",
         }
     }
 
-    /// Appends the separator that sits between the role span and the
+    /// Appends the separator that sits between the lead span and the
     /// name span: one ASCII space after a Latin colon, a full-width
     /// colon for the CJK layout, or the colon-free gutter. An ASCII
     /// space or tab gutter round-trips verbatim; any other whitespace

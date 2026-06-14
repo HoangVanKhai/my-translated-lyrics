@@ -23,7 +23,7 @@
 //!   `<c.creditRole>role</c><sep><c.creditName>name</c>` pair per
 //!   recognized cell, where `<sep>` follows
 //!   [`CreditPair::separator_style`]: a full-width colon between the
-//!   spans, an ASCII colon inside the role class before a single
+//!   spans, an ASCII colon inside the lead class before a single
 //!   space, or a verbatim ASCII space gutter.
 //! * Any other marker emits the cue text unwrapped.
 //!
@@ -230,7 +230,7 @@ fn render_credit_pair(output: &mut String, features: &mut Features, pair: &Credi
         output,
         "<c.{class}>{text}{colon}</c>",
         text = Escaped(text),
-        colon = style.role_span_suffix(),
+        colon = style.lead_span_suffix(),
     )
     .unwrap();
     // A role-only header line carries no name; emit just the lead.

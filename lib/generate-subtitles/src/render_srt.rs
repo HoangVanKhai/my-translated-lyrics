@@ -7,9 +7,9 @@
 //! Credit lines go through the same role-driven parser as the VTT
 //! renderer and emit each role and name with the palette's credit
 //! colors, repeated inline because SRT has no central style definition.
-//! The role-to-name separator follows [`CreditPair::separator_style`]:
+//! The lead-to-name separator follows [`CreditPair::separator_style`]:
 //! a full-width colon sits uncolored between the two spans, an ASCII
-//! colon rides inside the role's `<font>` before a single space, and a
+//! colon rides inside the lead's `<font>` before a single space, and a
 //! colon-free gutter reproduces its ASCII spacing verbatim.
 
 use super::credits_parse::{
@@ -173,7 +173,7 @@ fn render_credit_pair(output: &mut String, palette: &StylePalette, pair: &Credit
         output,
         r#"<font color="{color}">{text}{colon}</font>"#,
         text = Escaped(text),
-        colon = style.role_span_suffix(),
+        colon = style.lead_span_suffix(),
     )
     .unwrap();
     // A role-only header line carries no name; emit just the lead.
