@@ -33,13 +33,20 @@ fn contains_is_substring_not_subsequence() {
 }
 
 #[test]
-fn matching_ignores_diacritics() {
-    // A Vietnamese title may be typed with or without its marks, in either
-    // direction, for both the substring filter and the fuzzy match.
+fn an_unmarked_query_matches_marked_text() {
+    // Typing without diacritics finds a title that carries them.
     assert!(contains_ci("Mưa Xuân", "mua xuan"));
-    assert!(contains_ci("mua xuan", "Mưa Xuân"));
     assert!(fuzzy_subsequence("mua", "Mưa Xuân"));
-    assert!(fuzzy_subsequence("mưa", "Mua Xuan"));
+}
+
+#[test]
+fn a_marked_query_matches_only_that_mark() {
+    // Typing a diacritic narrows the match to exactly that form, so it
+    // matches a title that carries the mark but not a bare one.
+    assert!(contains_ci("Mưa Xuân", "mưa"));
+    assert!(!contains_ci("Mua Xuan", "mưa"));
+    assert!(fuzzy_subsequence("xuân", "Mưa Xuân"));
+    assert!(!fuzzy_subsequence("xuân", "Mua Xuan"));
 }
 
 #[test]
