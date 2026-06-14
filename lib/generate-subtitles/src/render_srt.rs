@@ -159,9 +159,9 @@ fn render_credit_line(output: &mut String, palette: &StylePalette, pairs: &[Cred
 fn render_credit_pair(output: &mut String, palette: &StylePalette, pair: &CreditPair) {
     write!(
         output,
-        r#"<font color="{role}">{name}</font>"#,
-        role = palette.credit.role,
-        name = Escaped(pair.role),
+        r#"<font color="{color}">{text}</font>"#,
+        color = palette.credit.role,
+        text = Escaped(pair.role),
     )
     .unwrap();
     append_separator_for_output(output, pair.separator);
@@ -179,9 +179,9 @@ fn write_name_segments(output: &mut String, palette: &StylePalette, segments: &[
             NameSegment::Bracketed(text) => {
                 write!(
                     output,
-                    r#"<font color="{special}">{name}</font>"#,
-                    special = palette.credit.special,
-                    name = Escaped(text.as_str()),
+                    r#"<font color="{color}">{text}</font>"#,
+                    color = palette.credit.special,
+                    text = Escaped(text.as_str()),
                 )
                 .unwrap();
             }

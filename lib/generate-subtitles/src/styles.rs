@@ -91,7 +91,7 @@ impl Style {
     /// A color-only style, with neither italics nor bold. Used to feed
     /// the credit-cell colors through the same rendering helpers as the
     /// voice and class styles.
-    pub fn color_only(color: Color) -> Self {
+    pub(crate) fn color_only(color: Color) -> Self {
         Style {
             color: Some(color),
             italic: false,
@@ -122,6 +122,14 @@ impl Color {
     pub fn new(source: String) -> Result<Self, InvalidColor> {
         if source.is_empty() {
             return Err(InvalidColor::Empty);
+        }
+        // Leading or trailing whitespace is always a typo in a color
+        // value, and a whitespace-only value renders as an empty CSS
+        // declaration. `trim` only touches the ends, so the interior
+        // spaces of a functional notation such as `rgb(0, 0, 0)` are
+        // preserved.
+        if source.trim().len() != source.len() {
+            return Err(InvalidColor::SurroundingWhitespace);
         }
         for ch in source.chars() {
             if is_forbidden_color_char(ch) {
@@ -157,6 +165,8 @@ fn is_forbidden_color_char(ch: char) -> bool {
 pub enum InvalidColor {
     #[display("color must not be empty")]
     Empty,
+    #[display("color must not have leading or trailing whitespace")]
+    SurroundingWhitespace,
     #[display(
         "color must not contain the reserved character {_0:?}; CSS and HTML reserve angle brackets, the double quote, the backslash, braces, the semicolon, line separators, and control characters"
     )]
@@ -172,3 +182,6 @@ pub enum MissingStyle {
     #[display("no style is defined for class {_0:?} in the palette")]
     Class(String),
 }
+
+#[cfg(test)]
+mod tests;
