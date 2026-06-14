@@ -3,8 +3,9 @@ name: Test
 # The test suite compiles the Rust workspace and reads the lyrics data
 # directories, so it runs when Rust sources, cargo manifests, the toolchain
 # pin, the AI instruction templates and their generated files, the lyrics
-# data under sources/, dist/, and drafts/, or this workflow change. Edits to
-# unrelated prose do not affect the build or the tests.
+# data under sources/, dist/, and drafts/, the shared style palette, or this
+# workflow change. Edits to unrelated prose do not affect the build or the
+# tests.
 on:
   push:
     paths:
@@ -19,6 +20,7 @@ on:
       - sources/**
       - dist/**
       - drafts/**
+      - styles.toml
       - .github/workflows/test.yaml
   pull_request:
     paths:
@@ -33,6 +35,7 @@ on:
       - sources/**
       - dist/**
       - drafts/**
+      - styles.toml
       - .github/workflows/test.yaml
 
 jobs:

@@ -25,4 +25,5 @@ pub mod styles;
 mod driver;
 mod escape;
 
-pub use driver::{RenderCounts, Song, load_song, render_song};
+pub use driver::{RenderCounts, Song, load_palette, load_song, render_song};
+pub use styles::StylePalette;

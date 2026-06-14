@@ -276,6 +276,7 @@ dependencies = [
  "maplit",
  "pipe-trait",
  "pretty_assertions",
+ "serde",
  "serde-saphyr",
  "strum",
  "test-utils",

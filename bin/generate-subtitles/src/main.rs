@@ -2,7 +2,8 @@
 #![cfg_attr(dylint_lib = "perfectionist", register_tool(perfectionist))]
 
 use clap::Parser;
-use generate_subtitles::{RenderCounts, load_song, render_song};
+use generate_subtitles::styles::STYLE_PALETTE_FILE_NAME;
+use generate_subtitles::{RenderCounts, load_palette, load_song, render_song};
 use itertools::Itertools;
 use pipe_trait::Pipe;
 use std::fs::{DirEntry, read_dir};
@@ -17,6 +18,10 @@ struct Args {
     /// Destination directory into which subtitle files are written.
     dist: PathBuf,
 
+    /// Palette file mapping each voice marker and named class to its color and text decoration.
+    #[clap(long, default_value = STYLE_PALETTE_FILE_NAME)]
+    styles: PathBuf,
+
     /// For safety reasons, this programs list actions by default, this flag makes the program take those actions.
     #[clap(long, short = 'x')]
     execute: bool,
@@ -24,6 +29,7 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
+    let palette = load_palette(&args.styles);
 
     let song_dirs = args
         .sources
@@ -69,7 +75,7 @@ fn main() {
         let song = load_song(&song_dir);
         eprintln!("info: Rendering {:?}", song.directory_name);
         total_files += song.languages.len() * 2;
-        totals += render_song(&song, &args.dist, args.execute);
+        totals += render_song(&song, &palette, &args.dist, args.execute);
     }
     let total_unchanged = total_files - totals.total();
 

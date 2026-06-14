@@ -1,6 +1,7 @@
 use super::parse::{SubtitleCue, parse_lyrics};
 use super::render_srt::render_srt;
 use super::render_vtt::render_vtt;
+use super::styles::StylePalette;
 use derive_more::AddAssign;
 use lyrics_core::credits_descriptor::{CREDITS_CONFIG_FILE_NAME, CreditsDesc};
 use lyrics_core::file_snapshot::FileSnapshot;
@@ -52,7 +53,12 @@ enum WriteOutcome {
     Unchanged,
 }
 
-pub fn render_song(song: &Song, dist_dir: &Path, execute: bool) -> RenderCounts {
+pub fn render_song(
+    song: &Song,
+    palette: &StylePalette,
+    dist_dir: &Path,
+    execute: bool,
+) -> RenderCounts {
     let destination_dir = dist_dir.join(song.directory_name);
     if execute {
         create_dir_all(&destination_dir).unwrap_or_else(|error| {
@@ -62,25 +68,37 @@ pub fn render_song(song: &Song, dist_dir: &Path, execute: bool) -> RenderCounts 
 
     let mut counts = RenderCounts::default();
     for bundle in &song.languages {
-        let vtt = render_vtt(&bundle.cues, &song.markers, &song.credits, &bundle.language)
-            .unwrap_or_else(|error| {
-                panic!(
-                    "error: Failed to render {song}/lyrics.{language}.vtt: {error}",
-                    song = song.directory_name,
-                    language = bundle.language,
-                )
-            });
+        let vtt = render_vtt(
+            &bundle.cues,
+            &song.markers,
+            &song.credits,
+            palette,
+            &bundle.language,
+        )
+        .unwrap_or_else(|error| {
+            panic!(
+                "error: Failed to render {song}/lyrics.{language}.vtt: {error}",
+                song = song.directory_name,
+                language = bundle.language,
+            )
+        });
         let vtt_path = destination_dir.join(format!("lyrics.{}.vtt", bundle.language));
         counts.record(write_subtitle(&vtt_path, &vtt, execute));
 
-        let srt = render_srt(&bundle.cues, &song.markers, &song.credits, &bundle.language)
-            .unwrap_or_else(|error| {
-                panic!(
-                    "error: Failed to render {song}/lyrics.{language}.srt: {error}",
-                    song = song.directory_name,
-                    language = bundle.language,
-                )
-            });
+        let srt = render_srt(
+            &bundle.cues,
+            &song.markers,
+            &song.credits,
+            palette,
+            &bundle.language,
+        )
+        .unwrap_or_else(|error| {
+            panic!(
+                "error: Failed to render {song}/lyrics.{language}.srt: {error}",
+                song = song.directory_name,
+                language = bundle.language,
+            )
+        });
         let srt_path = destination_dir.join(format!("lyrics.{}.srt", bundle.language));
         counts.record(write_subtitle(&srt_path, &srt, execute));
     }
@@ -106,6 +124,17 @@ fn write_subtitle(path: &Path, content: &str, execute: bool) -> WriteOutcome {
             .unwrap_or_else(|error| panic!("error: Cannot write {path:?}: {error}"));
     }
     outcome
+}
+
+/// Reads and parses the shared presentation palette from `path`. The
+/// palette maps each voice marker and named class to its color and text
+/// decoration; see [`StylePalette`]. Any read or parse failure aborts
+/// the program with a message naming the offending file.
+pub fn load_palette(path: &Path) -> StylePalette {
+    path.pipe(read_to_string)
+        .unwrap_or_else(|error| panic!("error: Cannot read {path:?}: {error}"))
+        .pipe_as_ref(toml::from_str::<StylePalette>)
+        .unwrap_or_else(|error| panic!("error: Cannot parse {path:?}: {error}"))
 }
 
 pub fn load_song(song_dir: &Path) -> Song<'_> {

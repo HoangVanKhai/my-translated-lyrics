@@ -1,4 +1,4 @@
-use generate_subtitles::{load_song, render_song};
+use generate_subtitles::{load_palette, load_song, render_song};
 use itertools::Itertools;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
@@ -20,6 +20,7 @@ fn dist_is_up_to_date_with_sources() {
     let workspace_dir = test_utils::workspace_dir();
     let sources_dir = workspace_dir.join("sources");
     let dist_dir = workspace_dir.join("dist");
+    let palette = load_palette(&workspace_dir.join("styles.toml"));
     let scratch_dir = Temp::new_dir();
 
     let entries = sources_dir
@@ -44,7 +45,7 @@ fn dist_is_up_to_date_with_sources() {
                 .to_string(),
         );
         let song = load_song(&song_dir);
-        let rendered_count = render_song(&song, &scratch_dir, true);
+        let rendered_count = render_song(&song, &palette, &scratch_dir, true);
         let subtitle_files = collect_subtitle_files(&scratch_dir.join(song.directory_name));
         dbg!(&subtitle_files);
         assert_eq!(subtitle_files.len(), rendered_count.total());
