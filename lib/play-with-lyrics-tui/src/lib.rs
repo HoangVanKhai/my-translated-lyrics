@@ -315,8 +315,11 @@ where
         selector.focus(index);
     }
     let mut last_click: Option<(SystemTime, u16)> = None;
+    // Draw once up front, then redraw only after an event that changes what is
+    // shown. Events that leave the state untouched, such as a mouse movement,
+    // `continue` without redrawing, so the screen does not flicker.
+    render_table::<Sys>(output, &selector, videos)?;
     let outcome = loop {
-        render_table::<Sys>(output, &selector, videos)?;
         match Sys::read_event()? {
             Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
                 KeyCode::Esc => break Navigation::Quit,
@@ -337,12 +340,11 @@ where
                 }
                 KeyCode::Backspace => selector.pop_char(),
                 KeyCode::Char(char) => selector.push_char(char),
-                KeyCode::Enter => {
-                    if let Some(index) = selector.selected_index() {
-                        break Navigation::Selected(index);
-                    }
-                }
-                _ => {}
+                KeyCode::Enter => match selector.selected_index() {
+                    Some(index) => break Navigation::Selected(index),
+                    None => continue,
+                },
+                _ => continue,
             },
             Event::Mouse(mouse) => match mouse.kind {
                 MouseEventKind::ScrollUp => selector.move_up(),
@@ -356,20 +358,22 @@ where
                     let clicked = (mouse.row as usize).checked_sub(DATA_ROW_OFFSET).and_then(
                         |screen_index| selector.filtered().get(offset + screen_index).copied(),
                     );
-                    if let Some(index) = clicked {
-                        let now = Sys::now();
-                        let confirm = is_double_click(last_click, now, mouse.row);
-                        last_click = Some((now, mouse.row));
-                        selector.focus(index);
-                        if confirm {
-                            break Navigation::Selected(index);
-                        }
+                    let Some(index) = clicked else { continue };
+                    let now = Sys::now();
+                    let confirm = is_double_click(last_click, now, mouse.row);
+                    last_click = Some((now, mouse.row));
+                    selector.focus(index);
+                    if confirm {
+                        break Navigation::Selected(index);
                     }
                 }
-                _ => {}
+                _ => continue,
             },
-            _ => {}
+            // A resize changes the layout, so redraw; any other event does not.
+            Event::Resize(..) => {}
+            _ => continue,
         }
+        render_table::<Sys>(output, &selector, videos)?;
     };
     // Hand the final query back so the caller can restore it on a later visit.
     *query = selector.query().to_string();
@@ -469,8 +473,11 @@ where
 {
     let mut cursor = start.min(labels.len().saturating_sub(1));
     let mut last_click: Option<(SystemTime, u16)> = None;
+    // Draw once up front, then redraw only after an event that changes what is
+    // shown. Events that leave the state untouched, such as a mouse movement,
+    // `continue` without redrawing, so the screen does not flicker.
+    render_list::<Sys>(output, prompt, labels, cursor)?;
     loop {
-        render_list::<Sys>(output, prompt, labels, cursor)?;
         match Sys::read_event()? {
             Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
                 KeyCode::Esc => return Ok(Navigation::Quit),
@@ -494,8 +501,9 @@ where
                     if !labels.is_empty() {
                         return Ok(Navigation::Selected(cursor));
                     }
+                    continue;
                 }
-                _ => {}
+                _ => continue,
             },
             Event::Mouse(mouse) => match mouse.kind {
                 MouseEventKind::ScrollUp => cursor = cursor.saturating_sub(1),
@@ -508,22 +516,24 @@ where
                 // double click on the same row also selects it.
                 MouseEventKind::Down(MouseButton::Left) => {
                     let clicked = (mouse.row as usize).checked_sub(LIST_ROW_OFFSET);
-                    if let Some(index) = clicked
-                        && index < labels.len()
-                    {
-                        let now = Sys::now();
-                        let confirm = is_double_click(last_click, now, mouse.row);
-                        last_click = Some((now, mouse.row));
-                        cursor = index;
-                        if confirm {
-                            return Ok(Navigation::Selected(index));
-                        }
+                    let Some(index) = clicked.filter(|&index| index < labels.len()) else {
+                        continue;
+                    };
+                    let now = Sys::now();
+                    let confirm = is_double_click(last_click, now, mouse.row);
+                    last_click = Some((now, mouse.row));
+                    cursor = index;
+                    if confirm {
+                        return Ok(Navigation::Selected(index));
                     }
                 }
-                _ => {}
+                _ => continue,
             },
-            _ => {}
+            // A resize changes the layout, so redraw; any other event does not.
+            Event::Resize(..) => {}
+            _ => continue,
         }
+        render_list::<Sys>(output, prompt, labels, cursor)?;
     }
 }
 
