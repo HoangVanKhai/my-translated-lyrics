@@ -345,7 +345,7 @@ where
         }
     }
 
-    let help = "↑/↓ move · ⌫/Esc back · ⏎/Space select · ^Q quit";
+    let help = "↑/↓ move · ⌫/Esc back · ⏎/␣ select · ^Q quit";
     output
         .queue(MoveTo(0, rows.saturating_sub(2)))?
         .queue(SetAttribute(Attribute::Dim))?
