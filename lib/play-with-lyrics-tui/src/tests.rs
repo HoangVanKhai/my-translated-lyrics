@@ -1,5 +1,12 @@
-use crate::{columns_line, fit, scroll_offset};
+use crate::{ReadEvent, columns_line, fit, scroll_offset, select_one_loop, select_video_loop};
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
+use lyrics_core::video_descriptor::Visibility;
+use play_with_lyrics::catalog::Video;
 use pretty_assertions::assert_eq;
+use std::collections::VecDeque;
+use std::io;
+use std::sync::Mutex;
+use test_utils::video_desc;
 use unicode_width::UnicodeWidthStr;
 
 #[test]
@@ -63,4 +70,223 @@ fn scroll_offset_keeps_the_cursor_on_screen() {
     assert_eq!(scroll_offset(2, 5), 0);
     // The cursor sits past the page, so the window scrolls to show it.
     assert_eq!(scroll_offset(7, 5), 3);
+}
+
+// The interactive loops read their events through the `ReadEvent` seam, so a
+// test runs them with a fake event source instead of a terminal. Following
+// the dependency-injection pattern, each test below defines its own fake and
+// its own scripted queue inside the test body, so the tests share no state.
+// The small stateless helpers below carry no state and so stay at module
+// scope.
+
+/// A key press with no modifiers.
+fn press(code: KeyCode) -> Event {
+    Event::Key(KeyEvent::new(code, KeyModifiers::NONE))
+}
+
+/// A key press combined with the Control modifier.
+fn control(code: KeyCode) -> Event {
+    Event::Key(KeyEvent::new(code, KeyModifiers::CONTROL))
+}
+
+/// Pops the next scripted event from a test's own queue, reporting an error
+/// if the loop reads past the end of the script it was given.
+fn pop_scripted(queue: &Mutex<VecDeque<Event>>) -> io::Result<Event> {
+    queue.lock().unwrap().pop_front().ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::UnexpectedEof,
+            "the event script is exhausted",
+        )
+    })
+}
+
+fn label_list(values: &[&str]) -> Vec<String> {
+    values.iter().map(|value| value.to_string()).collect()
+}
+
+fn video(title: &str) -> Video {
+    Video {
+        desc: video_desc("Touhou Hero of Ice Fairy", title, Visibility::Visible),
+    }
+}
+
+/// Enter returns the highlighted row after the cursor has moved down to it.
+#[test]
+fn select_one_returns_the_highlighted_row() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    let labels = label_list(&["alpha", "beta", "gamma"]);
+    EVENTS.lock().unwrap().extend([
+        press(KeyCode::Down),
+        press(KeyCode::Down),
+        press(KeyCode::Enter),
+    ]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    assert_eq!(chosen, Some(2));
+}
+
+/// Escape cancels the list selector.
+#[test]
+fn select_one_cancels_on_escape() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    EVENTS.lock().unwrap().extend([press(KeyCode::Esc)]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    assert_eq!(chosen, None);
+}
+
+/// Ctrl-C cancels the list selector.
+#[test]
+fn select_one_cancels_on_ctrl_c() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    EVENTS.lock().unwrap().extend([control(KeyCode::Char('c'))]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    assert_eq!(chosen, None);
+}
+
+/// The cursor never moves above the first row or below the last.
+#[test]
+fn select_one_keeps_the_cursor_within_bounds() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    // Up at the top holds the first row; three Downs cannot pass the last.
+    EVENTS.lock().unwrap().extend([
+        press(KeyCode::Up),
+        press(KeyCode::Down),
+        press(KeyCode::Down),
+        press(KeyCode::Down),
+        press(KeyCode::Enter),
+    ]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    assert_eq!(chosen, Some(1));
+}
+
+/// Events that are not key presses, such as key releases, are ignored.
+#[test]
+fn select_one_ignores_non_press_events() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    let release = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::Down,
+        KeyModifiers::NONE,
+        KeyEventKind::Release,
+    ));
+    // The release does not move the cursor; only the press does.
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([release, press(KeyCode::Down), press(KeyCode::Enter)]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    assert_eq!(chosen, Some(1));
+}
+
+/// Enter does nothing while the list is empty, so the loop keeps reading.
+#[test]
+fn select_one_enter_is_a_no_op_for_an_empty_list() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    let labels: Vec<String> = Vec::new();
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([press(KeyCode::Enter), press(KeyCode::Esc)]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    assert_eq!(chosen, None);
+}
+
+/// Typing narrows the table, and Enter returns the index, into the original
+/// slice, of the row that stays highlighted.
+#[test]
+fn select_video_filters_then_selects() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    let videos = vec![video("Alpha"), video("Beta")];
+    // Type "beta" so only the second row matches, then select it.
+    EVENTS.lock().unwrap().extend([
+        press(KeyCode::Char('b')),
+        press(KeyCode::Char('e')),
+        press(KeyCode::Char('t')),
+        press(KeyCode::Char('a')),
+        press(KeyCode::Enter),
+    ]);
+    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
+    assert_eq!(chosen, Some(1));
+}
+
+/// Backspace widens the query again after it has filtered everything out.
+#[test]
+fn select_video_backspace_widens_the_query() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    let videos = vec![video("Alpha"), video("Beta")];
+    // "bz" matches nothing; deleting the "z" leaves "b", which matches Beta.
+    EVENTS.lock().unwrap().extend([
+        press(KeyCode::Char('b')),
+        press(KeyCode::Char('z')),
+        press(KeyCode::Backspace),
+        press(KeyCode::Enter),
+    ]);
+    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
+    assert_eq!(chosen, Some(1));
+}
+
+/// Escape cancels the table without choosing a row.
+#[test]
+fn select_video_cancels_on_escape() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    let videos = vec![video("Alpha")];
+    EVENTS.lock().unwrap().extend([press(KeyCode::Esc)]);
+    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
+    assert_eq!(chosen, None);
 }

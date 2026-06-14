@@ -27,6 +27,26 @@ use play_with_lyrics::catalog::Video;
 use std::io::{self, Stderr, Write};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
+/// Reads the next input event from the terminal.
+///
+/// This trait is the dependency-injection seam for the interactive loops.
+/// Production code runs them with [`Host`], which blocks on the real
+/// terminal, while a test runs them with a fake that replays a scripted
+/// sequence of key events. That makes the otherwise unreachable event
+/// handling testable without a TTY.
+trait ReadEvent {
+    fn read_event() -> io::Result<Event>;
+}
+
+/// The production provider: it reads from the real terminal.
+struct Host;
+
+impl ReadEvent for Host {
+    fn read_event() -> io::Result<Event> {
+        read()
+    }
+}
+
 /// Restores the terminal to its normal state when dropped, even if the
 /// caller returns early or panics.
 struct TerminalGuard {
@@ -104,10 +124,20 @@ fn scroll_offset(cursor: usize, visible: usize) -> usize {
 /// of the chosen row. Returns `None` when the user cancels.
 pub fn select_video(videos: &[Video]) -> io::Result<Option<usize>> {
     let mut guard = TerminalGuard::enter()?;
+    select_video_loop::<Host>(&mut guard.output, videos)
+}
+
+/// Drives the fuzzy-table selector, reading events from `Sys`. Splitting
+/// this out from [`select_video`] lets a test replay scripted events and
+/// render to a buffer, exercising the loop without a terminal.
+fn select_video_loop<Sys>(output: &mut impl Write, videos: &[Video]) -> io::Result<Option<usize>>
+where
+    Sys: ReadEvent,
+{
     let mut selector = Selector::new(videos);
     loop {
-        render_table(&mut guard.output, &selector, videos)?;
-        let Event::Key(key) = read()? else {
+        render_table(output, &selector, videos)?;
+        let Event::Key(key) = Sys::read_event()? else {
             continue;
         };
         if key.kind != KeyEventKind::Press {
@@ -133,7 +163,7 @@ pub fn select_video(videos: &[Video]) -> io::Result<Option<usize>> {
 }
 
 fn render_table(
-    output: &mut Stderr,
+    output: &mut impl Write,
     selector: &Selector<Video>,
     videos: &[Video],
 ) -> io::Result<()> {
@@ -200,10 +230,24 @@ mod tests;
 /// cancels.
 pub fn select_one(prompt: &str, labels: &[String]) -> io::Result<Option<usize>> {
     let mut guard = TerminalGuard::enter()?;
+    select_one_loop::<Host>(&mut guard.output, prompt, labels)
+}
+
+/// Drives the single-column list selector, reading events from `Sys`.
+/// Splitting this out from [`select_one`] lets a test replay scripted
+/// events and render to a buffer, exercising the loop without a terminal.
+fn select_one_loop<Sys>(
+    output: &mut impl Write,
+    prompt: &str,
+    labels: &[String],
+) -> io::Result<Option<usize>>
+where
+    Sys: ReadEvent,
+{
     let mut cursor = 0;
     loop {
-        render_list(&mut guard.output, prompt, labels, cursor)?;
-        let Event::Key(key) = read()? else {
+        render_list(output, prompt, labels, cursor)?;
+        let Event::Key(key) = Sys::read_event()? else {
             continue;
         };
         if key.kind != KeyEventKind::Press {
@@ -231,7 +275,7 @@ pub fn select_one(prompt: &str, labels: &[String]) -> io::Result<Option<usize>> 
 }
 
 fn render_list(
-    output: &mut Stderr,
+    output: &mut impl Write,
     prompt: &str,
     labels: &[String],
     cursor: usize,

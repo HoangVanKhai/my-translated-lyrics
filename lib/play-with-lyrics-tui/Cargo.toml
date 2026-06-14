@@ -13,6 +13,7 @@ unicode-width.workspace = true
 
 [dev-dependencies]
 pretty_assertions.workspace = true
+test-utils.workspace = true
 
 [lints]
 workspace = true

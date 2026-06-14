@@ -66,6 +66,7 @@ overrides:
   - filename: '**/*.rs'
     words:
       - btreemap
+      - Deque
       - Feng
       - hardlink
       - maplit
