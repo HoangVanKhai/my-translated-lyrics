@@ -34,9 +34,7 @@ use super::credits_parse::{
 };
 use super::escape::{Escaped, append_separator_for_output};
 use super::parse::{CuePart, SubtitleCue};
-use super::styles::{
-    CREDIT_NAME_COLOR, CREDIT_ROLE_COLOR, CREDIT_SPECIAL_COLOR, Style, class_style, voice_style,
-};
+use super::styles::{MissingStyle, Style, StylePalette};
 use core::fmt::Write;
 use derive_more::{BitOrAssign, Display};
 use lyrics_core::credits_descriptor::CreditsDesc;
@@ -53,30 +51,12 @@ const CLASS_CREDIT_NAME: &str = "creditName";
 /// or `(...)`) inside a credit name.
 const CLASS_CREDIT_SPECIAL: &str = "creditSpecial";
 
-/// Fixed style for the credit role class.
-const CREDIT_ROLE_STYLE: Style = Style {
-    color: Some(CREDIT_ROLE_COLOR),
-    italic: false,
-    bold: false,
-};
-/// Fixed style for the credit name class.
-const CREDIT_NAME_STYLE: Style = Style {
-    color: Some(CREDIT_NAME_COLOR),
-    italic: false,
-    bold: false,
-};
-/// Fixed style for the credit highlight class.
-const CREDIT_SPECIAL_STYLE: Style = Style {
-    color: Some(CREDIT_SPECIAL_COLOR),
-    italic: false,
-    bold: false,
-};
-
 /// Renders all cues for a single language into a complete `.vtt` file.
 pub fn render_vtt(
     cues: &[SubtitleCue],
     markers: &LineMarkersDesc,
     credits: &CreditsDesc,
+    palette: &StylePalette,
     language: &Language,
 ) -> Result<String, RenderVttError> {
     let roles = CreditRoles::from_descriptor(credits, language);
@@ -91,7 +71,7 @@ pub fn render_vtt(
 
     let mut output = String::new();
     write!(output, "WEBVTT\nLanguage: {language}\n\n").unwrap();
-    write_style_block(&mut output, markers, &features, language);
+    write_style_block(&mut output, markers, palette, &features, language)?;
     output.push('\n');
     for rendering in &cue_renderings {
         writeln!(
@@ -260,9 +240,10 @@ fn write_name_segments(output: &mut String, features: &mut Features, segments: &
 fn write_style_block(
     output: &mut String,
     markers: &LineMarkersDesc,
+    palette: &StylePalette,
     features: &Features,
     language: &Language,
-) {
+) -> Result<(), RenderVttError> {
     output.push_str(text_block_fnl! {
         "STYLE"
         "::cue {"
@@ -272,36 +253,50 @@ fn write_style_block(
     });
 
     for marker_name in &markers.markers {
-        let voice_name = markers
-            .voices
-            .get(marker_name)
-            .and_then(|by_language| by_language.get(language));
-        let Some(voice_name) = voice_name else {
+        let Some(by_language) = markers.voices.get(marker_name) else {
             continue;
         };
-        let style = voice_style(marker_name);
-        write_voice_rule(output, voice_name, style.as_ref());
+        // Every declared voice marker must resolve to a palette style,
+        // even when this particular language omits its voice name, so a
+        // missing entry surfaces regardless of which language renders.
+        let style = palette.voice_style(marker_name)?;
+        let Some(voice_name) = by_language.get(language) else {
+            continue;
+        };
+        write_voice_rule(output, voice_name, style);
     }
 
     if features.used_credit_role {
-        write_class_rule(output, CLASS_CREDIT_ROLE, &CREDIT_ROLE_STYLE);
+        write_class_rule(
+            output,
+            CLASS_CREDIT_ROLE,
+            &Style::color_only(palette.credit.role.clone()),
+        );
     }
     if features.used_credit_name {
-        write_class_rule(output, CLASS_CREDIT_NAME, &CREDIT_NAME_STYLE);
+        write_class_rule(
+            output,
+            CLASS_CREDIT_NAME,
+            &Style::color_only(palette.credit.name.clone()),
+        );
     }
     if features.used_credit_special {
-        write_class_rule(output, CLASS_CREDIT_SPECIAL, &CREDIT_SPECIAL_STYLE);
+        write_class_rule(
+            output,
+            CLASS_CREDIT_SPECIAL,
+            &Style::color_only(palette.credit.special.clone()),
+        );
     }
 
     for marker_name in &markers.markers {
         let Some(class_name) = markers.classes.get(marker_name) else {
             continue;
         };
-        let Some(style) = class_style(class_name.as_str()) else {
-            continue;
-        };
-        write_class_rule(output, class_name.as_str(), &style);
+        let style = palette.class_style(class_name)?;
+        write_class_rule(output, class_name.as_str(), style);
     }
+
+    Ok(())
 }
 
 /// `Display` wrapper that renders the CSS attribute selector
@@ -328,11 +323,9 @@ fn write_style_block(
 #[display(r#"v[voice="{}"]"#, _0.as_str())]
 struct VoiceSelector<'a>(&'a VoiceName);
 
-fn write_voice_rule(output: &mut String, voice_name: &VoiceName, style: Option<&Style>) {
+fn write_voice_rule(output: &mut String, voice_name: &VoiceName, style: &Style) {
     writeln!(output, "::cue({}) {{", VoiceSelector(voice_name)).unwrap();
-    if let Some(style) = style {
-        write_style_body(output, style);
-    }
+    write_style_body(output, style);
     output.push_str("}\n");
 }
 
@@ -343,7 +336,7 @@ fn write_class_rule(output: &mut String, class_name: &str, style: &Style) {
 }
 
 fn write_style_body(output: &mut String, style: &Style) {
-    if let Some(color) = style.color {
+    if let Some(color) = &style.color {
         writeln!(output, "  color: {color};").unwrap();
     }
     if style.italic {
@@ -366,6 +359,13 @@ pub struct RenderVttErrorCreditsPayload {
 #[non_exhaustive]
 pub enum RenderVttError {
     Credits(RenderVttErrorCreditsPayload),
+    Style(MissingStyle),
+}
+
+impl From<MissingStyle> for RenderVttError {
+    fn from(error: MissingStyle) -> Self {
+        RenderVttError::Style(error)
+    }
 }
 
 #[cfg(test)]

@@ -1,10 +1,12 @@
 use super::{RenderSrtError, render_srt};
 use crate::parse::{CuePart, SubtitleCue};
+use crate::styles::{CreditPalette, MissingStyle, StylePalette};
 use lyrics_core::credits_descriptor::CreditsDesc;
-use lyrics_core::line_markers_descriptor::LineMarkersDesc;
+use lyrics_core::line_markers_descriptor::{CssClassName, LineMarkersDesc};
 use lyrics_core::timestamp::Timestamp;
 use lyrics_core::video_descriptor::Language;
 use maplit::btreemap;
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 
 fn credits_with_one_role() -> CreditsDesc {
@@ -18,6 +20,18 @@ fn markers_with_credit_trigger() -> LineMarkersDesc {
     LineMarkersDesc {
         credits: vec!["cre".to_string()],
         ..Default::default()
+    }
+}
+
+fn test_palette() -> StylePalette {
+    StylePalette {
+        credit: CreditPalette {
+            role: "#AAAA22".to_string(),
+            name: "#AAAAAA".to_string(),
+            special: "#55ABCD".to_string(),
+        },
+        voices: btreemap! {},
+        classes: btreemap! {},
     }
 }
 
@@ -35,6 +49,7 @@ fn cue_text_html_meta_characters_are_escaped() {
         &cues,
         &LineMarkersDesc::default(),
         &CreditsDesc::default(),
+        &test_palette(),
         &Language::Vietnamese,
     )
     .unwrap();
@@ -62,9 +77,47 @@ fn unknown_role_in_credit_line_produces_credits_error() {
         &cues,
         &markers_with_credit_trigger(),
         &credits_with_one_role(),
+        &test_palette(),
         &Language::Vietnamese,
     )
     .unwrap_err();
-    let RenderSrtError::Credits(payload) = err;
-    assert_eq!(payload.start, Timestamp::new(0, 0, 0).unwrap());
+    match err {
+        RenderSrtError::Credits(payload) => {
+            assert_eq!(payload.start, Timestamp::new(0, 0, 0).unwrap());
+        }
+        other => panic!("expected a credits error, got {other:?}"),
+    }
+}
+
+#[test]
+fn class_declared_without_palette_entry_produces_style_error() {
+    let class_name = "title"
+        .to_string()
+        .pipe(CssClassName::new)
+        .expect("test fixture passes the class-name validator");
+    let markers = LineMarkersDesc {
+        markers: vec!["ttl".to_string()],
+        classes: btreemap! { "ttl".to_string() => class_name },
+        ..Default::default()
+    };
+    let cues = vec![SubtitleCue {
+        start: Timestamp::new(0, 0, 0).unwrap(),
+        end: Timestamp::new(0, 5, 0).unwrap(),
+        parts: vec![CuePart {
+            marker: "ttl".to_string(),
+            text: "body".to_string(),
+        }],
+    }];
+    let err = render_srt(
+        &cues,
+        &markers,
+        &CreditsDesc::default(),
+        &test_palette(),
+        &Language::Vietnamese,
+    )
+    .unwrap_err();
+    match err {
+        RenderSrtError::Style(MissingStyle::Class(name)) => assert_eq!(name, "title"),
+        other => panic!("expected a missing-class-style error, got {other:?}"),
+    }
 }

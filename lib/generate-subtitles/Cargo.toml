@@ -10,6 +10,7 @@ derive_more.workspace = true
 into-deduped.workspace = true
 into-sorted.workspace = true
 pipe-trait.workspace = true
+serde.workspace = true
 serde-saphyr.workspace = true
 strum.workspace = true
 text-block-macros.workspace = true

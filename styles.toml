@@ -1,0 +1,46 @@
+# Presentation palette shared by every song.
+#
+# `generate-subtitles` consults this file to map each voice marker and
+# named class declared in a song's `line-markers.toml` to a color and
+# optional text decoration. A marker that a song declares as a voice or
+# a class, but that has no entry here, is a configuration error rather
+# than a silently plain render.
+
+# Colors for the three built-in credit classes. The role cell and the
+# name cell of every credit line use the first two; a bracketed
+# highlight inside a credit name uses the third.
+[credit]
+role = "#AAAA22"
+name = "#AAAAAA"
+special = "#55ABCD"
+
+# Voice markers. The key is the per-character marker token used in the
+# `[voices]` section of a song's `line-markers.toml`. Lowercase variants
+# signal a spoken word break, which the repository renders in italics in
+# addition to the character color.
+[voices.LTY]
+color = "#66CCFF"
+
+[voices.lty]
+color = "#66CCFF"
+italic = true
+
+[voices.YZL]
+color = "#EE0000"
+
+[voices.yzl]
+color = "#EE0000"
+italic = true
+
+[voices."Y+L"]
+color = "#9966CC"
+
+# Named classes. The key is the class name that appears in the
+# `[classes]` section of a song's `line-markers.toml`.
+[classes.title]
+color = "#FFD966"
+bold = true
+
+[classes.expo]
+color = "#CCCCCC"
+italic = true
