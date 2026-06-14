@@ -324,7 +324,8 @@ where
                     cursor += 1;
                 }
             }
-            KeyCode::Enter => {
+            // With no text to type, Space confirms the choice like Enter.
+            KeyCode::Enter | KeyCode::Char(' ') => {
                 if !labels.is_empty() {
                     return Ok(Navigation::Selected(cursor));
                 }
@@ -367,7 +368,7 @@ where
         }
     }
 
-    let help = "↑/↓ move · Backspace back · Enter select · Esc quit";
+    let help = "↑/↓ move · Backspace back · Enter/Space select · Esc quit";
     output
         .queue(MoveTo(0, rows.saturating_sub(1)))?
         .queue(SetAttribute(Attribute::Dim))?

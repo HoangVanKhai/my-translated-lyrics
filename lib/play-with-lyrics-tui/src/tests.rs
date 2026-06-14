@@ -646,6 +646,31 @@ fn select_video_backspace_on_an_empty_query_goes_back() {
     assert_eq!(chosen, Navigation::Back);
 }
 
+/// On a non-typing list page, Space confirms the highlighted row just like
+/// Enter.
+#[test]
+fn select_one_selects_on_space() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([press(KeyCode::Down), press(KeyCode::Char(' '))]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    assert_eq!(chosen, Navigation::Selected(1));
+}
+
 /// On a non-typing list page, Backspace goes back to the previous page.
 #[test]
 fn select_one_backspace_goes_back() {
