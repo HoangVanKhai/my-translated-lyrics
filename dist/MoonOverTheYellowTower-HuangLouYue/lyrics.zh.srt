@@ -16,9 +16,9 @@
 
 5
 00:00:18,283 --> 00:00:22,612
-<font color="#AAAA22">调教</font>作/编曲</font>：<font color="#AAAAAA">砖厂浪人</font>
-<font color="#AAAA22">调教</font>作词</font>：<font color="#AAAAAA">萧暮雨</font>
-<font color="#AAAA22">调教</font>演唱</font>：<font color="#AAAAAA">洛天依；乐正绫</font>
+<font color="#AAAA22">作/编曲</font>：<font color="#AAAAAA">砖厂浪人</font>
+<font color="#AAAA22">作词</font>：<font color="#AAAAAA">萧暮雨</font>
+<font color="#AAAA22">演唱</font>：<font color="#AAAAAA">洛天依；乐正绫</font>
 
 6
 00:00:22,612 --> 00:00:26,885
@@ -29,9 +29,9 @@
 
 7
 00:00:26,885 --> 00:00:29,714
-<font color="#AAAA22">调教</font>统筹</font>：<font color="#AAAAAA">花间 北山</font>
-<font color="#AAAA22">调教</font>策划协力</font>：<font color="#AAAAAA">星际</font>
-<font color="#AAAA22">调教</font>音频监制</font>：<font color="#AAAAAA">磷元素</font>
+<font color="#AAAA22">统筹</font>：<font color="#AAAAAA">花间 北山</font>
+<font color="#AAAA22">策划协力</font>：<font color="#AAAAAA">星际</font>
+<font color="#AAAA22">音频监制</font>：<font color="#AAAAAA">磷元素</font>
 
 8
 00:00:29,714 --> 00:00:31,939
@@ -111,19 +111,19 @@
 
 27
 00:01:45,213 --> 00:01:48,835
-<font color="#AAAA22">调教</font>作/编曲</font>：<font color="#AAAAAA">砖厂浪人</font>
-<font color="#AAAA22">调教</font>作词</font>：<font color="#AAAAAA">萧暮雨</font>
-<font color="#AAAA22">调教</font>演唱</font>：<font color="#AAAAAA">洛天依；乐正绫</font>
+<font color="#AAAA22">作/编曲</font>：<font color="#AAAAAA">砖厂浪人</font>
+<font color="#AAAA22">作词</font>：<font color="#AAAAAA">萧暮雨</font>
+<font color="#AAAA22">演唱</font>：<font color="#AAAAAA">洛天依；乐正绫</font>
 
 28
 00:01:48,835 --> 00:01:52,488
-<font color="#AAAA22">调教</font>调教</font>：<font color="#AAAAAA">折v；跨海星尘</font>
-<font color="#AAAA22">调教</font>混音</font>：<font color="#AAAAAA">虎皮猫</font>
-<font color="#AAAA22">调教</font>曲绘</font>：<font color="#AAAAAA">浮空茜</font>
-<font color="#AAAA22">调教</font>映像</font>：<font color="#AAAAAA">阿妍</font>
-<font color="#AAAA22">调教</font>统筹</font>：<font color="#AAAAAA">花间 北山</font>
-<font color="#AAAA22">调教</font>策划协力</font>：<font color="#AAAAAA">星际</font>
-<font color="#AAAA22">调教</font>音频监制</font>：<font color="#AAAAAA">磷元素</font>
+<font color="#AAAA22">调教</font>：<font color="#AAAAAA">折v；跨海星尘</font>
+<font color="#AAAA22">混音</font>：<font color="#AAAAAA">虎皮猫</font>
+<font color="#AAAA22">曲绘</font>：<font color="#AAAAAA">浮空茜</font>
+<font color="#AAAA22">映像</font>：<font color="#AAAAAA">阿妍</font>
+<font color="#AAAA22">统筹</font>：<font color="#AAAAAA">花间 北山</font>
+<font color="#AAAA22">策划协力</font>：<font color="#AAAAAA">星际</font>
+<font color="#AAAA22">音频监制</font>：<font color="#AAAAAA">磷元素</font>
 
 29
 00:01:52,488 --> 00:01:56,445

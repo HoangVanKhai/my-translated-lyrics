@@ -22,17 +22,17 @@ fn make_roles(descriptor: &CreditsDesc) -> CreditRoles<'_> {
     CreditRoles::from_descriptor(descriptor, &Language::Vietnamese)
 }
 
+/// The input exercises three contractual properties at once:
+///   * `作詞` and `long-role` each appear twice with other entries
+///     between them, so a refactor that relies on `Vec::dedup` or
+///     `Itertools::dedup` leaves the duplicates in.
+///   * `abc` and `mid` are both 3 bytes long, so the ascending
+///     lexicographic tiebreak is observable.
+///   * `作詞` is 6 bytes (two CJK code points) and ranks above the
+///     3-byte ASCII entries, making byte length, not character
+///     count, the load-bearing measure.
 #[test]
 fn from_descriptor_deduplicates_non_adjacent_entries_and_orders_longest_first() {
-    // The input exercises three contractual properties at once:
-    //   * `作詞` and `long-role` each appear twice with other entries
-    //     between them, so a refactor that relies on `Vec::dedup` or
-    //     `Itertools::dedup` leaves the duplicates in.
-    //   * `abc` and `mid` are both 3 bytes long, so the ascending
-    //     lexicographic tiebreak is observable.
-    //   * `作詞` is 6 bytes (two CJK code points) and ranks above the
-    //     3-byte ASCII entries, making byte length, not character
-    //     count, the load-bearing measure.
     let descriptor = make_descriptor(&[
         "作詞",
         "long-role",
@@ -259,12 +259,12 @@ fn bracketed_from_str_accepts_a_single_span() {
     assert_eq!(parsed.as_str(), "【label-a】");
 }
 
+/// Whatever `take` would report as `None` maps to `ShapeMismatch`
+/// for `FromStr`: empty input, no opening bracket, nested
+/// bracket before the matching close, or end of input before
+/// the close.
 #[test]
 fn bracketed_from_str_rejects_shape_mismatch() {
-    // Whatever `take` would report as `None` maps to `ShapeMismatch`
-    // for `FromStr`: empty input, no opening bracket, nested
-    // bracket before the matching close, or end of input before
-    // the close.
     for input in ["", "no bracket", "[open only", "【a【b】c】"] {
         assert_eq!(
             input.pipe(Bracketed::try_from).unwrap_err(),
@@ -273,11 +273,11 @@ fn bracketed_from_str_rejects_shape_mismatch() {
     }
 }
 
+/// The first character past the closing bracket is what the
+/// diagnostic reports; nothing else is needed to describe the
+/// failure.
 #[test]
 fn bracketed_from_str_rejects_unexpected_character_after_span() {
-    // The first character past the closing bracket is what the
-    // diagnostic reports; nothing else is needed to describe the
-    // failure.
     assert_eq!(
         "【label-a】trailing".pipe(Bracketed::try_from).unwrap_err(),
         ParseBracketedError::UnexpectedCharacter('t'),

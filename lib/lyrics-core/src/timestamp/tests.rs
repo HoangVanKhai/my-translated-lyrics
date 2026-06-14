@@ -64,15 +64,15 @@ fn vtt_time_uses_dot() {
     );
 }
 
+/// The display impl for `Timestamp` formats two ASCII digits, a
+/// colon, two ASCII digits, a dot, and three ASCII digits, so
+/// every cap-respecting value renders to exactly
+/// `TIMESTAMP_STR_LEN` bytes. Lock that invariant at both
+/// ends of the legal range plus one mid-range value, so a future
+/// tweak to the format string trips here before any caller that
+/// slices on the constant produces silent UTF-8 panics.
 #[test]
 fn rendered_length_matches_timestamp_str_len() {
-    // The display impl for `Timestamp` formats two ASCII digits, a
-    // colon, two ASCII digits, a dot, and three ASCII digits, so
-    // every cap-respecting value renders to exactly
-    // `TIMESTAMP_STR_LEN` bytes. Lock that invariant at both
-    // ends of the legal range plus one mid-range value, so a future
-    // tweak to the format string trips here before any caller that
-    // slices on the constant produces silent UTF-8 panics.
     for ts in [
         Timestamp::new(0, 0, 0).unwrap(),
         Timestamp::new(0, 0, 1).unwrap(),
@@ -83,28 +83,28 @@ fn rendered_length_matches_timestamp_str_len() {
     }
 }
 
+/// `Timestamp` is capped at one hour, so the largest value the
+/// constructor accepts is 59:59.999. The SRT and VTT wrappers
+/// still emit `HH:MM:SS`, but the hour field at that value is
+/// always `00`.
 #[test]
 fn maximum_representable_value_renders_just_below_one_hour() {
-    // `Timestamp` is capped at one hour, so the largest value the
-    // constructor accepts is 59:59.999. The SRT and VTT wrappers
-    // still emit `HH:MM:SS`, but the hour field at that value is
-    // always `00`.
     let value = Timestamp::new(59, 59, 999).unwrap();
     assert_eq!(value.to_string(), "59:59.999");
     assert_eq!(SrtTime::from(value).to_string(), "00:59:59,999");
     assert_eq!(VttTime::from(value).to_string(), "00:59:59.999");
 }
 
+/// `Timestamp::new` accepts arbitrary `u64` components, so the
+/// weighted total can overflow `u64` before the cap check has a
+/// chance to look at it. In release builds an unchecked
+/// multiplication would wrap silently and the wrapped value
+/// could happen to land below `MILLISECONDS_PER_HOUR`, leaking
+/// a stray `Some(Timestamp(_))` from nonsense input. The
+/// `checked_mul` / `checked_add` chain forwards every overflow
+/// as `None` instead.
 #[test]
 fn new_rejects_arithmetic_overflow_before_the_cap_check() {
-    // `Timestamp::new` accepts arbitrary `u64` components, so the
-    // weighted total can overflow `u64` before the cap check has a
-    // chance to look at it. In release builds an unchecked
-    // multiplication would wrap silently and the wrapped value
-    // could happen to land below `MILLISECONDS_PER_HOUR`, leaking
-    // a stray `Some(Timestamp(_))` from nonsense input. The
-    // `checked_mul` / `checked_add` chain forwards every overflow
-    // as `None` instead.
     assert_eq!(Timestamp::new(u64::MAX, 0, 0), None);
     assert_eq!(Timestamp::new(0, u64::MAX, 0), None);
     assert_eq!(Timestamp::new(u64::MAX, u64::MAX, u64::MAX), None);
@@ -116,14 +116,14 @@ fn new_rejects_arithmetic_overflow_before_the_cap_check() {
     assert_eq!(Timestamp::new(max_safe_minutes, 0, u64::MAX), None);
 }
 
+/// Every composition whose weighted total lands at exactly one
+/// hour or beyond must be rejected, regardless of which component
+/// pushed the total past the cap. The just-below-cap composition
+/// (59:59.999, one millisecond short of one hour) is the
+/// symmetric "still `Some`" boundary that locks the cap at its
+/// exact threshold.
 #[test]
 fn new_rejects_totals_that_reach_or_exceed_one_hour() {
-    // Every composition whose weighted total lands at exactly one
-    // hour or beyond must be rejected, regardless of which component
-    // pushed the total past the cap. The just-below-cap composition
-    // (59:59.999, one millisecond short of one hour) is the
-    // symmetric "still `Some`" boundary that locks the cap at its
-    // exact threshold.
     assert!(Timestamp::new(59, 59, 999).is_some());
     assert_eq!(Timestamp::new(60, 0, 0), None);
     assert_eq!(Timestamp::new(59, 60, 0), None);
@@ -208,20 +208,20 @@ fn rejects_minutes_out_of_range() {
     );
 }
 
+/// When both components are out of range, the seconds diagnostic
+/// fires first: `Timestamp::take` runs an explicit
+/// `seconds >= 60` guard before delegating the cap check to
+/// `Timestamp::new`, so the more local component-range error
+/// wins over the cap-derived minutes error.
+///
+/// This test is load-bearing for the precedence claim in
+/// `Timestamp::take`'s doc comment: a future change that moves
+/// the explicit guard, or that swaps the guard for a different
+/// shape, would silently flip which diagnostic fires for
+/// `60:60.000` and the doc would no longer match the behavior.
+/// Keep this test in lockstep with that paragraph.
 #[test]
 fn seconds_out_of_range_takes_precedence_over_minutes_out_of_range() {
-    // When both components are out of range, the seconds diagnostic
-    // fires first: `Timestamp::take` runs an explicit
-    // `seconds >= 60` guard before delegating the cap check to
-    // `Timestamp::new`, so the more local component-range error
-    // wins over the cap-derived minutes error.
-    //
-    // This test is load-bearing for the precedence claim in
-    // `Timestamp::take`'s doc comment: a future change that moves
-    // the explicit guard, or that swaps the guard for a different
-    // shape, would silently flip which diagnostic fires for
-    // `60:60.000` and the doc would no longer match the behavior.
-    // Keep this test in lockstep with that paragraph.
     assert_eq!(
         Timestamp::take("60:60.000").unwrap_err(),
         TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
