@@ -1,5 +1,3 @@
-// cspell:locale en vi
-
 use crate::fuzzy::{ResolveError, contains_ci, fuzzy_subsequence, resolve_unique};
 use pretty_assertions::assert_eq;
 
@@ -49,6 +47,7 @@ fn contains_is_substring_not_subsequence() {
 /// Typing without diacritics finds a title that carries them.
 #[test]
 fn an_unmarked_query_matches_marked_text() {
+    // cspell:locale en vi
     assert!(contains_ci("Mưa Xuân", "mua xuan"));
     assert!(contains_ci("Mùa Xuân", "mua xuan"));
     assert!(fuzzy_subsequence("mua", "Mưa Xuân"));
@@ -59,6 +58,7 @@ fn an_unmarked_query_matches_marked_text() {
 /// matches a title that carries the mark but not a bare one.
 #[test]
 fn a_marked_query_matches_only_that_mark() {
+    // cspell:locale en vi
     assert!(contains_ci("Mưa Xuân", "mưa"));
     assert!(!contains_ci("Mua Xuan", "mưa"));
     assert!(contains_ci("Mùa Xuân", "mùa"));
