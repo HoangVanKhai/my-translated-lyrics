@@ -1,6 +1,6 @@
 use crate::{
-    Navigation, ReadEvent, WindowSize, columns_line, columns_line_highlighted, fit, fit_chars,
-    is_double_click, scroll_offset, select_one_loop, select_video_loop, visible_rows,
+    Clock, Navigation, ReadEvent, WindowSize, columns_line, columns_line_highlighted, fit,
+    fit_chars, is_double_click, scroll_offset, select_one_loop, select_video_loop, visible_rows,
 };
 use crossterm::event::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
@@ -10,10 +10,20 @@ use play_with_lyrics::catalog::Video;
 use pretty_assertions::assert_eq;
 use std::collections::{HashMap, VecDeque};
 use std::io;
-use std::sync::Mutex;
+use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant};
 use test_utils::video_desc;
 use unicode_width::UnicodeWidthStr;
+
+/// A frozen clock for the fakes: it reports the same instant on every call, so
+/// two scripted clicks count as simultaneous (a zero gap, inside the
+/// double-click window) without depending on how fast the test runs. The
+/// real-time clock is the production `Host`; the timeout itself is covered by
+/// the `is_double_click` unit test with constructed instants.
+fn frozen_now() -> Instant {
+    static FROZEN: OnceLock<Instant> = OnceLock::new();
+    *FROZEN.get_or_init(Instant::now)
+}
 
 /// A second click on the same row within the window is a double click; a
 /// different row or a late click is not.
@@ -226,6 +236,11 @@ fn select_one_returns_the_highlighted_row() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -251,6 +266,11 @@ fn select_one_cancels_on_escape() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -272,6 +292,11 @@ fn select_one_cancels_on_ctrl_c() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -291,6 +316,11 @@ fn select_one_keeps_the_cursor_within_bounds() {
     impl ReadEvent for Scripted {
         fn read_event() -> io::Result<Event> {
             pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
         }
     }
     impl WindowSize for Scripted {
@@ -319,6 +349,11 @@ fn select_one_ignores_non_press_events() {
     impl ReadEvent for Scripted {
         fn read_event() -> io::Result<Event> {
             pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
         }
     }
     impl WindowSize for Scripted {
@@ -351,6 +386,11 @@ fn select_one_enter_is_a_no_op_for_an_empty_list() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -374,6 +414,11 @@ fn select_video_filters_then_selects() {
     impl ReadEvent for Scripted {
         fn read_event() -> io::Result<Event> {
             pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
         }
     }
     impl WindowSize for Scripted {
@@ -405,6 +450,11 @@ fn select_video_backspace_widens_the_query() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -433,6 +483,11 @@ fn select_video_cancels_on_escape() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -453,6 +508,11 @@ fn select_video_quits_on_ctrl_q() {
     impl ReadEvent for Scripted {
         fn read_event() -> io::Result<Event> {
             pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
         }
     }
     impl WindowSize for Scripted {
@@ -478,6 +538,11 @@ fn select_video_quits_on_ctrl_q_upper_case() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -499,6 +564,11 @@ fn select_video_treats_a_bare_q_as_a_filter_character() {
     impl ReadEvent for Scripted {
         fn read_event() -> io::Result<Event> {
             pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
         }
     }
     impl WindowSize for Scripted {
@@ -528,6 +598,11 @@ fn select_one_quits_on_q() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -549,6 +624,11 @@ fn select_one_quits_on_shift_q() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -568,6 +648,11 @@ fn select_one_quits_on_ctrl_q() {
     impl ReadEvent for Scripted {
         fn read_event() -> io::Result<Event> {
             pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
         }
     }
     impl WindowSize for Scripted {
@@ -605,6 +690,11 @@ fn select_video_header_shows_native_language_names() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             Ok((80, 24))
@@ -633,6 +723,11 @@ fn select_video_header_truncates_in_a_narrow_terminal() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             // Each of the three columns gets about six display columns.
@@ -658,6 +753,11 @@ fn select_video_renders_only_the_visible_window() {
     impl ReadEvent for Scripted {
         fn read_event() -> io::Result<Event> {
             pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
         }
     }
     impl WindowSize for Scripted {
@@ -694,6 +794,11 @@ fn select_video_renders_with_a_fallback_size_when_size_is_unavailable() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             Err(io::Error::other("the terminal size is unavailable"))
@@ -719,6 +824,11 @@ fn select_video_ctrl_backspace_goes_back() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -740,6 +850,11 @@ fn select_video_plain_backspace_does_not_go_back() {
     impl ReadEvent for Scripted {
         fn read_event() -> io::Result<Event> {
             pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
         }
     }
     impl WindowSize for Scripted {
@@ -769,6 +884,11 @@ fn select_one_selects_on_space() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -793,6 +913,11 @@ fn select_one_backspace_goes_back() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -812,6 +937,11 @@ fn select_one_ctrl_backspace_goes_back() {
     impl ReadEvent for Scripted {
         fn read_event() -> io::Result<Event> {
             pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
         }
     }
     impl WindowSize for Scripted {
@@ -834,6 +964,11 @@ fn select_video_underlines_matched_characters() {
     impl ReadEvent for Scripted {
         fn read_event() -> io::Result<Event> {
             pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
         }
     }
     impl WindowSize for Scripted {
@@ -864,6 +999,11 @@ fn select_video_does_not_underline_without_a_query() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -886,6 +1026,11 @@ fn select_video_footer_shows_delete_and_back() {
     impl ReadEvent for Scripted {
         fn read_event() -> io::Result<Event> {
             pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
         }
     }
     impl WindowSize for Scripted {
@@ -913,6 +1058,11 @@ fn select_one_starts_on_the_given_row() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -935,6 +1085,11 @@ fn select_one_clamps_an_out_of_range_start() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -955,6 +1110,11 @@ fn select_video_starts_on_the_selected_video() {
     impl ReadEvent for Scripted {
         fn read_event() -> io::Result<Event> {
             pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
         }
     }
     impl WindowSize for Scripted {
@@ -985,6 +1145,11 @@ fn select_video_starts_with_the_given_query() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -1006,6 +1171,11 @@ fn select_video_writes_back_the_final_query() {
     impl ReadEvent for Scripted {
         fn read_event() -> io::Result<Event> {
             pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
         }
     }
     impl WindowSize for Scripted {
@@ -1034,6 +1204,11 @@ fn select_one_single_click_highlights_the_clicked_row() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -1060,6 +1235,11 @@ fn select_one_single_click_does_not_select() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -1084,6 +1264,11 @@ fn select_one_double_click_selects_the_clicked_row() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -1103,6 +1288,11 @@ fn select_one_scroll_moves_the_cursor() {
     impl ReadEvent for Scripted {
         fn read_event() -> io::Result<Event> {
             pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
         }
     }
     impl WindowSize for Scripted {
@@ -1128,6 +1318,11 @@ fn select_video_single_click_highlights_the_clicked_row() {
     impl ReadEvent for Scripted {
         fn read_event() -> io::Result<Event> {
             pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
         }
     }
     impl WindowSize for Scripted {
@@ -1162,6 +1357,11 @@ fn select_video_single_click_does_not_select() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -1185,6 +1385,11 @@ fn select_video_double_click_selects_the_clicked_row() {
     impl ReadEvent for Scripted {
         fn read_event() -> io::Result<Event> {
             pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
         }
     }
     impl WindowSize for Scripted {
@@ -1213,6 +1418,11 @@ fn select_video_click_above_the_rows_does_nothing() {
             pop_scripted(&EVENTS)
         }
     }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
+        }
+    }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
             standard_size()
@@ -1236,6 +1446,11 @@ fn select_video_scroll_moves_the_cursor() {
     impl ReadEvent for Scripted {
         fn read_event() -> io::Result<Event> {
             pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> Instant {
+            frozen_now()
         }
     }
     impl WindowSize for Scripted {

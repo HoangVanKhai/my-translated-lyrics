@@ -64,6 +64,16 @@ trait WindowSize {
     fn window_size() -> io::Result<(u16, u16)>;
 }
 
+/// Reports the current instant, for measuring the gap between two clicks when
+/// detecting a double click.
+///
+/// Injected alongside [`ReadEvent`] and [`WindowSize`] so a test can freeze
+/// time and make double-click detection deterministic, rather than depending
+/// on how far apart a throttled machine happens to process the two clicks.
+trait Clock {
+    fn now() -> Instant;
+}
+
 /// The production provider: it reads from the real terminal.
 struct Host;
 
@@ -76,6 +86,12 @@ impl ReadEvent for Host {
 impl WindowSize for Host {
     fn window_size() -> io::Result<(u16, u16)> {
         size()
+    }
+}
+
+impl Clock for Host {
+    fn now() -> Instant {
+        Instant::now()
     }
 }
 
@@ -286,7 +302,7 @@ fn select_video_loop<Sys>(
     selected: Option<usize>,
 ) -> io::Result<Navigation>
 where
-    Sys: ReadEvent + WindowSize,
+    Sys: ReadEvent + WindowSize + Clock,
 {
     let mut selector = Selector::new(videos);
     selector.set_query(query);
@@ -336,7 +352,7 @@ where
                         |screen_index| selector.filtered().get(offset + screen_index).copied(),
                     );
                     if let Some(index) = clicked {
-                        let now = Instant::now();
+                        let now = Sys::now();
                         let confirm = is_double_click(last_click, now, mouse.row);
                         last_click = Some((now, mouse.row));
                         selector.focus(index);
@@ -444,7 +460,7 @@ fn select_one_loop<Sys>(
     start: usize,
 ) -> io::Result<Navigation>
 where
-    Sys: ReadEvent + WindowSize,
+    Sys: ReadEvent + WindowSize + Clock,
 {
     let mut cursor = start.min(labels.len().saturating_sub(1));
     let mut last_click: Option<(Instant, u16)> = None;
@@ -490,7 +506,7 @@ where
                     if let Some(index) = clicked
                         && index < labels.len()
                     {
-                        let now = Instant::now();
+                        let now = Sys::now();
                         let confirm = is_double_click(last_click, now, mouse.row);
                         last_click = Some((now, mouse.row));
                         cursor = index;
