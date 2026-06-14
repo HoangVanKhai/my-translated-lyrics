@@ -70,13 +70,12 @@ fn run() -> Result<(), Termination> {
     let video_file = find_video_file(&collection_dir, video_title).map_err(Failure::VideoLookup)?;
     let subtitle_file = subtitle_path(&collection_dir, video_title, language, format);
 
-    let mut command = player.command(&video_file, &subtitle_file);
-    launch(&mut command, player)
+    launch(player.command(&video_file, &subtitle_file), player)
 }
 
 /// Launches the player, reporting a non-zero exit status as a
 /// [`Termination::PlayerExited`].
-fn launch(command: &mut Command, player: Player) -> Result<(), Termination> {
+fn launch(mut command: Command, player: Player) -> Result<(), Termination> {
     let status = command
         .status()
         .unwrap_or_else(|error| panic!("error: Failed to launch {player}: {error}"));
