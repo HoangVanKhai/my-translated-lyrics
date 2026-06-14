@@ -96,13 +96,3 @@ pub fn language_label(language: Language) -> &'static str {
         Language::Chinese => "Chinese",
     }
 }
-
-/// The strings a command-line `--language` value is fuzzily matched
-/// against: both the two-letter code and the full name.
-pub fn language_search_keys(language: Language) -> Vec<&'static str> {
-    match language {
-        Language::English => vec!["en", "english"],
-        Language::Vietnamese => vec!["vi", "vietnamese"],
-        Language::Chinese => vec!["zh", "chinese"],
-    }
-}

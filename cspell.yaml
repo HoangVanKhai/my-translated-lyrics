@@ -72,7 +72,6 @@ overrides:
       - Queueable
       - rsplit
       - saphyr
-      - subrip
       - Tianyi
       - Touhou
       - WEBVTT

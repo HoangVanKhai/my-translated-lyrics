@@ -32,15 +32,6 @@ impl Player {
             .with_arg(subtitle_flag)
             .with_arg(video)
     }
-
-    /// The strings a command-line `--player` value is fuzzily matched
-    /// against.
-    pub fn search_keys(&self) -> Vec<&'static str> {
-        match self {
-            Player::Mpv => vec!["mpv"],
-            Player::Celluloid => vec!["celluloid"],
-        }
-    }
 }
 
 /// A subtitle file format, also referred to as the subtitle "type".
@@ -66,15 +57,6 @@ pub enum SubtitleFormat {
 }
 
 impl SubtitleFormat {
-    /// The strings a command-line `--format` value is fuzzily matched
-    /// against: both the file extension and the full format name.
-    pub fn search_keys(&self) -> Vec<&'static str> {
-        match self {
-            SubtitleFormat::SubRip => vec!["srt", "subrip"],
-            SubtitleFormat::WebVtt => vec!["vtt", "webvtt"],
-        }
-    }
-
     /// The full, human-readable name of the format, shown in the format
     /// selector.
     pub fn full_name(&self) -> &'static str {

@@ -10,18 +10,18 @@
 //! choice can be pre-selected with a command-line flag; any choice left
 //! unset is made through an interactive selector.
 
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use derive_more::Display;
 use fuzzy_select::fuzzy::{ResolveError, resolve_unique};
 use fuzzy_select::selection::Searchable;
 use lyrics_core::video_descriptor::Language;
-use play_with_lyrics::catalog::{Video, language_label, language_search_keys, load};
+use play_with_lyrics::catalog::{Video, language_label, load};
 use play_with_lyrics::library::{
     VideoLookupError, available_subtitles, find_video_file, subtitle_path,
 };
 use play_with_lyrics::player::{Player, SubtitleFormat};
 use play_with_lyrics_tui::{select_one, select_video};
-use std::io::{self, IsTerminal, Write};
+use std::io::{self, IsTerminal};
 use std::path::PathBuf;
 use std::process::{Command, ExitCode};
 use strum::VariantArray;
@@ -42,23 +42,67 @@ struct Args {
     #[clap(long, short = 't')]
     title: Option<String>,
 
-    /// Pre-select the subtitle language. Must match exactly one of the
-    /// languages available for the chosen video.
+    /// Pre-select the subtitle language. Must be available for the video.
     #[clap(long, short = 'l')]
-    language: Option<String>,
+    language: Option<LanguageArg>,
 
-    /// Pre-select the subtitle format. Must match exactly one of the
-    /// formats available for the chosen language.
+    /// Pre-select the subtitle format. Must be available for the language.
     #[clap(long, short = 'f')]
-    format: Option<String>,
+    format: Option<FormatArg>,
 
-    /// Pre-select the media player (mpv or celluloid).
+    /// Pre-select the media player.
     #[clap(long, short = 'p')]
-    player: Option<String>,
+    player: Option<PlayerArg>,
+}
 
-    /// Print the resolved command instead of launching the player.
-    #[clap(long, short = 'n')]
-    dry_run: bool,
+/// The media player chosen on the command line.
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum PlayerArg {
+    Mpv,
+    Celluloid,
+}
+
+impl From<PlayerArg> for Player {
+    fn from(arg: PlayerArg) -> Self {
+        match arg {
+            PlayerArg::Mpv => Player::Mpv,
+            PlayerArg::Celluloid => Player::Celluloid,
+        }
+    }
+}
+
+/// The subtitle language chosen on the command line.
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum LanguageArg {
+    En,
+    Vi,
+    Zh,
+}
+
+impl From<LanguageArg> for Language {
+    fn from(arg: LanguageArg) -> Self {
+        match arg {
+            LanguageArg::En => Language::English,
+            LanguageArg::Vi => Language::Vietnamese,
+            LanguageArg::Zh => Language::Chinese,
+        }
+    }
+}
+
+/// The subtitle format chosen on the command line.
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum FormatArg {
+    Srt,
+    Vtt,
+}
+
+impl From<FormatArg> for SubtitleFormat {
+    fn from(arg: FormatArg) -> Self {
+        match arg {
+            FormatArg::Srt => SubtitleFormat::SubRip,
+            FormatArg::Vtt => SubtitleFormat::WebVtt,
+        }
+    }
 }
 
 /// A non-success outcome of [`run`]. Each variant carries the data needed
@@ -75,11 +119,24 @@ enum Failure {
         collection_dir: PathBuf,
     },
 
-    #[display("error: {flag} {query:?}: {error}.")]
-    Unresolved {
-        flag: &'static str,
-        query: String,
-        error: ResolveError,
+    #[display("error: --title {query:?}: {error}.")]
+    UnresolvedTitle { query: String, error: ResolveError },
+
+    #[display(
+        "error: no {requested} subtitle is available for this video (available: {available})."
+    )]
+    LanguageUnavailable {
+        requested: Language,
+        available: String,
+    },
+
+    #[display(
+        "error: no {requested} subtitle is available in {language} (available: {available})."
+    )]
+    FormatUnavailable {
+        language: Language,
+        requested: SubtitleFormat,
+        available: String,
     },
 
     #[display(
@@ -147,17 +204,13 @@ fn run() -> Result<(), Failure> {
         .filter(|(candidate, _)| *candidate == language)
         .map(|(_, format)| *format)
         .collect();
-    let format = resolve_format(&args, &formats)?;
+    let format = resolve_format(&args, language, &formats)?;
     let player = resolve_player(&args)?;
 
     let video_file = find_video_file(&collection_dir, video_title).map_err(Failure::VideoLookup)?;
     let subtitle_file = subtitle_path(&collection_dir, video_title, language, format);
 
     let mut command = player.command(&video_file, &subtitle_file);
-    if args.dry_run {
-        print_command(&command);
-        return Ok(());
-    }
     launch(&mut command, player)
 }
 
@@ -166,8 +219,7 @@ fn resolve_video<'a>(args: &Args, catalog: &'a [Video]) -> Result<&'a Video, Fai
     match &args.title {
         Some(query) => {
             resolve_unique(query, catalog, <Video as Searchable>::search_keys).map_err(|error| {
-                Failure::Unresolved {
-                    flag: "--title",
+                Failure::UnresolvedTitle {
                     query: query.clone(),
                     error,
                 }
@@ -192,16 +244,16 @@ fn resolve_language(
     let mut languages: Vec<Language> = available.iter().map(|(language, _)| *language).collect();
     languages.dedup();
 
-    if let Some(query) = &args.language {
-        return resolve_unique(query, &languages, |language| {
-            language_search_keys(*language)
-        })
-        .copied()
-        .map_err(|error| Failure::Unresolved {
-            flag: "--language",
-            query: query.clone(),
-            error,
-        });
+    if let Some(arg) = args.language {
+        let requested = Language::from(arg);
+        return if languages.contains(&requested) {
+            Ok(requested)
+        } else {
+            Err(Failure::LanguageUnavailable {
+                requested,
+                available: join_display(&languages),
+            })
+        };
     }
     if let [only] = languages.as_slice() {
         return Ok(*only);
@@ -219,15 +271,22 @@ fn resolve_language(
 
 /// Resolves the subtitle format from `--format`, automatically when only
 /// one is available, or through an interactive selector.
-fn resolve_format(args: &Args, formats: &[SubtitleFormat]) -> Result<SubtitleFormat, Failure> {
-    if let Some(query) = &args.format {
-        return resolve_unique(query, formats, |format| format.search_keys())
-            .copied()
-            .map_err(|error| Failure::Unresolved {
-                flag: "--format",
-                query: query.clone(),
-                error,
-            });
+fn resolve_format(
+    args: &Args,
+    language: Language,
+    formats: &[SubtitleFormat],
+) -> Result<SubtitleFormat, Failure> {
+    if let Some(arg) = args.format {
+        let requested = SubtitleFormat::from(arg);
+        return if formats.contains(&requested) {
+            Ok(requested)
+        } else {
+            Err(Failure::FormatUnavailable {
+                language,
+                requested,
+                available: join_display(formats),
+            })
+        };
     }
     if let [only] = formats {
         return Ok(*only);
@@ -246,31 +305,14 @@ fn resolve_format(args: &Args, formats: &[SubtitleFormat]) -> Result<SubtitleFor
 /// Resolves the media player from `--player` or through an interactive
 /// selector.
 fn resolve_player(args: &Args) -> Result<Player, Failure> {
-    if let Some(query) = &args.player {
-        return resolve_unique(query, Player::VARIANTS, |player| player.search_keys())
-            .copied()
-            .map_err(|error| Failure::Unresolved {
-                flag: "--player",
-                query: query.clone(),
-                error,
-            });
+    if let Some(arg) = args.player {
+        return Ok(Player::from(arg));
     }
     require_terminal("a media player")?;
     let labels: Vec<String> = Player::VARIANTS.iter().map(ToString::to_string).collect();
     match select_one("Select media player", &labels).expect("interactive selection failed") {
         Some(index) => Ok(Player::VARIANTS[index]),
         None => Err(Failure::Cancelled),
-    }
-}
-
-/// Prints the resolved command, one token per line, so paths that contain
-/// spaces stay unambiguous.
-fn print_command(command: &Command) {
-    let mut stdout = io::stdout().lock();
-    writeln!(stdout, "{}", command.get_program().to_string_lossy())
-        .expect("failed to write to stdout");
-    for argument in command.get_args() {
-        writeln!(stdout, "{}", argument.to_string_lossy()).expect("failed to write to stdout");
     }
 }
 
@@ -295,4 +337,14 @@ fn require_terminal(what: &'static str) -> Result<(), Failure> {
     } else {
         Err(Failure::NotInteractive(what))
     }
+}
+
+/// Joins the displayed forms of `items` with commas, for an error message
+/// that lists the available choices.
+fn join_display<Item: std::fmt::Display>(items: &[Item]) -> String {
+    items
+        .iter()
+        .map(ToString::to_string)
+        .collect::<Vec<_>>()
+        .join(", ")
 }
