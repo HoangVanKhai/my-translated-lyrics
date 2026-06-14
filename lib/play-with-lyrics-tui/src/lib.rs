@@ -148,6 +148,11 @@ where
             KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                 return Ok(None);
             }
+            // Ctrl-Q quits. Both cases are matched so that Shift or Caps
+            // Lock, which we cannot reliably tell apart, never change this.
+            KeyCode::Char('q' | 'Q') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                return Ok(None);
+            }
             KeyCode::Up => selector.move_up(),
             KeyCode::Down => selector.move_down(),
             KeyCode::Backspace => selector.pop_char(),
@@ -258,6 +263,10 @@ where
             KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                 return Ok(None);
             }
+            // This list has no text entry, so a bare Q quits as well as
+            // Ctrl-Q. Both cases match, so neither Shift nor Caps Lock
+            // changes the behavior.
+            KeyCode::Char('q' | 'Q') => return Ok(None),
             KeyCode::Up => cursor = cursor.saturating_sub(1),
             KeyCode::Down => {
                 if cursor + 1 < labels.len() {

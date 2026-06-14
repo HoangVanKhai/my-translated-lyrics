@@ -89,6 +89,11 @@ fn control(code: KeyCode) -> Event {
     Event::Key(KeyEvent::new(code, KeyModifiers::CONTROL))
 }
 
+/// A key press combined with the Shift modifier.
+fn shift(code: KeyCode) -> Event {
+    Event::Key(KeyEvent::new(code, KeyModifiers::SHIFT))
+}
+
 /// Pops the next scripted event from a test's own queue, reporting an error
 /// if the loop reads past the end of the script it was given.
 fn pop_scripted(queue: &Mutex<VecDeque<Event>>) -> io::Result<Event> {
@@ -288,5 +293,108 @@ fn select_video_cancels_on_escape() {
     let videos = vec![video("Alpha")];
     EVENTS.lock().unwrap().extend([press(KeyCode::Esc)]);
     let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
+    assert_eq!(chosen, None);
+}
+
+/// Ctrl-Q quits the table.
+#[test]
+fn select_video_quits_on_ctrl_q() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    let videos = vec![video("Alpha")];
+    EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
+    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
+    assert_eq!(chosen, None);
+}
+
+/// Ctrl-Q quits the table even when the character arrives upper-cased, as it
+/// would under Shift or Caps Lock.
+#[test]
+fn select_video_quits_on_ctrl_q_upper_case() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    let videos = vec![video("Alpha")];
+    EVENTS.lock().unwrap().extend([control(KeyCode::Char('Q'))]);
+    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
+    assert_eq!(chosen, None);
+}
+
+/// In the table a bare "q" is a search character, not a quit, because the
+/// user is typing a filter there.
+#[test]
+fn select_video_treats_a_bare_q_as_a_filter_character() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    let videos = vec![video("Quartz"), video("Beta")];
+    // "q" filters down to the only title that contains it, then Enter picks
+    // it; the loop does not treat the "q" as a quit.
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([press(KeyCode::Char('q')), press(KeyCode::Enter)]);
+    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
+    assert_eq!(chosen, Some(0));
+}
+
+/// In the list selector a bare "q" quits, since there is no text entry.
+#[test]
+fn select_one_quits_on_q() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    EVENTS.lock().unwrap().extend([press(KeyCode::Char('q'))]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    assert_eq!(chosen, None);
+}
+
+/// Shift-Q quits the list selector too: the Shift state does not change it.
+#[test]
+fn select_one_quits_on_shift_q() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    EVENTS.lock().unwrap().extend([shift(KeyCode::Char('Q'))]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    assert_eq!(chosen, None);
+}
+
+/// Ctrl-Q quits the list selector as well.
+#[test]
+fn select_one_quits_on_ctrl_q() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
     assert_eq!(chosen, None);
 }
