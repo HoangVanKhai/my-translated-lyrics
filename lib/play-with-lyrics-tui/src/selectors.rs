@@ -6,9 +6,9 @@
 use crate::Navigation;
 use crate::host::{Clock, Host, ReadEvent, WindowSize};
 use crate::render::{
-    Button, DATA_ROW_OFFSET, LIST_ROW_OFFSET, button_at, button_bar, columns_line,
-    columns_line_highlighted, fit, is_double_click, print_highlighted_line, scroll_offset,
-    visible_rows,
+    Button, DATA_ROW_OFFSET, LIST_ROW_OFFSET, PROGRAM_TITLE, button_at, columns_line,
+    columns_line_highlighted, fit, is_double_click, print_highlighted_line, render_top_bar,
+    scroll_offset, visible_rows,
 };
 use crate::terminal::TerminalGuard;
 use crossterm::QueueableCommand;
@@ -95,11 +95,11 @@ where
                 // A single click highlights the video on the clicked row; a
                 // double click on the same row also selects it.
                 MouseEventKind::Down(MouseButton::Left) => {
-                    let (_, rows) = Sys::window_size().unwrap_or((80, 24));
-                    // A click on the footer button row acts on the button under
-                    // the pointer, where "Forward" matches pressing Enter.
-                    if mouse.row == rows.saturating_sub(1) {
-                        match button_at(mouse.column as usize) {
+                    let (columns, rows) = Sys::window_size().unwrap_or((80, 24));
+                    // A click on the top bar acts on the button under the
+                    // pointer, where "Forward" matches pressing Enter.
+                    if mouse.row == 0 {
+                        match button_at(columns as usize, mouse.column as usize) {
                             Some(Button::Exit) => break Navigation::Quit,
                             Some(Button::Back) => break Navigation::Back,
                             Some(Button::Forward) => match selector.selected_index() {
@@ -150,9 +150,11 @@ where
 
     output.queue(Clear(ClearType::All))?;
 
+    render_top_bar(output, columns, PROGRAM_TITLE)?;
+
     let prompt = format!("Search: {}", selector.query());
     output
-        .queue(MoveTo(0, 0))?
+        .queue(MoveTo(0, 1))?
         .queue(Print(fit(&prompt, columns)))?;
 
     let header = columns_line(
@@ -162,7 +164,7 @@ where
         columns,
     );
     output
-        .queue(MoveTo(0, 1))?
+        .queue(MoveTo(0, 2))?
         .queue(SetAttribute(Attribute::Bold))?
         .queue(Print(header))?
         .queue(SetAttribute(Attribute::Reset))?;
@@ -195,13 +197,10 @@ where
 
     let help = "↑/↓ move · type to search · ⌫ delete · ^⌫ back · ⏎ select · Esc/^Q quit";
     output
-        .queue(MoveTo(0, rows.saturating_sub(2) as u16))?
+        .queue(MoveTo(0, rows.saturating_sub(1) as u16))?
         .queue(SetAttribute(Attribute::Dim))?
         .queue(Print(fit(help, columns)))?
         .queue(SetAttribute(Attribute::Reset))?;
-    output
-        .queue(MoveTo(0, rows.saturating_sub(1) as u16))?
-        .queue(Print(fit(&button_bar(), columns)))?;
 
     output.flush()
 }
@@ -274,11 +273,11 @@ where
                 // A single click highlights the label on the clicked row; a
                 // double click on the same row also selects it.
                 MouseEventKind::Down(MouseButton::Left) => {
-                    let (_, rows) = Sys::window_size().unwrap_or((80, 24));
-                    // A click on the footer button row acts on the button under
-                    // the pointer, where "Forward" matches pressing Enter.
-                    if mouse.row == rows.saturating_sub(1) {
-                        match button_at(mouse.column as usize) {
+                    let (columns, _) = Sys::window_size().unwrap_or((80, 24));
+                    // A click on the top bar acts on the button under the
+                    // pointer, where "Forward" matches pressing Enter.
+                    if mouse.row == 0 {
+                        match button_at(columns as usize, mouse.column as usize) {
                             Some(Button::Exit) => return Ok(Navigation::Quit),
                             Some(Button::Back) => return Ok(Navigation::Back),
                             Some(Button::Forward) => {
@@ -325,8 +324,11 @@ where
     let columns = columns as usize;
 
     output.queue(Clear(ClearType::All))?;
+
+    render_top_bar(output, columns, PROGRAM_TITLE)?;
+
     output
-        .queue(MoveTo(0, 0))?
+        .queue(MoveTo(0, 1))?
         .queue(SetAttribute(Attribute::Bold))?
         .queue(Print(fit(prompt, columns)))?
         .queue(SetAttribute(Attribute::Reset))?;
@@ -347,13 +349,10 @@ where
 
     let help = "↑/↓ move · ⌫/Esc back · ⏎/␣ select · ^Q quit";
     output
-        .queue(MoveTo(0, rows.saturating_sub(2)))?
+        .queue(MoveTo(0, rows.saturating_sub(1)))?
         .queue(SetAttribute(Attribute::Dim))?
         .queue(Print(fit(help, columns)))?
         .queue(SetAttribute(Attribute::Reset))?;
-    output
-        .queue(MoveTo(0, rows.saturating_sub(1)))?
-        .queue(Print(fit(&button_bar(), columns)))?;
 
     output.flush()
 }

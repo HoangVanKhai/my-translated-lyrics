@@ -4,18 +4,24 @@
 //! click handling.
 
 use crossterm::QueueableCommand;
+use crossterm::cursor::MoveTo;
 use crossterm::style::{Attribute, Print, SetAttribute};
 use std::io::{self, Write};
+use std::ops::Range;
 use std::time::{Duration, SystemTime};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
-/// The screen row of the first title in the table, below the search prompt
-/// and the column header. Shared by the renderer and the click handling so
-/// they agree on where the rows are.
-pub(crate) const DATA_ROW_OFFSET: usize = 2;
+/// The title of the program, shown in the center of the top bar.
+pub(crate) const PROGRAM_TITLE: &str = "Play with Lyrics";
 
-/// The screen row of the first item in a list, below its single prompt line.
-pub(crate) const LIST_ROW_OFFSET: usize = 1;
+/// The screen row of the first title in the table, below the top bar, the
+/// search prompt, and the column header. Shared by the renderer and the click
+/// handling so they agree on where the rows are.
+pub(crate) const DATA_ROW_OFFSET: usize = 3;
+
+/// The screen row of the first item in a list, below the top bar and the
+/// single prompt line.
+pub(crate) const LIST_ROW_OFFSET: usize = 2;
 
 /// How close together two clicks on the same row must be to count as a double
 /// click, which confirms the choice.
@@ -118,8 +124,8 @@ pub(crate) fn scroll_offset(cursor: usize, visible: usize) -> usize {
 }
 
 /// The number of title rows that fit in a terminal `rows` rows tall, after
-/// reserving the prompt line, the header line, the help line, and the button
-/// line. At least one row is always reported, so the table never collapses to
+/// reserving the top bar, the prompt line, the header line, and the help line.
+/// At least one row is always reported, so the table never collapses to
 /// nothing.
 pub(crate) fn visible_rows(rows: usize) -> usize {
     rows.saturating_sub(4).max(1)
@@ -161,7 +167,7 @@ pub(crate) fn print_highlighted_line(
     Ok(())
 }
 
-/// A clickable button shown in the footer, paired with the action a click on
+/// A clickable button shown in the top bar, paired with the action a click on
 /// it performs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Button {
@@ -173,19 +179,16 @@ pub(crate) enum Button {
     Forward,
 }
 
-/// The footer buttons in the order they are shown, from left to right.
-pub(crate) const FOOTER_BUTTONS: [Button; 3] = [Button::Exit, Button::Back, Button::Forward];
-
-/// The gap, in columns, between adjacent footer buttons.
+/// The gap, in columns, between the Back and Forward buttons on the left.
 const BUTTON_GAP: usize = 2;
 
 impl Button {
-    /// The text shown inside the button's brackets.
+    /// The text shown inside the button's brackets, led by a symbol.
     pub(crate) fn label(self) -> &'static str {
         match self {
-            Button::Exit => "Exit",
-            Button::Back => "Go back",
-            Button::Forward => "Forward",
+            Button::Exit => "✕ Exit",
+            Button::Back => "← Go back",
+            Button::Forward => "→ Forward",
         }
     }
 
@@ -194,34 +197,63 @@ impl Button {
     fn width(self) -> usize {
         self.label().width() + "[  ]".width()
     }
-}
 
-/// The footer button bar, drawn as bracketed buttons separated by a gap. The
-/// click handling locates a click within it with [`button_at`], so the two
-/// stay in step through the shared [`FOOTER_BUTTONS`] order and widths.
-pub(crate) fn button_bar() -> String {
-    FOOTER_BUTTONS
-        .iter()
-        .map(|button| format!("[ {} ]", button.label()))
-        .collect::<Vec<_>>()
-        .join(&" ".repeat(BUTTON_GAP))
-}
-
-/// The footer button drawn at screen `column`, if any. A click between the
-/// buttons, in a gap, lands on none of them and returns `None`.
-pub(crate) fn button_at(column: usize) -> Option<Button> {
-    let mut start = 0;
-    for (index, &button) in FOOTER_BUTTONS.iter().enumerate() {
-        if index > 0 {
-            start += BUTTON_GAP;
-        }
-        let end = start + button.width();
-        if (start..end).contains(&column) {
-            return Some(button);
-        }
-        start = end;
+    /// The button drawn as `[ label ]`.
+    fn draw(self) -> String {
+        format!("[ {} ]", self.label())
     }
-    None
+}
+
+/// The screen columns each top-bar button spans, as half-open `[start, end)`
+/// ranges, for a bar `width` columns wide. Back and Forward sit on the left;
+/// Exit is right-aligned. The renderer and the click handling share this, so
+/// they agree on where each button sits.
+pub(crate) fn button_columns(width: usize) -> [(Button, Range<usize>); 3] {
+    let back = 0..Button::Back.width();
+    let forward_start = back.end + BUTTON_GAP;
+    let forward = forward_start..forward_start + Button::Forward.width();
+    let exit_start = width.saturating_sub(Button::Exit.width());
+    let exit = exit_start..width;
+    [
+        (Button::Back, back),
+        (Button::Forward, forward),
+        (Button::Exit, exit),
+    ]
+}
+
+/// The top-bar button drawn at screen `column`, if any, for a bar `width`
+/// columns wide. A click between or past the buttons lands on none of them.
+pub(crate) fn button_at(width: usize, column: usize) -> Option<Button> {
+    button_columns(width)
+        .into_iter()
+        .find_map(|(button, range)| range.contains(&column).then_some(button))
+}
+
+/// Draws the top bar at the first row: the Back and Forward buttons on the
+/// left, the Exit button on the right, and `title` centered between them.
+pub(crate) fn render_top_bar(output: &mut impl Write, width: usize, title: &str) -> io::Result<()> {
+    let columns = button_columns(width);
+    for (button, range) in &columns {
+        output
+            .queue(MoveTo(range.start as u16, 0))?
+            .queue(Print(button.draw()))?;
+    }
+    // Center the title in the space between the Forward and Exit buttons.
+    let gap_start = columns[1].1.end;
+    let gap_end = columns[2].1.start;
+    if gap_end > gap_start {
+        let region = gap_end - gap_start;
+        let title_width = title.width();
+        let centered = if title_width >= region {
+            fit(title, region)
+        } else {
+            format!("{}{title}", " ".repeat((region - title_width) / 2))
+        };
+        output
+            .queue(MoveTo(gap_start as u16, 0))?
+            .queue(Print(centered))?;
+    }
+    Ok(())
 }
 
 #[cfg(test)]

@@ -1,6 +1,6 @@
 use super::{
-    Button, button_at, button_bar, columns_line, columns_line_highlighted, fit, fit_chars,
-    is_double_click, scroll_offset, visible_rows,
+    Button, button_at, columns_line, columns_line_highlighted, fit, fit_chars, is_double_click,
+    render_top_bar, scroll_offset, visible_rows,
 };
 use pretty_assertions::assert_eq;
 use std::time::{Duration, SystemTime};
@@ -136,28 +136,36 @@ fn visible_rows_reserves_the_chrome_lines() {
     assert_eq!(visible_rows(0), 1);
 }
 
-/// The button bar draws each button bracketed, separated by a two-space gap.
+/// The top bar draws the three buttons and the centered title.
 #[test]
-fn button_bar_brackets_each_button() {
-    assert_eq!(button_bar(), "[ Exit ]  [ Go back ]  [ Forward ]");
+fn top_bar_draws_the_buttons_and_title() {
+    let mut buffer = Vec::new();
+    render_top_bar(&mut buffer, 80, "Play with Lyrics").unwrap();
+    let rendered = String::from_utf8_lossy(&buffer);
+    assert!(rendered.contains("[ ← Go back ]"), "{rendered}");
+    assert!(rendered.contains("[ → Forward ]"), "{rendered}");
+    assert!(rendered.contains("[ ✕ Exit ]"), "{rendered}");
+    assert!(rendered.contains("Play with Lyrics"), "{rendered}");
 }
 
-/// A column lands on the button drawn there, and a column in a gap or past the
-/// last button lands on none.
+/// In an 80-column bar, a column lands on the button drawn there. Back and
+/// Forward sit on the left; Exit is right-aligned. A column in a gap or past
+/// the last button lands on none.
 #[test]
 fn button_at_maps_a_column_to_its_button() {
-    // "[ Exit ]" spans columns 0..8.
-    assert_eq!(button_at(0), Some(Button::Exit));
-    assert_eq!(button_at(7), Some(Button::Exit));
-    // The two-column gap before "[ Go back ]" lands on no button.
-    assert_eq!(button_at(8), None);
-    assert_eq!(button_at(9), None);
-    // "[ Go back ]" spans columns 10..21.
-    assert_eq!(button_at(10), Some(Button::Back));
-    assert_eq!(button_at(20), Some(Button::Back));
-    // "[ Forward ]" spans columns 23..34.
-    assert_eq!(button_at(23), Some(Button::Forward));
-    assert_eq!(button_at(33), Some(Button::Forward));
-    // Past the last button lands on none.
-    assert_eq!(button_at(34), None);
+    // "[ ← Go back ]" spans columns 0..13.
+    assert_eq!(button_at(80, 0), Some(Button::Back));
+    assert_eq!(button_at(80, 12), Some(Button::Back));
+    // The two-column gap before Forward lands on no button.
+    assert_eq!(button_at(80, 13), None);
+    assert_eq!(button_at(80, 14), None);
+    // "[ → Forward ]" spans columns 15..28.
+    assert_eq!(button_at(80, 15), Some(Button::Forward));
+    assert_eq!(button_at(80, 27), Some(Button::Forward));
+    // The space between Forward and the right-aligned Exit lands on no button.
+    assert_eq!(button_at(80, 28), None);
+    assert_eq!(button_at(80, 69), None);
+    // "[ ✕ Exit ]" is right-aligned, spanning columns 70..80.
+    assert_eq!(button_at(80, 70), Some(Button::Exit));
+    assert_eq!(button_at(80, 79), Some(Button::Exit));
 }

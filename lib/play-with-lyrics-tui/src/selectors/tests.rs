@@ -1081,12 +1081,12 @@ fn select_one_single_click_highlights_the_clicked_row() {
         }
     }
     let labels = label_list(&["alpha", "beta", "gamma"]);
-    // Labels render at rows 1, 2, 3; clicking row 2 highlights "beta", then
+    // Labels render at rows 2, 3, 4; clicking row 3 highlights "beta", then
     // Enter confirms it.
     EVENTS
         .lock()
         .unwrap()
-        .extend([click(2), press(KeyCode::Enter)]);
+        .extend([click(3), press(KeyCode::Enter)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
 }
@@ -1115,7 +1115,7 @@ fn select_one_single_click_does_not_select() {
     EVENTS
         .lock()
         .unwrap()
-        .extend([click(2), press(KeyCode::Esc)]);
+        .extend([click(3), press(KeyCode::Esc)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     // The single click only moved the highlight; the following Escape ends the
     // loop by going back.
@@ -1143,7 +1143,7 @@ fn select_one_double_click_selects_the_clicked_row() {
         }
     }
     let labels = label_list(&["alpha", "beta", "gamma"]);
-    EVENTS.lock().unwrap().extend([click(2), click(2)]);
+    EVENTS.lock().unwrap().extend([click(3), click(3)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
 }
@@ -1203,12 +1203,12 @@ fn select_video_single_click_highlights_the_clicked_row() {
         english_video("Second"),
         english_video("Third"),
     ];
-    // Data rows render at 2, 3, 4; clicking row 3 highlights the second video,
+    // Data rows render at 3, 4, 5; clicking row 4 highlights the second video,
     // then Enter confirms it.
     EVENTS
         .lock()
         .unwrap()
-        .extend([click(3), press(KeyCode::Enter)]);
+        .extend([click(4), press(KeyCode::Enter)]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
@@ -1239,7 +1239,7 @@ fn select_video_single_click_does_not_select() {
     EVENTS
         .lock()
         .unwrap()
-        .extend([click(3), control(KeyCode::Char('q'))]);
+        .extend([click(4), control(KeyCode::Char('q'))]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
     assert_eq!(chosen, Navigation::Quit);
@@ -1270,13 +1270,14 @@ fn select_video_double_click_selects_the_clicked_row() {
         english_video("Second"),
         english_video("Third"),
     ];
-    EVENTS.lock().unwrap().extend([click(3), click(3)]);
+    EVENTS.lock().unwrap().extend([click(4), click(4)]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
 }
 
 /// A click above the first title, on the prompt or header, selects nothing.
+/// The top bar, where the buttons sit, is tested separately.
 #[test]
 fn select_video_click_above_the_rows_does_nothing() {
     static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
@@ -1297,10 +1298,11 @@ fn select_video_click_above_the_rows_does_nothing() {
         }
     }
     let videos = vec![english_video("First")];
+    // Row 2 is the header, above the first title row; the top bar is row 0.
     EVENTS
         .lock()
         .unwrap()
-        .extend([click(0), control(KeyCode::Char('q'))]);
+        .extend([click(2), control(KeyCode::Char('q'))]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
     assert_eq!(chosen, Navigation::Quit);
@@ -1336,7 +1338,7 @@ fn select_video_scroll_moves_the_cursor() {
     assert_eq!(chosen, Navigation::Selected(1));
 }
 
-/// Clicking the "Exit" footer button quits the list selector.
+/// Clicking the "Exit" top-bar button quits the list selector.
 #[test]
 fn select_one_exit_button_quits() {
     static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
@@ -1357,13 +1359,13 @@ fn select_one_exit_button_quits() {
         }
     }
     let labels = label_list(&["alpha", "beta"]);
-    // The button row is the last of the 24 rows; column 3 falls on "Exit".
-    EVENTS.lock().unwrap().extend([click_at(3, 23)]);
+    // The top bar is row 0; column 75 falls on the right-aligned "Exit".
+    EVENTS.lock().unwrap().extend([click_at(75, 0)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
-/// Clicking the "Go back" footer button returns from the list selector.
+/// Clicking the "Go back" top-bar button returns from the list selector.
 #[test]
 fn select_one_back_button_goes_back() {
     static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
@@ -1384,13 +1386,13 @@ fn select_one_back_button_goes_back() {
         }
     }
     let labels = label_list(&["alpha", "beta"]);
-    // Column 14 falls on "Go back", the middle button.
-    EVENTS.lock().unwrap().extend([click_at(14, 23)]);
+    // Column 5 falls on "Go back", at the left of the top bar.
+    EVENTS.lock().unwrap().extend([click_at(5, 0)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Back);
 }
 
-/// Clicking the "Forward" footer button selects the highlighted row, the same
+/// Clicking the "Forward" top-bar button selects the highlighted row, the same
 /// as pressing Enter.
 #[test]
 fn select_one_forward_button_selects_the_highlighted_row() {
@@ -1412,16 +1414,16 @@ fn select_one_forward_button_selects_the_highlighted_row() {
         }
     }
     let labels = label_list(&["alpha", "beta", "gamma"]);
-    // Move the highlight down, then click "Forward" at column 27.
+    // Move the highlight down, then click "Forward" at column 20.
     EVENTS
         .lock()
         .unwrap()
-        .extend([press(KeyCode::Down), click_at(27, 23)]);
+        .extend([press(KeyCode::Down), click_at(20, 0)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
 }
 
-/// Clicking the "Exit" footer button quits the table.
+/// Clicking the "Exit" top-bar button quits the table.
 #[test]
 fn select_video_exit_button_quits() {
     static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
@@ -1442,13 +1444,14 @@ fn select_video_exit_button_quits() {
         }
     }
     let videos = vec![english_video("First"), english_video("Second")];
-    EVENTS.lock().unwrap().extend([click_at(3, 23)]);
+    // Column 75 falls on the right-aligned "Exit" in the top bar.
+    EVENTS.lock().unwrap().extend([click_at(75, 0)]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
-/// Clicking the "Go back" footer button returns from the table.
+/// Clicking the "Go back" top-bar button returns from the table.
 #[test]
 fn select_video_back_button_goes_back() {
     static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
@@ -1469,13 +1472,14 @@ fn select_video_back_button_goes_back() {
         }
     }
     let videos = vec![english_video("First"), english_video("Second")];
-    EVENTS.lock().unwrap().extend([click_at(14, 23)]);
+    // Column 5 falls on "Go back", at the left of the top bar.
+    EVENTS.lock().unwrap().extend([click_at(5, 0)]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
     assert_eq!(chosen, Navigation::Back);
 }
 
-/// Clicking the "Forward" footer button selects the highlighted video, the
+/// Clicking the "Forward" top-bar button selects the highlighted video, the
 /// same as pressing Enter.
 #[test]
 fn select_video_forward_button_selects_the_highlighted_video() {
@@ -1497,11 +1501,12 @@ fn select_video_forward_button_selects_the_highlighted_video() {
         }
     }
     let videos = vec![english_video("First"), english_video("Second")];
-    // Move the highlight down to the second video, then click "Forward".
+    // Move the highlight down to the second video, then click "Forward" at
+    // column 20.
     EVENTS
         .lock()
         .unwrap()
-        .extend([press(KeyCode::Down), click_at(27, 23)]);
+        .extend([press(KeyCode::Down), click_at(20, 0)]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
