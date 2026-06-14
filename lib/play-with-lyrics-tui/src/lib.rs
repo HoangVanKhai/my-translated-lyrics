@@ -328,7 +328,12 @@ where
         print_highlighted_line(output, &line, filtered_position == cursor)?;
     }
 
-    let help = "↑/↓ move · type to search · ⌫ delete or back · ⏎ select · Esc/^Q quit";
+    // Backspace deletes while a query is typed, and goes back once it is empty.
+    let help = if selector.query().is_empty() {
+        "↑/↓ move · type to search · ⌫ back · ⏎ select · Esc/^Q quit"
+    } else {
+        "↑/↓ move · type to search · ⌫ delete · ⏎ select · Esc/^Q quit"
+    };
     output
         .queue(MoveTo(0, rows.saturating_sub(1) as u16))?
         .queue(SetAttribute(Attribute::Dim))?

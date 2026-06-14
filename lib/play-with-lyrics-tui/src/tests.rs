@@ -772,3 +772,54 @@ fn select_video_does_not_underline_without_a_query() {
     let rendered = String::from_utf8_lossy(&buffer);
     assert!(!rendered.contains("\u{1b}[4m"), "{rendered:?}");
 }
+
+/// With an empty query, the footer offers Backspace as a way back, not a
+/// delete.
+#[test]
+fn select_video_footer_offers_back_when_the_query_is_empty() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![english_video("Alpha")];
+    EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
+    let mut buffer = Vec::new();
+    select_video_loop::<Scripted>(&mut buffer, &videos).unwrap();
+    let rendered = String::from_utf8_lossy(&buffer);
+    assert!(rendered.contains("⌫ back"), "{rendered:?}");
+    assert!(!rendered.contains("⌫ delete"), "{rendered:?}");
+}
+
+/// Once a query is typed, the footer offers Backspace as a delete.
+#[test]
+fn select_video_footer_offers_delete_once_text_is_typed() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![english_video("Alpha")];
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([press(KeyCode::Char('a')), control(KeyCode::Char('q'))]);
+    let mut buffer = Vec::new();
+    select_video_loop::<Scripted>(&mut buffer, &videos).unwrap();
+    let rendered = String::from_utf8_lossy(&buffer);
+    assert!(rendered.contains("⌫ delete"), "{rendered:?}");
+}
