@@ -171,6 +171,35 @@ let output = cmd.output().expect("spawn my-tool");
 
 Available `.with_*` methods mirror every standard builder method: `with_arg`, `with_args`, `with_env`, `with_envs`, `with_env_remove`, `with_env_clear`, `with_current_dir`, `with_stdin`, `with_stdout`, `with_stderr`.
 
+### Parser Combinators
+
+Several of the text formats in this repository are parsed in a small parser-combinator style rather than with a single regex or a `serde` derive. Examples are `Timestamp::take` in `lib/lyrics-core/src/timestamp.rs`, `Bracketed::take` in `lib/generate-subtitles/src/credits_parse.rs`, and the credit-line helpers in that same file (`take_role`, `take_until_role`, `take_leading_whitespace`, `take_cell_separator`). Each of these functions consumes a leading prefix of its input and returns both the parsed value and the unconsumed tail. A larger grammar is then assembled by threading that tail from one parser into the next, in a single left-to-right pass. The style follows the parse-don't-validate principle: a successful parse turns shape into a type once, and downstream code relies on that type rather than re-checking the same bytes.
+
+#### When to use them
+
+Reach for a `take`-style parser in these situations.
+
+- The grammar is layered, so that each layer consumes a prefix and hands the remaining tail to the next layer. The credit-line parser is the clearest case, because it alternates role cells, separators, and name regions across one pass over the line.
+- A parser must consume a leading prefix and leave the rest untouched for a different parser to interpret. `Timestamp::take` reads the nine-character `MM:SS.mmm` prefix and leaves the caller to decide what the tail means.
+- You want to establish a shape once and never re-check it. A `Bracketed` value is guaranteed by construction to open and close with a matching bracket, so the renderer never re-validates it.
+
+#### When not to use them
+
+Prefer a simpler tool in these situations.
+
+- A single regex, or a single scan over the whole input, already expresses the rule and there is no leading-prefix or tail-threading structure to exploit.
+- The format is already covered by `serde`, `toml`, or a similar deserializer. Let the derive own the parse rather than hand-rolling one.
+
+#### Conventions
+
+- **Name the function `take`**, or `take_<thing>` for a free helper. The name signals that the function consumes a prefix and returns the tail, in contrast to a `TryFrom` implementation that must consume the entire input.
+- **Return the unconsumed tail alongside the value.** Three return shapes are in use, chosen by how the parser can fail.
+  - `Result<(T, &str), E>` when the parser must distinguish a shape mismatch from a value that has the right shape but fails a range check. `Timestamp::take` uses this shape, where `ShapeMismatch` means "no timestamp here, route the line elsewhere" while the out-of-range variants mean "this looked like a timestamp but its fields are invalid".
+  - `Option<(T, &str)>` when absence is the only failure mode, so a missing match simply tells the caller to try something else. `Bracketed::take` and `NameSegmentPair::take` use this shape.
+  - `(&str, &str)` when the parser always succeeds and merely splits the input into a consumed run and a tail, either of which may be empty. `take_leading_whitespace` and `take_cell_separator` use this shape.
+- **Split shape errors from range errors, following parse-don't-validate.** A shape error reports that the prefix is not the construct at all, and callers usually recover by trying a different branch. A range error reports that the prefix has the right shape but carries an out-of-range value, which is a hard failure that should surface to the user. Keep the two as distinct error variants so that callers can react to each differently.
+- **Pair `take` with a `TryFrom` when whole-input parsing is also needed.** `Bracketed` exposes `Bracketed::take` for prefix consumption and `TryFrom<&str>` for the whole-string case, where the latter calls `take` and then requires the tail to be empty. Defining the whole-input parser in terms of the prefix parser keeps the two from drifting apart.
+
 ### Unicode Escape Codes
 
 Write Unicode characters in string literals as the literal glyph whenever the character is visible in a monospaced editor. The `\u{...}` escape sequence is reserved for characters whose visual form is absent, ambiguous, or easily confused with something else. Every other character belongs in the source as itself, including ASCII, CJK characters, Latin letters with diacritics, accented Cyrillic, Arabic-Indic digits, full-width digits, and full-width punctuation.

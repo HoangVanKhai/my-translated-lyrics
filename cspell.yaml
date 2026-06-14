@@ -78,6 +78,7 @@ overrides:
   - filename: '**/*.md'
     words:
       - clippy
+      - combinators
       - newtype
       - rustup
       - serde
