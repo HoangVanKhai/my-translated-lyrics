@@ -1451,9 +1451,10 @@ fn select_video_exit_button_quits() {
     assert_eq!(chosen, Navigation::Quit);
 }
 
-/// Clicking the "Go back" top-bar button returns from the table.
+/// The table is the first page, so its "Go back" button is disabled: clicking
+/// it does nothing, and a following Ctrl-Q is what ends the loop.
 #[test]
-fn select_video_back_button_goes_back() {
+fn select_video_back_button_is_disabled() {
     static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
     struct Scripted;
     impl ReadEvent for Scripted {
@@ -1472,11 +1473,14 @@ fn select_video_back_button_goes_back() {
         }
     }
     let videos = vec![english_video("First"), english_video("Second")];
-    // Column 5 falls on "Go back", at the left of the top bar.
-    EVENTS.lock().unwrap().extend([click_at(5, 0)]);
+    // Column 5 falls on the dimmed "Go back" button, which is a no-op here.
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([click_at(5, 0), control(KeyCode::Char('q'))]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
-    assert_eq!(chosen, Navigation::Back);
+    assert_eq!(chosen, Navigation::Quit);
 }
 
 /// Clicking the "Forward" top-bar button selects the highlighted video, the

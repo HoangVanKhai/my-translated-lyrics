@@ -101,7 +101,9 @@ where
                     if mouse.row == 0 {
                         match button_at(columns as usize, mouse.column as usize) {
                             Some(Button::Exit) => break Navigation::Quit,
-                            Some(Button::Back) => break Navigation::Back,
+                            // Go back is disabled on the first page, so a click
+                            // on its dimmed button does nothing.
+                            Some(Button::Back) => continue,
                             Some(Button::Forward) => match selector.selected_index() {
                                 Some(index) => break Navigation::Selected(index),
                                 None => continue,
@@ -150,7 +152,8 @@ where
 
     output.queue(Clear(ClearType::All))?;
 
-    render_top_bar(output, columns, PROGRAM_TITLE)?;
+    // The table is the first page, so going back is not available here.
+    render_top_bar(output, columns, PROGRAM_TITLE, false)?;
 
     let prompt = format!("Search: {}", selector.query());
     output
@@ -325,7 +328,8 @@ where
 
     output.queue(Clear(ClearType::All))?;
 
-    render_top_bar(output, columns, PROGRAM_TITLE)?;
+    // A list page always follows an earlier page, so going back is available.
+    render_top_bar(output, columns, PROGRAM_TITLE, true)?;
 
     output
         .queue(MoveTo(0, 1))?

@@ -140,12 +140,24 @@ fn visible_rows_reserves_the_chrome_lines() {
 #[test]
 fn top_bar_draws_the_buttons_and_title() {
     let mut buffer = Vec::new();
-    render_top_bar(&mut buffer, 80, "Play with Lyrics").unwrap();
+    render_top_bar(&mut buffer, 80, "Play with Lyrics", true).unwrap();
     let rendered = String::from_utf8_lossy(&buffer);
     assert!(rendered.contains("[ ← Go back ]"), "{rendered}");
     assert!(rendered.contains("[ → Forward ]"), "{rendered}");
     assert!(rendered.contains("[ ✕ Exit ]"), "{rendered}");
     assert!(rendered.contains("Play with Lyrics"), "{rendered}");
+    // With going back available, the button is drawn plainly, not dimmed.
+    assert!(!rendered.contains("\u{1b}[2m"), "{rendered:?}");
+}
+
+/// When going back is disabled, the Go back button is drawn dimmed.
+#[test]
+fn top_bar_dims_the_disabled_go_back_button() {
+    let mut buffer = Vec::new();
+    render_top_bar(&mut buffer, 80, "Play with Lyrics", false).unwrap();
+    let rendered = String::from_utf8_lossy(&buffer);
+    // The dim attribute (SGR 2) wraps the Go back button.
+    assert!(rendered.contains("\u{1b}[2m[ ← Go back ]"), "{rendered:?}");
 }
 
 /// In an 80-column bar, a column lands on the button drawn there. Back and

@@ -230,13 +230,26 @@ pub(crate) fn button_at(width: usize, column: usize) -> Option<Button> {
 }
 
 /// Draws the top bar at the first row: the Back and Forward buttons on the
-/// left, the Exit button on the right, and `title` centered between them.
-pub(crate) fn render_top_bar(output: &mut impl Write, width: usize, title: &str) -> io::Result<()> {
+/// left, the Exit button on the right, and `title` centered between them. When
+/// `back_enabled` is false the Back button is disabled, drawn dimmed to show
+/// that there is no previous page to return to.
+pub(crate) fn render_top_bar(
+    output: &mut impl Write,
+    width: usize,
+    title: &str,
+    back_enabled: bool,
+) -> io::Result<()> {
     let columns = button_columns(width);
     for (button, range) in &columns {
-        output
-            .queue(MoveTo(range.start as u16, 0))?
-            .queue(Print(button.draw()))?;
+        output.queue(MoveTo(range.start as u16, 0))?;
+        if matches!(button, Button::Back) && !back_enabled {
+            output
+                .queue(SetAttribute(Attribute::Dim))?
+                .queue(Print(button.draw()))?
+                .queue(SetAttribute(Attribute::Reset))?;
+        } else {
+            output.queue(Print(button.draw()))?;
+        }
     }
     // Center the title in the space between the Forward and Exit buttons.
     let gap_start = columns[1].1.end;
