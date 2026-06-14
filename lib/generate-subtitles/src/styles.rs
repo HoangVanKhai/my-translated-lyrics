@@ -156,7 +156,7 @@ impl TryFrom<String> for Color {
 fn is_forbidden_color_char(ch: char) -> bool {
     matches!(
         ch,
-        '<' | '>' | '"' | '\\' | '{' | '}' | ';' | '\u{2028}' | '\u{2029}'
+        '<' | '>' | '"' | '\\' | '{' | '}' | ';' | '\u{2028}' | '\u{2029}',
     ) || ch.is_control()
 }
 
