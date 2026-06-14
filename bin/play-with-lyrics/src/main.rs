@@ -15,7 +15,7 @@ mod failure;
 mod resolve;
 
 use crate::cli::Args;
-use crate::failure::{Failure, NoSubtitles, Termination};
+use crate::failure::{Failure, NoSubtitles, NoVideos, Termination};
 use crate::resolve::{resolve_format, resolve_language, resolve_player, resolve_video};
 use clap::Parser;
 use play_with_lyrics::catalog::load;
@@ -39,7 +39,10 @@ fn run() -> Result<(), Termination> {
 
     let catalog = load(&args.source);
     if catalog.is_empty() {
-        return Err(Failure::NoVideos(args.source.clone()).into());
+        return Err(Failure::NoVideos(NoVideos {
+            source: args.source.clone(),
+        })
+        .into());
     }
 
     let video = resolve_video(&args, &catalog)?;

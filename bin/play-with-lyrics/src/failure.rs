@@ -1,9 +1,10 @@
 //! The ways the command can stop without success.
 //!
-//! [`Failure`] holds genuine errors, whose messages all begin with
-//! `error: `. [`Termination`] is the wider set of non-success stops: a
-//! failure, a user cancellation, or the player's own non-zero exit. `run`
-//! returns a `Termination`.
+//! [`Failure`] holds genuine errors, each carried by its own struct.
+//! [`Termination`] is the wider set of non-success stops: a failure, a user
+//! cancellation, or the player's own non-zero exit. `run` returns a
+//! `Termination`, and the `error: ` prefix is added once, on
+//! [`Termination::Failed`].
 
 use derive_more::Display;
 use fuzzy_select::fuzzy::ResolveError;
@@ -13,37 +14,29 @@ use play_with_lyrics::player::SubtitleFormat;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-/// A failure of the command. Every variant's message begins with `error: `
-/// and maps to [`ExitCode::FAILURE`].
+/// A genuine error. Each variant wraps a struct whose `Display` carries the
+/// message; the `error: ` prefix is added by [`Termination::Failed`].
 #[derive(Debug, Display)]
 pub(crate) enum Failure {
-    #[display("error: No videos found in source directory {_0:?}.")]
-    NoVideos(PathBuf),
-
-    #[display("{_0}")]
+    NoVideos(NoVideos),
     NoSubtitles(NoSubtitles),
-
-    #[display("{_0}")]
     UnresolvedTitle(UnresolvedTitle),
-
-    #[display("{_0}")]
     LanguageUnavailable(LanguageUnavailable),
-
-    #[display("{_0}")]
     FormatUnavailable(FormatUnavailable),
-
-    #[display(
-        "error: {_0} must be selected interactively, but stdin is not a terminal. Provide the corresponding flag instead."
-    )]
-    NotInteractive(&'static str),
-
-    #[display("error: {_0}")]
+    NotInteractive(NotInteractive),
     VideoLookup(VideoLookupError),
+}
+
+/// No videos were found in the source directory.
+#[derive(Debug, Display)]
+#[display("No videos found in source directory {source:?}.")]
+pub(crate) struct NoVideos {
+    pub(crate) source: PathBuf,
 }
 
 /// No subtitle files exist for the chosen video in the media library.
 #[derive(Debug, Display)]
-#[display("error: No subtitles for {video_title:?} were found in {collection_dir:?}.")]
+#[display("No subtitles for {video_title:?} were found in {collection_dir:?}.")]
 pub(crate) struct NoSubtitles {
     pub(crate) video_title: String,
     pub(crate) collection_dir: PathBuf,
@@ -51,7 +44,7 @@ pub(crate) struct NoSubtitles {
 
 /// The `--title` value did not resolve to exactly one video.
 #[derive(Debug, Display)]
-#[display("error: --title {query:?}: {error}.")]
+#[display("--title {query:?}: {error}.")]
 pub(crate) struct UnresolvedTitle {
     pub(crate) query: String,
     pub(crate) error: ResolveError,
@@ -59,7 +52,7 @@ pub(crate) struct UnresolvedTitle {
 
 /// The requested subtitle language is not available for the chosen video.
 #[derive(Debug, Display)]
-#[display("error: no {requested} subtitle is available for this video (available: {available}).")]
+#[display("no {requested} subtitle is available for this video (available: {available}).")]
 pub(crate) struct LanguageUnavailable {
     pub(crate) requested: Language,
     pub(crate) available: String,
@@ -67,11 +60,21 @@ pub(crate) struct LanguageUnavailable {
 
 /// The requested subtitle format is not available for the chosen language.
 #[derive(Debug, Display)]
-#[display("error: no {requested} subtitle is available in {language} (available: {available}).")]
+#[display("no {requested} subtitle is available in {language} (available: {available}).")]
 pub(crate) struct FormatUnavailable {
     pub(crate) language: Language,
     pub(crate) requested: SubtitleFormat,
     pub(crate) available: String,
+}
+
+/// A choice had to be made interactively, but standard input is not a
+/// terminal.
+#[derive(Debug, Display)]
+#[display(
+    "{what} must be selected interactively, but stdin is not a terminal. Provide the corresponding flag instead."
+)]
+pub(crate) struct NotInteractive {
+    pub(crate) what: &'static str,
 }
 
 /// A non-success way the program can stop. A [`Failure`] is one of them; the
@@ -79,7 +82,7 @@ pub(crate) struct FormatUnavailable {
 #[derive(Debug, Display)]
 pub(crate) enum Termination {
     /// The command failed.
-    #[display("{_0}")]
+    #[display("error: {_0}")]
     Failed(Failure),
 
     /// The user cancelled an interactive selection.

@@ -3,7 +3,7 @@
 
 use crate::cli::Args;
 use crate::failure::{
-    Failure, FormatUnavailable, LanguageUnavailable, Termination, UnresolvedTitle,
+    Failure, FormatUnavailable, LanguageUnavailable, NotInteractive, Termination, UnresolvedTitle,
 };
 use fuzzy_select::fuzzy::resolve_unique;
 use fuzzy_select::selection::Searchable;
@@ -131,7 +131,7 @@ fn require_terminal(what: &'static str) -> Result<(), Termination> {
     if io::stdin().is_terminal() {
         Ok(())
     } else {
-        Err(Failure::NotInteractive(what).into())
+        Err(Failure::NotInteractive(NotInteractive { what }).into())
     }
 }
 
