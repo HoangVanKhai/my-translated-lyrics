@@ -1,12 +1,18 @@
-//! A double-buffered screen that diffs frames so only the cells that change
-//! are written to the terminal.
+#![cfg_attr(dylint_lib = "perfectionist", feature(register_tool))]
+#![cfg_attr(dylint_lib = "perfectionist", register_tool(perfectionist))]
+
+//! A double-buffered terminal screen that diffs frames so only the cells that
+//! change are written out.
 //!
-//! The selectors used to clear the whole screen and repaint it on every
-//! keystroke, which the terminal showed as a flicker. Instead, a frame is
-//! drawn into an in-memory [`Buffer`] of character cells, that buffer is
-//! compared against the one currently on screen, and only the differing cells
-//! are sent to the terminal. The two buffers are swapped after each frame, so
-//! no per-cell copy is needed.
+//! A frame is drawn into an in-memory [`Buffer`] of character cells. The buffer
+//! is compared against the one currently on screen, and only the differing
+//! cells are sent to the terminal, which avoids clearing and repainting the
+//! whole screen on every change. The two buffers are swapped after each frame,
+//! so no per-cell copy is needed.
+//!
+//! The crate is the rendering core, independent of any particular interface: a
+//! caller draws text with a [`Style`] into the back buffer through
+//! [`Screen::begin`], then calls [`Screen::flush`] to send the diff.
 
 use crossterm::QueueableCommand;
 use crossterm::cursor::MoveTo;
@@ -19,18 +25,18 @@ use unicode_width::UnicodeWidthChar;
 /// The text attributes a cell is drawn with, as a small set of flags so a cell
 /// stays cheap to store and compare.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-pub(crate) struct Style(u8);
+pub struct Style(u8);
 
 impl Style {
-    pub(crate) const PLAIN: Style = Style(0);
-    pub(crate) const BOLD: Style = Style(1 << 0);
-    pub(crate) const DIM: Style = Style(1 << 1);
-    pub(crate) const UNDERLINE: Style = Style(1 << 2);
-    pub(crate) const REVERSE: Style = Style(1 << 3);
+    pub const PLAIN: Style = Style(0);
+    pub const BOLD: Style = Style(1 << 0);
+    pub const DIM: Style = Style(1 << 1);
+    pub const UNDERLINE: Style = Style(1 << 2);
+    pub const REVERSE: Style = Style(1 << 3);
 
     /// The union of two attribute sets, for combining a base style with an
     /// extra attribute such as an underline on a matched character.
-    pub(crate) fn with(self, other: Style) -> Style {
+    pub fn with(self, other: Style) -> Style {
         Style(self.0 | other.0)
     }
 
@@ -58,14 +64,14 @@ enum Cell {
 }
 
 /// A grid of character cells, in row-major order.
-pub(crate) struct Buffer {
+pub struct Buffer {
     width: u16,
     height: u16,
     cells: Vec<Cell>,
 }
 
 impl Buffer {
-    pub(crate) fn new(width: u16, height: u16) -> Self {
+    pub fn new(width: u16, height: u16) -> Self {
         let count = usize::from(width) * usize::from(height);
         Buffer {
             width,
@@ -87,7 +93,7 @@ impl Buffer {
     /// Writes `ch` at `col`, `row` with `style`, marking the trailing column
     /// when the glyph is double-width. Returns the number of columns it spans,
     /// so a caller laying out a line can advance past it.
-    pub(crate) fn set_glyph(&mut self, col: u16, row: u16, ch: char, style: Style) -> u16 {
+    pub fn set_glyph(&mut self, col: u16, row: u16, ch: char, style: Style) -> u16 {
         let width = ch.width().unwrap_or(0) as u16;
         if let Some(index) = self.index(col, row) {
             self.cells[index] = Cell::Glyph { ch, style };
@@ -102,11 +108,11 @@ impl Buffer {
 
     /// Writes `text` starting at `col`, `row` with a uniform `style`, advancing
     /// by each character's display width and stopping at the right edge.
-    pub(crate) fn set_string(&mut self, col: u16, row: u16, text: &str, style: Style) {
+    pub fn set_string(&mut self, col: u16, row: u16, text: &str, style: Style) {
         let mut cursor = col;
         for ch in text.chars() {
-            // A zero-width character cannot stand in its own cell; the rendered
-            // titles are composed (NFC), so none arrive on their own here.
+            // A zero-width character cannot stand in its own cell; composed
+            // (NFC) text has none on their own, which is what callers pass.
             if ch.width().unwrap_or(0) == 0 {
                 continue;
             }
@@ -117,10 +123,9 @@ impl Buffer {
         }
     }
 
-    /// The text of a row, with empty and trailing cells shown as blanks. For
-    /// tests, to read back what a frame drew without inspecting the terminal.
-    #[cfg(test)]
-    pub(crate) fn row_text(&self, row: u16) -> String {
+    /// The text of a row, with empty and trailing cells shown as blanks, to
+    /// read back what a frame drew without inspecting the terminal.
+    pub fn row_text(&self, row: u16) -> String {
         (0..self.width)
             .filter_map(|col| self.index(col, row))
             .map(|index| match self.cells[index] {
@@ -131,9 +136,8 @@ impl Buffer {
     }
 
     /// The style of the glyph at `col`, `row`, or the default style for an
-    /// empty or trailing cell. For tests.
-    #[cfg(test)]
-    pub(crate) fn style_at(&self, col: u16, row: u16) -> Style {
+    /// empty or trailing cell.
+    pub fn style_at(&self, col: u16, row: u16) -> Style {
         match self.index(col, row).map(|index| self.cells[index]) {
             Some(Cell::Glyph { style, .. }) => style,
             _ => Style::PLAIN,
@@ -144,13 +148,19 @@ impl Buffer {
 /// The double-buffered screen: the `front` buffer holds what is on the
 /// terminal, and a frame is drawn into the `back` buffer before the two are
 /// compared and swapped.
-pub(crate) struct Screen {
+pub struct Screen {
     front: Buffer,
     back: Buffer,
 }
 
+impl Default for Screen {
+    fn default() -> Self {
+        Screen::new()
+    }
+}
+
 impl Screen {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Screen {
             front: Buffer::new(0, 0),
             back: Buffer::new(0, 0),
@@ -161,7 +171,7 @@ impl Screen {
     /// draw into. On a size change the terminal and both buffers are reset, so
     /// the next diff repaints everything at the new size; otherwise only the
     /// back buffer is cleared.
-    pub(crate) fn begin(
+    pub fn begin(
         &mut self,
         width: u16,
         height: u16,
@@ -179,7 +189,7 @@ impl Screen {
 
     /// Sends the cells that changed since the last frame to the terminal, then
     /// swaps the buffers so the drawn frame becomes the one on screen.
-    pub(crate) fn flush(&mut self, output: &mut impl Write) -> io::Result<()> {
+    pub fn flush(&mut self, output: &mut impl Write) -> io::Result<()> {
         diff(&self.front, &self.back, output)?;
         mem::swap(&mut self.front, &mut self.back);
         output.flush()

@@ -9,7 +9,6 @@ use crate::render::{
     Button, DATA_ROW_OFFSET, LIST_ROW_OFFSET, button_at, columns_line, columns_line_highlighted,
     draw_highlighted_line, fit, is_double_click, render_top_bar, scroll_offset, visible_rows,
 };
-use crate::screen::{Screen, Style};
 use crate::terminal::TerminalGuard;
 use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers, MouseButton, MouseEventKind};
 use fuzzy_select::fuzzy::match_mask;
@@ -18,6 +17,7 @@ use lyrics_core::video_descriptor::Language;
 use play_with_lyrics::catalog::{Video, language_label};
 use std::io::{self, Write};
 use std::time::SystemTime;
+use terminal_screen::{Screen, Style};
 
 /// Presents the fuzzy table of titles and reports the chosen row, a request
 /// to go back, or a request to quit. This is the first page, so going back

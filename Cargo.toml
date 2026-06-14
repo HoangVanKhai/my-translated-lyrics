@@ -21,6 +21,7 @@ exit-codes = { path = "lib/exit-codes" }
 fuzzy-select = { path = "lib/fuzzy-select" }
 play-with-lyrics = { path = "lib/play-with-lyrics" }
 play-with-lyrics-tui = { path = "lib/play-with-lyrics-tui" }
+terminal-screen = { path = "lib/terminal-screen" }
 test-utils = { path = "lib/test-utils" }
 clap = { version = "4.6.1", features = ["derive"] }
 command-extra = "1.0.0"

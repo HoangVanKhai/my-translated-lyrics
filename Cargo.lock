@@ -667,6 +667,7 @@ dependencies = [
  "lyrics-core",
  "play-with-lyrics",
  "pretty_assertions",
+ "terminal-screen",
  "test-utils",
  "unicode-width",
 ]
@@ -961,6 +962,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "terminal-screen"
+version = "0.0.0"
+dependencies = [
+ "crossterm",
+ "pretty_assertions",
+ "unicode-width",
 ]
 
 [[package]]

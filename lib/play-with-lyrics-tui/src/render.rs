@@ -3,9 +3,9 @@
 //! line into the frame buffer, and the small geometry helpers the pages share
 //! with the click handling.
 
-use crate::screen::{Buffer, Style};
 use std::ops::Range;
 use std::time::{Duration, SystemTime};
+use terminal_screen::{Buffer, Style};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 /// The screen row of the first title in the table, below the top bar, the

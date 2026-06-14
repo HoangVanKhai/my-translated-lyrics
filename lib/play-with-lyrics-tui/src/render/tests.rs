@@ -2,9 +2,9 @@ use super::{
     Button, button_at, columns_line, columns_line_highlighted, fit, fit_chars, is_double_click,
     render_top_bar, scroll_offset, visible_rows,
 };
-use crate::screen::{Buffer, Style};
 use pretty_assertions::assert_eq;
 use std::time::{Duration, SystemTime};
+use terminal_screen::{Buffer, Style};
 use unicode_width::UnicodeWidthStr;
 
 /// A second click on the same row within the window is a double click; a

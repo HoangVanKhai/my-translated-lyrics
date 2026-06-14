@@ -1,20 +1,15 @@
 [package]
-name = "play-with-lyrics-tui"
+name = "terminal-screen"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true
 
 [dependencies]
 crossterm.workspace = true
-fuzzy-select.workspace = true
-lyrics-core.workspace = true
-play-with-lyrics.workspace = true
-terminal-screen.workspace = true
 unicode-width.workspace = true
 
 [dev-dependencies]
 pretty_assertions.workspace = true
-test-utils.workspace = true
 
 [lints]
 workspace = true
