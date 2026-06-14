@@ -118,10 +118,11 @@ pub(crate) fn scroll_offset(cursor: usize, visible: usize) -> usize {
 }
 
 /// The number of title rows that fit in a terminal `rows` rows tall, after
-/// reserving the prompt line, the header line, and the help line. At least
-/// one row is always reported, so the table never collapses to nothing.
+/// reserving the prompt line, the header line, the help line, and the button
+/// line. At least one row is always reported, so the table never collapses to
+/// nothing.
 pub(crate) fn visible_rows(rows: usize) -> usize {
-    rows.saturating_sub(3).max(1)
+    rows.saturating_sub(4).max(1)
 }
 
 /// Prints a line of `(character, highlighted)` pairs, underlining the
@@ -158,6 +159,69 @@ pub(crate) fn print_highlighted_line(
     }
     output.queue(SetAttribute(Attribute::Reset))?;
     Ok(())
+}
+
+/// A clickable button shown in the footer, paired with the action a click on
+/// it performs.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Button {
+    /// Quit the program.
+    Exit,
+    /// Return to the previous page.
+    Back,
+    /// Confirm the current item, the same as pressing Enter.
+    Forward,
+}
+
+/// The footer buttons in the order they are shown, from left to right.
+pub(crate) const FOOTER_BUTTONS: [Button; 3] = [Button::Exit, Button::Back, Button::Forward];
+
+/// The gap, in columns, between adjacent footer buttons.
+const BUTTON_GAP: usize = 2;
+
+impl Button {
+    /// The text shown inside the button's brackets.
+    pub(crate) fn label(self) -> &'static str {
+        match self {
+            Button::Exit => "Exit",
+            Button::Back => "Go back",
+            Button::Forward => "Forward",
+        }
+    }
+
+    /// The number of columns the drawn button occupies, counting the brackets
+    /// and the single space of padding on each side of the label.
+    fn width(self) -> usize {
+        self.label().width() + "[  ]".width()
+    }
+}
+
+/// The footer button bar, drawn as bracketed buttons separated by a gap. The
+/// click handling locates a click within it with [`button_at`], so the two
+/// stay in step through the shared [`FOOTER_BUTTONS`] order and widths.
+pub(crate) fn button_bar() -> String {
+    FOOTER_BUTTONS
+        .iter()
+        .map(|button| format!("[ {} ]", button.label()))
+        .collect::<Vec<_>>()
+        .join(&" ".repeat(BUTTON_GAP))
+}
+
+/// The footer button drawn at screen `column`, if any. A click between the
+/// buttons, in a gap, lands on none of them and returns `None`.
+pub(crate) fn button_at(column: usize) -> Option<Button> {
+    let mut start = 0;
+    for (index, &button) in FOOTER_BUTTONS.iter().enumerate() {
+        if index > 0 {
+            start += BUTTON_GAP;
+        }
+        let end = start + button.width();
+        if (start..end).contains(&column) {
+            return Some(button);
+        }
+        start = end;
+    }
+    None
 }
 
 #[cfg(test)]

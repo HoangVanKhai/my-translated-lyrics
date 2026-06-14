@@ -6,8 +6,9 @@
 use crate::Navigation;
 use crate::host::{Clock, Host, ReadEvent, WindowSize};
 use crate::render::{
-    DATA_ROW_OFFSET, LIST_ROW_OFFSET, columns_line, columns_line_highlighted, fit, is_double_click,
-    print_highlighted_line, scroll_offset, visible_rows,
+    Button, DATA_ROW_OFFSET, LIST_ROW_OFFSET, button_at, button_bar, columns_line,
+    columns_line_highlighted, fit, is_double_click, print_highlighted_line, scroll_offset,
+    visible_rows,
 };
 use crate::terminal::TerminalGuard;
 use crossterm::QueueableCommand;
@@ -95,6 +96,19 @@ where
                 // double click on the same row also selects it.
                 MouseEventKind::Down(MouseButton::Left) => {
                     let (_, rows) = Sys::window_size().unwrap_or((80, 24));
+                    // A click on the footer button row acts on the button under
+                    // the pointer, where "Forward" matches pressing Enter.
+                    if mouse.row == rows.saturating_sub(1) {
+                        match button_at(mouse.column as usize) {
+                            Some(Button::Exit) => break Navigation::Quit,
+                            Some(Button::Back) => break Navigation::Back,
+                            Some(Button::Forward) => match selector.selected_index() {
+                                Some(index) => break Navigation::Selected(index),
+                                None => continue,
+                            },
+                            None => continue,
+                        }
+                    }
                     let visible = visible_rows(rows as usize);
                     let offset = scroll_offset(selector.cursor(), visible);
                     let clicked = (mouse.row as usize).checked_sub(DATA_ROW_OFFSET).and_then(
@@ -181,10 +195,13 @@ where
 
     let help = "↑/↓ move · type to search · ⌫ delete · ^⌫ back · ⏎ select · Esc/^Q quit";
     output
-        .queue(MoveTo(0, rows.saturating_sub(1) as u16))?
+        .queue(MoveTo(0, rows.saturating_sub(2) as u16))?
         .queue(SetAttribute(Attribute::Dim))?
         .queue(Print(fit(help, columns)))?
         .queue(SetAttribute(Attribute::Reset))?;
+    output
+        .queue(MoveTo(0, rows.saturating_sub(1) as u16))?
+        .queue(Print(fit(&button_bar(), columns)))?;
 
     output.flush()
 }
@@ -257,6 +274,22 @@ where
                 // A single click highlights the label on the clicked row; a
                 // double click on the same row also selects it.
                 MouseEventKind::Down(MouseButton::Left) => {
+                    let (_, rows) = Sys::window_size().unwrap_or((80, 24));
+                    // A click on the footer button row acts on the button under
+                    // the pointer, where "Forward" matches pressing Enter.
+                    if mouse.row == rows.saturating_sub(1) {
+                        match button_at(mouse.column as usize) {
+                            Some(Button::Exit) => return Ok(Navigation::Quit),
+                            Some(Button::Back) => return Ok(Navigation::Back),
+                            Some(Button::Forward) => {
+                                if !labels.is_empty() {
+                                    return Ok(Navigation::Selected(cursor));
+                                }
+                                continue;
+                            }
+                            None => continue,
+                        }
+                    }
                     let clicked = (mouse.row as usize).checked_sub(LIST_ROW_OFFSET);
                     let Some(index) = clicked.filter(|&index| index < labels.len()) else {
                         continue;
@@ -314,10 +347,13 @@ where
 
     let help = "↑/↓ move · ⌫/Esc back · ⏎/Space select · ^Q quit";
     output
-        .queue(MoveTo(0, rows.saturating_sub(1)))?
+        .queue(MoveTo(0, rows.saturating_sub(2)))?
         .queue(SetAttribute(Attribute::Dim))?
         .queue(Print(fit(help, columns)))?
         .queue(SetAttribute(Attribute::Reset))?;
+    output
+        .queue(MoveTo(0, rows.saturating_sub(1)))?
+        .queue(Print(fit(&button_bar(), columns)))?;
 
     output.flush()
 }

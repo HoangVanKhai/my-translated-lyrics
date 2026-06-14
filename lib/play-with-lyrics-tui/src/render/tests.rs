@@ -1,6 +1,6 @@
 use super::{
-    columns_line, columns_line_highlighted, fit, fit_chars, is_double_click, scroll_offset,
-    visible_rows,
+    Button, button_at, button_bar, columns_line, columns_line_highlighted, fit, fit_chars,
+    is_double_click, scroll_offset, visible_rows,
 };
 use pretty_assertions::assert_eq;
 use std::time::{Duration, SystemTime};
@@ -124,14 +124,40 @@ fn columns_line_highlighted_marks_only_cell_characters() {
     assert_eq!(marked, "b");
 }
 
-/// The height-dependent count of title rows reserves the prompt, header, and
-/// help lines and never drops below one.
+/// The height-dependent count of title rows reserves the prompt, header,
+/// help, and button lines and never drops below one.
 #[test]
 fn visible_rows_reserves_the_chrome_lines() {
-    assert_eq!(visible_rows(24), 21);
-    assert_eq!(visible_rows(5), 2);
-    assert_eq!(visible_rows(4), 1);
+    assert_eq!(visible_rows(24), 20);
+    assert_eq!(visible_rows(6), 2);
+    assert_eq!(visible_rows(5), 1);
     // A terminal too short for any title row still reports one.
-    assert_eq!(visible_rows(3), 1);
+    assert_eq!(visible_rows(4), 1);
     assert_eq!(visible_rows(0), 1);
+}
+
+/// The button bar draws each button bracketed, separated by a two-space gap.
+#[test]
+fn button_bar_brackets_each_button() {
+    assert_eq!(button_bar(), "[ Exit ]  [ Go back ]  [ Forward ]");
+}
+
+/// A column lands on the button drawn there, and a column in a gap or past the
+/// last button lands on none.
+#[test]
+fn button_at_maps_a_column_to_its_button() {
+    // "[ Exit ]" spans columns 0..8.
+    assert_eq!(button_at(0), Some(Button::Exit));
+    assert_eq!(button_at(7), Some(Button::Exit));
+    // The two-column gap before "[ Go back ]" lands on no button.
+    assert_eq!(button_at(8), None);
+    assert_eq!(button_at(9), None);
+    // "[ Go back ]" spans columns 10..21.
+    assert_eq!(button_at(10), Some(Button::Back));
+    assert_eq!(button_at(20), Some(Button::Back));
+    // "[ Forward ]" spans columns 23..34.
+    assert_eq!(button_at(23), Some(Button::Forward));
+    assert_eq!(button_at(33), Some(Button::Forward));
+    // Past the last button lands on none.
+    assert_eq!(button_at(34), None);
 }

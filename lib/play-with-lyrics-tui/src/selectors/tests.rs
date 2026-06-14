@@ -35,14 +35,19 @@ fn shift(code: KeyCode) -> Event {
     Event::Key(KeyEvent::new(code, KeyModifiers::SHIFT))
 }
 
-/// A left-button click at screen `row`.
-fn click(row: u16) -> Event {
+/// A left-button click at screen `column` and `row`.
+fn click_at(column: u16, row: u16) -> Event {
     Event::Mouse(MouseEvent {
         kind: MouseEventKind::Down(MouseButton::Left),
-        column: 0,
+        column,
         row,
         modifiers: KeyModifiers::NONE,
     })
+}
+
+/// A left-button click in the first column of screen `row`.
+fn click(row: u16) -> Event {
+    click_at(0, row)
 }
 
 /// A scroll-wheel-down event.
@@ -622,8 +627,9 @@ fn select_video_renders_only_the_visible_window() {
     }
     impl WindowSize for Scripted {
         fn window_size() -> io::Result<(u16, u16)> {
-            // Five rows leave room for two title rows.
-            Ok((80, 5))
+            // Six rows leave room for two title rows, after the prompt, header,
+            // help, and button lines.
+            Ok((80, 6))
         }
     }
     let videos = vec![
@@ -1325,6 +1331,177 @@ fn select_video_scroll_moves_the_cursor() {
         .lock()
         .unwrap()
         .extend([scroll_down(), press(KeyCode::Enter)]);
+    let chosen =
+        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
+    assert_eq!(chosen, Navigation::Selected(1));
+}
+
+/// Clicking the "Exit" footer button quits the list selector.
+#[test]
+fn select_one_exit_button_quits() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_755_728_654)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    // The button row is the last of the 24 rows; column 3 falls on "Exit".
+    EVENTS.lock().unwrap().extend([click_at(3, 23)]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    assert_eq!(chosen, Navigation::Quit);
+}
+
+/// Clicking the "Go back" footer button returns from the list selector.
+#[test]
+fn select_one_back_button_goes_back() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_684_773_973)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    // Column 14 falls on "Go back", the middle button.
+    EVENTS.lock().unwrap().extend([click_at(14, 23)]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    assert_eq!(chosen, Navigation::Back);
+}
+
+/// Clicking the "Forward" footer button selects the highlighted row, the same
+/// as pressing Enter.
+#[test]
+fn select_one_forward_button_selects_the_highlighted_row() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_710_695_619)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels = label_list(&["alpha", "beta", "gamma"]);
+    // Move the highlight down, then click "Forward" at column 27.
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([press(KeyCode::Down), click_at(27, 23)]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    assert_eq!(chosen, Navigation::Selected(1));
+}
+
+/// Clicking the "Exit" footer button quits the table.
+#[test]
+fn select_video_exit_button_quits() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_705_629_322)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![english_video("First"), english_video("Second")];
+    EVENTS.lock().unwrap().extend([click_at(3, 23)]);
+    let chosen =
+        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
+    assert_eq!(chosen, Navigation::Quit);
+}
+
+/// Clicking the "Go back" footer button returns from the table.
+#[test]
+fn select_video_back_button_goes_back() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_739_444_713)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![english_video("First"), english_video("Second")];
+    EVENTS.lock().unwrap().extend([click_at(14, 23)]);
+    let chosen =
+        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
+    assert_eq!(chosen, Navigation::Back);
+}
+
+/// Clicking the "Forward" footer button selects the highlighted video, the
+/// same as pressing Enter.
+#[test]
+fn select_video_forward_button_selects_the_highlighted_video() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_663_808_390)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![english_video("First"), english_video("Second")];
+    // Move the highlight down to the second video, then click "Forward".
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([press(KeyCode::Down), click_at(27, 23)]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
