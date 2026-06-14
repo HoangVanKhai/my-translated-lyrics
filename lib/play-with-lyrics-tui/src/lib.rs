@@ -10,10 +10,9 @@
 //! perfectly; the goal here is a readable, navigable list rather than
 //! pixel-perfect columns.
 //!
-//! All drawing goes to standard error, leaving standard output free for the
-//! resolved command that `--dry-run` prints. The commands are sent through
-//! the `QueueableCommand` and `ExecutableCommand` trait methods rather than
-//! the `queue!` and `execute!` macros.
+//! All drawing goes to standard error, so standard output stays clean. The
+//! commands are sent through the `QueueableCommand` and `ExecutableCommand`
+//! trait methods rather than the `queue!` and `execute!` macros.
 
 use crossterm::cursor::{Hide, MoveTo, Show};
 use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers, read};
