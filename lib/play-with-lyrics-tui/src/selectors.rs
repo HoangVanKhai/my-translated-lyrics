@@ -61,6 +61,9 @@ where
     let outcome = loop {
         match Sys::read_event()? {
             Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
+                // The table is the first page, so Escape quits here. The later
+                // list pages, in `select_one_loop`, treat Escape as "go back"
+                // instead.
                 KeyCode::Esc => break Navigation::Quit,
                 KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                     break Navigation::Quit;
@@ -216,7 +219,10 @@ where
     loop {
         match Sys::read_event()? {
             Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
-                KeyCode::Esc => return Ok(Navigation::Quit),
+                // A list page is never the first page, so Escape goes back to
+                // the previous page, the same as Ctrl-Backspace. Only the video
+                // table, the first page, quits on Escape.
+                KeyCode::Esc => return Ok(Navigation::Back),
                 KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                     return Ok(Navigation::Quit);
                 }
@@ -306,7 +312,7 @@ where
         }
     }
 
-    let help = "↑/↓ move · ⌫ back · ⏎/Space select · Esc/^Q quit";
+    let help = "↑/↓ move · ⌫/Esc back · ⏎/Space select · ^Q quit";
     output
         .queue(MoveTo(0, rows.saturating_sub(1)))?
         .queue(SetAttribute(Attribute::Dim))?

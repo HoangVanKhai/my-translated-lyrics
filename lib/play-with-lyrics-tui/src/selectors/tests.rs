@@ -126,9 +126,9 @@ fn select_one_returns_the_highlighted_row() {
     assert_eq!(chosen, Navigation::Selected(2));
 }
 
-/// Escape cancels the list selector.
+/// Escape goes back from a list page, which is never the first page.
 #[test]
-fn select_one_cancels_on_escape() {
+fn select_one_goes_back_on_escape() {
     static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
     struct Scripted;
     impl ReadEvent for Scripted {
@@ -149,7 +149,7 @@ fn select_one_cancels_on_escape() {
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([press(KeyCode::Esc)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
-    assert_eq!(chosen, Navigation::Quit);
+    assert_eq!(chosen, Navigation::Back);
 }
 
 /// Ctrl-C cancels the list selector.
@@ -272,7 +272,9 @@ fn select_one_enter_is_a_no_op_for_an_empty_list() {
         .unwrap()
         .extend([press(KeyCode::Enter), press(KeyCode::Esc)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
-    assert_eq!(chosen, Navigation::Quit);
+    // The empty Enter did not select; the following Escape ends the loop by
+    // going back.
+    assert_eq!(chosen, Navigation::Back);
 }
 
 /// Typing narrows the table, and Enter returns the index, into the original
@@ -1109,7 +1111,9 @@ fn select_one_single_click_does_not_select() {
         .unwrap()
         .extend([click(2), press(KeyCode::Esc)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
-    assert_eq!(chosen, Navigation::Quit);
+    // The single click only moved the highlight; the following Escape ends the
+    // loop by going back.
+    assert_eq!(chosen, Navigation::Back);
 }
 
 /// A double click on a label row selects it.
