@@ -125,10 +125,10 @@ impl Color {
         }
         // Leading or trailing whitespace is always a typo in a color
         // value, and a whitespace-only value renders as an empty CSS
-        // declaration. `trim` only touches the ends, so the interior
+        // declaration. Only the ends are checked, so the interior
         // spaces of a functional notation such as `rgb(0, 0, 0)` are
         // preserved.
-        if source.trim().len() != source.len() {
+        if source.starts_with(char::is_whitespace) || source.ends_with(char::is_whitespace) {
             return Err(InvalidColor::SurroundingWhitespace);
         }
         for ch in source.chars() {
