@@ -66,3 +66,18 @@ fn clearing_a_cell_overwrites_it_with_a_blank() {
     assert!(rendered.contains(' '), "{rendered:?}");
     assert!(!rendered.contains('b'), "{rendered:?}");
 }
+
+/// A variation selector is sent to the terminal along with its glyph, so a
+/// symbol keeps its requested text or emoji form.
+#[test]
+fn a_variation_selector_is_sent_with_its_glyph() {
+    let mut screen = Screen::new();
+    let mut output = Vec::new();
+    screen
+        .begin(4, 1, &mut output)
+        .unwrap()
+        .set_string(0, 0, "🔍\u{FE0E}", Style::PLAIN);
+    screen.flush(&mut output).unwrap();
+    let rendered = String::from_utf8(output).unwrap();
+    assert!(rendered.contains("🔍\u{FE0E}"), "{rendered:?}");
+}

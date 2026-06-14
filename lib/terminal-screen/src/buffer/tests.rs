@@ -33,3 +33,23 @@ fn set_string_clips_at_the_right_edge() {
     buffer.set_string(0, 0, "abcdef", Style::PLAIN);
     assert_eq!(buffer.row_text(0), "abc");
 }
+
+/// A glyph followed by a text-presentation variation selector takes a single
+/// column, so the next glyph lands right after it.
+#[test]
+fn a_text_presentation_glyph_takes_one_column() {
+    let mut buffer = Buffer::new(4, 1);
+    // 🔍 with the text variation selector (U+FE0E) is one column wide.
+    buffer.set_string(0, 0, "🔍\u{FE0E}x", Style::PLAIN);
+    assert_eq!(buffer.row_text(0), "🔍x  ");
+}
+
+/// A wide glyph that would run past the right edge is clipped, not written with
+/// its trailing column off-buffer.
+#[test]
+fn a_wide_glyph_at_the_right_edge_is_clipped() {
+    let mut buffer = Buffer::new(3, 1);
+    // 中 is two columns; at column 2 it would overrun the width-3 buffer.
+    buffer.set_string(0, 0, "ab中", Style::PLAIN);
+    assert_eq!(buffer.row_text(0), "ab ");
+}

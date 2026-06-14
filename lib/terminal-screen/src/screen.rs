@@ -1,6 +1,6 @@
 //! The double buffer and the diff that turns a drawn frame into terminal writes.
 
-use crate::buffer::{Buffer, Cell};
+use crate::buffer::{Buffer, Cell, glyph_width};
 use crate::style::Style;
 use crossterm::QueueableCommand;
 use crossterm::cursor::MoveTo;
@@ -8,7 +8,6 @@ use crossterm::style::{Attribute, Print, SetAttribute};
 use crossterm::terminal::{Clear, ClearType};
 use std::io::{self, Write};
 use std::mem;
-use unicode_width::UnicodeWidthChar;
 
 /// The double-buffered screen: the `front` buffer holds what is on the
 /// terminal, and a frame is drawn into the `back` buffer before the two are
@@ -89,10 +88,13 @@ fn diff(front: &Buffer, back: &Buffer, output: &mut impl Write) -> io::Result<()
                         output.queue(Print(' '))?;
                         col += 1;
                     }
-                    Cell::Glyph { ch, style } => {
+                    Cell::Glyph { ch, vs, style } => {
                         set_style(output, &mut current, style)?;
                         output.queue(Print(ch))?;
-                        col += ch.width().unwrap_or(1).max(1) as u16;
+                        if let Some(selector) = vs {
+                            output.queue(Print(selector))?;
+                        }
+                        col += glyph_width(ch, vs).max(1);
                     }
                     // The leading glyph already covered this column.
                     Cell::Trailing => col += 1,
