@@ -98,3 +98,37 @@ fn resolve_unique_matches_against_any_key() {
     let resolved = resolve_unique("beta", &items, |item| vec![*item, "beta gamma"]);
     assert!(resolved.is_ok());
 }
+
+/// A query of only spaces carries no filter and matches every row.
+#[test]
+fn a_whitespace_only_query_matches_everything() {
+    assert!(contains_ci("Abc Def Ghi", " "));
+    assert!(contains_ci("Abc Def Ghi", "  "));
+    assert!(contains_ci("Abc Def Ghi", "   "));
+}
+
+/// Runs of spaces inside a query collapse to one, so loosely typed spacing
+/// matches the same rows as the single-spaced form.
+#[test]
+fn runs_of_spaces_in_a_query_collapse_to_one() {
+    assert!(contains_ci("Abc Def", "abc     def"));
+    assert!(contains_ci("Abc Def", "abc def"));
+}
+
+/// A query with no spaces ignores the spacing of the text, so a run-together
+/// query still finds a multi-word title.
+#[test]
+fn a_spaceless_query_matches_across_word_boundaries() {
+    assert!(contains_ci("Abc Def Ghi", "abcdefghi"));
+    assert!(contains_ci("Abc Def Ghi", "abcdef"));
+}
+
+/// A query that keeps a space treats the spacing as deliberate, so it only
+/// matches text spaced the same way.
+#[test]
+fn a_spaced_query_requires_the_spacing_to_match() {
+    // The exact spacing matches.
+    assert!(contains_ci("Abc Def Ghi", "abc def ghi"));
+    // A space in a place the title does not have one does not match.
+    assert!(!contains_ci("Abc Def Ghi", "abcdef ghi"));
+}

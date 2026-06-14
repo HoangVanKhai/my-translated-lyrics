@@ -33,22 +33,46 @@ pub fn fuzzy_subsequence(query: &str, text: &str) -> bool {
 
 /// Returns `true` when `text` contains `query` as a contiguous run of
 /// characters. Case and diacritics are matched asymmetrically (see the
-/// module docs). An empty query matches everything.
+/// module docs).
+///
+/// Whitespace in the query is normalized first: every run of spaces
+/// collapses to one and the ends are trimmed, so a query of only spaces is
+/// empty and matches everything. The spacing that remains is significant. A
+/// query with no spaces ignores the spacing of the text and may match across
+/// word boundaries, while a query that keeps a space requires the text to be
+/// spaced the same way.
 ///
 /// This is the "contains the word" filter used by the interactive table.
 pub fn contains_ci(text: &str, query: &str) -> bool {
-    let case_insensitive = is_case_insensitive(query);
-    let query: Vec<char> = query.chars().collect();
+    let query = normalize_whitespace(query);
     if query.is_empty() {
         return true;
     }
-    let text: Vec<char> = text.chars().collect();
+    let case_insensitive = is_case_insensitive(&query);
+    let text: Vec<char> = if query.contains(' ') {
+        // The query keeps a space on purpose, so match against the text with
+        // its own spacing preserved, runs of spaces collapsed to one.
+        normalize_whitespace(text).chars().collect()
+    } else {
+        // The query has no spaces, so the spacing of the text must not block
+        // a match: drop the text's whitespace entirely.
+        text.chars()
+            .filter(|character| !character.is_whitespace())
+            .collect()
+    };
+    let query: Vec<char> = query.chars().collect();
     text.windows(query.len()).any(|window| {
         window
             .iter()
             .zip(&query)
             .all(|(&candidate, &needle)| char_matches(needle, candidate, case_insensitive))
     })
+}
+
+/// Collapses every run of whitespace to a single space and trims the ends.
+/// A string of only whitespace becomes empty.
+fn normalize_whitespace(text: &str) -> String {
+    text.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
 /// Whether matching for `query` should ignore case.
