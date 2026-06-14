@@ -51,15 +51,17 @@ pub(crate) fn resolve_language(
 
     if let Some(arg) = args.language {
         let requested = Language::from(arg);
-        return if languages.contains(&requested) {
-            Ok(requested)
-        } else {
-            Err(Failure::LanguageUnavailable(LanguageUnavailable {
-                requested,
-                available: join_display(&languages),
-            })
-            .into())
+        if languages.contains(&requested) {
+            return Ok(requested);
+        }
+        let error = LanguageUnavailable {
+            requested,
+            available: join_display(&languages),
         };
+        return error
+            .pipe(Failure::LanguageUnavailable)
+            .pipe(Termination::from)
+            .pipe(Err);
     }
     if let [only] = languages.as_slice() {
         return Ok(*only);
