@@ -20,8 +20,11 @@
 //!   `<c.className>...</c>`, with the class name read from the map.
 //! * Markers in [`LineMarkersDesc::credits`] go through the credit
 //!   parser in [`super::credits_parse`] and emit one
-//!   `<c.creditRole>role</c> <c.creditName>name</c>` pair per
-//!   recognized cell.
+//!   `<c.creditRole>role</c><sep><c.creditName>name</c>` pair per
+//!   recognized cell, where `<sep>` follows
+//!   [`CreditPair::separator_style`]: a full-width colon between the
+//!   spans, an ASCII colon inside the role class before a single
+//!   space, or a verbatim ASCII space gutter.
 //! * Any other marker emits the cue text unwrapped.
 //!
 //! [`LineMarkersDesc`]: lyrics_core::line_markers_descriptor::LineMarkersDesc
@@ -30,7 +33,7 @@
 //! [`LineMarkersDesc::credits`]: lyrics_core::line_markers_descriptor::LineMarkersDesc::credits
 
 use super::credits_parse::{
-    CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,
+    CreditPair, CreditRoles, NameSegment, ParseCreditError, SeparatorStyle, parse_credit_line,
 };
 use super::escape::{Escaped, append_separator_for_output};
 use super::parse::{CuePart, SubtitleCue};
@@ -211,8 +214,17 @@ fn render_credit_line(output: &mut String, features: &mut Features, pairs: &[Cre
 fn render_credit_pair(output: &mut String, features: &mut Features, pair: &CreditPair) {
     features.used_credit_role = true;
     features.used_credit_name = true;
-    write!(output, "<c.{CLASS_CREDIT_ROLE}>{}</c>", Escaped(pair.role)).unwrap();
-    append_separator_for_output(output, pair.separator);
+    let style = pair.separator_style();
+    write!(output, "<c.{CLASS_CREDIT_ROLE}>{}", Escaped(pair.role)).unwrap();
+    if let SeparatorStyle::AsciiColon = style {
+        output.push(':');
+    }
+    output.push_str("</c>");
+    match style {
+        SeparatorStyle::AsciiColon => output.push(' '),
+        SeparatorStyle::FullWidthColon => output.push('：'),
+        SeparatorStyle::Spaces(raw) => append_separator_for_output(output, raw),
+    }
     write!(output, "<c.{CLASS_CREDIT_NAME}>").unwrap();
     write_name_segments(output, features, &pair.name_segments);
     output.push_str("</c>");

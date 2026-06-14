@@ -33,14 +33,58 @@ pub struct CreditPair<'a> {
     /// The role cell, exactly as it appeared in the source line.
     pub role: &'a str,
     /// Raw separator text captured between the role cell and the
-    /// name cell, preserved verbatim for the renderer to decide how
-    /// to emit it: ASCII space/tab runs survive unchanged (so a
-    /// multi-space gutter round-trips), while other shapes such as
-    /// `：` or `\u{3000}` collapse to a single ASCII space.
+    /// name cell, preserved verbatim so the renderer can decide how
+    /// to emit it. [`CreditPair::separator_style`] reads this field
+    /// to choose between a CJK colon, a Latin colon, or a verbatim
+    /// space gutter.
     pub separator: &'a str,
     /// Decomposed name region, with bracketed and unbracketed
     /// segments.
     pub name_segments: Vec<NameSegment<'a>>,
+}
+
+impl<'a> CreditPair<'a> {
+    /// Classifies this pair's separator into the layout the renderers
+    /// should produce. The choice of colon glyph in the source line
+    /// selects the layout, so the policy stays data-driven and
+    /// symmetric with the separator-tolerant parser: a full-width
+    /// colon yields [`SeparatorStyle::FullWidthColon`], a lone ASCII
+    /// colon yields [`SeparatorStyle::AsciiColon`], and a colon-free
+    /// separator yields [`SeparatorStyle::Spaces`].
+    pub fn separator_style(&self) -> SeparatorStyle<'a> {
+        if self.separator.contains('：') {
+            SeparatorStyle::FullWidthColon
+        } else if self.separator.contains(':') {
+            SeparatorStyle::AsciiColon
+        } else {
+            SeparatorStyle::Spaces(self.separator)
+        }
+    }
+}
+
+/// How a credit pair's role-to-name separator is presented in the
+/// rendered output. The variant is derived from [`CreditPair::separator`]
+/// by [`CreditPair::separator_style`]. Authors pick the layout by
+/// typing the matching colon in the source: full-width `：` in CJK
+/// lyrics, ASCII `:` in Latin-script lyrics.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SeparatorStyle<'a> {
+    /// The separator carried a full-width colon (`：`). The renderer
+    /// emits a full-width colon between the role and name spans with
+    /// no surrounding spaces, the convention for CJK credit lines.
+    FullWidthColon,
+    /// The separator carried an ASCII colon (`:`) and no full-width
+    /// colon. The renderer tucks an ASCII colon inside the role span
+    /// and follows it with one ASCII space, the convention for
+    /// Latin-script credit lines.
+    AsciiColon,
+    /// The separator was free of colons. The captured run is carried
+    /// through verbatim so an ASCII space or tab gutter round-trips;
+    /// any other whitespace shape collapses to a single ASCII space.
+    /// See [`append_separator_for_output`].
+    ///
+    /// [`append_separator_for_output`]: crate::escape::append_separator_for_output
+    Spaces(&'a str),
 }
 
 /// A unit within the name region of a credit pair.

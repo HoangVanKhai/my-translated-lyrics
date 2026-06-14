@@ -7,9 +7,13 @@
 //! Credit lines go through the same role-driven parser as the VTT
 //! renderer and emit each role and name with the palette's credit
 //! colors, repeated inline because SRT has no central style definition.
+//! The role-to-name separator follows [`CreditPair::separator_style`]:
+//! a full-width colon sits uncolored between the two spans, an ASCII
+//! colon rides inside the role's `<font>` before a single space, and a
+//! colon-free gutter reproduces its ASCII spacing verbatim.
 
 use super::credits_parse::{
-    CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,
+    CreditPair, CreditRoles, NameSegment, ParseCreditError, SeparatorStyle, parse_credit_line,
 };
 use super::escape::{Escaped, append_separator_for_output};
 use super::parse::{CuePart, SubtitleCue};
@@ -157,14 +161,18 @@ fn render_credit_line(output: &mut String, palette: &StylePalette, pairs: &[Cred
 }
 
 fn render_credit_pair(output: &mut String, palette: &StylePalette, pair: &CreditPair) {
-    write!(
-        output,
-        r#"<font color="{color}">{text}</font>"#,
-        color = palette.credit.role,
-        text = Escaped(pair.role),
-    )
-    .unwrap();
-    append_separator_for_output(output, pair.separator);
+    let style = pair.separator_style();
+    write!(output, r#"<font color="{}">"#, palette.credit.role).unwrap();
+    write!(output, "{}", Escaped(pair.role)).unwrap();
+    if let SeparatorStyle::AsciiColon = style {
+        output.push(':');
+    }
+    output.push_str("</font>");
+    match style {
+        SeparatorStyle::AsciiColon => output.push(' '),
+        SeparatorStyle::FullWidthColon => output.push('：'),
+        SeparatorStyle::Spaces(raw) => append_separator_for_output(output, raw),
+    }
     write!(output, r#"<font color="{}">"#, palette.credit.name).unwrap();
     write_name_segments(output, palette, &pair.name_segments);
     output.push_str("</font>");

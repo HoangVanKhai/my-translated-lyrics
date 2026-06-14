@@ -1,6 +1,6 @@
 use super::{
-    Bracketed, CreditRoles, NameSegment, ParseBracketedError, ParseCreditError, Unbracketed,
-    UnknownRole, parse_credit_line,
+    Bracketed, CreditRoles, NameSegment, ParseBracketedError, ParseCreditError, SeparatorStyle,
+    Unbracketed, UnknownRole, parse_credit_line,
 };
 use lyrics_core::credits_descriptor::CreditsDesc;
 use lyrics_core::video_descriptor::Language;
@@ -155,6 +155,32 @@ fn multiple_highlights_interleave_with_plain_text() {
             NameSegment::Unbracketed(Unbracketed("name-b")),
         ],
     );
+}
+
+#[test]
+fn separator_style_follows_the_colon_glyph() {
+    let descriptor = make_descriptor(&["role-a"]);
+    let roles = make_roles(&descriptor);
+
+    // A full-width colon selects the CJK layout, even when an ASCII
+    // colon shares the run, because the full-width glyph takes
+    // priority.
+    let full_width = parse_credit_line("role-a：name-a", &roles).unwrap();
+    assert_eq!(
+        full_width[0].separator_style(),
+        SeparatorStyle::FullWidthColon
+    );
+    let mixed = parse_credit_line("role-a:：name-a", &roles).unwrap();
+    assert_eq!(mixed[0].separator_style(), SeparatorStyle::FullWidthColon);
+
+    // A lone ASCII colon selects the Latin layout.
+    let ascii = parse_credit_line("role-a: name-a", &roles).unwrap();
+    assert_eq!(ascii[0].separator_style(), SeparatorStyle::AsciiColon);
+
+    // A colon-free separator carries its captured run through for the
+    // renderer to reproduce verbatim.
+    let spaces = parse_credit_line("role-a  name-a", &roles).unwrap();
+    assert_eq!(spaces[0].separator_style(), SeparatorStyle::Spaces("  "));
 }
 
 #[test]
