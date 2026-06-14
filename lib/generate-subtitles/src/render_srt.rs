@@ -13,7 +13,7 @@
 //! colon-free gutter reproduces its ASCII spacing verbatim.
 
 use super::credits_parse::{
-    CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,
+    CreditLead, CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,
 };
 use super::escape::Escaped;
 use super::parse::{CuePart, SubtitleCue};
@@ -162,26 +162,20 @@ fn render_credit_line(output: &mut String, palette: &StylePalette, pairs: &[Cred
 
 fn render_credit_pair(output: &mut String, palette: &StylePalette, pair: &CreditPair) {
     let style = pair.separator_style();
-    // Lead: a role-less line opens with a highlighted bracket; an
-    // ordinary line opens with the role and any Latin colon.
-    if let Some(bracket) = pair.special_lead {
-        write!(
-            output,
-            r#"<font color="{color}">{text}</font>"#,
-            color = palette.credit.special,
-            text = Escaped(bracket.as_str()),
-        )
-        .unwrap();
-    } else {
-        write!(
-            output,
-            r#"<font color="{color}">{role}{colon}</font>"#,
-            color = palette.credit.role,
-            role = Escaped(pair.role),
-            colon = style.role_span_suffix(),
-        )
-        .unwrap();
-    }
+    // The lead is a role (role color) or, on a role-less line, a
+    // bracket highlight (special color); either carries any Latin
+    // colon inside its own span.
+    let (color, text) = match pair.lead {
+        CreditLead::Role(role) => (&palette.credit.role, role),
+        CreditLead::Special(bracket) => (&palette.credit.special, bracket.as_str()),
+    };
+    write!(
+        output,
+        r#"<font color="{color}">{text}{colon}</font>"#,
+        text = Escaped(text),
+        colon = style.role_span_suffix(),
+    )
+    .unwrap();
     // A role-only header line carries no name; emit just the lead.
     if pair.name_segments.is_empty() {
         return;
