@@ -100,25 +100,14 @@ impl Style {
     }
 }
 
-/// A CSS color value that is safe to splat into a `color: {...};`
+/// A CSS color value that is safe to interpolate into a `color: {...};`
 /// declaration and a `<font color="{...}">` attribute without escaping.
-///
-/// The value may be any non-empty string whose characters are none of
-/// `<`, `>`, `"`, `\`, `{`, `}`, `;`, `\u{2028}`, `\u{2029}`, and which
-/// contains no control character. This reject list captures every
-/// character that would terminate the surrounding CSS rule or the HTML
-/// attribute string. The shape is otherwise permissive, so hex literals
-/// such as `#FFD966`, color keywords such as `white`, and functional
-/// notations such as `rgb(0, 0, 0)` are all accepted. Validating the
-/// color at the data boundary keeps a typo in `styles.toml` from
-/// silently corrupting every rendered subtitle, mirroring the
-/// boundary checks on `CssClassName` and `VoiceName`.
 #[derive(Debug, Display, Clone, PartialEq, Eq, Deserialize)]
 #[serde(try_from = "String")]
 pub struct Color(String);
 
 impl Color {
-    /// Wraps `source` if and only if it satisfies the color shape above.
+    /// Wraps `source` if and only if it is a valid color.
     pub fn new(source: String) -> Result<Self, InvalidColor> {
         if source.is_empty() {
             return Err(InvalidColor::Empty);
