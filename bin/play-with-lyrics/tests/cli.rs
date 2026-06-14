@@ -43,13 +43,14 @@ impl Env {
         let video_dir = self.source.join("ExampleSong");
         create_dir_all(&video_dir).unwrap();
         let descriptor = format!(
-            "collection = \"{COLLECTION}\"\n\
-             video-title = \"{VIDEO_TITLE}\"\n\
-             \n\
-             [song-titles]\n\
-             en = \"Example Song\"\n\
-             vi = \"Bài Hát Ví Dụ\"\n\
-             zh = \"示例歌曲\"\n",
+            r#"collection = "{COLLECTION}"
+video-title = "{VIDEO_TITLE}"
+
+[song-titles]
+en = "Example Song"
+vi = "Bài Hát Ví Dụ"
+zh = "示例歌曲"
+"#,
         );
         write_file(video_dir.join("video.toml"), descriptor).unwrap();
     }
@@ -77,10 +78,7 @@ impl Env {
             .with_arg(&self.source)
             .with_arg(&self.target)
             .with_args(args)
-            // A null stdin guarantees the program treats the session as
-            // non-interactive, so a missing selection becomes an error
-            // rather than a blocked read.
-            .with_stdin(Stdio::null())
+            .with_stdin(Stdio::null()) // null stdin keeps the session non-interactive
             .output()
             .expect("failed to spawn play-with-lyrics")
     }
