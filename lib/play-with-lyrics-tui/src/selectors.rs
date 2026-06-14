@@ -6,9 +6,9 @@
 use crate::Navigation;
 use crate::host::{Clock, Host, ReadEvent, WindowSize};
 use crate::render::{
-    Button, DATA_ROW_OFFSET, HEADER_ROW, LIST_ROW_OFFSET, button_at, column_at, column_spans,
-    columns_line, columns_line_highlighted, draw_highlighted_line, fit, is_double_click,
-    render_top_bar, scroll_offset, visible_rows,
+    Button, COLUMN_SEPARATOR, DATA_ROW_OFFSET, HEADER_ROW, LIST_ROW_OFFSET, SEARCH_ROW, button_at,
+    column_at, column_spans, columns_line, columns_line_highlighted, draw_highlighted_line, fit,
+    is_double_click, render_top_bar, scroll_offset, visible_rows,
 };
 use crate::terminal::TerminalGuard;
 use column_sort::ColumnSort;
@@ -197,9 +197,23 @@ fn video_order(sort: ColumnSort<Language>) -> impl Fn(&Video, &Video) -> Orderin
     }
 }
 
+/// Draws the search bar at [`SEARCH_ROW`]: a dimmed magnifier, the italic
+/// "Search:" label, and the typed `query` in bold.
+fn render_search_bar(buffer: &mut Buffer, columns: usize, query: &str) {
+    // \u{FE0E} is the variation selector that asks for the magnifier's text form.
+    let magnifier = "🔍\u{FE0E}";
+    buffer.set_string(0, SEARCH_ROW, magnifier, Style::DIM);
+    let label = " Search: ";
+    let label_start = magnifier.width();
+    buffer.set_string(label_start as u16, SEARCH_ROW, label, Style::ITALIC);
+    let query_start = label_start + label.width();
+    let shown = fit(query, columns.saturating_sub(query_start));
+    buffer.set_string(query_start as u16, SEARCH_ROW, &shown, Style::BOLD);
+}
+
 /// Draws the clickable column header at [`HEADER_ROW`]. The column the table is
 /// sorted by is marked with an arrow for its direction, and the column under
-/// the pointer is drawn in reverse video.
+/// the pointer drops the dim to read brighter.
 fn render_header(
     buffer: &mut Buffer,
     columns: usize,
@@ -223,15 +237,19 @@ fn render_header(
     };
     let labels = COLUMN_LANGUAGES.map(label);
     let header = columns_line(&labels[0], &labels[1], &labels[2], columns);
-    // Headers are bold and dimmed; the column under the pointer drops the dim to
-    // read as the brighter, hovered one.
+    let spans = column_spans(columns);
+    // The headers are bold and dimmed.
     buffer.set_string(0, HEADER_ROW, &header, Style::BOLD.with(Style::DIM));
-
+    // The separators between the headers are bold but not dimmed.
+    for span in &spans[..2] {
+        buffer.set_string(span.end as u16, HEADER_ROW, COLUMN_SEPARATOR, Style::BOLD);
+    }
+    // The column under the pointer drops the dim.
     if let Some((hover_column, hover_row)) = hover
         && hover_row == HEADER_ROW
         && let Some(index) = column_at(columns, hover_column as usize)
     {
-        let span = &column_spans(columns)[index];
+        let span = &spans[index];
         let fitted = fit(&labels[index], span.len());
         buffer.set_string(span.start as u16, HEADER_ROW, &fitted, Style::BOLD);
     }
@@ -257,13 +275,7 @@ where
     // not available here.
     render_top_bar(buffer, columns, "Select a Video", false, hover);
 
-    // The magnifier and "Search:" label are italic; the typed query is bold.
-    // \u{FE0E} is a variation selector that asks for the magnifier's text form.
-    let label = "🔍\u{FE0E} Search: ";
-    buffer.set_string(0, 1, label, Style::ITALIC);
-    let query_start = label.width();
-    let query = fit(selector.query(), columns.saturating_sub(query_start));
-    buffer.set_string(query_start as u16, 1, &query, Style::BOLD);
+    render_search_bar(buffer, columns, selector.query());
 
     render_header(buffer, columns, sort, hover);
 

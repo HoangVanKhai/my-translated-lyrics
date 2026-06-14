@@ -8,6 +8,9 @@ use std::time::{Duration, SystemTime};
 use terminal_screen::{Buffer, Style};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
+/// The screen row of the search bar, below the top bar.
+pub(crate) const SEARCH_ROW: u16 = 1;
+
 /// The screen row of the column header, below the top bar and the search
 /// prompt. The header is clickable, so the renderer and the click handling
 /// share this.
@@ -71,6 +74,9 @@ pub(crate) fn fit(text: &str, width: usize) -> String {
         .collect()
 }
 
+/// The separator drawn between the three title cells.
+pub(crate) const COLUMN_SEPARATOR: &str = " │ ";
+
 /// Lays out three highlighted cells into one line of `total` columns, pairing
 /// each character with whether it is highlighted. Separators and padding are
 /// never highlighted.
@@ -78,13 +84,12 @@ pub(crate) fn columns_line_highlighted(
     cells: [(&str, &[bool]); 3],
     total: usize,
 ) -> Vec<(char, bool)> {
-    let separator = " │ ";
-    let available = total.saturating_sub(separator.width() * 2);
+    let available = total.saturating_sub(COLUMN_SEPARATOR.width() * 2);
     let each = (available / 3).max(1);
     let mut line: Vec<(char, bool)> = Vec::new();
     for (index, (text, mask)) in cells.into_iter().enumerate() {
         if index > 0 {
-            line.extend(separator.chars().map(|character| (character, false)));
+            line.extend(COLUMN_SEPARATOR.chars().map(|character| (character, false)));
         }
         line.extend(fit_chars(text, mask, each));
     }
@@ -103,7 +108,7 @@ pub(crate) fn columns_line(english: &str, vietnamese: &str, chinese: &str, total
 /// of [`columns_line`]. The header renderer and the header click handling share
 /// this so they agree on where each column sits.
 pub(crate) fn column_spans(total: usize) -> [Range<usize>; 3] {
-    let separator = " │ ".width();
+    let separator = COLUMN_SEPARATOR.width();
     let available = total.saturating_sub(separator * 2);
     let each = (available / 3).max(1);
     [

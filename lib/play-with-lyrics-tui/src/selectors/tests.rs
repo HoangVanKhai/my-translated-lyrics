@@ -1,7 +1,7 @@
-use super::{render_header, select_one_loop, select_video_loop};
+use super::{render_header, render_search_bar, select_one_loop, select_video_loop};
 use crate::Navigation;
 use crate::host::{Clock, ReadEvent, WindowSize};
-use crate::render::{HEADER_ROW, column_spans};
+use crate::render::{HEADER_ROW, SEARCH_ROW, column_spans};
 use column_sort::ColumnSort;
 use crossterm::event::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
@@ -1699,6 +1699,27 @@ fn render_header_marks_the_sorted_and_hovered_columns() {
         buffer.style_at(vietnamese_start, HEADER_ROW),
         Style::BOLD.with(Style::DIM),
     );
+    // The separator bar between the headers is bold but not dimmed.
+    let separator_bar = column_spans(80)[0].end as u16 + 1;
+    assert_eq!(buffer.style_at(separator_bar, HEADER_ROW), Style::BOLD);
+}
+
+/// The search bar dims the magnifier, italicizes the "Search:" label, and bolds
+/// the typed query.
+#[test]
+fn render_search_bar_styles_the_magnifier_label_and_query() {
+    let mut buffer = Buffer::new(40, 2);
+    render_search_bar(&mut buffer, 40, "abc");
+    let row = buffer.row_text(SEARCH_ROW);
+    assert!(row.contains("Search:"), "{row}");
+    assert!(row.contains("abc"), "{row}");
+    // The magnifier is dimmed, not italic.
+    assert_eq!(buffer.style_at(0, SEARCH_ROW), Style::DIM);
+    // The "Search:" label is italic; column 2 is its first letter.
+    assert_eq!(buffer.style_at(2, SEARCH_ROW), Style::ITALIC);
+    // The typed query is bold. The magnifier (1) and " Search: " (9) take ten
+    // columns, so the query begins at column 10.
+    assert_eq!(buffer.style_at(10, SEARCH_ROW), Style::BOLD);
 }
 
 /// The search bar shows a magnifier with the italic "Search:" label and the
