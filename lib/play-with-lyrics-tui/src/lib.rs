@@ -21,6 +21,7 @@ use crossterm::terminal::{
     enable_raw_mode, size,
 };
 use crossterm::{ExecutableCommand, QueueableCommand};
+use fuzzy_select::fuzzy::match_mask;
 use fuzzy_select::selection::Selector;
 use lyrics_core::video_descriptor::Language;
 use play_with_lyrics::catalog::{Video, language_label};
@@ -97,48 +98,74 @@ impl Drop for TerminalGuard {
     }
 }
 
-/// Pads or truncates `text` to exactly `width` display columns, appending
-/// an ellipsis when it has to cut the text short. Column counts follow the
-/// Unicode display width, so a wide glyph such as a CJK ideograph counts as
-/// two columns.
-fn fit(text: &str, width: usize) -> String {
+/// Pads or truncates `text` to exactly `width` display columns, pairing each
+/// resulting character with whether it is highlighted. The `mask` is aligned
+/// with `text.chars()`; an out-of-range or missing entry counts as not
+/// highlighted, and the ellipsis and padding are never highlighted. Column
+/// counts follow the Unicode display width, so a wide glyph such as a CJK
+/// ideograph counts as two columns.
+fn fit_chars(text: &str, mask: &[bool], width: usize) -> Vec<(char, bool)> {
+    let characters: Vec<char> = text.chars().collect();
     let text_width = text.width();
+    let mut result: Vec<(char, bool)> = Vec::new();
     if text_width <= width {
-        let mut padded = text.to_string();
-        padded.extend(std::iter::repeat_n(' ', width - text_width));
-        return padded;
+        for (index, &character) in characters.iter().enumerate() {
+            result.push((character, mask.get(index).copied().unwrap_or(false)));
+        }
+        result.extend(std::iter::repeat_n((' ', false), width - text_width));
+        return result;
     }
     if width == 0 {
-        return String::new();
+        return result;
     }
     // Keep whole characters until the next one would not leave room for the
     // one-column ellipsis, then pad the column a wide glyph could not fill.
-    let mut truncated = String::new();
     let mut used = 0;
-    for character in text.chars() {
+    for (index, &character) in characters.iter().enumerate() {
         let character_width = character.width().unwrap_or(0);
         if used + character_width > width - 1 {
             break;
         }
-        truncated.push(character);
+        result.push((character, mask.get(index).copied().unwrap_or(false)));
         used += character_width;
     }
-    truncated.push('…');
-    truncated.extend(std::iter::repeat_n(' ', width - used - 1));
-    truncated
+    result.push(('…', false));
+    result.extend(std::iter::repeat_n((' ', false), width - used - 1));
+    result
+}
+
+/// Pads or truncates `text` to exactly `width` display columns, appending an
+/// ellipsis when it has to cut the text short.
+fn fit(text: &str, width: usize) -> String {
+    fit_chars(text, &[], width)
+        .into_iter()
+        .map(|(character, _)| character)
+        .collect()
+}
+
+/// Lays out three highlighted cells into one line of `total` columns, pairing
+/// each character with whether it is highlighted. Separators and padding are
+/// never highlighted.
+fn columns_line_highlighted(cells: [(&str, &[bool]); 3], total: usize) -> Vec<(char, bool)> {
+    let separator = " │ ";
+    let available = total.saturating_sub(separator.width() * 2);
+    let each = (available / 3).max(1);
+    let mut line: Vec<(char, bool)> = Vec::new();
+    for (index, (text, mask)) in cells.into_iter().enumerate() {
+        if index > 0 {
+            line.extend(separator.chars().map(|character| (character, false)));
+        }
+        line.extend(fit_chars(text, mask, each));
+    }
+    line
 }
 
 /// Lays out three cells into a single line that fits `total` columns.
 fn columns_line(english: &str, vietnamese: &str, chinese: &str, total: usize) -> String {
-    let separator = " │ ";
-    let available = total.saturating_sub(separator.width() * 2);
-    let each = (available / 3).max(1);
-    format!(
-        "{}{separator}{}{separator}{}",
-        fit(english, each),
-        fit(vietnamese, each),
-        fit(chinese, each),
-    )
+    columns_line_highlighted([(english, &[]), (vietnamese, &[]), (chinese, &[])], total)
+        .into_iter()
+        .map(|(character, _)| character)
+        .collect()
 }
 
 /// The first row offset that keeps `cursor` visible within `visible` rows.
@@ -151,6 +178,42 @@ fn scroll_offset(cursor: usize, visible: usize) -> usize {
 /// one row is always reported, so the table never collapses to nothing.
 fn visible_rows(rows: usize) -> usize {
     rows.saturating_sub(3).max(1)
+}
+
+/// Prints a line of `(character, highlighted)` pairs, underlining the
+/// highlighted characters. When `reverse` is set the whole line is drawn in
+/// reverse video, for the row under the cursor; the underline composes with
+/// it. A single reset at the end clears both attributes.
+fn print_highlighted_line(
+    output: &mut impl Write,
+    line: &[(char, bool)],
+    reverse: bool,
+) -> io::Result<()> {
+    if reverse {
+        output.queue(SetAttribute(Attribute::Reverse))?;
+    }
+    let mut underlined = false;
+    let mut run = String::new();
+    for &(character, highlight) in line {
+        if highlight != underlined {
+            if !run.is_empty() {
+                output.queue(Print(std::mem::take(&mut run)))?;
+            }
+            underlined = highlight;
+            let attribute = if underlined {
+                Attribute::Underlined
+            } else {
+                Attribute::NoUnderline
+            };
+            output.queue(SetAttribute(attribute))?;
+        }
+        run.push(character);
+    }
+    if !run.is_empty() {
+        output.queue(Print(run))?;
+    }
+    output.queue(SetAttribute(Attribute::Reset))?;
+    Ok(())
 }
 
 /// Presents the fuzzy table of titles and reports the chosen row, a request
@@ -244,26 +307,25 @@ where
     let visible = visible_rows(rows);
     let offset = scroll_offset(cursor, visible);
 
+    let query = selector.query();
     for (screen_index, filtered_position) in
         (offset..filtered.len().min(offset + visible)).enumerate()
     {
         let video = &videos[filtered[filtered_position]];
-        let line = columns_line(
-            video.title(Language::English).unwrap_or(""),
-            video.title(Language::Vietnamese).unwrap_or(""),
-            video.title(Language::Chinese).unwrap_or(""),
+        let english = video.title(Language::English).unwrap_or("");
+        let vietnamese = video.title(Language::Vietnamese).unwrap_or("");
+        let chinese = video.title(Language::Chinese).unwrap_or("");
+        let line = columns_line_highlighted(
+            [
+                (english, &match_mask(english, query)),
+                (vietnamese, &match_mask(vietnamese, query)),
+                (chinese, &match_mask(chinese, query)),
+            ],
             columns,
         );
         let screen_y = (screen_index + 2) as u16;
         output.queue(MoveTo(0, screen_y))?;
-        if filtered_position == cursor {
-            output
-                .queue(SetAttribute(Attribute::Reverse))?
-                .queue(Print(line))?
-                .queue(SetAttribute(Attribute::Reset))?;
-        } else {
-            output.queue(Print(line))?;
-        }
+        print_highlighted_line(output, &line, filtered_position == cursor)?;
     }
 
     let help = "↑/↓ move · type to search · ⌫ delete or back · ⏎ select · Esc/^Q quit";

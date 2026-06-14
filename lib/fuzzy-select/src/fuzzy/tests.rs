@@ -1,5 +1,14 @@
-use crate::fuzzy::{ResolveError, contains_ci, fuzzy_subsequence, resolve_unique};
+use crate::fuzzy::{ResolveError, contains_ci, fuzzy_subsequence, match_mask, resolve_unique};
 use pretty_assertions::assert_eq;
+
+/// The indices a highlight mask marks, for readable assertions.
+fn marked(mask: &[bool]) -> Vec<usize> {
+    mask.iter()
+        .enumerate()
+        .filter(|&(_, &on)| on)
+        .map(|(index, _)| index)
+        .collect()
+}
 
 #[test]
 fn subsequence_matches_in_order() {
@@ -131,4 +140,51 @@ fn a_spaced_query_requires_the_spacing_to_match() {
     assert!(contains_ci("Abc Def Ghi", "abc def ghi"));
     // A space in a place the title does not have one does not match.
     assert!(!contains_ci("Abc Def Ghi", "abcdef ghi"));
+}
+
+/// A single-character query marks every occurrence for highlighting.
+#[test]
+fn match_mask_marks_every_single_character_occurrence() {
+    // cspell:words booo
+    // "Foo Bo Booo" carries six "o" letters across its three words.
+    assert_eq!(
+        marked(&match_mask("Foo Bo Booo", "o")),
+        vec![1, 2, 5, 8, 9, 10]
+    );
+}
+
+/// A multi-character query marks non-overlapping runs, scanning left to
+/// right, so "oo" marks the pair in "Foo" and one pair in "Booo".
+#[test]
+fn match_mask_marks_non_overlapping_runs() {
+    // cspell:words booo
+    assert_eq!(marked(&match_mask("Foo Bo Booo", "oo")), vec![1, 2, 8, 9]);
+    // "ooo" is long enough only for the run in "Booo".
+    assert_eq!(marked(&match_mask("Foo Bo Booo", "ooo")), vec![8, 9, 10]);
+}
+
+/// An empty or whitespace-only query marks nothing.
+#[test]
+fn match_mask_marks_nothing_for_an_empty_query() {
+    assert!(match_mask("Abc Def", "").iter().all(|&on| !on));
+    assert!(match_mask("Abc Def", "   ").iter().all(|&on| !on));
+}
+
+/// A query with no spaces marks across word boundaries but leaves the
+/// skipped space unmarked.
+#[test]
+fn match_mask_marks_across_word_boundaries() {
+    assert_eq!(
+        marked(&match_mask("Abc Def", "abcdef")),
+        vec![0, 1, 2, 4, 5, 6]
+    );
+}
+
+/// A query that keeps a space marks the space in place along with the rest.
+#[test]
+fn match_mask_marks_a_spaced_query_in_place() {
+    assert_eq!(
+        marked(&match_mask("Abc Def", "abc def")),
+        vec![0, 1, 2, 3, 4, 5, 6]
+    );
 }

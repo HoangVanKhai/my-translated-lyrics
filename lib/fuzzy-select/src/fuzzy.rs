@@ -75,6 +75,88 @@ fn normalize_whitespace(text: &str) -> String {
     text.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
+/// Reports which characters of `text` a typed `query` matches, for
+/// highlighting in the interactive table. The returned mask is aligned with
+/// `text.chars()`: `true` marks a character that is part of a match.
+///
+/// Matching follows the same rules as [`contains_ci`], so case and diacritics
+/// fold the same way and the same spacing rules apply. Occurrences are
+/// non-overlapping and scanned left to right: in "Foo Bo Booo" the query "o"
+/// marks all six letters, "oo" marks the pair in "Foo" and one pair in
+/// "Booo", and "ooo" marks only the run in "Booo".
+pub fn match_mask(text: &str, query: &str) -> Vec<bool> {
+    // cspell:words booo
+    let characters: Vec<char> = text.chars().collect();
+    let mut mask = vec![false; characters.len()];
+    let query = normalize_whitespace(query);
+    if query.is_empty() {
+        return mask;
+    }
+    let case_insensitive = is_case_insensitive(&query);
+    let query: Vec<char> = query.chars().collect();
+
+    // The characters the query is matched against, each paired with its index
+    // in the original text. This mirrors `contains_ci`: a query with a space
+    // keeps the text's spacing (collapsed), while one without a space ignores
+    // the text's whitespace so a run-together query can cross word boundaries.
+    let candidates: Vec<(usize, char)> = if query.contains(&' ') {
+        collapsed_candidates(&characters)
+    } else {
+        characters
+            .iter()
+            .copied()
+            .enumerate()
+            .filter(|(_, character)| !character.is_whitespace())
+            .collect()
+    };
+
+    let mut start = 0;
+    while start + query.len() <= candidates.len() {
+        let window = &candidates[start..start + query.len()];
+        let matched = window
+            .iter()
+            .zip(&query)
+            .all(|(&(_, candidate), &needle)| char_matches(needle, candidate, case_insensitive));
+        if matched {
+            for &(original_index, _) in window {
+                mask[original_index] = true;
+            }
+            start += query.len();
+        } else {
+            start += 1;
+        }
+    }
+    mask
+}
+
+/// The characters of `text` with their original indices, collapsing each run
+/// of whitespace to a single space keyed by the run's first character and
+/// trimming leading and trailing whitespace, to mirror [`normalize_whitespace`].
+fn collapsed_candidates(text: &[char]) -> Vec<(usize, char)> {
+    let mut candidates: Vec<(usize, char)> = Vec::new();
+    let mut index = 0;
+    while index < text.len() {
+        if text[index].is_whitespace() {
+            let run_start = index;
+            while index < text.len() && text[index].is_whitespace() {
+                index += 1;
+            }
+            // Skip a leading run so trimming matches `normalize_whitespace`.
+            if !candidates.is_empty() {
+                candidates.push((run_start, ' '));
+            }
+        } else {
+            candidates.push((index, text[index]));
+            index += 1;
+        }
+    }
+    // Drop a trailing collapsed space.
+    if let Some((_, ' ')) = candidates.last() {
+        candidates.pop();
+    }
+    candidates
+}
+
 /// Whether matching for `query` should ignore case.
 ///
 /// A uniformly-cased query (all lowercase, all uppercase, or with no cased

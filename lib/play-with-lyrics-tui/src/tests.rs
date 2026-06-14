@@ -1,6 +1,6 @@
 use crate::{
-    Navigation, ReadEvent, WindowSize, columns_line, fit, scroll_offset, select_one_loop,
-    select_video_loop, visible_rows,
+    Navigation, ReadEvent, WindowSize, columns_line, columns_line_highlighted, fit, fit_chars,
+    scroll_offset, select_one_loop, select_video_loop, visible_rows,
 };
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use lyrics_core::video_descriptor::{Language, VideoDesc, Visibility};
@@ -73,6 +73,35 @@ fn scroll_offset_keeps_the_cursor_on_screen() {
     assert_eq!(scroll_offset(2, 5), 0);
     // The cursor sits past the page, so the window scrolls to show it.
     assert_eq!(scroll_offset(7, 5), 3);
+}
+
+/// Each output character carries its highlight flag; the padding does not.
+#[test]
+fn fit_chars_pairs_characters_with_their_highlight() {
+    let cells = fit_chars("abc", &[false, true, false], 5);
+    assert_eq!(
+        cells,
+        vec![
+            ('a', false),
+            ('b', true),
+            ('c', false),
+            (' ', false),
+            (' ', false),
+        ],
+    );
+}
+
+/// The column separators are never highlighted, only the cell characters the
+/// mask marks.
+#[test]
+fn columns_line_highlighted_marks_only_cell_characters() {
+    let line = columns_line_highlighted([("ab", &[false, true]), ("", &[]), ("", &[])], 30);
+    let marked: String = line
+        .iter()
+        .filter(|&&(_, on)| on)
+        .map(|&(character, _)| character)
+        .collect();
+    assert_eq!(marked, "b");
 }
 
 // The interactive loops read their events through the `ReadEvent` seam, so a
@@ -690,4 +719,56 @@ fn select_one_backspace_goes_back() {
     EVENTS.lock().unwrap().extend([press(KeyCode::Backspace)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
     assert_eq!(chosen, Navigation::Back);
+}
+
+/// Typing a query that matches a title underlines the matched characters,
+/// which crossterm emits as the SGR underline escape.
+#[test]
+fn select_video_underlines_matched_characters() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![english_video("Alpha")];
+    // "al" matches the start of "Alpha", so those characters are underlined.
+    EVENTS.lock().unwrap().extend([
+        press(KeyCode::Char('a')),
+        press(KeyCode::Char('l')),
+        control(KeyCode::Char('q')),
+    ]);
+    let mut buffer = Vec::new();
+    select_video_loop::<Scripted>(&mut buffer, &videos).unwrap();
+    let rendered = String::from_utf8_lossy(&buffer);
+    assert!(rendered.contains("\u{1b}[4m"), "{rendered:?}");
+}
+
+/// With no query typed, nothing is underlined.
+#[test]
+fn select_video_does_not_underline_without_a_query() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![english_video("Alpha")];
+    EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
+    let mut buffer = Vec::new();
+    select_video_loop::<Scripted>(&mut buffer, &videos).unwrap();
+    let rendered = String::from_utf8_lossy(&buffer);
+    assert!(!rendered.contains("\u{1b}[4m"), "{rendered:?}");
 }
