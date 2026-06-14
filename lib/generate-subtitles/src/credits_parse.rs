@@ -13,8 +13,8 @@
 //! [`CreditLead::Special`] highlight) that stands in for the role. A
 //! line whose first non-whitespace token is neither a known role nor a
 //! bracketed span raises [`ParseCreditError::UnknownRole`], which lets
-//! the integration tests catch typos such as `作詞` vs `作词` before
-//! they ever reach `dist/`.
+//! the integration tests catch a mistyped role label before it ever
+//! reaches `dist/`.
 //!
 //! Only the `credit-roles` list is consumed by this parser. The
 //! `credit-names` list on [`CreditsDesc`] is loaded and carried
@@ -52,8 +52,8 @@ pub struct CreditPair<'a> {
 pub enum CreditLead<'a> {
     /// A registered role, rendered in the credit role color.
     Role(&'a str),
-    /// A bracketed span that opens a role-less line, for example
-    /// `[疏楼曲]` ahead of a contributor name, rendered in the credit
+    /// A bracketed span that opens a role-less line (a highlighted
+    /// label ahead of a contributor name), rendered in the credit
     /// highlight color in place of a role span.
     Special(Bracketed<'a>),
 }
@@ -310,9 +310,9 @@ impl<'a> CreditRoles<'a> {
             // A registered role only opens a new cell when it begins at
             // a cell boundary: the start of the name region (which
             // already follows the previous cell's separator) or right
-            // after a separator character. A role token sitting mid-name,
-            // such as the `二胡` inside the personal name `陆二胡`, is part
-            // of the name and must not split it.
+            // after a separator character. A role token that appears
+            // inside a name rather than at a cell boundary is part of
+            // the name and must not split it.
             let at_cell_boundary = cursor == 0
                 || input[..cursor]
                     .chars()

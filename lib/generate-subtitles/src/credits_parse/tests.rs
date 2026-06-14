@@ -161,7 +161,7 @@ fn bare_bracket_line_is_a_role_less_header() {
 
 /// A role-only header line carries a role and no name. The lead is the
 /// role and the name region is empty, so the renderers can emit just
-/// the role span for a section header such as `视频底图`.
+/// the role span for a section header.
 #[test]
 fn role_only_header_line_has_no_name() {
     let descriptor = make_descriptor(&["role-a"]);
@@ -286,8 +286,8 @@ fn bracketed_accepts_four_pair_kinds() {
     assert_eq!(round.as_str(), "(bronze)");
     assert_eq!(rest, "tail");
 
-    let (full_width_round, rest) = Bracketed::take("（铜）tail").unwrap();
-    assert_eq!(full_width_round.as_str(), "（铜）");
+    let (full_width_round, rest) = Bracketed::take("（copper）tail").unwrap();
+    assert_eq!(full_width_round.as_str(), "（copper）");
     assert_eq!(rest, "tail");
 }
 
