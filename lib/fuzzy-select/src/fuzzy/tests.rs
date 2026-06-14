@@ -1,3 +1,5 @@
+// cspell:ignore mưa xuân xuan
+
 use crate::fuzzy::{ResolveError, contains_ci, fuzzy_subsequence, resolve_unique};
 use pretty_assertions::assert_eq;
 
@@ -28,6 +30,16 @@ fn contains_is_substring_not_subsequence() {
     assert!(fuzzy_subsequence("cld", "celluloid"));
     assert!(!contains_ci("celluloid", "cld"));
     assert!(contains_ci("anything", ""));
+}
+
+#[test]
+fn matching_ignores_diacritics() {
+    // A Vietnamese title may be typed with or without its marks, in either
+    // direction, for both the substring filter and the fuzzy match.
+    assert!(contains_ci("Mưa Xuân", "mua xuan"));
+    assert!(contains_ci("mua xuan", "Mưa Xuân"));
+    assert!(fuzzy_subsequence("mua", "Mưa Xuân"));
+    assert!(fuzzy_subsequence("mưa", "Mua Xuan"));
 }
 
 #[test]
