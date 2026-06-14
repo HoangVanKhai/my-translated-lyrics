@@ -110,7 +110,6 @@ fn without_diacritics(character: char) -> char {
         'ù' | 'ú' | 'ủ' | 'ũ' | 'ụ' | 'ư' | 'ừ' | 'ứ' | 'ử' | 'ữ' | 'ự' => 'u',
         'ỳ' | 'ý' | 'ỷ' | 'ỹ' | 'ỵ' => 'y',
         'đ' => 'd',
-        // No diacritic: keep the character as-is, preserving its case.
         _ => return character,
     };
     if character.is_uppercase() {
