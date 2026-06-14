@@ -168,7 +168,7 @@ fn separator_style_follows_the_colon_glyph() {
     let full_width = parse_credit_line("role-a：name-a", &roles).unwrap();
     assert_eq!(
         full_width[0].separator_style(),
-        SeparatorStyle::FullWidthColon
+        SeparatorStyle::FullWidthColon,
     );
     let mixed = parse_credit_line("role-a:：name-a", &roles).unwrap();
     assert_eq!(mixed[0].separator_style(), SeparatorStyle::FullWidthColon);
