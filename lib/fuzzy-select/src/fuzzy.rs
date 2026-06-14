@@ -4,40 +4,40 @@
 //! Two distinct matching strategies live here, because the issue asks for
 //! two different behaviors:
 //!
-//! * The interactive table filters rows that *contain* the typed word,
-//!   case-insensitively. [`contains_ci`] implements that substring test.
+//! * The interactive table filters rows that *contain* the typed word.
+//!   [`contains_ci`] implements that substring test.
 //! * A command-line flag pre-selects a value by *fuzzy* matching, and the
 //!   value must resolve to exactly one candidate. [`fuzzy_subsequence`]
 //!   implements the subsequence test and [`resolve_unique`] enforces the
 //!   "exactly one" rule.
-
-// cspell:ignore mưa xuân xuan
+//!
+//! Both compare characters the same way: case and diacritics are matched
+//! asymmetrically, so a generic query (uniform case, no marks) matches
+//! broadly while a specific one (mixed case, or marks) matches exactly.
 
 use derive_more::Display;
 
 /// Returns `true` when every character of `query` appears in `text`, in
-/// order but not necessarily contiguously. Case is ignored and diacritics
-/// are handled asymmetrically: an unmarked query character matches the base
-/// letter and all its accented forms, while a marked one matches only that
-/// exact form. An empty query matches everything.
+/// order but not necessarily contiguously. Case and diacritics are matched
+/// asymmetrically (see the module docs). An empty query matches everything.
 ///
 /// This is the "fuzzy" match used to resolve a command-line flag value to
 /// a single candidate. For example, the query `cld` matches `celluloid`.
 pub fn fuzzy_subsequence(query: &str, text: &str) -> bool {
+    let case_insensitive = is_case_insensitive(query);
     let mut haystack = text.chars();
     query
         .chars()
-        .all(|needle| haystack.any(|candidate| char_matches(needle, candidate)))
+        .all(|needle| haystack.any(|candidate| char_matches(needle, candidate, case_insensitive)))
 }
 
 /// Returns `true` when `text` contains `query` as a contiguous run of
-/// characters. Case is ignored and diacritics are handled asymmetrically:
-/// an unmarked query character matches the base letter and all its accented
-/// forms, while a marked one matches only that exact form. An empty query
-/// matches everything.
+/// characters. Case and diacritics are matched asymmetrically (see the
+/// module docs). An empty query matches everything.
 ///
 /// This is the "contains the word" filter used by the interactive table.
 pub fn contains_ci(text: &str, query: &str) -> bool {
+    let case_insensitive = is_case_insensitive(query);
     let query: Vec<char> = query.chars().collect();
     if query.is_empty() {
         return true;
@@ -47,28 +47,43 @@ pub fn contains_ci(text: &str, query: &str) -> bool {
         window
             .iter()
             .zip(&query)
-            .all(|(&candidate, &needle)| char_matches(needle, candidate))
+            .all(|(&candidate, &needle)| char_matches(needle, candidate, case_insensitive))
     })
+}
+
+/// Whether matching for `query` should ignore case.
+///
+/// A uniformly-cased query (all lowercase, all uppercase, or with no cased
+/// letters at all) is treated as case-agnostic. A mixed-case query is taken
+/// literally, because the user spelled out the case on purpose.
+fn is_case_insensitive(query: &str) -> bool {
+    let has_upper = query.chars().any(char::is_uppercase);
+    let has_lower = query.chars().any(char::is_lowercase);
+    !(has_upper && has_lower)
 }
 
 /// Returns `true` when `text_char` matches `query_char`.
 ///
-/// Case is always ignored. Diacritics are matched asymmetrically, because
-/// Vietnamese titles are routinely typed without their marks: a query
-/// character written without a diacritic matches the base letter and every
-/// accented form of it (so "a" matches "a", "á", "à", "â", and so on),
-/// while a query character written with a diacritic matches only that exact
-/// form (so "à" matches only "à"). "đ" is the base letter "d" with a mark,
-/// so "d" matches "đ" but "đ" matches only "đ".
-fn char_matches(query_char: char, text_char: char) -> bool {
-    let query_lower = lowercase(query_char);
-    let text_lower = lowercase(text_char);
-    if base(query_lower) == query_lower {
+/// Case and diacritics are matched asymmetrically, on the same principle:
+/// what the user spelled out must match exactly, while what they left generic
+/// matches broadly. A query character written without a diacritic matches the
+/// base letter and every accented form of it (so "a" matches "a", "á", "à",
+/// "â", and so on), while one written with a diacritic matches only that exact
+/// form (so "à" matches only "à"); "đ" is the base "d" with a mark, so "d"
+/// matches "đ" but "đ" matches only "đ". When `case_insensitive` is set the
+/// comparison folds case; otherwise it is exact.
+fn char_matches(query_char: char, text_char: char, case_insensitive: bool) -> bool {
+    let (query_char, text_char) = if case_insensitive {
+        (lowercase(query_char), lowercase(text_char))
+    } else {
+        (query_char, text_char)
+    };
+    if without_diacritics(query_char) == query_char {
         // The query carries no diacritic: match the text character's base.
-        base(text_lower) == query_lower
+        without_diacritics(text_char) == query_char
     } else {
         // The query carries a diacritic: require an exact match.
-        text_lower == query_lower
+        text_char == query_char
     }
 }
 
@@ -81,11 +96,11 @@ fn lowercase(character: char) -> char {
     character.to_lowercase().next().unwrap_or(character)
 }
 
-/// The unaccented base letter of an already-lowercased character. Every
+/// The same letter with any diacritics removed, keeping its case. Every
 /// accented Vietnamese letter maps to its base, "đ" maps to "d", and any
-/// other character (plain ASCII, CJK) maps to itself.
-fn base(lower: char) -> char {
-    match lower {
+/// other character (plain ASCII, CJK) is returned unchanged.
+fn without_diacritics(character: char) -> char {
+    let stripped = match lowercase(character) {
         'à' | 'á' | 'ả' | 'ã' | 'ạ' | 'â' | 'ầ' | 'ấ' | 'ẩ' | 'ẫ' | 'ậ' | 'ă' | 'ằ' | 'ắ' | 'ẳ'
         | 'ẵ' | 'ặ' => 'a',
         'è' | 'é' | 'ẻ' | 'ẽ' | 'ẹ' | 'ê' | 'ề' | 'ế' | 'ể' | 'ễ' | 'ệ' => 'e',
@@ -95,7 +110,13 @@ fn base(lower: char) -> char {
         'ù' | 'ú' | 'ủ' | 'ũ' | 'ụ' | 'ư' | 'ừ' | 'ứ' | 'ử' | 'ữ' | 'ự' => 'u',
         'ỳ' | 'ý' | 'ỷ' | 'ỹ' | 'ỵ' => 'y',
         'đ' => 'd',
-        other => other,
+        // No diacritic: keep the character as-is, preserving its case.
+        _ => return character,
+    };
+    if character.is_uppercase() {
+        stripped.to_uppercase().next().unwrap_or(stripped)
+    } else {
+        stripped
     }
 }
 

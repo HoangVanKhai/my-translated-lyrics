@@ -11,9 +11,23 @@ fn subsequence_matches_in_order() {
 }
 
 #[test]
-fn subsequence_is_case_insensitive() {
+fn a_uniformly_cased_query_folds_case() {
+    // An all-lowercase or all-uppercase query matches any case of the text.
+    for query in ["foo bar baz", "FOO BAR BAZ"] {
+        for text in ["Foo Bar Baz", "foo bar baz", "FOO BAR BAZ"] {
+            assert!(contains_ci(text, query), "{query:?} should match {text:?}");
+        }
+    }
     assert!(fuzzy_subsequence("MPV", "mpv"));
-    assert!(fuzzy_subsequence("CELL", "celluloid"));
+    assert!(fuzzy_subsequence("cell", "CELLULOID"));
+}
+
+#[test]
+fn a_mixed_case_query_is_taken_literally() {
+    // A deliberately mixed-case query matches only that exact case.
+    assert!(contains_ci("Foo Bar Baz", "Foo Bar Baz"));
+    assert!(!contains_ci("foo bar baz", "Foo Bar Baz"));
+    assert!(!contains_ci("FOO BAR BAZ", "Foo Bar Baz"));
 }
 
 #[test]
