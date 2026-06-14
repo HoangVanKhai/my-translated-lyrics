@@ -103,12 +103,8 @@ impl Termination {
     pub(crate) fn exit_code(&self) -> ExitCode {
         match self {
             Termination::Failed(_) => ExitCode::FAILURE,
-            Termination::Cancelled => ExitCode::from(CANCELLED_EXIT_CODE),
+            Termination::Cancelled => ExitCode::from(exit_codes::CANCELLED),
             Termination::PlayerExited(code) => ExitCode::from(*code),
         }
     }
 }
-
-/// Exit code for a user-cancelled action, following the shell convention of
-/// 128 plus the signal number (SIGINT is 2).
-const CANCELLED_EXIT_CODE: u8 = 130;

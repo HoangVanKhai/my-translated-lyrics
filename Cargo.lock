@@ -305,6 +305,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "exit-codes"
+version = "0.0.0"
+
+[[package]]
 name = "foldhash"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -641,6 +645,7 @@ dependencies = [
  "clap",
  "command-extra",
  "derive_more",
+ "exit-codes",
  "fuzzy-select",
  "lyrics-core",
  "play-with-lyrics",

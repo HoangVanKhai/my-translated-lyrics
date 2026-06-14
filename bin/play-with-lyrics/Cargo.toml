@@ -12,6 +12,7 @@ doc = false
 [dependencies]
 play-with-lyrics.workspace = true
 play-with-lyrics-tui.workspace = true
+exit-codes.workspace = true
 fuzzy-select.workspace = true
 lyrics-core.workspace = true
 clap.workspace = true
