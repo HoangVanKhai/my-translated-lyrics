@@ -30,7 +30,7 @@ use fuzzy_select::selection::Selector;
 use lyrics_core::video_descriptor::Language;
 use play_with_lyrics::catalog::{Video, language_label};
 use std::io::{self, Stderr, Write};
-use std::time::{Duration, Instant};
+use std::time::{Duration, SystemTime};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 /// The outcome of an interactive selector.
@@ -62,13 +62,16 @@ trait WindowSize {
     fn window_size() -> io::Result<(u16, u16)>;
 }
 
-/// Reports the current instant, for measuring the gap between two clicks when
+/// Reports the current time, for measuring the gap between two clicks when
 /// detecting a double click.
 ///
 /// A dependency-injection seam: a test reports a fixed time so double-click
-/// detection does not depend on how fast the clicks are processed.
+/// detection does not depend on how fast the clicks are processed. `SystemTime`
+/// is used rather than `Instant` so the fake can return the `UNIX_EPOCH`
+/// constant; the clock is read only to compare two clicks moments apart, where
+/// `SystemTime`'s lack of monotonicity does not matter in practice.
 trait Clock {
-    fn now() -> Instant;
+    fn now() -> SystemTime;
 }
 
 /// The production provider: it reads from the real terminal.
@@ -87,8 +90,8 @@ impl WindowSize for Host {
 }
 
 impl Clock for Host {
-    fn now() -> Instant {
-        Instant::now()
+    fn now() -> SystemTime {
+        SystemTime::now()
     }
 }
 
@@ -221,9 +224,14 @@ const DOUBLE_CLICK_WINDOW: Duration = Duration::from_millis(500);
 /// Whether a left click at `row` and `now` completes a double click that began
 /// at `previous` (the time and row of the last click), so the same row was
 /// clicked twice within the double-click window.
-fn is_double_click(previous: Option<(Instant, u16)>, now: Instant, row: u16) -> bool {
+fn is_double_click(previous: Option<(SystemTime, u16)>, now: SystemTime, row: u16) -> bool {
     previous.is_some_and(|(when, last_row)| {
-        last_row == row && now.duration_since(when) <= DOUBLE_CLICK_WINDOW
+        // A backward clock step between the two clicks reads as "not a double
+        // click", which is the safe outcome.
+        last_row == row
+            && now
+                .duration_since(when)
+                .is_ok_and(|gap| gap <= DOUBLE_CLICK_WINDOW)
     })
 }
 
@@ -306,7 +314,7 @@ where
     if let Some(index) = selected {
         selector.focus(index);
     }
-    let mut last_click: Option<(Instant, u16)> = None;
+    let mut last_click: Option<(SystemTime, u16)> = None;
     let outcome = loop {
         render_table::<Sys>(output, &selector, videos)?;
         match Sys::read_event()? {
@@ -460,7 +468,7 @@ where
     Sys: ReadEvent + WindowSize + Clock,
 {
     let mut cursor = start.min(labels.len().saturating_sub(1));
-    let mut last_click: Option<(Instant, u16)> = None;
+    let mut last_click: Option<(SystemTime, u16)> = None;
     loop {
         render_list::<Sys>(output, prompt, labels, cursor)?;
         match Sys::read_event()? {
