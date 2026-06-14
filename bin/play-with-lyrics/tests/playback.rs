@@ -1,7 +1,11 @@
-//! Cases that run all the way through to launching a player, verified
-//! against fake player programs on `PATH`.
+//! End-to-end cases that run all the way through to launching a player,
+//! verified against fake player programs on `PATH`. The fake programs are
+//! shell scripts, so the whole suite is Unix-only.
 
-use crate::env::{Env, VIDEO_TITLE};
+#![cfg(unix)]
+
+pub mod _utils;
+pub use _utils::*;
 
 #[test]
 fn launches_mpv_with_the_resolved_files() {

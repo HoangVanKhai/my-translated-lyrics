@@ -1,6 +1,7 @@
-//! Cases that fail before any media player is launched.
+//! End-to-end cases that fail before any media player is launched.
 
-use crate::env::{Env, VIDEO_TITLE, stderr};
+pub mod _utils;
+pub use _utils::*;
 
 #[test]
 fn an_unmatched_title_is_an_error() {
