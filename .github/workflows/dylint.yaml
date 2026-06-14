@@ -1,8 +1,25 @@
 name: Dylint
 
+# Dylint only lints the Rust workspace, so it runs solely when Rust sources,
+# cargo manifests, the toolchain pin, the Dylint configuration, or this
+# workflow change. Edits to prose or lyrics data do not affect the lints.
 on:
-  - push
-  - pull_request
+  push:
+    paths:
+      - '**/*.rs'
+      - '**/Cargo.toml'
+      - Cargo.lock
+      - rust-toolchain
+      - dylint.toml
+      - .github/workflows/dylint.yaml
+  pull_request:
+    paths:
+      - '**/*.rs'
+      - '**/Cargo.toml'
+      - Cargo.lock
+      - rust-toolchain
+      - dylint.toml
+      - .github/workflows/dylint.yaml
 
 jobs:
   dylint:
