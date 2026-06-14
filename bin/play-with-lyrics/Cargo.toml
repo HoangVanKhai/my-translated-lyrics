@@ -10,19 +10,19 @@ path = "src/main.rs"
 doc = false
 
 [dependencies]
-play-with-lyrics.workspace = true
-play-with-lyrics-tui.workspace = true
+clap.workspace = true
+derive_more.workspace = true
 exit-codes.workspace = true
 fuzzy-select.workspace = true
 lyrics-core.workspace = true
-clap.workspace = true
-derive_more.workspace = true
-strum.workspace = true
 pipe-trait.workspace = true
+play-with-lyrics.workspace = true
+play-with-lyrics-tui.workspace = true
+strum.workspace = true
 
 [dev-dependencies]
-lyrics-core.workspace = true
 command-extra.workspace = true
+lyrics-core.workspace = true
 pretty_assertions.workspace = true
 test-utils.workspace = true
 toml.workspace = true
