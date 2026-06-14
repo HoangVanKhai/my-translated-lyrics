@@ -107,7 +107,7 @@ pub fn select_video(videos: &[Video]) -> io::Result<Option<usize>> {
             KeyCode::Up => selector.move_up(),
             KeyCode::Down => selector.move_down(),
             KeyCode::Backspace => selector.pop_char(),
-            KeyCode::Char(character) => selector.push_char(character),
+            KeyCode::Char(char) => selector.push_char(char),
             KeyCode::Enter => {
                 if let Some(index) = selector.selected_index() {
                     return Ok(Some(index));

@@ -51,8 +51,8 @@ fn empty_query_shows_every_row() {
 fn typing_filters_by_substring_across_all_columns() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
-    for character in "ví".chars() {
-        selector.push_char(character);
+    for char in "ví".chars() {
+        selector.push_char(char);
     }
     // "ví" appears in the Vietnamese title of the first row only, so a
     // match comes from a column other than the English title.
@@ -66,8 +66,8 @@ fn filtering_ignores_diacritics() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
     // The Vietnamese title "Bài Hát Ví Dụ" may be typed without its marks.
-    for character in "vi du".chars() {
-        selector.push_char(character);
+    for char in "vi du".chars() {
+        selector.push_char(char);
     }
     assert_eq!(selector.filtered(), &[0]);
 }
@@ -76,8 +76,8 @@ fn filtering_ignores_diacritics() {
 fn filtering_matches_a_non_english_column() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
-    for character in "mẫu".chars() {
-        selector.push_char(character);
+    for char in "mẫu".chars() {
+        selector.push_char(char);
     }
     // The Vietnamese titles of the second and third rows both contain it.
     assert_eq!(selector.filtered(), &[1, 2]);
@@ -87,8 +87,8 @@ fn filtering_matches_a_non_english_column() {
 fn backspacing_restores_rows() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
-    for character in "example".chars() {
-        selector.push_char(character);
+    for char in "example".chars() {
+        selector.push_char(char);
     }
     assert_eq!(selector.filtered(), &[0]);
     for _ in 0.."example".len() {
@@ -130,8 +130,8 @@ fn refiltering_resets_the_cursor_to_the_top() {
 fn no_match_leaves_nothing_selected() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
-    for character in "zzz".chars() {
-        selector.push_char(character);
+    for char in "zzz".chars() {
+        selector.push_char(char);
     }
     assert!(selector.filtered().is_empty());
     assert!(selector.selected_index().is_none());

@@ -46,8 +46,8 @@ where
     }
 
     /// Appends a character to the query and refilters.
-    pub fn push_char(&mut self, character: char) {
-        self.query.push(character);
+    pub fn push_char(&mut self, char: char) {
+        self.query.push(char);
         self.refilter();
     }
 

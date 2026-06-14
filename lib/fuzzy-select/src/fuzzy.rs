@@ -88,19 +88,19 @@ fn char_matches(query_char: char, text_char: char, case_insensitive: bool) -> bo
 }
 
 /// Lowercases a single character without allocating.
-fn lowercase(character: char) -> char {
+fn lowercase(char: char) -> char {
     // `to_lowercase` can expand to several characters (for example the
     // German sharp S). The inputs handled here never contain such
     // characters, so taking the first element keeps this a `char -> char`
     // mapping.
-    character.to_lowercase().next().unwrap_or(character)
+    char.to_lowercase().next().unwrap_or(char)
 }
 
 /// The same letter with any diacritics removed, keeping its case. Every
 /// accented Vietnamese letter maps to its base, "đ" maps to "d", and any
 /// other character (plain ASCII, CJK) is returned unchanged.
-fn without_diacritics(character: char) -> char {
-    let stripped = match lowercase(character) {
+fn without_diacritics(char: char) -> char {
+    let stripped = match lowercase(char) {
         'à' | 'á' | 'ả' | 'ã' | 'ạ' | 'â' | 'ầ' | 'ấ' | 'ẩ' | 'ẫ' | 'ậ' | 'ă' | 'ằ' | 'ắ' | 'ẳ'
         | 'ẵ' | 'ặ' => 'a',
         'è' | 'é' | 'ẻ' | 'ẽ' | 'ẹ' | 'ê' | 'ề' | 'ế' | 'ể' | 'ễ' | 'ệ' => 'e',
@@ -110,9 +110,9 @@ fn without_diacritics(character: char) -> char {
         'ù' | 'ú' | 'ủ' | 'ũ' | 'ụ' | 'ư' | 'ừ' | 'ứ' | 'ử' | 'ữ' | 'ự' => 'u',
         'ỳ' | 'ý' | 'ỷ' | 'ỹ' | 'ỵ' => 'y',
         'đ' => 'd',
-        _ => return character,
+        _ => return char,
     };
-    if character.is_uppercase() {
+    if char.is_uppercase() {
         stripped.to_uppercase().next().unwrap_or(stripped)
     } else {
         stripped
