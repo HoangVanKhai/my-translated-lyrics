@@ -35,8 +35,9 @@ fn main() -> ExitCode {
 }
 
 /// One step in the resolution sequence. A history of the steps that were
-/// resolved interactively lets the user go back through them.
-#[derive(Clone, Copy)]
+/// resolved interactively lets the user go back through them. The order of the
+/// variants is the order of the pages, which `step_back` compares against.
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum Stage {
     Video,
     Language,
@@ -44,10 +45,22 @@ enum Stage {
     Player,
 }
 
-/// Returns the step to revisit when the user goes back, or aborts the command
-/// when no earlier interactive page exists.
-fn step_back(history: &mut Vec<Stage>) -> Result<Stage, Termination> {
-    history.pop().ok_or(Termination::Cancelled)
+/// Returns the page to revisit when the user goes back, after erasing the
+/// state of the pages ahead of it so a later forward pass chooses them afresh.
+/// Aborts the command when no earlier interactive page exists.
+fn step_back(
+    history: &mut Vec<Stage>,
+    language: &mut Option<Language>,
+    format: &mut Option<SubtitleFormat>,
+) -> Result<Stage, Termination> {
+    let target = history.pop().ok_or(Termination::Cancelled)?;
+    if target < Stage::Language {
+        *language = None;
+    }
+    if target < Stage::Format {
+        *format = None;
+    }
+    Ok(target)
 }
 
 /// Runs the command, reporting any non-success outcome as a [`Termination`].
@@ -87,7 +100,7 @@ fn run() -> Result<(), Termination> {
                     history.push(Stage::Video);
                     stage = Stage::Language;
                 }
-                Resolution::Back => stage = step_back(&mut history)?,
+                Resolution::Back => stage = step_back(&mut history, &mut language, &mut format)?,
             },
             Stage::Language => {
                 let chosen_video =
@@ -112,7 +125,9 @@ fn run() -> Result<(), Termination> {
                         history.push(Stage::Language);
                         stage = Stage::Format;
                     }
-                    Resolution::Back => stage = step_back(&mut history)?,
+                    Resolution::Back => {
+                        stage = step_back(&mut history, &mut language, &mut format)?
+                    }
                 }
             }
             Stage::Format => {
@@ -132,12 +147,14 @@ fn run() -> Result<(), Termination> {
                         history.push(Stage::Format);
                         stage = Stage::Player;
                     }
-                    Resolution::Back => stage = step_back(&mut history)?,
+                    Resolution::Back => {
+                        stage = step_back(&mut history, &mut language, &mut format)?
+                    }
                 }
             }
             Stage::Player => match resolve_player(&args)? {
                 Resolution::Auto(chosen) | Resolution::Chosen(chosen) => break chosen,
-                Resolution::Back => stage = step_back(&mut history)?,
+                Resolution::Back => stage = step_back(&mut history, &mut language, &mut format)?,
             },
         }
     };
@@ -168,4 +185,46 @@ fn launch(mut command: Command, player: Player) -> Result<(), Termination> {
         .map_err(u8::try_from)
         .map_err(|code| code.unwrap_or(1))
         .map_err(Termination::PlayerExited)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Stage, step_back};
+    use lyrics_core::video_descriptor::Language;
+    use play_with_lyrics::player::SubtitleFormat;
+
+    /// Backing to the language page clears the format chosen later, but keeps
+    /// the language so it can be restored.
+    #[test]
+    fn stepping_back_to_the_language_page_erases_only_the_format() {
+        let mut history = vec![Stage::Video, Stage::Language];
+        let mut language = Some(Language::Vietnamese);
+        let mut format = Some(SubtitleFormat::SubRip);
+        let target = step_back(&mut history, &mut language, &mut format).unwrap();
+        assert!(matches!(target, Stage::Language));
+        assert_eq!(language, Some(Language::Vietnamese));
+        assert_eq!(format, None);
+    }
+
+    /// Backing all the way to the song page clears both the language and the
+    /// format, so the next forward pass chooses them afresh.
+    #[test]
+    fn stepping_back_to_the_song_page_erases_the_language_and_format() {
+        let mut history = vec![Stage::Video];
+        let mut language = Some(Language::Vietnamese);
+        let mut format = Some(SubtitleFormat::SubRip);
+        let target = step_back(&mut history, &mut language, &mut format).unwrap();
+        assert!(matches!(target, Stage::Video));
+        assert_eq!(language, None);
+        assert_eq!(format, None);
+    }
+
+    /// Backing with no earlier interactive page cancels the command.
+    #[test]
+    fn stepping_back_with_no_history_cancels() {
+        let mut history: Vec<Stage> = Vec::new();
+        let mut language = Some(Language::Vietnamese);
+        let mut format = Some(SubtitleFormat::SubRip);
+        assert!(step_back(&mut history, &mut language, &mut format).is_err());
+    }
 }
