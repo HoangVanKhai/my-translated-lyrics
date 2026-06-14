@@ -77,10 +77,12 @@ fn launch(command: &mut Command, player: Player) -> Result<(), Termination> {
     let status = command
         .status()
         .unwrap_or_else(|error| panic!("error: Failed to launch {player}: {error}"));
-    if status.success() {
-        Ok(())
-    } else {
-        let code = u8::try_from(status.code().unwrap_or(1)).unwrap_or(1);
-        Err(Termination::PlayerExited(code))
-    }
+    status
+        .success()
+        .then_some(())
+        .ok_or_else(|| status.code())
+        .map_err(|code| code.unwrap_or(1))
+        .map_err(u8::try_from)
+        .map_err(|code| code.unwrap_or(1))
+        .map_err(Termination::PlayerExited)
 }
