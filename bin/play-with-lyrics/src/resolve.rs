@@ -101,10 +101,9 @@ pub(crate) fn resolve_language(
     let start = previous
         .and_then(|previous| languages.iter().position(|&language| language == previous))
         .unwrap_or(0);
-    from_selection(
-        select_one("Select subtitle language", &labels, start),
-        |index| languages[index],
-    )
+    from_selection(select_one("Select a Language", &labels, start), |index| {
+        languages[index]
+    })
 }
 
 /// Resolves the subtitle format from `--format`, automatically when only
@@ -142,7 +141,7 @@ pub(crate) fn resolve_format(
         .and_then(|previous| formats.iter().position(|&format| format == previous))
         .unwrap_or(0);
     from_selection(
-        select_one("Select subtitle format", &labels, start),
+        select_one("Select a Subtitle Format", &labels, start),
         |index| formats[index],
     )
 }
@@ -157,7 +156,7 @@ pub(crate) fn resolve_player(args: &Args) -> Result<Resolution<Player>, Terminat
     let labels: Vec<String> = Player::VARIANTS.iter().map(ToString::to_string).collect();
     // The player is the last page, so it is never returned to and starts at the
     // top each time.
-    from_selection(select_one("Select media player", &labels, 0), |index| {
+    from_selection(select_one("Select a Media Player", &labels, 0), |index| {
         Player::VARIANTS[index]
     })
 }

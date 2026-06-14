@@ -1081,12 +1081,12 @@ fn select_one_single_click_highlights_the_clicked_row() {
         }
     }
     let labels = label_list(&["alpha", "beta", "gamma"]);
-    // Labels render at rows 2, 3, 4; clicking row 3 highlights "beta", then
-    // Enter confirms it.
+    // Labels render at rows 1, 2, 3, directly below the top bar; clicking row 2
+    // highlights "beta", then Enter confirms it.
     EVENTS
         .lock()
         .unwrap()
-        .extend([click(3), press(KeyCode::Enter)]);
+        .extend([click(2), press(KeyCode::Enter)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
 }
@@ -1115,7 +1115,7 @@ fn select_one_single_click_does_not_select() {
     EVENTS
         .lock()
         .unwrap()
-        .extend([click(3), press(KeyCode::Esc)]);
+        .extend([click(2), press(KeyCode::Esc)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     // The single click only moved the highlight; the following Escape ends the
     // loop by going back.
@@ -1143,7 +1143,7 @@ fn select_one_double_click_selects_the_clicked_row() {
         }
     }
     let labels = label_list(&["alpha", "beta", "gamma"]);
-    EVENTS.lock().unwrap().extend([click(3), click(3)]);
+    EVENTS.lock().unwrap().extend([click(2), click(2)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
 }
@@ -1514,4 +1514,32 @@ fn select_video_forward_button_selects_the_highlighted_video() {
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
+}
+
+/// The list page names itself in the top bar with the title it is given.
+#[test]
+fn select_one_shows_the_page_title_in_the_top_bar() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_701_234_567)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    EVENTS.lock().unwrap().extend([press(KeyCode::Esc)]);
+    let mut buffer = Vec::new();
+    select_one_loop::<Scripted>(&mut buffer, "Select a Language", &labels, 0).unwrap();
+    let rendered = String::from_utf8_lossy(&buffer);
+    assert!(rendered.contains("Select a Language"), "{rendered}");
 }

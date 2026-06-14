@@ -8,17 +8,14 @@ use std::ops::Range;
 use std::time::{Duration, SystemTime};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
-/// The title of the program, shown in the center of the top bar.
-pub(crate) const PROGRAM_TITLE: &str = "Play with Lyrics";
-
 /// The screen row of the first title in the table, below the top bar, the
 /// search prompt, and the column header. Shared by the renderer and the click
 /// handling so they agree on where the rows are.
 pub(crate) const DATA_ROW_OFFSET: usize = 3;
 
-/// The screen row of the first item in a list, below the top bar and the
-/// single prompt line.
-pub(crate) const LIST_ROW_OFFSET: usize = 2;
+/// The screen row of the first item in a list, directly below the top bar,
+/// whose centered title names the page.
+pub(crate) const LIST_ROW_OFFSET: usize = 1;
 
 /// How close together two clicks on the same row must be to count as a double
 /// click, which confirms the choice.

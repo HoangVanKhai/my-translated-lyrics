@@ -6,9 +6,9 @@
 use crate::Navigation;
 use crate::host::{Clock, Host, ReadEvent, WindowSize};
 use crate::render::{
-    Button, DATA_ROW_OFFSET, LIST_ROW_OFFSET, PROGRAM_TITLE, button_at, columns_line,
-    columns_line_highlighted, draw_highlighted_line, draw_highlighted_line_reverse, fit,
-    is_double_click, render_top_bar, scroll_offset, visible_rows,
+    Button, DATA_ROW_OFFSET, LIST_ROW_OFFSET, button_at, columns_line, columns_line_highlighted,
+    draw_highlighted_line, draw_highlighted_line_reverse, fit, is_double_click, render_top_bar,
+    scroll_offset, visible_rows,
 };
 use crate::screen::{Screen, Style};
 use crate::terminal::TerminalGuard;
@@ -150,8 +150,9 @@ where
     let columns = width as usize;
     let rows = height as usize;
 
-    // The table is the first page, so going back is not available here.
-    render_top_bar(buffer, columns, PROGRAM_TITLE, false);
+    // The top bar names the page; the table is the first page, so going back is
+    // not available here.
+    render_top_bar(buffer, columns, "Select a Video", false);
 
     let prompt = format!("Search: {}", selector.query());
     buffer.set_string(0, 1, &fit(&prompt, columns), Style::PLAIN);
@@ -199,12 +200,12 @@ where
     screen.flush(output)
 }
 
-/// Presents a simple single-column list of `labels` under `prompt` and
-/// reports the chosen item, a request to go back to the previous page, or a
-/// request to quit.
-pub fn select_one(prompt: &str, labels: &[String], start: usize) -> io::Result<Navigation> {
+/// Presents a simple single-column list of `labels` and reports the chosen
+/// item, a request to go back to the previous page, or a request to quit. The
+/// `title` names the page in the top bar.
+pub fn select_one(title: &str, labels: &[String], start: usize) -> io::Result<Navigation> {
     let mut guard = TerminalGuard::enter()?;
-    select_one_loop::<Host>(&mut guard.output, prompt, labels, start)
+    select_one_loop::<Host>(&mut guard.output, title, labels, start)
 }
 
 /// Drives the single-column list selector, reading events from `Sys`.
@@ -213,7 +214,7 @@ pub fn select_one(prompt: &str, labels: &[String], start: usize) -> io::Result<N
 /// `start` is the row to highlight at first, to restore a previous choice.
 pub(crate) fn select_one_loop<Sys>(
     output: &mut impl Write,
-    prompt: &str,
+    title: &str,
     labels: &[String],
     start: usize,
 ) -> io::Result<Navigation>
@@ -226,7 +227,7 @@ where
     // Draw once up front, then redraw only after an event that changes what is
     // shown. The double-buffered screen sends only the cells that change, so a
     // redraw never clears the whole screen and the display does not flicker.
-    render_list::<Sys>(&mut screen, output, prompt, labels, cursor)?;
+    render_list::<Sys>(&mut screen, output, title, labels, cursor)?;
     loop {
         match Sys::read_event()? {
             Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
@@ -302,14 +303,14 @@ where
             Event::Resize(..) => {}
             _ => continue,
         }
-        render_list::<Sys>(&mut screen, output, prompt, labels, cursor)?;
+        render_list::<Sys>(&mut screen, output, title, labels, cursor)?;
     }
 }
 
 fn render_list<Sys>(
     screen: &mut Screen,
     output: &mut impl Write,
-    prompt: &str,
+    title: &str,
     labels: &[String],
     cursor: usize,
 ) -> io::Result<()>
@@ -320,10 +321,9 @@ where
     let buffer = screen.begin(width, height, output)?;
     let columns = width as usize;
 
-    // A list page always follows an earlier page, so going back is available.
-    render_top_bar(buffer, columns, PROGRAM_TITLE, true);
-
-    buffer.set_string(0, 1, &fit(prompt, columns), Style::BOLD);
+    // The top bar names the page; a list page always follows an earlier page,
+    // so going back is available.
+    render_top_bar(buffer, columns, title, true);
 
     for (index, label) in labels.iter().enumerate() {
         let screen_y = (index + LIST_ROW_OFFSET) as u16;
