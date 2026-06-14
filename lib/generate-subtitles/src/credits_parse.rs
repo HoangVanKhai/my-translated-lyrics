@@ -42,7 +42,8 @@ pub struct CreditPair<'a> {
     /// space gutter.
     pub separator: &'a str,
     /// Decomposed name region, with bracketed and unbracketed
-    /// segments. Empty for a role-only header line.
+    /// segments. Empty for a header line that carries no name, whether
+    /// a role-only header or a bare bracket-lead line.
     pub name_segments: Vec<NameSegment<'a>>,
 }
 
