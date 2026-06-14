@@ -168,3 +168,24 @@ fn setting_the_query_filters_like_typing() {
     selector.set_query("example");
     assert_eq!(selector.filtered(), &[0]);
 }
+
+/// Setting an order sorts the visible rows by it.
+#[test]
+fn set_order_sorts_the_visible_rows() {
+    let rows = sample();
+    let mut selector = Selector::new(&rows);
+    // Descending by English title: "Sample Tune", "Sample Song", "Example Song".
+    selector.set_order(|left, right| right.en.cmp(left.en));
+    assert_eq!(selector.filtered(), &[2, 1, 0]);
+}
+
+/// The order is kept when the query refilters the rows.
+#[test]
+fn the_order_persists_across_a_refilter() {
+    let rows = sample();
+    let mut selector = Selector::new(&rows);
+    selector.set_order(|left, right| right.en.cmp(left.en));
+    // "Sample" matches the second and third rows, which stay descending.
+    selector.set_query("Sample");
+    assert_eq!(selector.filtered(), &[2, 1]);
+}

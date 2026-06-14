@@ -5,6 +5,7 @@ edition.workspace = true
 publish.workspace = true
 
 [dependencies]
+column-sort.workspace = true
 crossterm.workspace = true
 fuzzy-select.workspace = true
 lyrics-core.workspace = true

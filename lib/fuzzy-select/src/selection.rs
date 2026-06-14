@@ -6,6 +6,7 @@
 //! one of these while rendering and reading key events.
 
 use crate::fuzzy::contains_ci;
+use std::cmp::Ordering;
 
 /// An item that an interactive selector can filter by a typed query.
 pub trait Searchable {
@@ -18,11 +19,13 @@ pub trait Searchable {
 pub struct Selector<'a, Item> {
     items: &'a [Item],
     query: String,
-    /// Indices into `items` that currently match `query`, in their
-    /// original order.
+    /// Indices into `items` that currently match `query`, in display order:
+    /// the order `order` imposes, or the original order when none is set.
     filtered: Vec<usize>,
     /// Position of the highlighted row within `filtered`.
     cursor: usize,
+    /// The comparator that sorts the visible items, when one is set.
+    order: Option<Box<dyn Fn(&Item, &Item) -> Ordering + 'a>>,
 }
 
 impl<'a, Item> Selector<'a, Item>
@@ -37,6 +40,34 @@ where
             query: String::new(),
             filtered,
             cursor: 0,
+            order: None,
+        }
+    }
+
+    /// Sets the comparator that orders the visible items and re-sorts them,
+    /// keeping the highlight on the same item. The order is re-applied after
+    /// every refilter, so it persists as the query changes.
+    pub fn set_order(&mut self, order: impl Fn(&Item, &Item) -> Ordering + 'a) {
+        let selected = self.selected_index();
+        self.order = Some(Box::new(order));
+        self.sort_filtered();
+        if let Some(index) = selected {
+            self.focus(index);
+        }
+    }
+
+    /// Orders `filtered` by the current comparator, if one is set.
+    fn sort_filtered(&mut self) {
+        let Selector {
+            items,
+            filtered,
+            order,
+            ..
+        } = self;
+        if let Some(order) = order {
+            let items = *items;
+            let compare = &**order;
+            filtered.sort_by(|&left, &right| compare(&items[left], &items[right]));
         }
     }
 
@@ -118,6 +149,7 @@ where
                     .any(|key| contains_ci(key, &self.query))
             })
             .collect();
+        self.sort_filtered();
         self.cursor = 0;
     }
 }

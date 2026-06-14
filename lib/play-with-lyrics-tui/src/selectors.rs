@@ -6,18 +6,21 @@
 use crate::Navigation;
 use crate::host::{Clock, Host, ReadEvent, WindowSize};
 use crate::render::{
-    Button, DATA_ROW_OFFSET, LIST_ROW_OFFSET, button_at, columns_line, columns_line_highlighted,
-    draw_highlighted_line, fit, is_double_click, render_top_bar, scroll_offset, visible_rows,
+    Button, DATA_ROW_OFFSET, HEADER_ROW, LIST_ROW_OFFSET, button_at, column_at, column_spans,
+    columns_line, columns_line_highlighted, draw_highlighted_line, fit, is_double_click,
+    render_top_bar, scroll_offset, visible_rows,
 };
 use crate::terminal::TerminalGuard;
+use column_sort::ColumnSort;
 use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers, MouseButton, MouseEventKind};
 use fuzzy_select::fuzzy::match_mask;
 use fuzzy_select::selection::Selector;
 use lyrics_core::video_descriptor::Language;
 use play_with_lyrics::catalog::{Video, language_label};
+use std::cmp::Ordering;
 use std::io::{self, Write};
 use std::time::SystemTime;
-use terminal_screen::{Screen, Style};
+use terminal_screen::{Buffer, Screen, Style};
 
 /// Presents the fuzzy table of titles and reports the chosen row, a request
 /// to go back, or a request to quit. This is the first page, so going back
@@ -47,6 +50,10 @@ where
 {
     let mut selector = Selector::new(videos);
     selector.set_query(query);
+    // The table sorts by English title first, then Vietnamese, then Chinese.
+    // Clicking a column header changes the priority and direction.
+    let mut sort = ColumnSort::new([Language::English, Language::Vietnamese, Language::Chinese]);
+    selector.set_order(video_order(sort.clone()));
     if let Some(index) = selected {
         selector.focus(index);
     }
@@ -57,7 +64,7 @@ where
     // shown, including a mouse movement that changes the hover highlight. The
     // double-buffered screen sends only the cells that differ, so redrawing this
     // often stays cheap.
-    render_table::<Sys>(&mut screen, output, &selector, videos, hover)?;
+    render_table::<Sys>(&mut screen, output, &selector, videos, &sort, hover)?;
     let outcome = loop {
         match Sys::read_event()? {
             Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
@@ -112,6 +119,15 @@ where
                                     }
                                 }
                             }
+                        } else if mouse.row == HEADER_ROW {
+                            // A click on a column header re-sorts the table by
+                            // that column.
+                            if let Some(column) = column_at(columns as usize, mouse.column as usize)
+                            {
+                                let language = COLUMN_LANGUAGES[column];
+                                sort.click(language);
+                                selector.set_order(video_order(sort.clone()));
+                            }
                         } else {
                             let visible = visible_rows(rows as usize);
                             let offset = scroll_offset(selector.cursor(), visible);
@@ -140,12 +156,16 @@ where
             Event::Resize(..) => {}
             _ => continue,
         }
-        render_table::<Sys>(&mut screen, output, &selector, videos, hover)?;
+        render_table::<Sys>(&mut screen, output, &selector, videos, &sort, hover)?;
     };
     // Hand the final query back so the caller can restore it on a later visit.
     *query = selector.query().to_string();
     Ok(outcome)
 }
+
+/// The table columns, left to right, naming the language each one shows.
+const COLUMN_LANGUAGES: [Language; 3] =
+    [Language::English, Language::Vietnamese, Language::Chinese];
 
 /// The base style for a selectable row at screen `row`: reverse video when it
 /// is the current selection, with bold added when the pointer hovers over it.
@@ -161,11 +181,66 @@ fn row_style(selected: bool, hover: Option<(u16, u16)>, row: u16) -> Style {
     style
 }
 
+/// A comparator over videos for the given column sort, reading each video's
+/// title in the column's language.
+fn video_order(sort: ColumnSort<Language>) -> impl Fn(&Video, &Video) -> Ordering {
+    move |left, right| {
+        sort.compare(
+            |language| left.title(language).unwrap_or(""),
+            |language| right.title(language).unwrap_or(""),
+        )
+    }
+}
+
+/// Draws the clickable column header at [`HEADER_ROW`]. The column the table is
+/// sorted by is marked with an arrow for its direction, and the column under
+/// the pointer is drawn in reverse video.
+fn render_header(
+    buffer: &mut Buffer,
+    columns: usize,
+    sort: &ColumnSort<Language>,
+    hover: Option<(u16, u16)>,
+) {
+    let primary = sort.order().first().copied();
+    let label = |language: Language| -> String {
+        let mut text = language_label(language).to_string();
+        if let Some((column, direction)) = primary
+            && column == language
+        {
+            text.push(' ');
+            text.push(if direction.is_ascending() {
+                '▲'
+            } else {
+                '▼'
+            });
+        }
+        text
+    };
+    let labels = COLUMN_LANGUAGES.map(label);
+    let header = columns_line(&labels[0], &labels[1], &labels[2], columns);
+    buffer.set_string(0, HEADER_ROW, &header, Style::BOLD);
+
+    if let Some((hover_column, hover_row)) = hover
+        && hover_row == HEADER_ROW
+        && let Some(index) = column_at(columns, hover_column as usize)
+    {
+        let span = &column_spans(columns)[index];
+        let fitted = fit(&labels[index], span.len());
+        buffer.set_string(
+            span.start as u16,
+            HEADER_ROW,
+            &fitted,
+            Style::BOLD.with(Style::REVERSE),
+        );
+    }
+}
+
 fn render_table<Sys>(
     screen: &mut Screen,
     output: &mut impl Write,
     selector: &Selector<Video>,
     videos: &[Video],
+    sort: &ColumnSort<Language>,
     hover: Option<(u16, u16)>,
 ) -> io::Result<()>
 where
@@ -183,13 +258,7 @@ where
     let prompt = format!("Search: {}", selector.query());
     buffer.set_string(0, 1, &fit(&prompt, columns), Style::PLAIN);
 
-    let header = columns_line(
-        language_label(Language::English),
-        language_label(Language::Vietnamese),
-        language_label(Language::Chinese),
-        columns,
-    );
-    buffer.set_string(0, 2, &header, Style::BOLD);
+    render_header(buffer, columns, sort, hover);
 
     let filtered = selector.filtered();
     let cursor = selector.cursor();

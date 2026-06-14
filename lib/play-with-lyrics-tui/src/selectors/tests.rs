@@ -1,6 +1,8 @@
-use super::{select_one_loop, select_video_loop};
+use super::{render_header, select_one_loop, select_video_loop};
 use crate::Navigation;
 use crate::host::{Clock, ReadEvent, WindowSize};
+use crate::render::{HEADER_ROW, column_spans};
+use column_sort::ColumnSort;
 use crossterm::event::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
 };
@@ -11,7 +13,24 @@ use std::collections::{HashMap, VecDeque};
 use std::io;
 use std::sync::Mutex;
 use std::time::{Duration, SystemTime};
+use terminal_screen::{Buffer, Style};
 use test_utils::video_desc;
+
+/// A video with both an English and a Vietnamese title, so the table can be
+/// sorted by either column to a different order.
+fn bilingual_video(english: &str, vietnamese: &str) -> Video {
+    Video {
+        desc: VideoDesc {
+            collection: "Touhou Hero of Ice Fairy".to_string().try_into().unwrap(),
+            video_title: english.to_string().try_into().unwrap(),
+            song_titles: HashMap::from([
+                (Language::English, english.to_string()),
+                (Language::Vietnamese, vietnamese.to_string()),
+            ]),
+            visibility: Visibility::Visible,
+        },
+    }
+}
 
 // The interactive loops read their events through the `ReadEvent` seam, so a
 // test runs them with a fake event source instead of a terminal. Following
@@ -642,20 +661,21 @@ fn select_video_renders_only_the_visible_window() {
             Ok((80, 6))
         }
     }
+    // The names are alphabetical, so the default English sort keeps this order.
     let videos = vec![
-        english_video("First"),
-        english_video("Second"),
-        english_video("Third"),
-        english_video("Fourth"),
+        english_video("Alpha"),
+        english_video("Bravo"),
+        english_video("Charlie"),
+        english_video("Delta"),
     ];
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let mut buffer = Vec::new();
     select_video_loop::<Scripted>(&mut buffer, &videos, &mut String::new(), None).unwrap();
     let rendered = String::from_utf8_lossy(&buffer);
-    assert!(rendered.contains("First"), "{rendered}");
-    assert!(rendered.contains("Second"), "{rendered}");
-    assert!(!rendered.contains("Third"), "{rendered}");
-    assert!(!rendered.contains("Fourth"), "{rendered}");
+    assert!(rendered.contains("Alpha"), "{rendered}");
+    assert!(rendered.contains("Bravo"), "{rendered}");
+    assert!(!rendered.contains("Charlie"), "{rendered}");
+    assert!(!rendered.contains("Delta"), "{rendered}");
 }
 
 /// When the terminal size is unavailable, rendering falls back to a usable
@@ -1619,4 +1639,64 @@ fn select_one_reverses_the_button_under_the_pointer() {
     select_one_loop::<Scripted>(&mut buffer, "Select a Language", &labels, 0).unwrap();
     let rendered = String::from_utf8_lossy(&buffer);
     assert!(rendered.contains("\u{1b}[7m"), "{rendered:?}");
+}
+
+/// Clicking a column header re-sorts the table by that column. Sorting by
+/// Vietnamese brings the video with the first Vietnamese title to the top.
+#[test]
+fn clicking_a_column_header_re_sorts_by_that_column() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_703_456_789)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![
+        bilingual_video("Alpha", "Zulu"),
+        bilingual_video("Bravo", "Yankee"),
+        bilingual_video("Charlie", "Xray"),
+    ];
+    // The default English sort shows Alpha, Bravo, Charlie. Column 30 on the
+    // header row falls on the Vietnamese header; clicking it sorts by
+    // Vietnamese, putting Charlie (Xray) first. Clicking the first data row,
+    // then Enter, selects it: Charlie is item index 2.
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([click_at(30, HEADER_ROW), click(3), press(KeyCode::Enter)]);
+    let chosen =
+        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
+    assert_eq!(chosen, Navigation::Selected(2));
+}
+
+/// The header marks the sorted column with a direction arrow and draws the
+/// column under the pointer bold and reversed.
+#[test]
+fn render_header_marks_the_sorted_and_hovered_columns() {
+    let sort = ColumnSort::new([Language::English, Language::Vietnamese, Language::Chinese]);
+    let mut buffer = Buffer::new(80, 3);
+    // Hover the English header, at column 5 on the header row.
+    render_header(&mut buffer, 80, &sort, Some((5, HEADER_ROW)));
+    let header = buffer.row_text(HEADER_ROW);
+    // English is the default sort column, ascending, so it carries the ▲ arrow.
+    assert!(header.contains("English ▲"), "{header}");
+    // The hovered English header is drawn bold and reversed.
+    assert_eq!(
+        buffer.style_at(0, HEADER_ROW),
+        Style::BOLD.with(Style::REVERSE),
+    );
+    // A column the pointer is not over stays plain bold.
+    let vietnamese_start = column_spans(80)[1].start as u16;
+    assert_eq!(buffer.style_at(vietnamese_start, HEADER_ROW), Style::BOLD);
 }

@@ -8,6 +8,11 @@ use std::time::{Duration, SystemTime};
 use terminal_screen::{Buffer, Style};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
+/// The screen row of the column header, below the top bar and the search
+/// prompt. The header is clickable, so the renderer and the click handling
+/// share this.
+pub(crate) const HEADER_ROW: u16 = 2;
+
 /// The screen row of the first title in the table, below the top bar, the
 /// search prompt, and the column header. Shared by the renderer and the click
 /// handling so they agree on where the rows are.
@@ -92,6 +97,29 @@ pub(crate) fn columns_line(english: &str, vietnamese: &str, chinese: &str, total
         .into_iter()
         .map(|(character, _)| character)
         .collect()
+}
+
+/// The screen columns each of the three title cells spans, matching the layout
+/// of [`columns_line`]. The header renderer and the header click handling share
+/// this so they agree on where each column sits.
+pub(crate) fn column_spans(total: usize) -> [Range<usize>; 3] {
+    let separator = " │ ".width();
+    let available = total.saturating_sub(separator * 2);
+    let each = (available / 3).max(1);
+    [
+        0..each,
+        (each + separator)..(2 * each + separator),
+        (2 * each + 2 * separator)..(3 * each + 2 * separator),
+    ]
+}
+
+/// The index of the title column at screen `column`, where 0 is English, 1 is
+/// Vietnamese, and 2 is Chinese, or `None` for a click on a separator or past
+/// the columns.
+pub(crate) fn column_at(total: usize, column: usize) -> Option<usize> {
+    column_spans(total)
+        .iter()
+        .position(|span| span.contains(&column))
 }
 
 /// Whether a left click at `row` and `now` completes a double click that began
