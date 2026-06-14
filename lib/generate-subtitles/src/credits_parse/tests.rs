@@ -106,12 +106,12 @@ fn longer_role_wins_over_shorter_prefix() {
     assert_eq!(parsed[0].role, "role-a");
 }
 
+/// The name `name-role-a` ends with the registered role token
+/// `role-a`, but that token sits mid-name rather than at a cell
+/// boundary, so it must not be split off as a second role cell: the
+/// line is one pair whose name is the whole `name-role-a`.
 #[test]
 fn role_token_inside_a_name_does_not_split_it() {
-    // The name `name-role-a` ends with the registered role token
-    // `role-a`, but that token sits mid-name rather than at a cell
-    // boundary, so it must not be split off as a second role cell: the
-    // line is one pair whose name is the whole `name-role-a`.
     let descriptor = make_descriptor(&["role-a"]);
     let roles = make_roles(&descriptor);
     let parsed = parse_credit_line("role-a: name-role-a", &roles).unwrap();
