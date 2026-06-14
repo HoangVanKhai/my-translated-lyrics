@@ -266,7 +266,7 @@ where
         }
     }
 
-    let help = "↑/↓ move · type to search · Backspace delete or back · Enter select · Esc quit";
+    let help = "↑/↓ move · type to search · ⌫ delete or back · ⏎ select · Esc/^Q quit";
     output
         .queue(MoveTo(0, rows.saturating_sub(1) as u16))?
         .queue(SetAttribute(Attribute::Dim))?
@@ -368,7 +368,7 @@ where
         }
     }
 
-    let help = "↑/↓ move · Backspace back · Enter/Space select · Esc quit";
+    let help = "↑/↓ move · ⌫ back · ⏎/Space select · Esc/^Q quit";
     output
         .queue(MoveTo(0, rows.saturating_sub(1)))?
         .queue(SetAttribute(Attribute::Dim))?
