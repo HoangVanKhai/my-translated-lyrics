@@ -114,39 +114,25 @@ impl From<FormatArg> for SubtitleFormat {
     }
 }
 
-/// A non-success outcome of [`run`]. Each variant carries the data needed
-/// to print a message through its [`Display`] implementation and to choose
-/// a process exit code through [`Failure::exit_code`].
+/// A failure of the command. Every variant's message begins with `error: `
+/// and maps to [`ExitCode::FAILURE`]; the [`Termination`] enum carries the
+/// non-failure ways the program can stop.
 #[derive(Debug, Display)]
 enum Failure {
     #[display("error: No videos found in source directory {_0:?}.")]
     NoVideos(PathBuf),
 
-    #[display("error: No subtitles for {video_title:?} were found in {collection_dir:?}.")]
-    NoSubtitles {
-        video_title: String,
-        collection_dir: PathBuf,
-    },
+    #[display("{_0}")]
+    NoSubtitles(NoSubtitles),
 
-    #[display("error: --title {query:?}: {error}.")]
-    UnresolvedTitle { query: String, error: ResolveError },
+    #[display("{_0}")]
+    UnresolvedTitle(UnresolvedTitle),
 
-    #[display(
-        "error: no {requested} subtitle is available for this video (available: {available})."
-    )]
-    LanguageUnavailable {
-        requested: Language,
-        available: String,
-    },
+    #[display("{_0}")]
+    LanguageUnavailable(LanguageUnavailable),
 
-    #[display(
-        "error: no {requested} subtitle is available in {language} (available: {available})."
-    )]
-    FormatUnavailable {
-        language: Language,
-        requested: SubtitleFormat,
-        available: String,
-    },
+    #[display("{_0}")]
+    FormatUnavailable(FormatUnavailable),
 
     #[display(
         "error: {_0} must be selected interactively, but stdin is not a terminal. Provide the corresponding flag instead."
@@ -155,44 +141,97 @@ enum Failure {
 
     #[display("error: {_0}")]
     VideoLookup(VideoLookupError),
+}
 
+/// No subtitle files exist for the chosen video in the media library.
+#[derive(Debug, Display)]
+#[display("error: No subtitles for {video_title:?} were found in {collection_dir:?}.")]
+struct NoSubtitles {
+    video_title: String,
+    collection_dir: PathBuf,
+}
+
+/// The `--title` value did not resolve to exactly one video.
+#[derive(Debug, Display)]
+#[display("error: --title {query:?}: {error}.")]
+struct UnresolvedTitle {
+    query: String,
+    error: ResolveError,
+}
+
+/// The requested subtitle language is not available for the chosen video.
+#[derive(Debug, Display)]
+#[display("error: no {requested} subtitle is available for this video (available: {available}).")]
+struct LanguageUnavailable {
+    requested: Language,
+    available: String,
+}
+
+/// The requested subtitle format is not available for the chosen language.
+#[derive(Debug, Display)]
+#[display("error: no {requested} subtitle is available in {language} (available: {available}).")]
+struct FormatUnavailable {
+    language: Language,
+    requested: SubtitleFormat,
+    available: String,
+}
+
+/// A non-success way the program can stop. A [`Failure`] is one of them; the
+/// others are not errors and so do not print an `error: ` message.
+#[derive(Debug, Display)]
+enum Termination {
+    /// The command failed.
+    #[display("{_0}")]
+    Failed(Failure),
+
+    /// The user cancelled an interactive selection.
     #[display("Cancelled.")]
     Cancelled,
 
+    /// The media player ran but exited with a non-zero status. This is the
+    /// player's own status, not a failure of this command.
     #[display("the media player exited with status {_0}.")]
     PlayerExited(u8),
 }
 
-impl Failure {
-    /// The process exit code this failure maps to.
+impl From<Failure> for Termination {
+    fn from(failure: Failure) -> Self {
+        Termination::Failed(failure)
+    }
+}
+
+impl Termination {
+    /// The process exit code this termination maps to.
     fn exit_code(&self) -> ExitCode {
         match self {
-            // 130 is the conventional code for an action cancelled at the
-            // terminal (128 + SIGINT).
-            Failure::Cancelled => ExitCode::from(130),
-            Failure::PlayerExited(code) => ExitCode::from(*code),
-            _ => ExitCode::FAILURE,
+            Termination::Failed(_) => ExitCode::FAILURE,
+            Termination::Cancelled => ExitCode::from(CANCELLED_EXIT_CODE),
+            Termination::PlayerExited(code) => ExitCode::from(*code),
         }
     }
 }
+
+/// Exit code for a user-cancelled action, following the shell convention of
+/// 128 plus the signal number (SIGINT is 2).
+const CANCELLED_EXIT_CODE: u8 = 130;
 
 fn main() -> ExitCode {
     match run() {
         Ok(()) => ExitCode::SUCCESS,
-        Err(failure) => {
-            eprintln!("{failure}");
-            failure.exit_code()
+        Err(termination) => {
+            eprintln!("{termination}");
+            termination.exit_code()
         }
     }
 }
 
-/// Runs the command, reporting any non-success outcome as a [`Failure`].
-fn run() -> Result<(), Failure> {
+/// Runs the command, reporting any non-success outcome as a [`Termination`].
+fn run() -> Result<(), Termination> {
     let args = Args::parse();
 
     let catalog = load(&args.source);
     if catalog.is_empty() {
-        return Err(Failure::NoVideos(args.source.clone()));
+        return Err(Failure::NoVideos(args.source.clone()).into());
     }
 
     let video = resolve_video(&args, &catalog)?;
@@ -201,10 +240,11 @@ fn run() -> Result<(), Failure> {
 
     let available = available_subtitles(&collection_dir, video_title);
     if available.is_empty() {
-        return Err(Failure::NoSubtitles {
+        return Err(Failure::NoSubtitles(NoSubtitles {
             video_title: video_title.to_string(),
             collection_dir,
-        });
+        })
+        .into());
     }
 
     let language = resolve_language(&args, &available)?;
@@ -224,21 +264,22 @@ fn run() -> Result<(), Failure> {
 }
 
 /// Resolves the video from `--title` or through the interactive table.
-fn resolve_video<'a>(args: &Args, catalog: &'a [Video]) -> Result<&'a Video, Failure> {
+fn resolve_video<'a>(args: &Args, catalog: &'a [Video]) -> Result<&'a Video, Termination> {
     match &args.title {
         Some(query) => {
             resolve_unique(query, catalog, <Video as Searchable>::search_keys).map_err(|error| {
-                Failure::UnresolvedTitle {
+                Failure::UnresolvedTitle(UnresolvedTitle {
                     query: query.clone(),
                     error,
-                }
+                })
+                .into()
             })
         }
         None => {
             require_terminal("a video title")?;
             match select_video(catalog).expect("interactive selection failed") {
                 Some(index) => Ok(&catalog[index]),
-                None => Err(Failure::Cancelled),
+                None => Err(Termination::Cancelled),
             }
         }
     }
@@ -249,7 +290,7 @@ fn resolve_video<'a>(args: &Args, catalog: &'a [Video]) -> Result<&'a Video, Fai
 fn resolve_language(
     args: &Args,
     available: &[(Language, SubtitleFormat)],
-) -> Result<Language, Failure> {
+) -> Result<Language, Termination> {
     let mut languages: Vec<Language> = available.iter().map(|(language, _)| *language).collect();
     languages.dedup();
 
@@ -258,10 +299,11 @@ fn resolve_language(
         return if languages.contains(&requested) {
             Ok(requested)
         } else {
-            Err(Failure::LanguageUnavailable {
+            Err(Failure::LanguageUnavailable(LanguageUnavailable {
                 requested,
                 available: join_display(&languages),
             })
+            .into())
         };
     }
     if let [only] = languages.as_slice() {
@@ -274,7 +316,7 @@ fn resolve_language(
         .collect();
     match select_one("Select subtitle language", &labels).expect("interactive selection failed") {
         Some(index) => Ok(languages[index]),
-        None => Err(Failure::Cancelled),
+        None => Err(Termination::Cancelled),
     }
 }
 
@@ -284,17 +326,18 @@ fn resolve_format(
     args: &Args,
     language: Language,
     formats: &[SubtitleFormat],
-) -> Result<SubtitleFormat, Failure> {
+) -> Result<SubtitleFormat, Termination> {
     if let Some(arg) = args.format {
         let requested = SubtitleFormat::from(arg);
         return if formats.contains(&requested) {
             Ok(requested)
         } else {
-            Err(Failure::FormatUnavailable {
+            Err(Failure::FormatUnavailable(FormatUnavailable {
                 language,
                 requested,
                 available: join_display(formats),
             })
+            .into())
         };
     }
     if let [only] = formats {
@@ -307,13 +350,13 @@ fn resolve_format(
         .collect();
     match select_one("Select subtitle format", &labels).expect("interactive selection failed") {
         Some(index) => Ok(formats[index]),
-        None => Err(Failure::Cancelled),
+        None => Err(Termination::Cancelled),
     }
 }
 
 /// Resolves the media player from `--player` or through an interactive
 /// selector.
-fn resolve_player(args: &Args) -> Result<Player, Failure> {
+fn resolve_player(args: &Args) -> Result<Player, Termination> {
     if let Some(arg) = args.player {
         return Ok(Player::from(arg));
     }
@@ -321,12 +364,13 @@ fn resolve_player(args: &Args) -> Result<Player, Failure> {
     let labels: Vec<String> = Player::VARIANTS.iter().map(ToString::to_string).collect();
     match select_one("Select media player", &labels).expect("interactive selection failed") {
         Some(index) => Ok(Player::VARIANTS[index]),
-        None => Err(Failure::Cancelled),
+        None => Err(Termination::Cancelled),
     }
 }
 
-/// Launches the player, reporting a non-zero exit status as a [`Failure`].
-fn launch(command: &mut Command, player: Player) -> Result<(), Failure> {
+/// Launches the player, reporting a non-zero exit status as a
+/// [`Termination::PlayerExited`].
+fn launch(command: &mut Command, player: Player) -> Result<(), Termination> {
     let status = command
         .status()
         .unwrap_or_else(|error| panic!("error: Failed to launch {player}: {error}"));
@@ -334,17 +378,17 @@ fn launch(command: &mut Command, player: Player) -> Result<(), Failure> {
         Ok(())
     } else {
         let code = u8::try_from(status.code().unwrap_or(1)).unwrap_or(1);
-        Err(Failure::PlayerExited(code))
+        Err(Termination::PlayerExited(code))
     }
 }
 
-/// Returns a [`Failure`] when an interactive selection is required but
-/// standard input is not a terminal.
-fn require_terminal(what: &'static str) -> Result<(), Failure> {
+/// Returns a [`Failure::NotInteractive`] when an interactive selection is
+/// required but standard input is not a terminal.
+fn require_terminal(what: &'static str) -> Result<(), Termination> {
     if io::stdin().is_terminal() {
         Ok(())
     } else {
-        Err(Failure::NotInteractive(what))
+        Err(Failure::NotInteractive(what).into())
     }
 }
 
