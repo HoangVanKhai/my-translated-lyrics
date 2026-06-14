@@ -11,31 +11,53 @@ use lyrics_core::video_descriptor::Language;
 use pipe_trait::Pipe;
 use play_with_lyrics::catalog::{Video, language_label};
 use play_with_lyrics::player::{Player, SubtitleFormat};
-use play_with_lyrics_tui::{select_one, select_video};
+use play_with_lyrics_tui::{Navigation, select_one, select_video};
 use std::io::{self, IsTerminal};
 use strum::VariantArray;
+
+/// How a choice was resolved.
+pub(crate) enum Resolution<Value> {
+    /// Resolved without interaction, from a flag or because only one option
+    /// exists. Such a step is not a place the user can return to.
+    Auto(Value),
+    /// Chosen through an interactive page, which the user can return to.
+    Chosen(Value),
+    /// The user asked to go back from the interactive page.
+    Back,
+}
+
+/// Maps the outcome of an interactive selector to a [`Resolution`]. The
+/// `value` closure turns the chosen index into the resolved value. A request
+/// to quit becomes [`Termination::Cancelled`].
+fn from_selection<Value>(
+    selection: io::Result<Navigation>,
+    value: impl FnOnce(usize) -> Value,
+) -> Result<Resolution<Value>, Termination> {
+    match selection.expect("interactive selection failed") {
+        Navigation::Selected(index) => Ok(Resolution::Chosen(value(index))),
+        Navigation::Back => Ok(Resolution::Back),
+        Navigation::Quit => Err(Termination::Cancelled),
+    }
+}
 
 /// Resolves the video from `--title` or through the interactive table.
 pub(crate) fn resolve_video<'a>(
     args: &Args,
     catalog: &'a [Video],
-) -> Result<&'a Video, Termination> {
+) -> Result<Resolution<&'a Video>, Termination> {
     match &args.title {
-        Some(query) => {
-            resolve_unique(query, catalog, <Video as Searchable>::search_keys).map_err(|error| {
+        Some(query) => resolve_unique(query, catalog, <Video as Searchable>::search_keys)
+            .map(Resolution::Auto)
+            .map_err(|error| {
                 Failure::UnresolvedTitle(UnresolvedTitle {
                     query: query.clone(),
                     error,
                 })
                 .into()
-            })
-        }
+            }),
         None => {
             require_terminal("a video title")?;
-            match select_video(catalog).expect("interactive selection failed") {
-                Some(index) => Ok(&catalog[index]),
-                None => Err(Termination::Cancelled),
-            }
+            from_selection(select_video(catalog), |index| &catalog[index])
         }
     }
 }
@@ -45,14 +67,14 @@ pub(crate) fn resolve_video<'a>(
 pub(crate) fn resolve_language(
     args: &Args,
     available: &[(Language, SubtitleFormat)],
-) -> Result<Language, Termination> {
+) -> Result<Resolution<Language>, Termination> {
     let mut languages: Vec<Language> = available.iter().map(|(language, _)| *language).collect();
     languages.dedup();
 
     if let Some(arg) = args.language {
         let requested = Language::from(arg);
         if languages.contains(&requested) {
-            return Ok(requested);
+            return Ok(Resolution::Auto(requested));
         }
         let error = LanguageUnavailable {
             requested,
@@ -64,17 +86,16 @@ pub(crate) fn resolve_language(
             .pipe(Err);
     }
     if let [only] = languages.as_slice() {
-        return Ok(*only);
+        return Ok(Resolution::Auto(*only));
     }
     require_terminal("a subtitle language")?;
     let labels: Vec<String> = languages
         .iter()
         .map(|language| format!("{} ({language})", language_label(*language)))
         .collect();
-    match select_one("Select subtitle language", &labels).expect("interactive selection failed") {
-        Some(index) => Ok(languages[index]),
-        None => Err(Termination::Cancelled),
-    }
+    from_selection(select_one("Select subtitle language", &labels), |index| {
+        languages[index]
+    })
 }
 
 /// Resolves the subtitle format from `--format`, automatically when only
@@ -83,11 +104,11 @@ pub(crate) fn resolve_format(
     args: &Args,
     language: Language,
     formats: &[SubtitleFormat],
-) -> Result<SubtitleFormat, Termination> {
+) -> Result<Resolution<SubtitleFormat>, Termination> {
     if let Some(arg) = args.format {
         let requested = SubtitleFormat::from(arg);
         if formats.contains(&requested) {
-            return Ok(requested);
+            return Ok(Resolution::Auto(requested));
         }
         let error = FormatUnavailable {
             language,
@@ -100,31 +121,29 @@ pub(crate) fn resolve_format(
             .pipe(Err);
     }
     if let [only] = formats {
-        return Ok(*only);
+        return Ok(Resolution::Auto(*only));
     }
     require_terminal("a subtitle format")?;
     let labels: Vec<String> = formats
         .iter()
         .map(|format| format!("{} ({format})", format.full_name()))
         .collect();
-    match select_one("Select subtitle format", &labels).expect("interactive selection failed") {
-        Some(index) => Ok(formats[index]),
-        None => Err(Termination::Cancelled),
-    }
+    from_selection(select_one("Select subtitle format", &labels), |index| {
+        formats[index]
+    })
 }
 
 /// Resolves the media player from `--player` or through an interactive
 /// selector.
-pub(crate) fn resolve_player(args: &Args) -> Result<Player, Termination> {
+pub(crate) fn resolve_player(args: &Args) -> Result<Resolution<Player>, Termination> {
     if let Some(arg) = args.player {
-        return Ok(Player::from(arg));
+        return Ok(Resolution::Auto(Player::from(arg)));
     }
     require_terminal("a media player")?;
     let labels: Vec<String> = Player::VARIANTS.iter().map(ToString::to_string).collect();
-    match select_one("Select media player", &labels).expect("interactive selection failed") {
-        Some(index) => Ok(Player::VARIANTS[index]),
-        None => Err(Termination::Cancelled),
-    }
+    from_selection(select_one("Select media player", &labels), |index| {
+        Player::VARIANTS[index]
+    })
 }
 
 /// Returns a [`Failure::NotInteractive`] when an interactive selection is

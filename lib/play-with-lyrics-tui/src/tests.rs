@@ -1,6 +1,6 @@
 use crate::{
-    ReadEvent, WindowSize, columns_line, fit, scroll_offset, select_one_loop, select_video_loop,
-    visible_rows,
+    Navigation, ReadEvent, WindowSize, columns_line, fit, scroll_offset, select_one_loop,
+    select_video_loop, visible_rows,
 };
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use lyrics_core::video_descriptor::{Language, VideoDesc, Visibility};
@@ -160,7 +160,7 @@ fn select_one_returns_the_highlighted_row() {
         press(KeyCode::Enter),
     ]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
-    assert_eq!(chosen, Some(2));
+    assert_eq!(chosen, Navigation::Selected(2));
 }
 
 /// Escape cancels the list selector.
@@ -181,7 +181,7 @@ fn select_one_cancels_on_escape() {
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([press(KeyCode::Esc)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
-    assert_eq!(chosen, None);
+    assert_eq!(chosen, Navigation::Quit);
 }
 
 /// Ctrl-C cancels the list selector.
@@ -202,7 +202,7 @@ fn select_one_cancels_on_ctrl_c() {
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('c'))]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
-    assert_eq!(chosen, None);
+    assert_eq!(chosen, Navigation::Quit);
 }
 
 /// The cursor never moves above the first row or below the last.
@@ -230,7 +230,7 @@ fn select_one_keeps_the_cursor_within_bounds() {
         press(KeyCode::Enter),
     ]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
-    assert_eq!(chosen, Some(1));
+    assert_eq!(chosen, Navigation::Selected(1));
 }
 
 /// Events that are not key presses, such as key releases, are ignored.
@@ -260,7 +260,7 @@ fn select_one_ignores_non_press_events() {
         .unwrap()
         .extend([release, press(KeyCode::Down), press(KeyCode::Enter)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
-    assert_eq!(chosen, Some(1));
+    assert_eq!(chosen, Navigation::Selected(1));
 }
 
 /// Enter does nothing while the list is empty, so the loop keeps reading.
@@ -284,7 +284,7 @@ fn select_one_enter_is_a_no_op_for_an_empty_list() {
         .unwrap()
         .extend([press(KeyCode::Enter), press(KeyCode::Esc)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
-    assert_eq!(chosen, None);
+    assert_eq!(chosen, Navigation::Quit);
 }
 
 /// Typing narrows the table, and Enter returns the index, into the original
@@ -313,7 +313,7 @@ fn select_video_filters_then_selects() {
         press(KeyCode::Enter),
     ]);
     let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
-    assert_eq!(chosen, Some(1));
+    assert_eq!(chosen, Navigation::Selected(1));
 }
 
 /// Backspace widens the query again after it has filtered everything out.
@@ -340,7 +340,7 @@ fn select_video_backspace_widens_the_query() {
         press(KeyCode::Enter),
     ]);
     let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
-    assert_eq!(chosen, Some(1));
+    assert_eq!(chosen, Navigation::Selected(1));
 }
 
 /// Escape cancels the table without choosing a row.
@@ -361,7 +361,7 @@ fn select_video_cancels_on_escape() {
     let videos = vec![video("Alpha")];
     EVENTS.lock().unwrap().extend([press(KeyCode::Esc)]);
     let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
-    assert_eq!(chosen, None);
+    assert_eq!(chosen, Navigation::Quit);
 }
 
 /// Ctrl-Q quits the table.
@@ -382,7 +382,7 @@ fn select_video_quits_on_ctrl_q() {
     let videos = vec![video("Alpha")];
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
-    assert_eq!(chosen, None);
+    assert_eq!(chosen, Navigation::Quit);
 }
 
 /// Ctrl-Q quits the table even when the character arrives upper-cased, as it
@@ -404,7 +404,7 @@ fn select_video_quits_on_ctrl_q_upper_case() {
     let videos = vec![video("Alpha")];
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('Q'))]);
     let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
-    assert_eq!(chosen, None);
+    assert_eq!(chosen, Navigation::Quit);
 }
 
 /// In the table a bare "q" is a search character, not a quit, because the
@@ -431,7 +431,7 @@ fn select_video_treats_a_bare_q_as_a_filter_character() {
         .unwrap()
         .extend([press(KeyCode::Char('q')), press(KeyCode::Enter)]);
     let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
-    assert_eq!(chosen, Some(0));
+    assert_eq!(chosen, Navigation::Selected(0));
 }
 
 /// In the list selector a bare "q" quits, since there is no text entry.
@@ -452,7 +452,7 @@ fn select_one_quits_on_q() {
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([press(KeyCode::Char('q'))]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
-    assert_eq!(chosen, None);
+    assert_eq!(chosen, Navigation::Quit);
 }
 
 /// Shift-Q quits the list selector too: the Shift state does not change it.
@@ -473,7 +473,7 @@ fn select_one_quits_on_shift_q() {
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([shift(KeyCode::Char('Q'))]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
-    assert_eq!(chosen, None);
+    assert_eq!(chosen, Navigation::Quit);
 }
 
 /// Ctrl-Q quits the list selector as well.
@@ -494,7 +494,7 @@ fn select_one_quits_on_ctrl_q() {
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
-    assert_eq!(chosen, None);
+    assert_eq!(chosen, Navigation::Quit);
 }
 
 /// The height-dependent count of title rows reserves the prompt, header, and
@@ -622,4 +622,47 @@ fn select_video_renders_with_a_fallback_size_when_size_is_unavailable() {
     let rendered = String::from_utf8_lossy(&buffer);
     // The 80-column fallback is wide enough to show the native header.
     assert!(rendered.contains("Tiếng Việt"), "{rendered}");
+}
+
+/// On the song page, Backspace with an empty query goes back, which on this
+/// first page is the way out.
+#[test]
+fn select_video_backspace_on_an_empty_query_goes_back() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![video("Alpha")];
+    EVENTS.lock().unwrap().extend([press(KeyCode::Backspace)]);
+    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
+    assert_eq!(chosen, Navigation::Back);
+}
+
+/// On a non-typing list page, Backspace goes back to the previous page.
+#[test]
+fn select_one_backspace_goes_back() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    EVENTS.lock().unwrap().extend([press(KeyCode::Backspace)]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    assert_eq!(chosen, Navigation::Back);
 }

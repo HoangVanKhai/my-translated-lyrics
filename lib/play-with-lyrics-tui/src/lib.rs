@@ -27,6 +27,17 @@ use play_with_lyrics::catalog::{Video, language_label};
 use std::io::{self, Stderr, Write};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
+/// The outcome of an interactive selector.
+#[derive(Debug, PartialEq, Eq)]
+pub enum Navigation {
+    /// The user chose the item at this index.
+    Selected(usize),
+    /// The user asked to return to the previous page.
+    Back,
+    /// The user asked to quit the program.
+    Quit,
+}
+
 /// Reads the next input event from the terminal.
 ///
 /// This trait is the dependency-injection seam for the interactive loops.
@@ -142,9 +153,10 @@ fn visible_rows(rows: usize) -> usize {
     rows.saturating_sub(3).max(1)
 }
 
-/// Presents the fuzzy table of titles and returns the index, into `videos`,
-/// of the chosen row. Returns `None` when the user cancels.
-pub fn select_video(videos: &[Video]) -> io::Result<Option<usize>> {
+/// Presents the fuzzy table of titles and reports the chosen row, a request
+/// to go back, or a request to quit. This is the first page, so going back
+/// from an empty query is the way out of it.
+pub fn select_video(videos: &[Video]) -> io::Result<Navigation> {
     let mut guard = TerminalGuard::enter()?;
     select_video_loop::<Host>(&mut guard.output, videos)
 }
@@ -152,7 +164,7 @@ pub fn select_video(videos: &[Video]) -> io::Result<Option<usize>> {
 /// Drives the fuzzy-table selector, reading events from `Sys`. Splitting
 /// this out from [`select_video`] lets a test replay scripted events and
 /// render to a buffer, exercising the loop without a terminal.
-fn select_video_loop<Sys>(output: &mut impl Write, videos: &[Video]) -> io::Result<Option<usize>>
+fn select_video_loop<Sys>(output: &mut impl Write, videos: &[Video]) -> io::Result<Navigation>
 where
     Sys: ReadEvent + WindowSize,
 {
@@ -166,22 +178,29 @@ where
             continue;
         }
         match key.code {
-            KeyCode::Esc => return Ok(None),
+            KeyCode::Esc => return Ok(Navigation::Quit),
             KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                return Ok(None);
+                return Ok(Navigation::Quit);
             }
             // Ctrl-Q quits. Both cases are matched so that Shift or Caps
             // Lock, which we cannot reliably tell apart, never change this.
             KeyCode::Char('q' | 'Q') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                return Ok(None);
+                return Ok(Navigation::Quit);
             }
             KeyCode::Up => selector.move_up(),
             KeyCode::Down => selector.move_down(),
-            KeyCode::Backspace => selector.pop_char(),
+            // Backspace deletes a character while one is typed, and goes back
+            // once the query is empty.
+            KeyCode::Backspace => {
+                if selector.query().is_empty() {
+                    return Ok(Navigation::Back);
+                }
+                selector.pop_char();
+            }
             KeyCode::Char(char) => selector.push_char(char),
             KeyCode::Enter => {
                 if let Some(index) = selector.selected_index() {
-                    return Ok(Some(index));
+                    return Ok(Navigation::Selected(index));
                 }
             }
             _ => {}
@@ -247,7 +266,7 @@ where
         }
     }
 
-    let help = "↑/↓ move · type to filter · Enter select · Esc cancel";
+    let help = "↑/↓ move · type to search · Backspace delete or back · Enter select · Esc quit";
     output
         .queue(MoveTo(0, rows.saturating_sub(1) as u16))?
         .queue(SetAttribute(Attribute::Dim))?
@@ -261,9 +280,9 @@ where
 mod tests;
 
 /// Presents a simple single-column list of `labels` under `prompt` and
-/// returns the index of the chosen item. Returns `None` when the user
-/// cancels.
-pub fn select_one(prompt: &str, labels: &[String]) -> io::Result<Option<usize>> {
+/// reports the chosen item, a request to go back to the previous page, or a
+/// request to quit.
+pub fn select_one(prompt: &str, labels: &[String]) -> io::Result<Navigation> {
     let mut guard = TerminalGuard::enter()?;
     select_one_loop::<Host>(&mut guard.output, prompt, labels)
 }
@@ -275,7 +294,7 @@ fn select_one_loop<Sys>(
     output: &mut impl Write,
     prompt: &str,
     labels: &[String],
-) -> io::Result<Option<usize>>
+) -> io::Result<Navigation>
 where
     Sys: ReadEvent + WindowSize,
 {
@@ -289,14 +308,16 @@ where
             continue;
         }
         match key.code {
-            KeyCode::Esc => return Ok(None),
+            KeyCode::Esc => return Ok(Navigation::Quit),
             KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                return Ok(None);
+                return Ok(Navigation::Quit);
             }
             // This list has no text entry, so a bare Q quits as well as
             // Ctrl-Q. Both cases match, so neither Shift nor Caps Lock
             // changes the behavior.
-            KeyCode::Char('q' | 'Q') => return Ok(None),
+            KeyCode::Char('q' | 'Q') => return Ok(Navigation::Quit),
+            // With nothing to type, Backspace goes back to the previous page.
+            KeyCode::Backspace => return Ok(Navigation::Back),
             KeyCode::Up => cursor = cursor.saturating_sub(1),
             KeyCode::Down => {
                 if cursor + 1 < labels.len() {
@@ -305,7 +326,7 @@ where
             }
             KeyCode::Enter => {
                 if !labels.is_empty() {
-                    return Ok(Some(cursor));
+                    return Ok(Navigation::Selected(cursor));
                 }
             }
             _ => {}
@@ -322,7 +343,7 @@ fn render_list<Sys>(
 where
     Sys: WindowSize,
 {
-    let (columns, _) = Sys::window_size().unwrap_or((80, 24));
+    let (columns, rows) = Sys::window_size().unwrap_or((80, 24));
     let columns = columns as usize;
 
     output.queue(Clear(ClearType::All))?;
@@ -345,6 +366,13 @@ where
             output.queue(Print(line))?;
         }
     }
+
+    let help = "↑/↓ move · Backspace back · Enter select · Esc quit";
+    output
+        .queue(MoveTo(0, rows.saturating_sub(1)))?
+        .queue(SetAttribute(Attribute::Dim))?
+        .queue(Print(fit(help, columns)))?
+        .queue(SetAttribute(Attribute::Reset))?;
 
     output.flush()
 }
