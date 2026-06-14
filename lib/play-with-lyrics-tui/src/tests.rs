@@ -2,7 +2,9 @@ use crate::{
     Navigation, ReadEvent, WindowSize, columns_line, columns_line_highlighted, fit, fit_chars,
     scroll_offset, select_one_loop, select_video_loop, visible_rows,
 };
-use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
+use crossterm::event::{
+    Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
+};
 use lyrics_core::video_descriptor::{Language, VideoDesc, Visibility};
 use play_with_lyrics::catalog::Video;
 use pretty_assertions::assert_eq;
@@ -124,6 +126,26 @@ fn control(code: KeyCode) -> Event {
 /// A key press combined with the Shift modifier.
 fn shift(code: KeyCode) -> Event {
     Event::Key(KeyEvent::new(code, KeyModifiers::SHIFT))
+}
+
+/// A left-button click at screen `row`.
+fn click(row: u16) -> Event {
+    Event::Mouse(MouseEvent {
+        kind: MouseEventKind::Down(MouseButton::Left),
+        column: 0,
+        row,
+        modifiers: KeyModifiers::NONE,
+    })
+}
+
+/// A scroll-wheel-down event.
+fn scroll_down() -> Event {
+    Event::Mouse(MouseEvent {
+        kind: MouseEventKind::ScrollDown,
+        column: 0,
+        row: 0,
+        modifiers: KeyModifiers::NONE,
+    })
 }
 
 /// Pops the next scripted event from a test's own queue, reporting an error
@@ -972,4 +994,127 @@ fn select_video_writes_back_the_final_query() {
         .extend([press(KeyCode::Char('a')), press(KeyCode::Enter)]);
     select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut query, None).unwrap();
     assert_eq!(query, "a");
+}
+
+/// Clicking a list row selects the item shown there.
+#[test]
+fn select_one_click_selects_the_clicked_row() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels = label_list(&["alpha", "beta", "gamma"]);
+    // Labels render at rows 1, 2, 3; clicking row 2 picks "beta".
+    EVENTS.lock().unwrap().extend([click(2)]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    assert_eq!(chosen, Navigation::Selected(1));
+}
+
+/// The scroll wheel moves the list cursor.
+#[test]
+fn select_one_scroll_moves_the_cursor() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([scroll_down(), press(KeyCode::Enter)]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    assert_eq!(chosen, Navigation::Selected(1));
+}
+
+/// Clicking a table row selects the video shown there.
+#[test]
+fn select_video_click_selects_the_clicked_row() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![
+        english_video("First"),
+        english_video("Second"),
+        english_video("Third"),
+    ];
+    // Data rows render at 2, 3, 4; clicking row 3 picks the second video.
+    EVENTS.lock().unwrap().extend([click(3)]);
+    let chosen =
+        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
+    assert_eq!(chosen, Navigation::Selected(1));
+}
+
+/// A click above the first title, on the prompt or header, selects nothing.
+#[test]
+fn select_video_click_above_the_rows_does_nothing() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![english_video("First")];
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([click(0), control(KeyCode::Char('q'))]);
+    let chosen =
+        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
+    assert_eq!(chosen, Navigation::Quit);
+}
+
+/// The scroll wheel moves the table cursor.
+#[test]
+fn select_video_scroll_moves_the_cursor() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![english_video("First"), english_video("Second")];
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([scroll_down(), press(KeyCode::Enter)]);
+    let chosen =
+        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
+    assert_eq!(chosen, Navigation::Selected(1));
 }

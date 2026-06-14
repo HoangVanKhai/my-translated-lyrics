@@ -15,8 +15,9 @@
 
 use crossterm::cursor::{Hide, MoveTo, Show};
 use crossterm::event::{
-    Event, KeyCode, KeyEventKind, KeyModifiers, KeyboardEnhancementFlags,
-    PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags, read,
+    DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind, KeyModifiers,
+    KeyboardEnhancementFlags, MouseButton, MouseEventKind, PopKeyboardEnhancementFlags,
+    PushKeyboardEnhancementFlags, read,
 };
 use crossterm::style::{Attribute, Print, SetAttribute};
 use crossterm::terminal::{
@@ -90,7 +91,10 @@ impl TerminalGuard {
     fn enter() -> io::Result<Self> {
         enable_raw_mode()?;
         let mut output = io::stderr();
-        output.execute(EnterAlternateScreen)?.execute(Hide)?;
+        output
+            .execute(EnterAlternateScreen)?
+            .execute(Hide)?
+            .execute(EnableMouseCapture)?;
         // Request the keyboard enhancement protocol so modified keys such as
         // Ctrl-Backspace arrive with their modifier. Terminals that do not
         // support it are left untouched, and Ctrl-Backspace simply has no
@@ -111,6 +115,7 @@ impl Drop for TerminalGuard {
         if self.enhanced {
             let _ = self.output.execute(PopKeyboardEnhancementFlags);
         }
+        let _ = self.output.execute(DisableMouseCapture);
         let _ = self.output.execute(Show);
         let _ = self.output.execute(LeaveAlternateScreen);
         let _ = disable_raw_mode();
@@ -186,6 +191,14 @@ fn columns_line(english: &str, vietnamese: &str, chinese: &str, total: usize) ->
         .map(|(character, _)| character)
         .collect()
 }
+
+/// The screen row of the first title in the table, below the search prompt
+/// and the column header. Shared by the renderer and the click handling so
+/// they agree on where the rows are.
+const DATA_ROW_OFFSET: usize = 2;
+
+/// The screen row of the first item in a list, below its single prompt line.
+const LIST_ROW_OFFSET: usize = 1;
 
 /// The first row offset that keeps `cursor` visible within `visible` rows.
 fn scroll_offset(cursor: usize, visible: usize) -> usize {
@@ -268,36 +281,50 @@ where
     }
     let outcome = loop {
         render_table::<Sys>(output, &selector, videos)?;
-        let Event::Key(key) = Sys::read_event()? else {
-            continue;
-        };
-        if key.kind != KeyEventKind::Press {
-            continue;
-        }
-        match key.code {
-            KeyCode::Esc => break Navigation::Quit,
-            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                break Navigation::Quit;
-            }
-            // Ctrl-Q quits. Both cases are matched so that Shift or Caps
-            // Lock, which we cannot reliably tell apart, never change this.
-            KeyCode::Char('q' | 'Q') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                break Navigation::Quit;
-            }
-            KeyCode::Up => selector.move_up(),
-            KeyCode::Down => selector.move_down(),
-            // Ctrl-Backspace goes back. Plain Backspace only deletes, so
-            // holding it to clear the search box never exits the page.
-            KeyCode::Backspace if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                break Navigation::Back;
-            }
-            KeyCode::Backspace => selector.pop_char(),
-            KeyCode::Char(char) => selector.push_char(char),
-            KeyCode::Enter => {
-                if let Some(index) = selector.selected_index() {
-                    break Navigation::Selected(index);
+        match Sys::read_event()? {
+            Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
+                KeyCode::Esc => break Navigation::Quit,
+                KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                    break Navigation::Quit;
                 }
-            }
+                // Ctrl-Q quits. Both cases are matched so that Shift or Caps
+                // Lock, which we cannot reliably tell apart, never change this.
+                KeyCode::Char('q' | 'Q') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                    break Navigation::Quit;
+                }
+                KeyCode::Up => selector.move_up(),
+                KeyCode::Down => selector.move_down(),
+                // Ctrl-Backspace goes back. Plain Backspace only deletes, so
+                // holding it to clear the search box never exits the page.
+                KeyCode::Backspace if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                    break Navigation::Back;
+                }
+                KeyCode::Backspace => selector.pop_char(),
+                KeyCode::Char(char) => selector.push_char(char),
+                KeyCode::Enter => {
+                    if let Some(index) = selector.selected_index() {
+                        break Navigation::Selected(index);
+                    }
+                }
+                _ => {}
+            },
+            Event::Mouse(mouse) => match mouse.kind {
+                MouseEventKind::ScrollUp => selector.move_up(),
+                MouseEventKind::ScrollDown => selector.move_down(),
+                // A click on a data row selects the video shown there.
+                MouseEventKind::Down(MouseButton::Left) => {
+                    let (_, rows) = Sys::window_size().unwrap_or((80, 24));
+                    let visible = visible_rows(rows as usize);
+                    let offset = scroll_offset(selector.cursor(), visible);
+                    let clicked = (mouse.row as usize).checked_sub(DATA_ROW_OFFSET).and_then(
+                        |screen_index| selector.filtered().get(offset + screen_index).copied(),
+                    );
+                    if let Some(index) = clicked {
+                        break Navigation::Selected(index);
+                    }
+                }
+                _ => {}
+            },
             _ => {}
         }
     };
@@ -358,7 +385,7 @@ where
             ],
             columns,
         );
-        let screen_y = (screen_index + 2) as u16;
+        let screen_y = (screen_index + DATA_ROW_OFFSET) as u16;
         output.queue(MoveTo(0, screen_y))?;
         print_highlighted_line(output, &line, filtered_position == cursor)?;
     }
@@ -400,35 +427,50 @@ where
     let mut cursor = start.min(labels.len().saturating_sub(1));
     loop {
         render_list::<Sys>(output, prompt, labels, cursor)?;
-        let Event::Key(key) = Sys::read_event()? else {
-            continue;
-        };
-        if key.kind != KeyEventKind::Press {
-            continue;
-        }
-        match key.code {
-            KeyCode::Esc => return Ok(Navigation::Quit),
-            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                return Ok(Navigation::Quit);
-            }
-            // This list has no text entry, so a bare Q quits as well as
-            // Ctrl-Q. Both cases match, so neither Shift nor Caps Lock
-            // changes the behavior.
-            KeyCode::Char('q' | 'Q') => return Ok(Navigation::Quit),
-            // With nothing to type, Backspace goes back to the previous page.
-            KeyCode::Backspace => return Ok(Navigation::Back),
-            KeyCode::Up => cursor = cursor.saturating_sub(1),
-            KeyCode::Down => {
-                if cursor + 1 < labels.len() {
-                    cursor += 1;
+        match Sys::read_event()? {
+            Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
+                KeyCode::Esc => return Ok(Navigation::Quit),
+                KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                    return Ok(Navigation::Quit);
                 }
-            }
-            // With no text to type, Space confirms the choice like Enter.
-            KeyCode::Enter | KeyCode::Char(' ') => {
-                if !labels.is_empty() {
-                    return Ok(Navigation::Selected(cursor));
+                // This list has no text entry, so a bare Q quits as well as
+                // Ctrl-Q. Both cases match, so neither Shift nor Caps Lock
+                // changes the behavior.
+                KeyCode::Char('q' | 'Q') => return Ok(Navigation::Quit),
+                // With nothing to type, Backspace goes back to the previous page.
+                KeyCode::Backspace => return Ok(Navigation::Back),
+                KeyCode::Up => cursor = cursor.saturating_sub(1),
+                KeyCode::Down => {
+                    if cursor + 1 < labels.len() {
+                        cursor += 1;
+                    }
                 }
-            }
+                // With no text to type, Space confirms the choice like Enter.
+                KeyCode::Enter | KeyCode::Char(' ') => {
+                    if !labels.is_empty() {
+                        return Ok(Navigation::Selected(cursor));
+                    }
+                }
+                _ => {}
+            },
+            Event::Mouse(mouse) => match mouse.kind {
+                MouseEventKind::ScrollUp => cursor = cursor.saturating_sub(1),
+                MouseEventKind::ScrollDown => {
+                    if cursor + 1 < labels.len() {
+                        cursor += 1;
+                    }
+                }
+                // A click on a label row selects it.
+                MouseEventKind::Down(MouseButton::Left) => {
+                    let clicked = (mouse.row as usize).checked_sub(LIST_ROW_OFFSET);
+                    if let Some(index) = clicked
+                        && index < labels.len()
+                    {
+                        return Ok(Navigation::Selected(index));
+                    }
+                }
+                _ => {}
+            },
             _ => {}
         }
     }
@@ -454,7 +496,7 @@ where
         .queue(SetAttribute(Attribute::Reset))?;
 
     for (index, label) in labels.iter().enumerate() {
-        let screen_y = (index + 1) as u16;
+        let screen_y = (index + LIST_ROW_OFFSET) as u16;
         let line = fit(label, columns);
         output.queue(MoveTo(0, screen_y))?;
         if index == cursor {
