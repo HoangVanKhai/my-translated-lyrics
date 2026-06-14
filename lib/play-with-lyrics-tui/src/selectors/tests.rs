@@ -1691,14 +1691,14 @@ fn render_header_marks_the_sorted_and_hovered_columns() {
     let header = buffer.row_text(HEADER_ROW);
     // English is the default sort column, ascending, so it carries the ▲ arrow.
     assert!(header.contains("English ▲"), "{header}");
-    // The hovered English header is drawn bold and reversed.
-    assert_eq!(
-        buffer.style_at(0, HEADER_ROW),
-        Style::BOLD.with(Style::REVERSE),
-    );
-    // A column the pointer is not over stays plain bold.
+    // The hovered English header is bold without the dim.
+    assert_eq!(buffer.style_at(0, HEADER_ROW), Style::BOLD);
+    // A column the pointer is not over is bold and dimmed.
     let vietnamese_start = column_spans(80)[1].start as u16;
-    assert_eq!(buffer.style_at(vietnamese_start, HEADER_ROW), Style::BOLD);
+    assert_eq!(
+        buffer.style_at(vietnamese_start, HEADER_ROW),
+        Style::BOLD.with(Style::DIM),
+    );
 }
 
 /// The search bar shows a magnifier with the italic "Search:" label and the
@@ -1728,11 +1728,50 @@ fn the_search_bar_shows_a_magnifier_with_styled_parts() {
     let mut query = "alpha".to_string();
     select_video_loop::<Scripted>(&mut buffer, &videos, &mut query, None).unwrap();
     let rendered = String::from_utf8_lossy(&buffer);
-    assert!(rendered.contains('🔍'), "{rendered:?}");
-    assert!(rendered.contains("Search:"), "{rendered:?}");
+    // The magnifier is sent with its text-presentation variation selector.
+    assert!(rendered.contains("🔍\u{FE0E}"), "{rendered:?}");
+    // The label keeps a space before the typed query, the one-column gap.
+    assert!(rendered.contains("Search: "), "{rendered:?}");
     // The italic attribute (SGR 3) is applied to the label.
     assert!(rendered.contains("\u{1b}[3m"), "{rendered:?}");
     // The bold attribute (SGR 1) precedes the typed query.
     let bold = "\u{1b}[1m";
     assert!(rendered.contains(&format!("{bold}alpha")), "{rendered:?}");
+}
+
+/// A click on the help line below a full window of rows selects nothing, not
+/// the first item scrolled off the bottom.
+#[test]
+fn clicking_below_the_visible_rows_selects_nothing() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_708_111_222)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    // 25 zero-padded names sort in their listed order; a 24-row terminal shows
+    // 20 of them (rows 3..23), with the help line at row 23.
+    let videos: Vec<Video> = (0..25)
+        .map(|n| english_video(&format!("Item {n:02}")))
+        .collect();
+    // Clicking row 23 (the help line) maps past the last visible row; it must
+    // not focus item 20, so Enter still selects the top item.
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([click(23), press(KeyCode::Enter)]);
+    let chosen =
+        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
+    assert_eq!(chosen, Navigation::Selected(0));
 }

@@ -132,8 +132,12 @@ where
                         } else {
                             let visible = visible_rows(rows as usize);
                             let offset = scroll_offset(selector.cursor(), visible);
+                            // Only the data rows are clickable; a click on the
+                            // help line below them must not reach a scrolled-off
+                            // item.
                             let clicked = (mouse.row as usize)
                                 .checked_sub(DATA_ROW_OFFSET)
+                                .filter(|&screen_index| screen_index < visible)
                                 .and_then(|screen_index| {
                                     selector.filtered().get(offset + screen_index).copied()
                                 });
@@ -219,7 +223,9 @@ fn render_header(
     };
     let labels = COLUMN_LANGUAGES.map(label);
     let header = columns_line(&labels[0], &labels[1], &labels[2], columns);
-    buffer.set_string(0, HEADER_ROW, &header, Style::BOLD);
+    // Headers are bold and dimmed; the column under the pointer drops the dim to
+    // read as the brighter, hovered one.
+    buffer.set_string(0, HEADER_ROW, &header, Style::BOLD.with(Style::DIM));
 
     if let Some((hover_column, hover_row)) = hover
         && hover_row == HEADER_ROW
@@ -227,12 +233,7 @@ fn render_header(
     {
         let span = &column_spans(columns)[index];
         let fitted = fit(&labels[index], span.len());
-        buffer.set_string(
-            span.start as u16,
-            HEADER_ROW,
-            &fitted,
-            Style::BOLD.with(Style::REVERSE),
-        );
+        buffer.set_string(span.start as u16, HEADER_ROW, &fitted, Style::BOLD);
     }
 }
 
