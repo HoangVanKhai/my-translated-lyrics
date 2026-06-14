@@ -30,6 +30,7 @@ use fuzzy_select::selection::Selector;
 use lyrics_core::video_descriptor::Language;
 use play_with_lyrics::catalog::{Video, language_label};
 use std::io::{self, Stderr, Write};
+use std::time::{Duration, Instant};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 /// The outcome of an interactive selector.
@@ -200,6 +201,19 @@ const DATA_ROW_OFFSET: usize = 2;
 /// The screen row of the first item in a list, below its single prompt line.
 const LIST_ROW_OFFSET: usize = 1;
 
+/// How close together two clicks on the same row must be to count as a double
+/// click, which confirms the choice.
+const DOUBLE_CLICK_WINDOW: Duration = Duration::from_millis(500);
+
+/// Whether a left click at `row` and `now` completes a double click that began
+/// at `previous` (the time and row of the last click), so the same row was
+/// clicked twice within the double-click window.
+fn is_double_click(previous: Option<(Instant, u16)>, now: Instant, row: u16) -> bool {
+    previous.is_some_and(|(when, last_row)| {
+        last_row == row && now.duration_since(when) <= DOUBLE_CLICK_WINDOW
+    })
+}
+
 /// The first row offset that keeps `cursor` visible within `visible` rows.
 fn scroll_offset(cursor: usize, visible: usize) -> usize {
     cursor.saturating_sub(visible.saturating_sub(1))
@@ -279,6 +293,7 @@ where
     if let Some(index) = selected {
         selector.focus(index);
     }
+    let mut last_click: Option<(Instant, u16)> = None;
     let outcome = loop {
         render_table::<Sys>(output, &selector, videos)?;
         match Sys::read_event()? {
@@ -311,7 +326,8 @@ where
             Event::Mouse(mouse) => match mouse.kind {
                 MouseEventKind::ScrollUp => selector.move_up(),
                 MouseEventKind::ScrollDown => selector.move_down(),
-                // A click on a data row selects the video shown there.
+                // A single click highlights the video on the clicked row; a
+                // double click on the same row also selects it.
                 MouseEventKind::Down(MouseButton::Left) => {
                     let (_, rows) = Sys::window_size().unwrap_or((80, 24));
                     let visible = visible_rows(rows as usize);
@@ -320,7 +336,13 @@ where
                         |screen_index| selector.filtered().get(offset + screen_index).copied(),
                     );
                     if let Some(index) = clicked {
-                        break Navigation::Selected(index);
+                        let now = Instant::now();
+                        let confirm = is_double_click(last_click, now, mouse.row);
+                        last_click = Some((now, mouse.row));
+                        selector.focus(index);
+                        if confirm {
+                            break Navigation::Selected(index);
+                        }
                     }
                 }
                 _ => {}
@@ -425,6 +447,7 @@ where
     Sys: ReadEvent + WindowSize,
 {
     let mut cursor = start.min(labels.len().saturating_sub(1));
+    let mut last_click: Option<(Instant, u16)> = None;
     loop {
         render_list::<Sys>(output, prompt, labels, cursor)?;
         match Sys::read_event()? {
@@ -460,13 +483,20 @@ where
                         cursor += 1;
                     }
                 }
-                // A click on a label row selects it.
+                // A single click highlights the label on the clicked row; a
+                // double click on the same row also selects it.
                 MouseEventKind::Down(MouseButton::Left) => {
                     let clicked = (mouse.row as usize).checked_sub(LIST_ROW_OFFSET);
                     if let Some(index) = clicked
                         && index < labels.len()
                     {
-                        return Ok(Navigation::Selected(index));
+                        let now = Instant::now();
+                        let confirm = is_double_click(last_click, now, mouse.row);
+                        last_click = Some((now, mouse.row));
+                        cursor = index;
+                        if confirm {
+                            return Ok(Navigation::Selected(index));
+                        }
                     }
                 }
                 _ => {}

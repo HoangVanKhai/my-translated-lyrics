@@ -1,6 +1,6 @@
 use crate::{
     Navigation, ReadEvent, WindowSize, columns_line, columns_line_highlighted, fit, fit_chars,
-    scroll_offset, select_one_loop, select_video_loop, visible_rows,
+    is_double_click, scroll_offset, select_one_loop, select_video_loop, visible_rows,
 };
 use crossterm::event::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
@@ -11,8 +11,35 @@ use pretty_assertions::assert_eq;
 use std::collections::{HashMap, VecDeque};
 use std::io;
 use std::sync::Mutex;
+use std::time::{Duration, Instant};
 use test_utils::video_desc;
 use unicode_width::UnicodeWidthStr;
+
+/// A second click on the same row within the window is a double click; a
+/// different row or a late click is not.
+#[test]
+fn is_double_click_needs_the_same_row_within_the_window() {
+    let first = Instant::now();
+    assert!(is_double_click(
+        Some((first, 3)),
+        first + Duration::from_millis(100),
+        3,
+    ));
+    // Too long after the first click.
+    assert!(!is_double_click(
+        Some((first, 3)),
+        first + Duration::from_millis(600),
+        3,
+    ));
+    // A different row.
+    assert!(!is_double_click(
+        Some((first, 2)),
+        first + Duration::from_millis(100),
+        3,
+    ));
+    // No previous click to pair with.
+    assert!(!is_double_click(None, first, 3));
+}
 
 #[test]
 fn fit_pads_short_text() {
@@ -996,9 +1023,10 @@ fn select_video_writes_back_the_final_query() {
     assert_eq!(query, "a");
 }
 
-/// Clicking a list row selects the item shown there.
+/// A single click highlights the clicked label without confirming, so a
+/// following Enter selects that row.
 #[test]
-fn select_one_click_selects_the_clicked_row() {
+fn select_one_single_click_highlights_the_clicked_row() {
     static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
     struct Scripted;
     impl ReadEvent for Scripted {
@@ -1012,8 +1040,57 @@ fn select_one_click_selects_the_clicked_row() {
         }
     }
     let labels = label_list(&["alpha", "beta", "gamma"]);
-    // Labels render at rows 1, 2, 3; clicking row 2 picks "beta".
-    EVENTS.lock().unwrap().extend([click(2)]);
+    // Labels render at rows 1, 2, 3; clicking row 2 highlights "beta", then
+    // Enter confirms it.
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([click(2), press(KeyCode::Enter)]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    assert_eq!(chosen, Navigation::Selected(1));
+}
+
+/// A single click on its own does not select; it only moves the highlight.
+#[test]
+fn select_one_single_click_does_not_select() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([click(2), press(KeyCode::Esc)]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    assert_eq!(chosen, Navigation::Quit);
+}
+
+/// A double click on a label row selects it.
+#[test]
+fn select_one_double_click_selects_the_clicked_row() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels = label_list(&["alpha", "beta", "gamma"]);
+    EVENTS.lock().unwrap().extend([click(2), click(2)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
 }
@@ -1042,9 +1119,10 @@ fn select_one_scroll_moves_the_cursor() {
     assert_eq!(chosen, Navigation::Selected(1));
 }
 
-/// Clicking a table row selects the video shown there.
+/// A single click highlights the clicked video without confirming, so a
+/// following Enter selects it.
 #[test]
-fn select_video_click_selects_the_clicked_row() {
+fn select_video_single_click_highlights_the_clicked_row() {
     static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
     struct Scripted;
     impl ReadEvent for Scripted {
@@ -1062,8 +1140,64 @@ fn select_video_click_selects_the_clicked_row() {
         english_video("Second"),
         english_video("Third"),
     ];
-    // Data rows render at 2, 3, 4; clicking row 3 picks the second video.
-    EVENTS.lock().unwrap().extend([click(3)]);
+    // Data rows render at 2, 3, 4; clicking row 3 highlights the second video,
+    // then Enter confirms it.
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([click(3), press(KeyCode::Enter)]);
+    let chosen =
+        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
+    assert_eq!(chosen, Navigation::Selected(1));
+}
+
+/// A single click on its own does not select a video; it only moves the
+/// highlight.
+#[test]
+fn select_video_single_click_does_not_select() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![english_video("First"), english_video("Second")];
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([click(3), control(KeyCode::Char('q'))]);
+    let chosen =
+        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
+    assert_eq!(chosen, Navigation::Quit);
+}
+
+/// A double click on a table row selects the video there.
+#[test]
+fn select_video_double_click_selects_the_clicked_row() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![
+        english_video("First"),
+        english_video("Second"),
+        english_video("Third"),
+    ];
+    EVENTS.lock().unwrap().extend([click(3), click(3)]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
