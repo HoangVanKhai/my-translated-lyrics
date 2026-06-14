@@ -1,0 +1,94 @@
+# clr: Xóa chữ trên màn hình
+# LRC: Lời bài hát (không rõ người trình bày)
+# ttl: Tiêu đề ca khúc
+# cre: Thông tin sản xuất
+# eov: Kết thúc MV
+
+00:01.434 cre: Lời  北山薇
+               Nhạc/Phối khí  砖厂浪人
+               Điều giáo  潜水荷叶/鬼面P
+00:06.333 clr
+
+00:07.666 cre: Mix  拙木
+               Họa  巫烨
+               Video  梦游
+00:11.865 clr
+
+00:13.365 cre: Kế hoạch  花间有鹿来
+               Giám chế  莫羡
+               Sản xuất  幻月音乐团 (Âm nhạc)/芜筝社 (Thị giác)
+00:17.830 clr
+
+00:18.530 ttl: Lai Nhật Ỷ Song
+00:22.029 clr
+
+00:22.330 LRC: Trời trong núi xa loang lổ như lụa
+00:27.540 LRC: Thu dọn sắc trúc, lên đường cố nhân hẹn
+00:32.950 LRC: Vì ham cá giếc, chậm bước bên sông
+00:38.350 LRC: Bên sông chợt nghe tiếng cá nhảy lên
+00:44.020 LRC: Gõ cửa ba tiếng, vờ chẳng hay
+00:49.300 LRC: Trộm nghe cười nói, lúm đồng tiền thoáng hiện
+00:54.730 LRC: Rằng lũ chim nhỏ, vờn làn khói
+01:00.000 LRC: Rượu cũ chuyện mới, chưa viết đã thành chương
+01:04.960 LRC: Quét tuyết đẩy cửa, trăng trước song
+01:10.350 LRC: Một cây mai trắng như bướm ngọc
+01:15.670 LRC: Ý sáo Giang Thành, Trường An xa
+01:21.040 LRC: Đường nhỏ bụi trần lên phố thiên
+01:26.260 LRC: Si tăng sầu khách tìm nhân gian
+01:31.630 LRC: Sương thanh bóng lẻ mình tự thương
+01:36.960 LRC: Ngắt một nhành hoa, rơi vài cánh
+01:42.340 LRC: Lão say nhúng tuyết, núi làm nghiên
+01:47.546 clr
+
+01:49.512 cre: Lời  北山薇
+               Nhạc/Phối khí  砖厂浪人
+               Điều giáo  潜水荷叶/鬼面P
+01:52.278 clr
+
+01:54.878 cre: Mix  拙木
+               Họa  巫烨
+               Video  梦游
+01:58.110 clr
+
+01:59.510 cre: Kế hoạch  花间有鹿来
+               Giám chế  莫羡
+               Sản xuất  幻月音乐团 (Âm nhạc)/芜筝社 (Thị giác)
+02:04.443 clr
+
+02:04.709 ttl: Lai Nhật Ỷ Song
+02:08.442 clr
+
+02:09.000 LRC: Gối chăn mượn nhau, tắt ngọn đèn cô
+02:14.310 LRC: Hoa mai cùng ngủ, tiếng gió ngâm trong đêm
+02:19.650 LRC: Bờ sông trong mộng, thuyền về cố viên
+02:24.990 LRC: Tuyết sông đầm đìa quét ngang trường thiên
+02:30.610 LRC: Vó ngựa xa xăm hối lời biệt
+02:36.000 LRC: Lại rót phong tuyết, phấn lệ tay áo che
+02:41.280 LRC: Gối chạm cùng tựa, mặt cùng đỏ
+02:46.590 LRC: Chưa say, chưa say, ngày sau ba nghìn chén
+02:51.730 LRC: Ngâm quá canh ba, đông mái hiên
+02:56.980 LRC: Trang thành tóc hạc, đợi mai tiên
+03:02.340 LRC: Đun trà, tỉ mỉ sắc bọt tuyết
+03:07.560 LRC: Nhụy lạnh hồn băng, hương vương mắt
+03:12.990 LRC: Thăm thẳm thư phong thả tầng mây
+03:18.310 LRC: Viễn khách đưa lại thư năm cũ
+03:23.650 LRC: Xuân phong xuân thảo trên thềm ngọc
+03:28.960 LRC: Lại hỏi ngày sau trước ỷ song
+03:34.091 clr
+
+03:36.291 cre: Lời  北山薇
+               Nhạc/Phối khí  砖厂浪人
+               Điều giáo  潜水荷叶/鬼面P
+03:39.724 clr
+
+03:41.461 cre: Mix  拙木
+               Họa  巫烨
+               Video  梦游
+03:44.857 clr
+
+03:46.189 cre: Kế hoạch  花间有鹿来
+               Giám chế  莫羡
+               Sản xuất  幻月音乐团 (Âm nhạc)/芜筝社 (Thị giác)
+03:51.188 clr
+
+03:51.188 eov
