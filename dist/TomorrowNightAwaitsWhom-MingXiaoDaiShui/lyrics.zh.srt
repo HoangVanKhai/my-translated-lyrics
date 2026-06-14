@@ -16,7 +16,7 @@
 
 5
 00:00:06,633 --> 00:00:08,277
-<font color="#AAAA22">二胡</font>：<font color="#AAAAAA">陆</font> <font color="#AAAA22">二胡</font> <font color="#AAAAAA"></font>
+<font color="#AAAA22">二胡</font>：<font color="#AAAAAA">陆二胡</font>
 
 6
 00:00:08,277 --> 00:00:09,979
@@ -116,7 +116,7 @@
 
 30
 00:01:49,712 --> 00:01:51,882
-<font color="#AAAA22">二胡</font>：<font color="#AAAAAA">陆</font> <font color="#AAAA22">二胡</font> <font color="#AAAAAA"></font>
+<font color="#AAAA22">二胡</font>：<font color="#AAAAAA">陆二胡</font>
 
 31
 00:01:51,882 --> 00:01:54,242
