@@ -135,3 +135,27 @@ fn no_match_leaves_nothing_selected() {
     assert!(selector.filtered().is_empty());
     assert!(selector.selected_index().is_none());
 }
+
+/// Focusing a visible item moves the highlight onto it, to restore a prior
+/// selection.
+#[test]
+fn focusing_a_visible_item_moves_the_cursor_onto_it() {
+    let rows = sample();
+    let mut selector = Selector::new(&rows);
+    selector.focus(2);
+    assert_eq!(selector.cursor(), 2);
+    assert_eq!(selector.selected_index(), Some(2));
+}
+
+/// Focusing an item that the query has filtered out leaves the cursor put.
+#[test]
+fn focusing_a_filtered_out_item_is_a_no_op() {
+    let rows = sample();
+    let mut selector = Selector::new(&rows);
+    for char in "ví".chars() {
+        selector.push_char(char);
+    }
+    // Only the first row matches "ví", so row 2 cannot be focused.
+    selector.focus(2);
+    assert_eq!(selector.selected_index(), Some(0));
+}

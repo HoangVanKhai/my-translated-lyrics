@@ -19,7 +19,7 @@ use crate::failure::{Failure, NoSubtitles, NoVideos, Termination};
 use crate::resolve::{Resolution, resolve_format, resolve_language, resolve_player, resolve_video};
 use clap::Parser;
 use lyrics_core::video_descriptor::Language;
-use play_with_lyrics::catalog::{Video, load};
+use play_with_lyrics::catalog::load;
 use play_with_lyrics::library::{available_subtitles, find_video_file, subtitle_path};
 use play_with_lyrics::player::{Player, SubtitleFormat};
 use std::process::{Command, ExitCode};
@@ -69,27 +69,28 @@ fn run() -> Result<(), Termination> {
 
     let mut stage = Stage::Video;
     let mut history: Vec<Stage> = Vec::new();
-    let mut video: Option<&Video> = None;
+    let mut video_index: Option<usize> = None;
     let mut available: Vec<(Language, SubtitleFormat)> = Vec::new();
     let mut language: Option<Language> = None;
     let mut format: Option<SubtitleFormat> = None;
 
     let player = loop {
         match stage {
-            Stage::Video => match resolve_video(&args, &catalog)? {
+            Stage::Video => match resolve_video(&args, &catalog, video_index)? {
                 Resolution::Auto(chosen) => {
-                    video = Some(chosen);
+                    video_index = Some(chosen);
                     stage = Stage::Language;
                 }
                 Resolution::Chosen(chosen) => {
-                    video = Some(chosen);
+                    video_index = Some(chosen);
                     history.push(Stage::Video);
                     stage = Stage::Language;
                 }
                 Resolution::Back => stage = step_back(&mut history)?,
             },
             Stage::Language => {
-                let chosen_video = video.expect("the video is resolved before the language");
+                let chosen_video =
+                    &catalog[video_index.expect("the video is resolved before the language")];
                 let collection_dir = args.target.join(&*chosen_video.desc.collection);
                 let video_title = chosen_video.desc.video_title.as_ref();
                 available = available_subtitles(&collection_dir, video_title);
@@ -100,7 +101,7 @@ fn run() -> Result<(), Termination> {
                     })
                     .into());
                 }
-                match resolve_language(&args, &available)? {
+                match resolve_language(&args, &available, language)? {
                     Resolution::Auto(chosen) => {
                         language = Some(chosen);
                         stage = Stage::Format;
@@ -120,7 +121,7 @@ fn run() -> Result<(), Termination> {
                     .filter(|(candidate, _)| *candidate == chosen_language)
                     .map(|(_, format)| *format)
                     .collect();
-                match resolve_format(&args, chosen_language, &formats)? {
+                match resolve_format(&args, chosen_language, &formats, format)? {
                     Resolution::Auto(chosen) => {
                         format = Some(chosen);
                         stage = Stage::Player;
@@ -140,7 +141,7 @@ fn run() -> Result<(), Termination> {
         }
     };
 
-    let video = video.expect("the video is resolved");
+    let video = &catalog[video_index.expect("the video is resolved")];
     let language = language.expect("the language is resolved");
     let format = format.expect("the format is resolved");
 

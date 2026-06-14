@@ -41,25 +41,28 @@ fn from_selection<Value>(
 }
 
 /// Resolves the video from `--title` or through the interactive table.
-pub(crate) fn resolve_video<'a>(
+pub(crate) fn resolve_video(
     args: &Args,
-    catalog: &'a [Video],
-) -> Result<Resolution<&'a Video>, Termination> {
-    match &args.title {
-        Some(query) => resolve_unique(query, catalog, <Video as Searchable>::search_keys)
-            .map(Resolution::Auto)
-            .map_err(|error| {
+    catalog: &[Video],
+    previous: Option<usize>,
+) -> Result<Resolution<usize>, Termination> {
+    if let Some(query) = &args.title {
+        let video = resolve_unique(query, catalog, <Video as Searchable>::search_keys).map_err(
+            |error| {
                 Failure::UnresolvedTitle(UnresolvedTitle {
                     query: query.clone(),
                     error,
                 })
-                .into()
-            }),
-        None => {
-            require_terminal("a video title")?;
-            from_selection(select_video(catalog), |index| &catalog[index])
-        }
+            },
+        )?;
+        let index = catalog
+            .iter()
+            .position(|candidate| std::ptr::eq(candidate, video))
+            .expect("the resolved video belongs to the catalog");
+        return Ok(Resolution::Auto(index));
     }
+    require_terminal("a video title")?;
+    from_selection(select_video(catalog, previous), |index| index)
 }
 
 /// Resolves the subtitle language from `--language`, automatically when
@@ -67,6 +70,7 @@ pub(crate) fn resolve_video<'a>(
 pub(crate) fn resolve_language(
     args: &Args,
     available: &[(Language, SubtitleFormat)],
+    previous: Option<Language>,
 ) -> Result<Resolution<Language>, Termination> {
     let mut languages: Vec<Language> = available.iter().map(|(language, _)| *language).collect();
     languages.dedup();
@@ -93,9 +97,13 @@ pub(crate) fn resolve_language(
         .iter()
         .map(|language| format!("{} ({language})", language_label(*language)))
         .collect();
-    from_selection(select_one("Select subtitle language", &labels), |index| {
-        languages[index]
-    })
+    let start = previous
+        .and_then(|previous| languages.iter().position(|&language| language == previous))
+        .unwrap_or(0);
+    from_selection(
+        select_one("Select subtitle language", &labels, start),
+        |index| languages[index],
+    )
 }
 
 /// Resolves the subtitle format from `--format`, automatically when only
@@ -104,6 +112,7 @@ pub(crate) fn resolve_format(
     args: &Args,
     language: Language,
     formats: &[SubtitleFormat],
+    previous: Option<SubtitleFormat>,
 ) -> Result<Resolution<SubtitleFormat>, Termination> {
     if let Some(arg) = args.format {
         let requested = SubtitleFormat::from(arg);
@@ -128,9 +137,13 @@ pub(crate) fn resolve_format(
         .iter()
         .map(|format| format!("{} ({format})", format.full_name()))
         .collect();
-    from_selection(select_one("Select subtitle format", &labels), |index| {
-        formats[index]
-    })
+    let start = previous
+        .and_then(|previous| formats.iter().position(|&format| format == previous))
+        .unwrap_or(0);
+    from_selection(
+        select_one("Select subtitle format", &labels, start),
+        |index| formats[index],
+    )
 }
 
 /// Resolves the media player from `--player` or through an interactive
@@ -141,7 +154,9 @@ pub(crate) fn resolve_player(args: &Args) -> Result<Resolution<Player>, Terminat
     }
     require_terminal("a media player")?;
     let labels: Vec<String> = Player::VARIANTS.iter().map(ToString::to_string).collect();
-    from_selection(select_one("Select media player", &labels), |index| {
+    // The player is the last page, so it is never returned to and starts at the
+    // top each time.
+    from_selection(select_one("Select media player", &labels, 0), |index| {
         Player::VARIANTS[index]
     })
 }

@@ -188,7 +188,7 @@ fn select_one_returns_the_highlighted_row() {
         press(KeyCode::Down),
         press(KeyCode::Enter),
     ]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Selected(2));
 }
 
@@ -209,7 +209,7 @@ fn select_one_cancels_on_escape() {
     }
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([press(KeyCode::Esc)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
@@ -230,7 +230,7 @@ fn select_one_cancels_on_ctrl_c() {
     }
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('c'))]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
@@ -258,7 +258,7 @@ fn select_one_keeps_the_cursor_within_bounds() {
         press(KeyCode::Down),
         press(KeyCode::Enter),
     ]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
 }
 
@@ -288,7 +288,7 @@ fn select_one_ignores_non_press_events() {
         .lock()
         .unwrap()
         .extend([release, press(KeyCode::Down), press(KeyCode::Enter)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
 }
 
@@ -312,7 +312,7 @@ fn select_one_enter_is_a_no_op_for_an_empty_list() {
         .lock()
         .unwrap()
         .extend([press(KeyCode::Enter), press(KeyCode::Esc)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
@@ -341,7 +341,7 @@ fn select_video_filters_then_selects() {
         press(KeyCode::Char('a')),
         press(KeyCode::Enter),
     ]);
-    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
+    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos, None).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
 }
 
@@ -368,7 +368,7 @@ fn select_video_backspace_widens_the_query() {
         press(KeyCode::Backspace),
         press(KeyCode::Enter),
     ]);
-    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
+    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos, None).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
 }
 
@@ -389,7 +389,7 @@ fn select_video_cancels_on_escape() {
     }
     let videos = vec![video("Alpha")];
     EVENTS.lock().unwrap().extend([press(KeyCode::Esc)]);
-    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
+    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos, None).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
@@ -410,7 +410,7 @@ fn select_video_quits_on_ctrl_q() {
     }
     let videos = vec![video("Alpha")];
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
-    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
+    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos, None).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
@@ -432,7 +432,7 @@ fn select_video_quits_on_ctrl_q_upper_case() {
     }
     let videos = vec![video("Alpha")];
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('Q'))]);
-    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
+    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos, None).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
@@ -459,7 +459,7 @@ fn select_video_treats_a_bare_q_as_a_filter_character() {
         .lock()
         .unwrap()
         .extend([press(KeyCode::Char('q')), press(KeyCode::Enter)]);
-    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
+    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos, None).unwrap();
     assert_eq!(chosen, Navigation::Selected(0));
 }
 
@@ -480,7 +480,7 @@ fn select_one_quits_on_q() {
     }
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([press(KeyCode::Char('q'))]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
@@ -501,7 +501,7 @@ fn select_one_quits_on_shift_q() {
     }
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([shift(KeyCode::Char('Q'))]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
@@ -522,7 +522,7 @@ fn select_one_quits_on_ctrl_q() {
     }
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
@@ -559,7 +559,7 @@ fn select_video_header_shows_native_language_names() {
     // Quit right after the first frame is drawn.
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let mut buffer = Vec::new();
-    select_video_loop::<Scripted>(&mut buffer, &videos).unwrap();
+    select_video_loop::<Scripted>(&mut buffer, &videos, None).unwrap();
     let rendered = String::from_utf8_lossy(&buffer);
     assert!(rendered.contains("English"), "{rendered}");
     assert!(rendered.contains("Tiếng Việt"), "{rendered}");
@@ -587,7 +587,7 @@ fn select_video_header_truncates_in_a_narrow_terminal() {
     let videos = vec![video("Alpha")];
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let mut buffer = Vec::new();
-    select_video_loop::<Scripted>(&mut buffer, &videos).unwrap();
+    select_video_loop::<Scripted>(&mut buffer, &videos, None).unwrap();
     let rendered = String::from_utf8_lossy(&buffer);
     // "Tiếng Việt" is ten columns wide and cannot survive intact in six.
     assert!(!rendered.contains("Tiếng Việt"), "{rendered}");
@@ -619,7 +619,7 @@ fn select_video_renders_only_the_visible_window() {
     ];
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let mut buffer = Vec::new();
-    select_video_loop::<Scripted>(&mut buffer, &videos).unwrap();
+    select_video_loop::<Scripted>(&mut buffer, &videos, None).unwrap();
     let rendered = String::from_utf8_lossy(&buffer);
     assert!(rendered.contains("First"), "{rendered}");
     assert!(rendered.contains("Second"), "{rendered}");
@@ -647,7 +647,7 @@ fn select_video_renders_with_a_fallback_size_when_size_is_unavailable() {
     let videos = vec![video("Alpha")];
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let mut buffer = Vec::new();
-    select_video_loop::<Scripted>(&mut buffer, &videos).unwrap();
+    select_video_loop::<Scripted>(&mut buffer, &videos, None).unwrap();
     let rendered = String::from_utf8_lossy(&buffer);
     // The 80-column fallback is wide enough to show the native header.
     assert!(rendered.contains("Tiếng Việt"), "{rendered}");
@@ -671,7 +671,7 @@ fn select_video_backspace_on_an_empty_query_goes_back() {
     }
     let videos = vec![video("Alpha")];
     EVENTS.lock().unwrap().extend([press(KeyCode::Backspace)]);
-    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos).unwrap();
+    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos, None).unwrap();
     assert_eq!(chosen, Navigation::Back);
 }
 
@@ -696,7 +696,7 @@ fn select_one_selects_on_space() {
         .lock()
         .unwrap()
         .extend([press(KeyCode::Down), press(KeyCode::Char(' '))]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
 }
 
@@ -717,7 +717,7 @@ fn select_one_backspace_goes_back() {
     }
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([press(KeyCode::Backspace)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels).unwrap();
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Back);
 }
 
@@ -745,7 +745,7 @@ fn select_video_underlines_matched_characters() {
         control(KeyCode::Char('q')),
     ]);
     let mut buffer = Vec::new();
-    select_video_loop::<Scripted>(&mut buffer, &videos).unwrap();
+    select_video_loop::<Scripted>(&mut buffer, &videos, None).unwrap();
     let rendered = String::from_utf8_lossy(&buffer);
     assert!(rendered.contains("\u{1b}[4m"), "{rendered:?}");
 }
@@ -768,7 +768,7 @@ fn select_video_does_not_underline_without_a_query() {
     let videos = vec![english_video("Alpha")];
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let mut buffer = Vec::new();
-    select_video_loop::<Scripted>(&mut buffer, &videos).unwrap();
+    select_video_loop::<Scripted>(&mut buffer, &videos, None).unwrap();
     let rendered = String::from_utf8_lossy(&buffer);
     assert!(!rendered.contains("\u{1b}[4m"), "{rendered:?}");
 }
@@ -792,7 +792,7 @@ fn select_video_footer_offers_back_when_the_query_is_empty() {
     let videos = vec![english_video("Alpha")];
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let mut buffer = Vec::new();
-    select_video_loop::<Scripted>(&mut buffer, &videos).unwrap();
+    select_video_loop::<Scripted>(&mut buffer, &videos, None).unwrap();
     let rendered = String::from_utf8_lossy(&buffer);
     assert!(rendered.contains("⌫ back"), "{rendered:?}");
     assert!(!rendered.contains("⌫ delete"), "{rendered:?}");
@@ -819,7 +819,77 @@ fn select_video_footer_offers_delete_once_text_is_typed() {
         .unwrap()
         .extend([press(KeyCode::Char('a')), control(KeyCode::Char('q'))]);
     let mut buffer = Vec::new();
-    select_video_loop::<Scripted>(&mut buffer, &videos).unwrap();
+    select_video_loop::<Scripted>(&mut buffer, &videos, None).unwrap();
     let rendered = String::from_utf8_lossy(&buffer);
     assert!(rendered.contains("⌫ delete"), "{rendered:?}");
+}
+
+/// The list starts with the cursor on `start`, to restore a prior choice; an
+/// immediate Enter then confirms that row without moving.
+#[test]
+fn select_one_starts_on_the_given_row() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels = label_list(&["alpha", "beta", "gamma"]);
+    EVENTS.lock().unwrap().extend([press(KeyCode::Enter)]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 1).unwrap();
+    assert_eq!(chosen, Navigation::Selected(1));
+}
+
+/// A `start` past the last row is clamped rather than leaving an unselectable
+/// cursor.
+#[test]
+fn select_one_clamps_an_out_of_range_start() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    EVENTS.lock().unwrap().extend([press(KeyCode::Enter)]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 9).unwrap();
+    assert_eq!(chosen, Navigation::Selected(1));
+}
+
+/// The table starts with the cursor on the given video, to restore a prior
+/// choice; an immediate Enter then confirms it.
+#[test]
+fn select_video_starts_on_the_selected_video() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![
+        english_video("First"),
+        english_video("Second"),
+        english_video("Third"),
+    ];
+    EVENTS.lock().unwrap().extend([press(KeyCode::Enter)]);
+    let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos, Some(2)).unwrap();
+    assert_eq!(chosen, Navigation::Selected(2));
 }

@@ -219,19 +219,27 @@ fn print_highlighted_line(
 /// Presents the fuzzy table of titles and reports the chosen row, a request
 /// to go back, or a request to quit. This is the first page, so going back
 /// from an empty query is the way out of it.
-pub fn select_video(videos: &[Video]) -> io::Result<Navigation> {
+pub fn select_video(videos: &[Video], selected: Option<usize>) -> io::Result<Navigation> {
     let mut guard = TerminalGuard::enter()?;
-    select_video_loop::<Host>(&mut guard.output, videos)
+    select_video_loop::<Host>(&mut guard.output, videos, selected)
 }
 
 /// Drives the fuzzy-table selector, reading events from `Sys`. Splitting
 /// this out from [`select_video`] lets a test replay scripted events and
-/// render to a buffer, exercising the loop without a terminal.
-fn select_video_loop<Sys>(output: &mut impl Write, videos: &[Video]) -> io::Result<Navigation>
+/// render to a buffer, exercising the loop without a terminal. `selected` is
+/// the original index to highlight at first, to restore a previous choice.
+fn select_video_loop<Sys>(
+    output: &mut impl Write,
+    videos: &[Video],
+    selected: Option<usize>,
+) -> io::Result<Navigation>
 where
     Sys: ReadEvent + WindowSize,
 {
     let mut selector = Selector::new(videos);
+    if let Some(index) = selected {
+        selector.focus(index);
+    }
     loop {
         render_table::<Sys>(output, &selector, videos)?;
         let Event::Key(key) = Sys::read_event()? else {
@@ -349,23 +357,25 @@ mod tests;
 /// Presents a simple single-column list of `labels` under `prompt` and
 /// reports the chosen item, a request to go back to the previous page, or a
 /// request to quit.
-pub fn select_one(prompt: &str, labels: &[String]) -> io::Result<Navigation> {
+pub fn select_one(prompt: &str, labels: &[String], start: usize) -> io::Result<Navigation> {
     let mut guard = TerminalGuard::enter()?;
-    select_one_loop::<Host>(&mut guard.output, prompt, labels)
+    select_one_loop::<Host>(&mut guard.output, prompt, labels, start)
 }
 
 /// Drives the single-column list selector, reading events from `Sys`.
 /// Splitting this out from [`select_one`] lets a test replay scripted
 /// events and render to a buffer, exercising the loop without a terminal.
+/// `start` is the row to highlight at first, to restore a previous choice.
 fn select_one_loop<Sys>(
     output: &mut impl Write,
     prompt: &str,
     labels: &[String],
+    start: usize,
 ) -> io::Result<Navigation>
 where
     Sys: ReadEvent + WindowSize,
 {
-    let mut cursor = 0;
+    let mut cursor = start.min(labels.len().saturating_sub(1));
     loop {
         render_list::<Sys>(output, prompt, labels, cursor)?;
         let Event::Key(key) = Sys::read_event()? else {

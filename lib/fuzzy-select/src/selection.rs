@@ -86,6 +86,19 @@ where
         self.filtered.get(self.cursor).copied()
     }
 
+    /// Moves the highlight to the row showing the item at `index` in the
+    /// original slice, when that item is currently visible. Used to restore a
+    /// previous selection; an item that is filtered out leaves the cursor put.
+    pub fn focus(&mut self, index: usize) {
+        if let Some(position) = self
+            .filtered
+            .iter()
+            .position(|&candidate| candidate == index)
+        {
+            self.cursor = position;
+        }
+    }
+
     /// Recomputes the visible items for the current query and resets the
     /// cursor to the top, so the highlight never points past the end of a
     /// shortened list.
