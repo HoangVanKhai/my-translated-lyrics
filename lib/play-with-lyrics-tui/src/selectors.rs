@@ -11,7 +11,7 @@ use crate::render::{
     is_double_click, render_top_bar, scroll_offset, visible_rows,
 };
 use crate::terminal::TerminalGuard;
-use column_sort::ColumnSort;
+use column_sort::{ColumnSort, Direction};
 use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers, MouseButton, MouseEventKind};
 use fuzzy_select::fuzzy::match_mask;
 use fuzzy_select::selection::Selector;
@@ -227,10 +227,9 @@ fn render_header(
             && column == language
         {
             text.push(' ');
-            text.push(if direction.is_ascending() {
-                '▲'
-            } else {
-                '▼'
+            text.push(match direction {
+                Direction::Ascending => '▲',
+                Direction::Descending => '▼',
             });
         }
         text

@@ -32,11 +32,6 @@ impl Direction {
             Direction::Descending => Direction::Ascending,
         }
     }
-
-    /// Whether this is the ascending direction.
-    pub fn is_ascending(self) -> bool {
-        matches!(self, Direction::Ascending)
-    }
 }
 
 /// The columns to sort by, in priority order with the highest first, each
