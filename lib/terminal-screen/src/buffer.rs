@@ -15,24 +15,29 @@ use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 pub(crate) enum Cell {
     #[default]
     Empty,
-    Glyph {
-        ch: char,
-        /// A variation selector following `ch`, when one was given.
-        vs: Option<char>,
-        style: Style,
-    },
+    Glyph(Glyph),
     Trailing,
+}
+
+/// A styled glyph occupying a cell: its character, an optional trailing
+/// variation selector, and the style to draw it with.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct Glyph {
+    pub(crate) char: char,
+    /// A variation selector following `char`, when one was given.
+    pub(crate) variation_selector: Option<char>,
+    pub(crate) style: Style,
 }
 
 /// The display width of a glyph. A variation selector can widen a symbol to its
 /// emoji form, but terminals keep the base width even for a text-form selector
 /// (they change the color, not the width), so the wider of the two is used.
-pub(crate) fn glyph_width(ch: char, vs: Option<char>) -> u16 {
-    let base = ch.width().unwrap_or(0) as u16;
-    match vs {
+pub(crate) fn glyph_width(char: char, variation_selector: Option<char>) -> u16 {
+    let base = char.width().unwrap_or(0) as u16;
+    match variation_selector {
         Some(selector) => {
-            let mut grapheme = String::with_capacity(ch.len_utf8() + selector.len_utf8());
-            grapheme.push(ch);
+            let mut grapheme = String::with_capacity(char.len_utf8() + selector.len_utf8());
+            grapheme.push(char);
             grapheme.push(selector);
             base.max(grapheme.width() as u16)
         }
@@ -40,10 +45,10 @@ pub(crate) fn glyph_width(ch: char, vs: Option<char>) -> u16 {
     }
 }
 
-/// Whether `ch` is a variation selector (U+FE00..=U+FE0F), which adjusts the
+/// Whether `char` is a variation selector (U+FE00..=U+FE0F), which adjusts the
 /// presentation of the preceding character rather than standing on its own.
-fn is_variation_selector(ch: char) -> bool {
-    ('\u{FE00}'..='\u{FE0F}').contains(&ch)
+fn is_variation_selector(char: char) -> bool {
+    ('\u{FE00}'..='\u{FE0F}').contains(&char)
 }
 
 /// A grid of character cells, in row-major order.
@@ -76,8 +81,15 @@ impl Buffer {
     /// Writes a glyph at `col`, `row`, marking the columns a wide glyph covers
     /// as trailing, and returns the number of columns it spans. Nothing is
     /// written when the glyph would run past the right edge.
-    fn place_glyph(&mut self, col: u16, row: u16, ch: char, vs: Option<char>, style: Style) -> u16 {
-        let width = glyph_width(ch, vs);
+    fn place_glyph(
+        &mut self,
+        col: u16,
+        row: u16,
+        char: char,
+        variation_selector: Option<char>,
+        style: Style,
+    ) -> u16 {
+        let width = glyph_width(char, variation_selector);
         // A zero-width glyph, such as a combining mark or a control character,
         // has no column of its own, matching how `set_string` skips it.
         if width == 0 {
@@ -86,7 +98,11 @@ impl Buffer {
         if usize::from(col) + usize::from(width) <= usize::from(self.width)
             && let Some(index) = self.index(col, row)
         {
-            self.cells[index] = Cell::Glyph { ch, vs, style };
+            self.cells[index] = Cell::Glyph(Glyph {
+                char,
+                variation_selector,
+                style,
+            });
             for offset in 1..width {
                 if let Some(trailing) = self.index(col + offset, row) {
                     self.cells[trailing] = Cell::Trailing;
@@ -96,10 +112,10 @@ impl Buffer {
         width
     }
 
-    /// Writes `ch` at `col`, `row` with `style`. Returns the number of columns
+    /// Writes `char` at `col`, `row` with `style`. Returns the number of columns
     /// the glyph spans, so a caller laying out a line can advance past it.
-    pub fn set_glyph(&mut self, col: u16, row: u16, ch: char, style: Style) -> u16 {
-        self.place_glyph(col, row, ch, None, style)
+    pub fn set_glyph(&mut self, col: u16, row: u16, char: char, style: Style) -> u16 {
+        self.place_glyph(col, row, char, None, style)
     }
 
     /// Writes `text` starting at `col`, `row` with a uniform `style`, advancing
@@ -110,18 +126,20 @@ impl Buffer {
     pub fn set_string(&mut self, col: u16, row: u16, text: &str, style: Style) -> u16 {
         let mut cursor = col;
         let mut chars = text.chars().peekable();
-        while let Some(ch) = chars.next() {
+        while let Some(char) = chars.next() {
             // A lone variation selector or other zero-width character has no
             // column of its own; composed (NFC) text has none on their own.
-            if is_variation_selector(ch) || ch.width().unwrap_or(0) == 0 {
+            if is_variation_selector(char) || char.width().unwrap_or(0) == 0 {
                 continue;
             }
-            let vs = chars.next_if(|&next| is_variation_selector(next));
+            let variation_selector = chars.next_if(|&next| is_variation_selector(next));
             // Stop rather than write a wide glyph past the right edge.
-            if usize::from(cursor) + usize::from(glyph_width(ch, vs)) > usize::from(self.width) {
+            if usize::from(cursor) + usize::from(glyph_width(char, variation_selector))
+                > usize::from(self.width)
+            {
                 break;
             }
-            cursor += self.place_glyph(cursor, row, ch, vs, style);
+            cursor += self.place_glyph(cursor, row, char, variation_selector, style);
         }
         cursor
     }
@@ -132,7 +150,7 @@ impl Buffer {
         (0..self.width)
             .filter_map(|col| self.index(col, row))
             .map(|index| match self.cells[index] {
-                Cell::Glyph { ch, .. } => ch,
+                Cell::Glyph(glyph) => glyph.char,
                 Cell::Empty | Cell::Trailing => ' ',
             })
             .collect()
@@ -142,7 +160,7 @@ impl Buffer {
     /// empty or trailing cell.
     pub fn style_at(&self, col: u16, row: u16) -> Style {
         match self.index(col, row).map(|index| self.cells[index]) {
-            Some(Cell::Glyph { style, .. }) => style,
+            Some(Cell::Glyph(glyph)) => glyph.style,
             _ => Style::PLAIN,
         }
     }

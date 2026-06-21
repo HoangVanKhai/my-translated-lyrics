@@ -88,13 +88,13 @@ fn diff(front: &Buffer, back: &Buffer, output: &mut impl Write) -> io::Result<()
                         output.queue(Print(' '))?;
                         col += 1;
                     }
-                    Cell::Glyph { ch, vs, style } => {
-                        set_style(output, &mut current, style)?;
-                        output.queue(Print(ch))?;
-                        if let Some(selector) = vs {
+                    Cell::Glyph(glyph) => {
+                        set_style(output, &mut current, glyph.style)?;
+                        output.queue(Print(glyph.char))?;
+                        if let Some(selector) = glyph.variation_selector {
                             output.queue(Print(selector))?;
                         }
-                        col += glyph_width(ch, vs).max(1);
+                        col += glyph_width(glyph.char, glyph.variation_selector).max(1);
                     }
                     // The leading glyph already covered this column.
                     Cell::Trailing => col += 1,
