@@ -84,8 +84,9 @@ fn a_marked_query_matches_only_that_mark() {
 #[test]
 fn resolve_unique_returns_the_single_match() {
     let items = ["mpv", "celluloid"];
-    let resolved = resolve_unique("cell", &items, |item| vec![*item]).unwrap();
-    assert_eq!(*resolved, "celluloid");
+    let (index, value) = resolve_unique("cell", &items, |item| vec![*item]).unwrap();
+    assert_eq!(index, 1);
+    assert_eq!(*value, "celluloid");
 }
 
 #[test]

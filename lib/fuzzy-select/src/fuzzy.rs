@@ -239,24 +239,25 @@ pub enum ResolveError {
 }
 
 /// Returns the single element of `items` whose any search key fuzzily
-/// matches `query`.
+/// matches `query`, together with its index in `items`.
 ///
 /// The `get_keys` function yields the strings a candidate is matched against.
 /// A candidate matches when at least one of its keys fuzzily contains the
-/// query as a subsequence. The result is an error when zero candidates
-/// match ([`ResolveError::NoMatch`]) or when more than one does
+/// query as a subsequence. The index lets the caller locate the match in the
+/// original slice without comparing pointers. The result is an error when zero
+/// candidates match ([`ResolveError::NoMatch`]) or when more than one does
 /// ([`ResolveError::Ambiguous`]).
 pub fn resolve_unique<'a, Item, GetKeys, Keys>(
     query: &str,
     items: &'a [Item],
     get_keys: GetKeys,
-) -> Result<&'a Item, ResolveError>
+) -> Result<(usize, &'a Item), ResolveError>
 where
     GetKeys: Fn(&'a Item) -> Keys,
     Keys: IntoIterator<Item = &'a str>,
 {
-    let mut found: Option<&'a Item> = None;
-    for item in items {
+    let mut found: Option<(usize, &'a Item)> = None;
+    for (index, item) in items.iter().enumerate() {
         let matched = item
             .pipe(&get_keys)
             .into_iter()
@@ -265,7 +266,7 @@ where
             if found.is_some() {
                 return Err(ResolveError::Ambiguous);
             }
-            found = Some(item);
+            found = Some((index, item));
         }
     }
     found.ok_or(ResolveError::NoMatch)

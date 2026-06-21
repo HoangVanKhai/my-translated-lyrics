@@ -51,20 +51,14 @@ pub(crate) fn resolve_video(
     previous: Option<usize>,
 ) -> Result<Resolution<usize>, Termination> {
     if let Some(title) = &args.title {
-        let video = resolve_unique(title, catalog, <Video as Searchable>::search_keys).map_err(
-            |error| {
+        let (index, _video) = resolve_unique(title, catalog, <Video as Searchable>::search_keys)
+            .map_err(|error| {
                 Failure::UnresolvedTitle(UnresolvedTitle {
                     query: title.clone(),
                     error,
                 })
-            },
-        )?;
-        return catalog
-            .iter()
-            .position(|candidate| std::ptr::eq(candidate, video))
-            .expect("the resolved video belongs to the catalog")
-            .pipe(Resolution::Auto)
-            .pipe(Ok);
+            })?;
+        return index.pipe(Resolution::Auto).pipe(Ok);
     }
     require_terminal("a video title")?;
     let selection = select_video(catalog, query, previous).expect("interactive selection failed");
