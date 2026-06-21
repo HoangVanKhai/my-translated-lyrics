@@ -146,6 +146,9 @@ pub fn find_video_file(
         })
         .map(|entry| entry.path())
         .collect();
+    // `read_dir` yields entries in an unspecified order; sort so the reported
+    // ambiguity lists the matching files the same way on every run.
+    matches.sort();
 
     match matches.len() {
         0 => Err(VideoLookupError::NotFound {
