@@ -54,3 +54,14 @@ fn a_wide_glyph_at_the_right_edge_is_clipped() {
     buffer.set_string(0, 0, "ab中", Style::PLAIN);
     assert_eq!(buffer.row_text(0), "ab ");
 }
+
+/// A zero-width character claims no column: `set_glyph` writes nothing and
+/// reports a zero advance, so a combining mark cannot shift the grid.
+#[test]
+fn set_glyph_ignores_a_zero_width_character() {
+    let mut buffer = Buffer::new(4, 1);
+    // U+0301 is a combining acute accent, which has no column of its own.
+    let advance = buffer.set_glyph(0, 0, '\u{0301}', Style::PLAIN);
+    assert_eq!(advance, 0);
+    assert_eq!(buffer.row_text(0), "    ");
+}

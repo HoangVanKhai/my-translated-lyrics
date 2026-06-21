@@ -78,6 +78,11 @@ impl Buffer {
     /// written when the glyph would run past the right edge.
     fn place_glyph(&mut self, col: u16, row: u16, ch: char, vs: Option<char>, style: Style) -> u16 {
         let width = glyph_width(ch, vs);
+        // A zero-width glyph, such as a combining mark or a control character,
+        // has no column of its own, matching how `set_string` skips it.
+        if width == 0 {
+            return 0;
+        }
         if usize::from(col) + usize::from(width) <= usize::from(self.width)
             && let Some(index) = self.index(col, row)
         {
@@ -88,7 +93,7 @@ impl Buffer {
                 }
             }
         }
-        width.max(1)
+        width
     }
 
     /// Writes `ch` at `col`, `row` with `style`. Returns the number of columns
