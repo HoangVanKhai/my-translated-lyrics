@@ -9,8 +9,8 @@ column-sort.workspace = true
 crossterm.workspace = true
 fuzzy-select.workspace = true
 lyrics-core.workspace = true
-play-with-lyrics.workspace = true
 pipe-trait.workspace = true
+play-with-lyrics.workspace = true
 terminal-screen.workspace = true
 unicode-width.workspace = true
 

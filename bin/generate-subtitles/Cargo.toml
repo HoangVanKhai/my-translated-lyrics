@@ -10,8 +10,8 @@ path = "src/main.rs"
 doc = false
 
 [dependencies]
-generate-subtitles.workspace = true
 clap.workspace = true
+generate-subtitles.workspace = true
 itertools.workspace = true
 pipe-trait.workspace = true
 

@@ -15,30 +15,30 @@ publish = false
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(dylint_lib, values("perfectionist"))'] }
 
 [workspace.dependencies]
-lyrics-core = { path = "lib/lyrics-core" }
-column-sort = { path = "lib/column-sort" }
-generate-subtitles = { path = "lib/generate-subtitles" }
-exit-codes = { path = "lib/exit-codes" }
-fuzzy-select = { path = "lib/fuzzy-select" }
-play-with-lyrics = { path = "lib/play-with-lyrics" }
-play-with-lyrics-tui = { path = "lib/play-with-lyrics-tui" }
-terminal-screen = { path = "lib/terminal-screen" }
-test-utils = { path = "lib/test-utils" }
 clap = { version = "4.6.1", features = ["derive"] }
+column-sort = { path = "lib/column-sort" }
 command-extra = "1.0.0"
 crossterm = "0.29.0"
 derive_more = { version = "2.1.1", features = ["add_assign", "as_ref", "deref", "display", "from", "into"] }
+exit-codes = { path = "lib/exit-codes" }
+fuzzy-select = { path = "lib/fuzzy-select" }
+generate-subtitles = { path = "lib/generate-subtitles" }
 into-deduped = "0.0.0"
 into-sorted = "0.0.3"
 itertools = "0.14.0"
+lyrics-core = { path = "lib/lyrics-core" }
 maplit = "1.0.2"
 pipe-trait = "0.4.0"
+play-with-lyrics = { path = "lib/play-with-lyrics" }
+play-with-lyrics-tui = { path = "lib/play-with-lyrics-tui" }
 pretty_assertions = "1.4.1"
 rand = "0.10.0"
 reflink = "0.1.3"
 serde = { version = "1.0.228", features = ["derive"] }
 serde-saphyr = "0.0.24"
 strum = { version = "0.28.0", features = ["derive"] }
+terminal-screen = { path = "lib/terminal-screen" }
+test-utils = { path = "lib/test-utils" }
 text-block-macros = "0.2.0"
 toml = "1.1.2"
 unicode-width = "0.2.2"
