@@ -5,7 +5,7 @@
 //! behavior can be unit tested without a TTY. A terminal front-end drives
 //! one of these while rendering and reading key events.
 
-use crate::fuzzy::contains_ci;
+use crate::fuzzy::contains_substring;
 use std::cmp::Ordering;
 
 /// A comparator that orders two items, held as a boxed closure so the selector
@@ -150,7 +150,7 @@ where
                 self.items[index]
                     .search_keys()
                     .iter()
-                    .any(|key| contains_ci(key, &self.query))
+                    .any(|key| contains_substring(key, &self.query))
             })
             .collect();
         self.sort_filtered();

@@ -326,6 +326,7 @@ name = "fuzzy-select"
 version = "0.0.0"
 dependencies = [
  "derive_more",
+ "itertools",
  "pretty_assertions",
 ]
 

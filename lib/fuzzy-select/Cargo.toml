@@ -6,6 +6,7 @@ publish.workspace = true
 
 [dependencies]
 derive_more.workspace = true
+itertools.workspace = true
 
 [dev-dependencies]
 pretty_assertions.workspace = true

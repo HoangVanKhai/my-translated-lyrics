@@ -5,7 +5,7 @@
 //! two different behaviors:
 //!
 //! * The interactive table filters rows that *contain* the typed word.
-//!   [`contains_ci`] implements that substring test.
+//!   [`contains_substring`] implements that substring test.
 //! * A command-line flag pre-selects a value by *fuzzy* matching, and the
 //!   value must resolve to exactly one candidate. [`fuzzy_subsequence`]
 //!   implements the subsequence test and [`resolve_unique`] enforces the
@@ -16,6 +16,7 @@
 //! broadly while a specific one (mixed case, or marks) matches exactly.
 
 use derive_more::Display;
+use itertools::Itertools;
 
 /// Returns `true` when every character of `query` appears in `text`, in
 /// order but not necessarily contiguously. Case and diacritics are matched
@@ -43,7 +44,7 @@ pub fn fuzzy_subsequence(query: &str, text: &str) -> bool {
 /// spaced the same way.
 ///
 /// This is the "contains the word" filter used by the interactive table.
-pub fn contains_ci(text: &str, query: &str) -> bool {
+pub fn contains_substring(text: &str, query: &str) -> bool {
     let query = normalize_whitespace(query);
     if query.is_empty() {
         return true;
@@ -72,14 +73,14 @@ pub fn contains_ci(text: &str, query: &str) -> bool {
 /// Collapses every run of whitespace to a single space and trims the ends.
 /// A string of only whitespace becomes empty.
 fn normalize_whitespace(text: &str) -> String {
-    text.split_whitespace().collect::<Vec<_>>().join(" ")
+    text.split_whitespace().join(" ")
 }
 
 /// Reports which characters of `text` a typed `query` matches, for
 /// highlighting in the interactive table. The returned mask is aligned with
 /// `text.chars()`: `true` marks a character that is part of a match.
 ///
-/// Matching follows the same rules as [`contains_ci`], so case and diacritics
+/// Matching follows the same rules as [`contains_substring`], so case and diacritics
 /// fold the same way and the same spacing rules apply. Occurrences are
 /// non-overlapping and scanned left to right: in "Foo Bo Booo" the query "o"
 /// marks all six letters, "oo" marks the pair in "Foo" and one pair in
@@ -96,7 +97,7 @@ pub fn match_mask(text: &str, query: &str) -> Vec<bool> {
     let query: Vec<char> = query.chars().collect();
 
     // The characters the query is matched against, each paired with its index
-    // in the original text. This mirrors `contains_ci`: a query with a space
+    // in the original text. This mirrors `contains_substring`: a query with a space
     // keeps the text's spacing (collapsed), while one without a space ignores
     // the text's whitespace so a run-together query can cross word boundaries.
     let candidates: Vec<(usize, char)> = if query.contains(&' ') {
@@ -165,7 +166,7 @@ fn collapsed_candidates(text: &[char]) -> Vec<(usize, char)> {
 fn is_case_insensitive(query: &str) -> bool {
     let has_upper = query.chars().any(char::is_uppercase);
     let has_lower = query.chars().any(char::is_lowercase);
-    !(has_upper && has_lower)
+    !has_upper || !has_lower
 }
 
 /// Returns `true` when `text_char` matches `query_char`.
@@ -239,22 +240,23 @@ pub enum ResolveError {
 /// Returns the single element of `items` whose any search key fuzzily
 /// matches `query`.
 ///
-/// The `keys` function yields the strings a candidate is matched against.
+/// The `get_keys` function yields the strings a candidate is matched against.
 /// A candidate matches when at least one of its keys fuzzily contains the
 /// query as a subsequence. The result is an error when zero candidates
 /// match ([`ResolveError::NoMatch`]) or when more than one does
 /// ([`ResolveError::Ambiguous`]).
-pub fn resolve_unique<'a, Item, Keys>(
+pub fn resolve_unique<'a, Item, GetKeys, Keys>(
     query: &str,
     items: &'a [Item],
-    keys: Keys,
+    get_keys: GetKeys,
 ) -> Result<&'a Item, ResolveError>
 where
-    Keys: Fn(&'a Item) -> Vec<&'a str>,
+    GetKeys: Fn(&'a Item) -> Keys,
+    Keys: IntoIterator<Item = &'a str>,
 {
     let mut found: Option<&'a Item> = None;
     for item in items {
-        let matched = keys(item)
+        let matched = get_keys(item)
             .into_iter()
             .any(|key| fuzzy_subsequence(query, key));
         if matched {
