@@ -12,6 +12,7 @@ use into_deduped::IntoDeduped;
 use into_sorted::IntoSorted;
 use itertools::Itertools;
 use lyrics_core::video_descriptor::Language;
+use pipe_trait::Pipe;
 use std::fs::read_dir;
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
@@ -171,10 +172,10 @@ pub fn find_video_file(
 /// extension does not, and `None` when the stem does not match at all.
 fn is_video_file(file_name: &str, video_title: &str) -> Option<bool> {
     let extension = file_name.strip_prefix(video_title)?.strip_prefix('.')?;
-    let is_video = VIDEO_EXTENSIONS
+    VIDEO_EXTENSIONS
         .iter()
-        .any(|known| known.eq_ignore_ascii_case(extension));
-    Some(is_video)
+        .any(|known| known.eq_ignore_ascii_case(extension))
+        .pipe(Some)
 }
 
 #[cfg(test)]
