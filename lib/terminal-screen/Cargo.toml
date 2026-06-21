@@ -1,0 +1,15 @@
+[package]
+name = "terminal-screen"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+crossterm.workspace = true
+unicode-width.workspace = true
+
+[dev-dependencies]
+pretty_assertions.workspace = true
+
+[lints]
+workspace = true
