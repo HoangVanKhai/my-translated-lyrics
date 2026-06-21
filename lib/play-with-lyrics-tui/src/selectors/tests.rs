@@ -1,4 +1,5 @@
-use super::{render_header, render_search_bar, select_one_loop, select_video_loop};
+use super::list::select_one_loop;
+use super::video::{render_header, render_search_bar, select_video_loop};
 use crate::Navigation;
 use crate::host::{Clock, ReadEvent, WindowSize};
 use crate::render::{HEADER_ROW, SEARCH_ROW, column_spans};
