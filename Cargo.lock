@@ -657,6 +657,7 @@ dependencies = [
  "derive_more",
  "exit-codes",
  "fuzzy-select",
+ "into-deduped",
  "lyrics-core",
  "pipe-trait",
  "play-with-lyrics",

@@ -7,6 +7,7 @@ use crate::failure::{
 };
 use fuzzy_select::fuzzy::resolve_unique;
 use fuzzy_select::selection::Searchable;
+use into_deduped::IntoDeduped;
 use lyrics_core::video_descriptor::Language;
 use pipe_trait::Pipe;
 use play_with_lyrics::catalog::{Video, language_label};
@@ -75,8 +76,11 @@ pub(crate) fn resolve_language(
     available: &[(Language, SubtitleFormat)],
     previous: Option<Language>,
 ) -> Result<Resolution<Language>, Termination> {
-    let mut languages: Vec<Language> = available.iter().map(|(language, _)| *language).collect();
-    languages.dedup();
+    let languages = available
+        .iter()
+        .map(|(language, _)| *language)
+        .collect::<Vec<Language>>()
+        .into_deduped();
 
     if let Some(arg) = args.language {
         let requested = Language::from(arg);
