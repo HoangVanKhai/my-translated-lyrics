@@ -76,8 +76,8 @@ fn a_variation_selector_is_sent_with_its_glyph() {
     screen
         .begin(4, 1, &mut output)
         .unwrap()
-        .set_string(0, 0, "🔍\u{FE0E}", Style::PLAIN);
+        .set_string(0, 0, "🔍︎", Style::PLAIN);
     screen.flush(&mut output).unwrap();
     let rendered = String::from_utf8(output).unwrap();
-    assert!(rendered.contains("🔍\u{FE0E}"), "{rendered:?}");
+    assert!(rendered.contains("🔍︎"), "{rendered:?}");
 }

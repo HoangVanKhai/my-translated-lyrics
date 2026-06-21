@@ -1750,7 +1750,7 @@ fn the_search_bar_shows_a_magnifier_with_styled_parts() {
     select_video_loop::<Scripted>(&mut buffer, &videos, &mut query, None).unwrap();
     let rendered = String::from_utf8_lossy(&buffer);
     // The magnifier is sent with its text-presentation variation selector.
-    assert!(rendered.contains("🔍\u{FE0E}"), "{rendered:?}");
+    assert!(rendered.contains("🔍︎"), "{rendered:?}");
     // The label keeps a space before the typed query, the one-column gap.
     assert!(rendered.contains("Search: "), "{rendered:?}");
     // The italic attribute (SGR 3) is applied to the label.

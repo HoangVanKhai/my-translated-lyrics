@@ -40,7 +40,7 @@ fn set_string_clips_at_the_right_edge() {
 fn a_text_presentation_glyph_takes_one_column() {
     let mut buffer = Buffer::new(4, 1);
     // 🔍 with the text variation selector (U+FE0E) is one column wide.
-    buffer.set_string(0, 0, "🔍\u{FE0E}x", Style::PLAIN);
+    buffer.set_string(0, 0, "🔍︎x", Style::PLAIN);
     assert_eq!(buffer.row_text(0), "🔍x  ");
 }
 
