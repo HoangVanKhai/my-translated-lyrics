@@ -132,11 +132,11 @@ where
     /// original slice, when that item is currently visible. Used to restore a
     /// previous selection; an item that is filtered out leaves the cursor put.
     pub fn focus(&mut self, index: usize) {
-        if let Some(position) = self
+        let position = self
             .filtered
             .iter()
-            .position(|&candidate| candidate == index)
-        {
+            .position(|&candidate| candidate == index);
+        if let Some(position) = position {
             self.cursor = position;
         }
     }
