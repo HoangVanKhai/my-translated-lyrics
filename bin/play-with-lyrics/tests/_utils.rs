@@ -7,18 +7,15 @@
 use command_extra::CommandExtra;
 use lyrics_core::video_descriptor::Visibility;
 use pipe_trait::Pipe;
+use std::env::var;
 use std::ffi::OsStr;
-use std::fs::{create_dir, create_dir_all, write as write_file};
+use std::fs::{
+    Permissions, create_dir, create_dir_all, read_to_string, set_permissions, write as write_file,
+};
+use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 use std::process::{Command, Output, Stdio};
 use test_utils::{Temp, video_desc};
-
-#[cfg(unix)]
-use std::env::var;
-#[cfg(unix)]
-use std::fs::{Permissions, read_to_string, set_permissions};
-#[cfg(unix)]
-use std::os::unix::fs::PermissionsExt;
 
 const PLAY_WITH_LYRICS: &str = env!("CARGO_BIN_EXE_play-with-lyrics");
 const COLLECTION: &str = "Feng Ling Yu Xiu";
@@ -26,7 +23,7 @@ pub const VIDEO_TITLE: &str = "Example Song [id]";
 
 /// A temporary source directory and media library for one test.
 pub struct Env {
-    _temp: Temp,
+    temp: Temp,
     source: PathBuf,
     target: PathBuf,
 }
@@ -39,7 +36,7 @@ impl Env {
         create_dir(&source).unwrap();
         create_dir(&target).unwrap();
         Env {
-            _temp: temp,
+            temp,
             source,
             target,
         }
@@ -87,17 +84,17 @@ impl Env {
 
 /// Support for the happy-path tests, which run the binary against fake
 /// player programs so no real media player is launched. The fake programs
-/// are shell scripts and the support is therefore Unix-only.
-#[cfg(unix)]
+/// are shell scripts, so this support runs only on Unix, which is the only
+/// platform the project targets.
 impl Env {
     /// The directory the fake player programs are installed into.
     fn bin_dir(&self) -> PathBuf {
-        self._temp.join("bin")
+        self.temp.join("bin")
     }
 
     /// The file the fake players record their arguments to.
     fn record_path(&self) -> PathBuf {
-        self._temp.join("invocation")
+        self.temp.join("invocation")
     }
 
     /// Installs a fake `mpv` and `celluloid`, each a script that records the
@@ -124,17 +121,29 @@ impl Env {
         Args: IntoIterator,
         Args::Item: AsRef<OsStr>,
     {
-        let path = var("PATH").unwrap_or_default();
+        let inherited = var("PATH").unwrap_or_default();
+        let bin_dir = self.bin_dir();
+        // Put the fake-player directory ahead of the inherited search path. When
+        // `PATH` is unset the inherited part is empty, so omit the separator
+        // rather than leave a trailing one, which Unix reads as the current
+        // directory.
+        let search_path = if inherited.is_empty() {
+            bin_dir.display().to_string()
+        } else {
+            format!("{}:{inherited}", bin_dir.display())
+        };
         let output = PLAY_WITH_LYRICS
             .pipe(Command::new)
             .with_arg(&self.source)
             .with_arg(&self.target)
             .with_args(args)
-            .with_env("PATH", format!("{}:{path}", self.bin_dir().display()))
+            .with_env("PATH", search_path)
             .with_stdin(Stdio::null())
             .output()
             .expect("failed to spawn play-with-lyrics");
-        let recorded = read_to_string(self.record_path())
+        let recorded = self
+            .record_path()
+            .pipe(read_to_string)
             .unwrap_or_default()
             .lines()
             .map(str::to_string)

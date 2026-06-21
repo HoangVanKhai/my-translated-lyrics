@@ -1,8 +1,7 @@
 //! End-to-end cases that run all the way through to launching a player,
 //! verified against fake player programs on `PATH`. The fake programs are
-//! shell scripts, so the whole suite is Unix-only.
-
-#![cfg(unix)]
+//! shell scripts, so the suite runs only on Unix, which is the only platform
+//! the project targets.
 
 pub mod _utils;
 pub use _utils::*;
