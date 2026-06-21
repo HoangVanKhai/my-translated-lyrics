@@ -381,7 +381,7 @@ where
                     // A single click highlights the label on the clicked row; a
                     // double click on the same item also selects it.
                     MouseEventKind::Down(MouseButton::Left) => {
-                        let (columns, _) = Sys::window_size().unwrap_or((80, 24));
+                        let (columns, rows) = Sys::window_size().unwrap_or((80, 24));
                         // A click on the top bar acts on the button under the
                         // pointer, where "Forward" matches pressing Enter.
                         if mouse.row == 0 {
@@ -395,9 +395,10 @@ where
                                 }
                                 None => {}
                             }
-                        } else if let Some(index) = (mouse.row as usize)
-                            .checked_sub(LIST_ROW_OFFSET)
-                            .filter(|&index| index < labels.len())
+                        } else if mouse.row < rows.saturating_sub(1)
+                            && let Some(index) = (mouse.row as usize)
+                                .checked_sub(LIST_ROW_OFFSET)
+                                .filter(|&index| index < labels.len())
                         {
                             let now = Sys::now();
                             let confirm = is_double_click(last_click, now, index);

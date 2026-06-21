@@ -1838,3 +1838,36 @@ fn a_sort_between_clicks_is_not_a_double_click() {
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
+
+/// On a terminal too short to show every label, a click on the help line does
+/// not reach the label hidden beneath it.
+#[test]
+fn select_one_ignores_a_click_on_the_help_line() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_710_333_444)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            // Five rows: top bar at 0, labels at 1..4, help line at row 4.
+            Ok((80, 5))
+        }
+    }
+    let labels = label_list(&["alpha", "beta", "gamma", "delta"]);
+    // Row 4 is the help line, which hides the fourth label drawn under it.
+    // Two clicks there must not select; the following Ctrl-Q ends the loop.
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([click(4), click(4), control(KeyCode::Char('q'))]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    assert_eq!(chosen, Navigation::Quit);
+}
