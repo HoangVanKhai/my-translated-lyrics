@@ -25,8 +25,15 @@ pub(crate) struct TerminalGuard {
 impl TerminalGuard {
     pub(crate) fn enter() -> io::Result<Self> {
         enable_raw_mode()?;
-        let mut output = io::stderr();
-        output
+        // Build the guard before enabling the rest, so that if a later step
+        // fails its Drop still restores what is already in effect (the restores
+        // for steps not yet applied are harmless best-effort no-ops).
+        let mut guard = TerminalGuard {
+            output: io::stderr(),
+            enhanced: false,
+        };
+        guard
+            .output
             .execute(EnterAlternateScreen)?
             .execute(Hide)?
             .execute(EnableMouseCapture)?;
@@ -34,13 +41,13 @@ impl TerminalGuard {
         // Ctrl-Backspace arrive with their modifier. Terminals that do not
         // support it are left untouched, and Ctrl-Backspace simply has no
         // effect there.
-        let enhanced = matches!(supports_keyboard_enhancement(), Ok(true));
-        if enhanced {
-            output.execute(PushKeyboardEnhancementFlags(
+        if matches!(supports_keyboard_enhancement(), Ok(true)) {
+            guard.output.execute(PushKeyboardEnhancementFlags(
                 KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES,
             ))?;
+            guard.enhanced = true;
         }
-        Ok(TerminalGuard { output, enhanced })
+        Ok(guard)
     }
 }
 
