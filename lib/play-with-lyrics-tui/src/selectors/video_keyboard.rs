@@ -1,6 +1,6 @@
-use super::{control, pop_scripted, press, standard_size, video};
 use crate::Navigation;
 use crate::host::{Clock, ReadEvent, WindowSize};
+use crate::selectors::_test_utils::{control, pop_scripted, press, standard_size, video};
 use crate::selectors::video::select_video_loop;
 use crossterm::event::{Event, KeyCode};
 use pretty_assertions::assert_eq;

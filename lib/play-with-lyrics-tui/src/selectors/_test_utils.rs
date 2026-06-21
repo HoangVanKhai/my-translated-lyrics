@@ -1,5 +1,5 @@
-//! Tests for the selector pages. The shared fixtures live here and each
-//! group of related tests is a submodule.
+//! Shared fixtures for the selector page tests. Each group of related tests
+//! is its own sibling module and pulls the helpers it needs from here.
 
 use crossterm::event::{
     Event, KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
@@ -11,16 +11,9 @@ use std::io;
 use std::sync::Mutex;
 use test_utils::video_desc;
 
-mod buttons;
-mod list_keyboard;
-mod mouse;
-mod rendering;
-mod restore;
-mod video_keyboard;
-
 /// A video with both an English and a Vietnamese title, so the table can be
 /// sorted by either column to a different order.
-fn bilingual_video(english: &str, vietnamese: &str) -> Video {
+pub(super) fn bilingual_video(english: &str, vietnamese: &str) -> Video {
     Video {
         desc: VideoDesc {
             collection: "Touhou Hero of Ice Fairy".to_string().try_into().unwrap(),
@@ -42,22 +35,22 @@ fn bilingual_video(english: &str, vietnamese: &str) -> Video {
 // scope.
 
 /// A key press with no modifiers.
-fn press(code: KeyCode) -> Event {
+pub(super) fn press(code: KeyCode) -> Event {
     Event::Key(KeyEvent::new(code, KeyModifiers::NONE))
 }
 
 /// A key press combined with the Control modifier.
-fn control(code: KeyCode) -> Event {
+pub(super) fn control(code: KeyCode) -> Event {
     Event::Key(KeyEvent::new(code, KeyModifiers::CONTROL))
 }
 
 /// A key press combined with the Shift modifier.
-fn shift(code: KeyCode) -> Event {
+pub(super) fn shift(code: KeyCode) -> Event {
     Event::Key(KeyEvent::new(code, KeyModifiers::SHIFT))
 }
 
 /// A left-button click at screen `column` and `row`.
-fn click_at(column: u16, row: u16) -> Event {
+pub(super) fn click_at(column: u16, row: u16) -> Event {
     Event::Mouse(MouseEvent {
         kind: MouseEventKind::Down(MouseButton::Left),
         column,
@@ -67,12 +60,12 @@ fn click_at(column: u16, row: u16) -> Event {
 }
 
 /// A left-button click in the first column of screen `row`.
-fn click(row: u16) -> Event {
+pub(super) fn click(row: u16) -> Event {
     click_at(0, row)
 }
 
 /// A pointer movement to `column`, `row`, with no button held.
-fn hover_at(column: u16, row: u16) -> Event {
+pub(super) fn hover_at(column: u16, row: u16) -> Event {
     Event::Mouse(MouseEvent {
         kind: MouseEventKind::Moved,
         column,
@@ -82,7 +75,7 @@ fn hover_at(column: u16, row: u16) -> Event {
 }
 
 /// A scroll-wheel-down event.
-fn scroll_down() -> Event {
+pub(super) fn scroll_down() -> Event {
     Event::Mouse(MouseEvent {
         kind: MouseEventKind::ScrollDown,
         column: 0,
@@ -93,7 +86,7 @@ fn scroll_down() -> Event {
 
 /// Pops the next scripted event from a test's own queue, reporting an error
 /// if the loop reads past the end of the script it was given.
-fn pop_scripted(queue: &Mutex<VecDeque<Event>>) -> io::Result<Event> {
+pub(super) fn pop_scripted(queue: &Mutex<VecDeque<Event>>) -> io::Result<Event> {
     queue.lock().unwrap().pop_front().ok_or_else(|| {
         io::Error::new(
             io::ErrorKind::UnexpectedEof,
@@ -102,11 +95,11 @@ fn pop_scripted(queue: &Mutex<VecDeque<Event>>) -> io::Result<Event> {
     })
 }
 
-fn label_list(values: &[&str]) -> Vec<String> {
+pub(super) fn label_list(values: &[&str]) -> Vec<String> {
     values.iter().map(|value| value.to_string()).collect()
 }
 
-fn video(title: &str) -> Video {
+pub(super) fn video(title: &str) -> Video {
     Video {
         desc: video_desc("Touhou Hero of Ice Fairy", title, Visibility::Visible),
     }
@@ -115,7 +108,7 @@ fn video(title: &str) -> Video {
 /// A video whose English title is `title`, so rows are distinguishable by
 /// the English column in rendered output. The `video_desc` helper gives every
 /// video the same placeholder titles, which would render identically.
-fn english_video(title: &str) -> Video {
+pub(super) fn english_video(title: &str) -> Video {
     Video {
         desc: VideoDesc {
             collection: "Touhou Hero of Ice Fairy".to_string().try_into().unwrap(),
@@ -128,6 +121,6 @@ fn english_video(title: &str) -> Video {
 
 /// The terminal size a size-agnostic test renders at: wide and tall enough
 /// that neither truncation nor scrolling occurs.
-fn standard_size() -> io::Result<(u16, u16)> {
+pub(super) fn standard_size() -> io::Result<(u16, u16)> {
     Ok((80, 24))
 }

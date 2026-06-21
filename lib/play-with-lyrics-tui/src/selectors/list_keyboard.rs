@@ -1,6 +1,8 @@
-use super::{control, label_list, pop_scripted, press, shift, standard_size};
 use crate::Navigation;
 use crate::host::{Clock, ReadEvent, WindowSize};
+use crate::selectors::_test_utils::{
+    control, label_list, pop_scripted, press, shift, standard_size,
+};
 use crate::selectors::list::select_one_loop;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use pretty_assertions::assert_eq;

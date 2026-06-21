@@ -1,8 +1,8 @@
-use super::{
-    control, english_video, hover_at, label_list, pop_scripted, press, standard_size, video,
-};
 use crate::host::{Clock, ReadEvent, WindowSize};
 use crate::render::{HEADER_ROW, SEARCH_ROW, column_spans};
+use crate::selectors::_test_utils::{
+    control, english_video, hover_at, label_list, pop_scripted, press, standard_size, video,
+};
 use crate::selectors::list::select_one_loop;
 use crate::selectors::video::{render_header, render_search_bar, select_video_loop};
 use column_sort::ColumnSort;

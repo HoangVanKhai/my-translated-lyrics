@@ -1,6 +1,8 @@
-use super::{click_at, control, english_video, label_list, pop_scripted, press, standard_size};
 use crate::Navigation;
 use crate::host::{Clock, ReadEvent, WindowSize};
+use crate::selectors::_test_utils::{
+    click_at, control, english_video, label_list, pop_scripted, press, standard_size,
+};
 use crate::selectors::list::select_one_loop;
 use crate::selectors::video::select_video_loop;
 use crossterm::event::{Event, KeyCode};
