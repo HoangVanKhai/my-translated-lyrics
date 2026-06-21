@@ -17,6 +17,7 @@
 
 use derive_more::Display;
 use itertools::Itertools;
+use pipe_trait::Pipe;
 
 /// Returns `true` when every character of `query` appears in `text`, in
 /// order but not necessarily contiguously. Case and diacritics are matched
@@ -256,7 +257,8 @@ where
 {
     let mut found: Option<&'a Item> = None;
     for item in items {
-        let matched = get_keys(item)
+        let matched = item
+            .pipe(&get_keys)
             .into_iter()
             .any(|key| fuzzy_subsequence(query, key));
         if matched {

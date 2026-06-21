@@ -327,6 +327,7 @@ version = "0.0.0"
 dependencies = [
  "derive_more",
  "itertools",
+ "pipe-trait",
  "pretty_assertions",
 ]
 
