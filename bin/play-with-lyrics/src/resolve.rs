@@ -30,14 +30,14 @@ pub(crate) enum Resolution<Value> {
 }
 
 /// Maps the outcome of an interactive selector to a [`Resolution`]. The
-/// `value` closure turns the chosen index into the resolved value. A request
+/// `to_value` closure turns the chosen index into the resolved value. A request
 /// to quit becomes [`Termination::Cancelled`].
 fn from_selection<Value>(
-    selection: io::Result<Navigation>,
-    value: impl FnOnce(usize) -> Value,
+    selection: Navigation,
+    to_value: impl FnOnce(usize) -> Value,
 ) -> Result<Resolution<Value>, Termination> {
-    match selection.expect("interactive selection failed") {
-        Navigation::Selected(index) => index.pipe(value).pipe(Resolution::Chosen).pipe(Ok),
+    match selection {
+        Navigation::Selected(index) => index.pipe(to_value).pipe(Resolution::Chosen).pipe(Ok),
         Navigation::Back => Ok(Resolution::Back),
         Navigation::Quit => Err(Termination::Cancelled),
     }
@@ -67,7 +67,8 @@ pub(crate) fn resolve_video(
             .pipe(Ok);
     }
     require_terminal("a video title")?;
-    from_selection(select_video(catalog, query, previous), |index| index)
+    let selection = select_video(catalog, query, previous).expect("interactive selection failed");
+    from_selection(selection, |index| index)
 }
 
 /// Resolves the subtitle language from `--language`, automatically when
@@ -108,9 +109,9 @@ pub(crate) fn resolve_language(
     let start = previous
         .and_then(|previous| languages.iter().position(|&language| language == previous))
         .unwrap_or(0);
-    from_selection(select_one("Select a Language", &labels, start), |index| {
-        languages[index]
-    })
+    let selection =
+        select_one("Select a Language", &labels, start).expect("interactive selection failed");
+    from_selection(selection, |index| languages[index])
 }
 
 /// Resolves the subtitle format from `--format`, automatically when only
@@ -147,10 +148,9 @@ pub(crate) fn resolve_format(
     let start = previous
         .and_then(|previous| formats.iter().position(|&format| format == previous))
         .unwrap_or(0);
-    from_selection(
-        select_one("Select a Subtitle Format", &labels, start),
-        |index| formats[index],
-    )
+    let selection = select_one("Select a Subtitle Format", &labels, start)
+        .expect("interactive selection failed");
+    from_selection(selection, |index| formats[index])
 }
 
 /// Resolves the media player from `--player` or through an interactive
@@ -163,9 +163,9 @@ pub(crate) fn resolve_player(args: &Args) -> Result<Resolution<Player>, Terminat
     let labels: Vec<String> = Player::VARIANTS.iter().map(ToString::to_string).collect();
     // The player is the last page, so it is never returned to and starts at the
     // top each time.
-    from_selection(select_one("Select a Media Player", &labels, 0), |index| {
-        Player::VARIANTS[index]
-    })
+    let selection =
+        select_one("Select a Media Player", &labels, 0).expect("interactive selection failed");
+    from_selection(selection, |index| Player::VARIANTS[index])
 }
 
 /// Returns a [`Failure::NotInteractive`] when an interactive selection is
