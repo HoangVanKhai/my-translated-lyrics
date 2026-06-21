@@ -12,6 +12,7 @@ use pipe_trait::Pipe;
 use play_with_lyrics::catalog::{Video, language_label};
 use play_with_lyrics::player::{Player, SubtitleFormat};
 use play_with_lyrics_tui::{Navigation, select_one, select_video};
+use std::fmt::Display;
 use std::io::{self, IsTerminal};
 use strum::VariantArray;
 
@@ -56,11 +57,12 @@ pub(crate) fn resolve_video(
                 })
             },
         )?;
-        let index = catalog
+        return catalog
             .iter()
             .position(|candidate| std::ptr::eq(candidate, video))
-            .expect("the resolved video belongs to the catalog");
-        return Ok(Resolution::Auto(index));
+            .expect("the resolved video belongs to the catalog")
+            .pipe(Resolution::Auto)
+            .pipe(Ok);
     }
     require_terminal("a video title")?;
     from_selection(select_video(catalog, query, previous), |index| index)
@@ -173,7 +175,10 @@ fn require_terminal(what: &'static str) -> Result<(), Termination> {
 
 /// Joins the displayed forms of `items` with commas, for an error message
 /// that lists the available choices.
-fn join_display<Item: std::fmt::Display>(items: &[Item]) -> String {
+fn join_display<Item>(items: &[Item]) -> String
+where
+    Item: Display,
+{
     items
         .iter()
         .map(ToString::to_string)
