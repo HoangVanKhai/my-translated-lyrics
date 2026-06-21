@@ -123,7 +123,7 @@ pub fn find_video_file(
         }
         Err(error) => panic!("error: Cannot read directory {collection_dir:?}: {error}"),
     };
-    let mut matches: Vec<PathBuf> = entries
+    let mut matches = entries
         .map(|entry| {
             entry.unwrap_or_else(|error| {
                 panic!("error: Cannot read an entry of directory {collection_dir:?}: {error}")
@@ -148,10 +148,8 @@ pub fn find_video_file(
                 .unwrap_or(false)
         })
         .map(|entry| entry.path())
-        .collect();
-    // `read_dir` yields entries in an unspecified order; sort so the reported
-    // ambiguity lists the matching files the same way on every run.
-    matches.sort();
+        .collect::<Vec<PathBuf>>()
+        .into_sorted();
 
     match matches.len() {
         0 => Err(VideoLookupError::NotFound {
