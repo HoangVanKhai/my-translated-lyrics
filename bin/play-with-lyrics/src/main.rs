@@ -17,6 +17,7 @@ mod resolve;
 
 use crate::cli::Args;
 use crate::failure::{Failure, NoSubtitles, NoVideos, Termination};
+use crate::host::Host;
 use crate::resolve::{Resolution, resolve_format, resolve_language, resolve_player, resolve_video};
 use clap::Parser;
 use lyrics_core::video_descriptor::Language;
@@ -91,18 +92,22 @@ fn run() -> Result<(), Termination> {
 
     let player = loop {
         match stage {
-            Stage::Video => match resolve_video(&args, &catalog, &mut video_query, video_index)? {
-                Resolution::Auto(chosen) => {
-                    video_index = Some(chosen);
-                    stage = Stage::Language;
+            Stage::Video => {
+                match resolve_video::<Host>(&args, &catalog, &mut video_query, video_index)? {
+                    Resolution::Auto(chosen) => {
+                        video_index = Some(chosen);
+                        stage = Stage::Language;
+                    }
+                    Resolution::Chosen(chosen) => {
+                        video_index = Some(chosen);
+                        history.push(Stage::Video);
+                        stage = Stage::Language;
+                    }
+                    Resolution::Back => {
+                        stage = step_back(&mut history, &mut language, &mut format)?
+                    }
                 }
-                Resolution::Chosen(chosen) => {
-                    video_index = Some(chosen);
-                    history.push(Stage::Video);
-                    stage = Stage::Language;
-                }
-                Resolution::Back => stage = step_back(&mut history, &mut language, &mut format)?,
-            },
+            }
             Stage::Language => {
                 let chosen_video =
                     &catalog[video_index.expect("the video is resolved before the language")];
@@ -116,7 +121,7 @@ fn run() -> Result<(), Termination> {
                     })
                     .into());
                 }
-                match resolve_language(&args, &available, language)? {
+                match resolve_language::<Host>(&args, &available, language)? {
                     Resolution::Auto(chosen) => {
                         language = Some(chosen);
                         stage = Stage::Format;
@@ -138,7 +143,7 @@ fn run() -> Result<(), Termination> {
                     .filter(|(candidate, _)| *candidate == chosen_language)
                     .map(|(_, format)| *format)
                     .collect();
-                match resolve_format(&args, chosen_language, &formats, format)? {
+                match resolve_format::<Host>(&args, chosen_language, &formats, format)? {
                     Resolution::Auto(chosen) => {
                         format = Some(chosen);
                         stage = Stage::Player;
@@ -153,7 +158,7 @@ fn run() -> Result<(), Termination> {
                     }
                 }
             }
-            Stage::Player => match resolve_player(&args)? {
+            Stage::Player => match resolve_player::<Host>(&args)? {
                 Resolution::Auto(chosen) | Resolution::Chosen(chosen) => break chosen,
                 Resolution::Back => stage = step_back(&mut history, &mut language, &mut format)?,
             },
