@@ -31,14 +31,14 @@ fn row_style(selected: bool, hover: Option<(u16, u16)>, row: u16) -> Style {
 #[cfg(test)]
 mod _test_utils;
 #[cfg(test)]
-mod buttons;
+mod test_buttons;
 #[cfg(test)]
-mod list_keyboard;
+mod test_list_keyboard;
 #[cfg(test)]
-mod mouse;
+mod test_mouse;
 #[cfg(test)]
-mod rendering;
+mod test_rendering;
 #[cfg(test)]
-mod restore;
+mod test_restore;
 #[cfg(test)]
-mod video_keyboard;
+mod test_video_keyboard;
