@@ -639,6 +639,8 @@ dependencies = [
  "command-extra",
  "derive_more",
  "fuzzy-select",
+ "into-deduped",
+ "into-sorted",
  "itertools",
  "lyrics-core",
  "pipe-trait",

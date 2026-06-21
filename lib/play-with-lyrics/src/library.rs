@@ -8,6 +8,8 @@
 
 use crate::player::SubtitleFormat;
 use derive_more::Display;
+use into_deduped::IntoDeduped;
+use into_sorted::IntoSorted;
 use itertools::Itertools;
 use lyrics_core::video_descriptor::Language;
 use std::fs::read_dir;
@@ -56,9 +58,9 @@ pub fn available_subtitles(
             let file_name = entry.file_name();
             parse_subtitle_name(file_name.to_str()?, video_title)
         })
-        .sorted()
-        .dedup()
-        .collect()
+        .collect::<Vec<_>>()
+        .into_sorted()
+        .into_deduped()
 }
 
 /// Parses a subtitle file name of the form `{video_title}.{language}.{format}`
