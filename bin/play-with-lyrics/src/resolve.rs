@@ -35,7 +35,7 @@ fn from_selection<Value>(
     value: impl FnOnce(usize) -> Value,
 ) -> Result<Resolution<Value>, Termination> {
     match selection.expect("interactive selection failed") {
-        Navigation::Selected(index) => Ok(Resolution::Chosen(value(index))),
+        Navigation::Selected(index) => index.pipe(value).pipe(Resolution::Chosen).pipe(Ok),
         Navigation::Back => Ok(Resolution::Back),
         Navigation::Quit => Err(Termination::Cancelled),
     }
