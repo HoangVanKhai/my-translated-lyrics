@@ -200,8 +200,7 @@ fn video_order(sort: ColumnSort<Language>) -> impl Fn(&Video, &Video) -> Orderin
 /// Draws the search bar at [`SEARCH_ROW`]: a dimmed magnifier, the italic
 /// "Search:" label, and the typed `query` in bold.
 fn render_search_bar(buffer: &mut Buffer, columns: usize, query: &str) {
-    // \u{FE0E} is the variation selector that asks for the magnifier's text form.
-    let magnifier = "🔍\u{FE0E}";
+    let magnifier = "🔍︎";
     buffer.set_string(0, SEARCH_ROW, magnifier, Style::DIM);
     let label = " Search: ";
     let label_start = magnifier.width();
