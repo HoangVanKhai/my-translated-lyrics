@@ -12,6 +12,7 @@
 
 mod cli;
 mod failure;
+mod host;
 mod resolve;
 
 use crate::cli::Args;

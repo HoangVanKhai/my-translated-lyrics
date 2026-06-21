@@ -5,6 +5,7 @@ use crate::cli::Args;
 use crate::failure::{
     Failure, FormatUnavailable, LanguageUnavailable, NotInteractive, Termination, UnresolvedTitle,
 };
+use crate::host::{Host, Stdin};
 use fuzzy_select::fuzzy::resolve_unique;
 use fuzzy_select::selection::Searchable;
 use into_deduped::IntoDeduped;
@@ -15,7 +16,6 @@ use play_with_lyrics::catalog::{Video, language_label};
 use play_with_lyrics::player::{Player, SubtitleFormat};
 use play_with_lyrics_tui::{Navigation, select_one, select_video};
 use std::fmt::Display;
-use std::io::{self, IsTerminal};
 use strum::VariantArray;
 
 /// How a choice was resolved.
@@ -60,7 +60,7 @@ pub(crate) fn resolve_video(
             })?;
         return index.pipe(Resolution::Auto).pipe(Ok);
     }
-    require_terminal("a video title")?;
+    require_terminal::<Host>("a video title")?;
     let selection = select_video(catalog, query, previous).expect("interactive selection failed");
     from_selection(selection, |index| index)
 }
@@ -95,7 +95,7 @@ pub(crate) fn resolve_language(
     if let [only] = languages.as_slice() {
         return Ok(Resolution::Auto(*only));
     }
-    require_terminal("a subtitle language")?;
+    require_terminal::<Host>("a subtitle language")?;
     let labels: Vec<String> = languages
         .iter()
         .map(|language| format!("{} ({language})", language_label(*language)))
@@ -134,7 +134,7 @@ pub(crate) fn resolve_format(
     if let [only] = formats {
         return Ok(Resolution::Auto(*only));
     }
-    require_terminal("a subtitle format")?;
+    require_terminal::<Host>("a subtitle format")?;
     let labels: Vec<String> = formats
         .iter()
         .map(|format| format!("{} ({format})", format.full_name()))
@@ -153,7 +153,7 @@ pub(crate) fn resolve_player(args: &Args) -> Result<Resolution<Player>, Terminat
     if let Some(arg) = args.player {
         return Ok(Resolution::Auto(Player::from(arg)));
     }
-    require_terminal("a media player")?;
+    require_terminal::<Host>("a media player")?;
     let labels: Vec<String> = Player::VARIANTS.iter().map(ToString::to_string).collect();
     // The player is the last page, so it is never returned to and starts at the
     // top each time.
@@ -163,10 +163,13 @@ pub(crate) fn resolve_player(args: &Args) -> Result<Resolution<Player>, Terminat
 }
 
 /// Returns a [`Failure::NotInteractive`] when an interactive selection is
-/// required but standard input is not a terminal.
-fn require_terminal(what: &'static str) -> Result<(), Termination> {
-    io::stdin()
-        .is_terminal()
+/// required but standard input is not a terminal. `Sys` reads standard input;
+/// production passes [`Host`].
+fn require_terminal<Sys>(what: &'static str) -> Result<(), Termination>
+where
+    Sys: Stdin,
+{
+    Sys::is_terminal()
         .then_some(())
         .ok_or(NotInteractive { what })
         .map_err(Failure::NotInteractive)
@@ -181,3 +184,6 @@ where
 {
     items.iter().join(", ")
 }
+
+#[cfg(test)]
+mod tests;
