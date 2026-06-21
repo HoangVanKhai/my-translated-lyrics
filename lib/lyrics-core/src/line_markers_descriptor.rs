@@ -75,9 +75,9 @@ impl CssClassName {
         if !is_class_name_start(first) {
             return Err(InvalidCssClassName::InvalidLeadingCharacter(first));
         }
-        for ch in chars {
-            if !is_class_name_continue(ch) {
-                return Err(InvalidCssClassName::InvalidCharacter(ch));
+        for char in chars {
+            if !is_class_name_continue(char) {
+                return Err(InvalidCssClassName::InvalidCharacter(char));
             }
         }
         Ok(CssClassName(source))
@@ -103,12 +103,12 @@ impl From<CssClassName> for String {
     }
 }
 
-fn is_class_name_start(ch: char) -> bool {
-    ch.is_ascii_alphabetic() || ch == '_'
+fn is_class_name_start(char: char) -> bool {
+    char.is_ascii_alphabetic() || char == '_'
 }
 
-fn is_class_name_continue(ch: char) -> bool {
-    ch.is_ascii_alphanumeric() || ch == '-' || ch == '_'
+fn is_class_name_continue(char: char) -> bool {
+    char.is_ascii_alphanumeric() || char == '-' || char == '_'
 }
 
 /// A speaker label. Populates the WebVTT `<v {name}>` cue tag and
@@ -143,9 +143,9 @@ impl VoiceName {
         if source.is_empty() {
             return Err(InvalidVoiceName::Empty);
         }
-        for ch in source.chars() {
-            if is_forbidden_voice_char(ch) {
-                return Err(InvalidVoiceName::ForbiddenCharacter(ch));
+        for char in source.chars() {
+            if is_forbidden_voice_char(char) {
+                return Err(InvalidVoiceName::ForbiddenCharacter(char));
             }
         }
         Ok(VoiceName(source))
@@ -171,8 +171,8 @@ impl From<VoiceName> for String {
     }
 }
 
-fn is_forbidden_voice_char(ch: char) -> bool {
-    matches!(ch, '<' | '>' | '"' | '\\' | '\u{2028}' | '\u{2029}') || ch.is_control()
+fn is_forbidden_voice_char(char: char) -> bool {
+    matches!(char, '<' | '>' | '"' | '\\' | '\u{2028}' | '\u{2029}') || char.is_control()
 }
 
 #[derive(Debug, Display, Clone, PartialEq, Eq)]

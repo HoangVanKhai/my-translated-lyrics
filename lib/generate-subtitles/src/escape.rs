@@ -19,12 +19,12 @@ pub struct Escaped<'a>(pub &'a str);
 
 impl fmt::Display for Escaped<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for ch in self.0.chars() {
-            match ch {
+        for char in self.0.chars() {
+            match char {
                 '<' => f.write_str("&lt;")?,
                 '>' => f.write_str("&gt;")?,
                 '&' => f.write_str("&amp;")?,
-                _ => f.write_char(ch)?,
+                _ => f.write_char(char)?,
             }
         }
         Ok(())

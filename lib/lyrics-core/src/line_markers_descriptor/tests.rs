@@ -105,20 +105,20 @@ fn voice_name_rejects_empty() {
 
 #[test]
 fn voice_name_rejects_webvtt_and_css_meta_characters() {
-    for ch in ['<', '>', '"', '\\'] {
+    for char in ['<', '>', '"', '\\'] {
         assert_eq!(
-            format!("bad{ch}name").pipe(VoiceName::new).unwrap_err(),
-            InvalidVoiceName::ForbiddenCharacter(ch),
+            format!("bad{char}name").pipe(VoiceName::new).unwrap_err(),
+            InvalidVoiceName::ForbiddenCharacter(char),
         );
     }
 }
 
 #[test]
 fn voice_name_rejects_control_and_line_separator_characters() {
-    for ch in ['\n', '\r', '\t', '\u{2028}', '\u{2029}'] {
+    for char in ['\n', '\r', '\t', '\u{2028}', '\u{2029}'] {
         assert_eq!(
-            format!("bad{ch}name").pipe(VoiceName::new).unwrap_err(),
-            InvalidVoiceName::ForbiddenCharacter(ch),
+            format!("bad{char}name").pipe(VoiceName::new).unwrap_err(),
+            InvalidVoiceName::ForbiddenCharacter(char),
         );
     }
 }
