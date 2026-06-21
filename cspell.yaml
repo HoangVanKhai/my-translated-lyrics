@@ -85,7 +85,6 @@ overrides:
       - crossterm
       - Deque
       - newtype
-      - pacquet
       - rustup
       - serde
       - usize

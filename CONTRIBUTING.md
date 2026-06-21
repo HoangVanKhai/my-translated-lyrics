@@ -104,7 +104,7 @@ This rule applies whether the parent's binding is a private `use` or a `pub use`
 
 ### Dependency Injection for Tests
 
-Some code paths cannot be reached by a real fixture. An interactive loop that blocks on the real terminal, a layout that depends on the live terminal size, and double-click timing that depends on wall-clock readings are all examples. For these paths we adopt the dependency-injection-for-tests pattern from pnpm's [`pacquet` code style guide](https://github.com/pnpm/pnpm/blob/74a2dc9027/pacquet/CODE_STYLE_GUIDE.md#dependency-injection-for-tests). The side effects a function needs are expressed as capability traits, production supplies a real provider, and a test supplies a fake.
+Some code paths cannot be reached by a real fixture. An interactive loop that blocks on the real terminal, a layout that depends on the live terminal size, and double-click timing that depends on wall-clock readings are all examples. For these paths we adopt the dependency-injection-for-tests pattern from [pnpm's Rust code style guide](https://github.com/pnpm/pnpm/blob/74a2dc9027/pacquet/CODE_STYLE_GUIDE.md#dependency-injection-for-tests), the convention every Rust crate in pnpm follows. The side effects a function needs are expressed as capability traits, production supplies a real provider, and a test supplies a fake.
 
 #### When to reach for it
 
