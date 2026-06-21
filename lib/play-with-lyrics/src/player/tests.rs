@@ -8,10 +8,18 @@ fn argv(player: Player) -> (String, Vec<String>) {
         Path::new("/library/Coll/Some Title [id].mkv"),
         Path::new("/library/Coll/Some Title [id].vi.srt"),
     );
-    let program = command.get_program().to_string_lossy().into_owned();
+    let program = command
+        .get_program()
+        .to_str()
+        .expect("the program is valid UTF-8")
+        .to_string();
     let args = command
         .get_args()
-        .map(|arg| arg.to_string_lossy().into_owned())
+        .map(|arg| {
+            arg.to_str()
+                .expect("the argument is valid UTF-8")
+                .to_string()
+        })
         .collect();
     (program, args)
 }
