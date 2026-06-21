@@ -124,7 +124,7 @@ impl SeparatorStyle<'_> {
             SeparatorStyle::AsciiColon => output.push(' '),
             SeparatorStyle::FullWidthColon => output.push('：'),
             SeparatorStyle::Spaces(raw) => {
-                if !raw.is_empty() && raw.chars().all(|ch| ch == ' ' || ch == '\t') {
+                if !raw.is_empty() && raw.chars().all(|char| char == ' ' || char == '\t') {
                     output.push_str(raw);
                 } else {
                     output.push(' ');
@@ -212,12 +212,12 @@ impl<'a> Bracketed<'a> {
         let mut chars = input.char_indices();
         let (_, open) = chars.next()?;
         let close = matching_close(open)?;
-        for (offset, ch) in chars {
-            if ch == close {
-                let end = offset + ch.len_utf8();
+        for (offset, char) in chars {
+            if char == close {
+                let end = offset + char.len_utf8();
                 return Some((Bracketed(&input[..end]), &input[end..]));
             }
-            if is_bracket_char(ch) {
+            if is_bracket_char(char) {
                 return None;
             }
         }
@@ -272,8 +272,8 @@ fn matching_close(open: char) -> Option<char> {
     }
 }
 
-fn is_bracket_char(ch: char) -> bool {
-    matches!(ch, '【' | '】' | '[' | ']' | '(' | ')' | '（' | '）')
+fn is_bracket_char(char: char) -> bool {
+    matches!(char, '【' | '】' | '[' | ']' | '(' | ')' | '（' | '）')
 }
 
 /// The role set for one language, built from `credits.yaml` and
@@ -387,7 +387,7 @@ fn parse_name_region(region: &str) -> Vec<NameSegment<'_>> {
 fn take_leading_whitespace(input: &str) -> (&str, &str) {
     let cursor = input
         .char_indices()
-        .find(|(_, ch)| !ch.is_whitespace())
+        .find(|(_, char)| !char.is_whitespace())
         .map(|(offset, _)| offset)
         .unwrap_or(input.len());
     input.split_at(cursor)
@@ -396,7 +396,7 @@ fn take_leading_whitespace(input: &str) -> (&str, &str) {
 fn take_cell_separator(input: &str) -> (&str, &str) {
     let cursor = input
         .char_indices()
-        .find(|(_, ch)| !is_separator_char(*ch))
+        .find(|(_, char)| !is_separator_char(*char))
         .map(|(offset, _)| offset)
         .unwrap_or(input.len());
     input.split_at(cursor)
@@ -406,19 +406,19 @@ fn trim_end_separator(input: &str) -> &str {
     let end = input
         .char_indices()
         .rev()
-        .find(|(_, ch)| !is_separator_char(*ch))
-        .map(|(offset, ch)| offset + ch.len_utf8())
+        .find(|(_, char)| !is_separator_char(*char))
+        .map(|(offset, char)| offset + char.len_utf8())
         .unwrap_or(0);
     &input[..end]
 }
 
-fn is_separator_char(ch: char) -> bool {
-    ch == ':' || ch == '：' || ch.is_whitespace()
+fn is_separator_char(char: char) -> bool {
+    char == ':' || char == '：' || char.is_whitespace()
 }
 
 fn is_role_boundary(following: &str) -> bool {
     match following.chars().next() {
-        Some(ch) => is_separator_char(ch),
+        Some(char) => is_separator_char(char),
         None => true,
     }
 }
