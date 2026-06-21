@@ -7,10 +7,10 @@ use std::time::{Duration, SystemTime};
 use terminal_screen::{Buffer, Style};
 use unicode_width::UnicodeWidthStr;
 
-/// A second click on the same row within the window is a double click; a
-/// different row or a late click is not.
+/// A second click on the same item within the window is a double click; a
+/// different item or a late click is not.
 #[test]
-fn is_double_click_needs_the_same_row_within_the_window() {
+fn is_double_click_needs_the_same_item_within_the_window() {
     let first = SystemTime::UNIX_EPOCH + Duration::from_secs(1_590_373_467);
     assert!(is_double_click(
         Some((first, 3)),
@@ -23,7 +23,7 @@ fn is_double_click_needs_the_same_row_within_the_window() {
         first + Duration::from_millis(600),
         3,
     ));
-    // A different row.
+    // A different item, e.g. because a sort moved a new item under the pointer.
     assert!(!is_double_click(
         Some((first, 2)),
         first + Duration::from_millis(100),

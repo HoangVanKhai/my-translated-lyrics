@@ -57,7 +57,7 @@ where
     if let Some(index) = selected {
         selector.focus(index);
     }
-    let mut last_click: Option<(SystemTime, u16)> = None;
+    let mut last_click: Option<(SystemTime, usize)> = None;
     let mut hover: Option<(u16, u16)> = None;
     let mut screen = Screen::new();
     // Draw once up front, then redraw after any event that changes what is
@@ -103,7 +103,7 @@ where
                     MouseEventKind::ScrollUp => selector.move_up(),
                     MouseEventKind::ScrollDown => selector.move_down(),
                     // A single click highlights the video on the clicked row; a
-                    // double click on the same row also selects it.
+                    // double click on the same item also selects it.
                     MouseEventKind::Down(MouseButton::Left) => {
                         let (columns, rows) = Sys::window_size().unwrap_or((80, 24));
                         // A click on the top bar acts on the button under the
@@ -142,8 +142,8 @@ where
                                 });
                             if let Some(index) = clicked {
                                 let now = Sys::now();
-                                let confirm = is_double_click(last_click, now, mouse.row);
-                                last_click = Some((now, mouse.row));
+                                let confirm = is_double_click(last_click, now, index);
+                                last_click = Some((now, index));
                                 selector.focus(index);
                                 if confirm {
                                     break Navigation::Selected(index);
@@ -328,7 +328,7 @@ where
     Sys: ReadEvent + WindowSize + Clock,
 {
     let mut cursor = start.min(labels.len().saturating_sub(1));
-    let mut last_click: Option<(SystemTime, u16)> = None;
+    let mut last_click: Option<(SystemTime, usize)> = None;
     let mut hover: Option<(u16, u16)> = None;
     let mut screen = Screen::new();
     // Draw once up front, then redraw after any event that changes what is
@@ -379,7 +379,7 @@ where
                         }
                     }
                     // A single click highlights the label on the clicked row; a
-                    // double click on the same row also selects it.
+                    // double click on the same item also selects it.
                     MouseEventKind::Down(MouseButton::Left) => {
                         let (columns, _) = Sys::window_size().unwrap_or((80, 24));
                         // A click on the top bar acts on the button under the
@@ -400,8 +400,8 @@ where
                             .filter(|&index| index < labels.len())
                         {
                             let now = Sys::now();
-                            let confirm = is_double_click(last_click, now, mouse.row);
-                            last_click = Some((now, mouse.row));
+                            let confirm = is_double_click(last_click, now, index);
+                            last_click = Some((now, index));
                             cursor = index;
                             if confirm {
                                 return Ok(Navigation::Selected(index));

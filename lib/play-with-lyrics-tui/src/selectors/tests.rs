@@ -1797,3 +1797,44 @@ fn clicking_below_the_visible_rows_selects_nothing() {
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
     assert_eq!(chosen, Navigation::Selected(0));
 }
+
+/// A sort between two clicks on the same row is not a double click, because the
+/// row now shows a different item. Clicking row 3 (Alpha), then the Vietnamese
+/// header (which reorders so Charlie is first), then row 3 again, must not
+/// select: the two clicks landed on different videos.
+#[test]
+fn a_sort_between_clicks_is_not_a_double_click() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        // A fixed time makes both clicks fall inside the double-click window, so
+        // only the item check can keep them from forming a double click.
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_709_222_333)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![
+        bilingual_video("Alpha", "Zulu"),
+        bilingual_video("Bravo", "Yankee"),
+        bilingual_video("Charlie", "Xray"),
+    ];
+    EVENTS.lock().unwrap().extend([
+        click(3),
+        click_at(30, HEADER_ROW),
+        click(3),
+        control(KeyCode::Char('q')),
+    ]);
+    let chosen =
+        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
+    assert_eq!(chosen, Navigation::Quit);
+}

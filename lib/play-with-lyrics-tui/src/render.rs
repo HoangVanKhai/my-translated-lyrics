@@ -127,18 +127,20 @@ pub(crate) fn column_at(total: usize, column: usize) -> Option<usize> {
         .position(|span| span.contains(&column))
 }
 
-/// Whether a left click at `row` and `now` completes a double click that began
-/// at `previous` (the time and row of the last click), so the same row was
-/// clicked twice within the double-click window.
+/// Whether a left click on the item at `index` at time `now` completes a double
+/// click that began at `previous` (the time and item index of the last click),
+/// so the same item was clicked twice within the double-click window. Keying on
+/// the item rather than the screen row means a sort or scroll that moves an item
+/// between two clicks does not read as a double click.
 pub(crate) fn is_double_click(
-    previous: Option<(SystemTime, u16)>,
+    previous: Option<(SystemTime, usize)>,
     now: SystemTime,
-    row: u16,
+    index: usize,
 ) -> bool {
-    previous.is_some_and(|(when, last_row)| {
+    previous.is_some_and(|(when, last_index)| {
         // A backward clock step between the two clicks reads as "not a double
         // click", which is the safe outcome.
-        last_row == row
+        last_index == index
             && now
                 .duration_since(when)
                 .is_ok_and(|gap| gap <= DOUBLE_CLICK_WINDOW)
