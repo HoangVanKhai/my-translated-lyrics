@@ -2,8 +2,8 @@ use crate::Navigation;
 use crate::host::{Clock, ReadEvent, WindowSize};
 use crate::render::HEADER_ROW;
 use crate::selectors::_test_utils::{
-    bilingual_video, click, click_at, control, english_video, label_list, pop_scripted, press,
-    scroll_down, standard_size,
+    bilingual_video, click, click_at, control, english_video, hover_at, label_list, pop_scripted,
+    press, scroll_down, scroll_up, standard_size, video,
 };
 use crate::selectors::list::select_one_loop;
 use crate::selectors::video::select_video_loop;
@@ -131,6 +131,70 @@ fn select_one_scroll_moves_the_cursor() {
         .extend([scroll_down(), press(KeyCode::Enter)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
+}
+
+/// Scrolling the wheel up moves the cursor toward the top of the list.
+#[test]
+fn select_one_scroll_up_moves_the_cursor() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_700_000_000)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    // Starting on the second row, a wheel-up returns the cursor to the first.
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([scroll_up(), press(KeyCode::Enter)]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 1).unwrap();
+    assert_eq!(chosen, Navigation::Selected(0));
+}
+
+/// Scrolling up moves the table cursor toward the top, and a pointer movement
+/// in between only updates the hover highlight.
+#[test]
+fn select_video_scroll_up_moves_the_cursor() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_705_000_000)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![video("Alpha"), video("Beta")];
+    // Start on the second row; a hover only highlights, then a wheel-up returns
+    // the cursor to the first row, which Enter selects.
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([hover_at(10, 5), scroll_up(), press(KeyCode::Enter)]);
+    let chosen =
+        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), Some(1))
+            .unwrap();
+    assert_eq!(chosen, Navigation::Selected(0));
 }
 
 /// A single click highlights the clicked video without confirming, so a

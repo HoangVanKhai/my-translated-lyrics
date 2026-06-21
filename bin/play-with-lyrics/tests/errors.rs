@@ -4,6 +4,16 @@ pub mod _utils;
 pub use _utils::*;
 
 #[test]
+fn an_empty_source_directory_is_an_error() {
+    let env = Env::new();
+    // No videos are added, so the source directory holds no descriptors.
+    let output = env.run(["--title=example"]);
+
+    assert!(!output.status.success());
+    assert!(stderr(&output).contains("No videos found"), "{output:?}");
+}
+
+#[test]
 fn an_unmatched_title_is_an_error() {
     let env = Env::new();
     env.add_video();

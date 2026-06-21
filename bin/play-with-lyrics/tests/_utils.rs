@@ -108,6 +108,17 @@ impl Env {
         }
     }
 
+    /// Installs a fake `mpv` that exits with `code` rather than succeeding, to
+    /// drive the player-failure path.
+    pub fn install_failing_player(&self, code: u8) {
+        let bin = self.bin_dir();
+        create_dir_all(&bin).unwrap();
+        let script = format!("#!/bin/sh\nexit {code}\n");
+        let path = bin.join("mpv");
+        write_file(&path, &script).unwrap();
+        set_permissions(&path, Permissions::from_mode(0o755)).unwrap();
+    }
+
     /// Runs the binary with the fake-player directory at the front of `PATH`
     /// and returns the process output together with the arguments the fake
     /// player recorded.

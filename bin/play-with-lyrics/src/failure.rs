@@ -111,3 +111,6 @@ impl Termination {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;

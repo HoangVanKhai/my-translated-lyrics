@@ -65,3 +65,35 @@ fn set_glyph_ignores_a_zero_width_character() {
     assert_eq!(advance, 0);
     assert_eq!(buffer.row_text(0), "    ");
 }
+
+/// A glyph placed on a row outside the buffer writes nothing yet still reports
+/// its width, so a caller laying out off-screen rows keeps advancing correctly.
+#[test]
+fn set_glyph_outside_the_buffer_writes_nothing() {
+    let mut buffer = Buffer::new(4, 1);
+    let advance = buffer.set_glyph(0, 5, 'a', Style::PLAIN);
+    assert_eq!(advance, 1);
+    assert_eq!(buffer.row_text(0), "    ");
+}
+
+/// `set_string` skips a leading zero-width character, so the text after it
+/// still starts at the left edge rather than being shifted along.
+#[test]
+fn set_string_skips_a_leading_zero_width_character() {
+    let mut buffer = Buffer::new(4, 1);
+    // U+0301 is a combining acute accent, which has no column of its own.
+    buffer.set_string(0, 0, "\u{0301}x", Style::PLAIN);
+    assert_eq!(buffer.row_text(0), "x   ");
+}
+
+/// `style_at` reports a glyph's style, but the plain style for a trailing
+/// column, an empty cell, or a position outside the buffer.
+#[test]
+fn style_at_is_plain_for_non_glyph_cells() {
+    let mut buffer = Buffer::new(4, 1);
+    buffer.set_string(0, 0, "中", Style::BOLD);
+    assert_eq!(buffer.style_at(0, 0), Style::BOLD);
+    assert_eq!(buffer.style_at(1, 0), Style::PLAIN);
+    assert_eq!(buffer.style_at(3, 0), Style::PLAIN);
+    assert_eq!(buffer.style_at(9, 0), Style::PLAIN);
+}

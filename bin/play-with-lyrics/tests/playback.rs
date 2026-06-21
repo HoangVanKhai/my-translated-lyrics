@@ -60,6 +60,26 @@ fn launches_celluloid_with_the_mpv_prefixed_flag() {
     );
 }
 
+/// A player that exits with a non-zero status makes the command exit with that
+/// same code.
+#[test]
+fn a_failing_player_propagates_its_exit_code() {
+    let env = Env::new();
+    env.add_video();
+    env.add_library_file(&format!("{VIDEO_TITLE}.mkv"));
+    env.add_library_file(&format!("{VIDEO_TITLE}.vi.srt"));
+    env.install_failing_player(3);
+
+    let (output, _recorded) = env.run_played([
+        "--title=example",
+        "--language=vi",
+        "--format=srt",
+        "--player=mpv",
+    ]);
+
+    assert_eq!(output.status.code(), Some(3), "{output:?}");
+}
+
 #[test]
 fn a_single_language_and_format_are_selected_automatically() {
     let env = Env::new();

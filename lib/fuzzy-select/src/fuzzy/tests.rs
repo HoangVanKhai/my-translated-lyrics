@@ -81,6 +81,36 @@ fn a_marked_query_matches_only_that_mark() {
     assert!(!fuzzy_subsequence("xuân", "Mua Xuan"));
 }
 
+/// An unmarked query also folds the "o" and "y" vowel families onto their
+/// bases, so a plain query finds their accented forms.
+#[test]
+fn an_unmarked_query_matches_the_o_and_y_families() {
+    // cspell:locale en vi
+    assert!(contains_substring("Tôi", "toi")); // "ô" belongs to the "o" family
+    assert!(contains_substring("Mỹ", "my")); // "ỹ" belongs to the "y" family
+}
+
+/// Stripping a diacritic preserves the letter's case. A mixed-case query is
+/// taken literally, so an uppercase accented character matches only the same
+/// uppercase form, not its lowercase counterpart.
+#[test]
+fn an_uppercase_accented_query_keeps_its_case() {
+    // cspell:locale en vi
+    assert!(contains_substring("Ông Trời", "Ông"));
+    assert!(!contains_substring("ông trời", "Ông"));
+}
+
+/// Trailing whitespace in the text is trimmed before a spaced query, which
+/// keeps the text's spacing, is matched against it. The trimmed space leaves no
+/// stray candidate past the last word.
+#[test]
+fn match_mask_trims_trailing_whitespace_in_the_text() {
+    assert_eq!(
+        marked(&match_mask("Abc Def ", "abc def")),
+        vec![0, 1, 2, 3, 4, 5, 6],
+    );
+}
+
 #[test]
 fn resolve_unique_returns_the_single_match() {
     let items = ["mpv", "celluloid"];

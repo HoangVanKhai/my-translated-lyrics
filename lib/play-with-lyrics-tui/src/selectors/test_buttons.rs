@@ -97,6 +97,68 @@ fn select_one_forward_button_selects_the_highlighted_row() {
     assert_eq!(chosen, Navigation::Selected(1));
 }
 
+/// Clicking the top bar between the buttons lands on no button, so the click is
+/// ignored and the loop reads on.
+#[test]
+fn select_one_ignores_a_click_between_the_top_bar_buttons() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_690_000_000)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    // Column 45 falls in the gap between "Forward" and "Exit".
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([click_at(45, 0), press(KeyCode::Esc)]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    assert_eq!(chosen, Navigation::Back);
+}
+
+/// Clicking "Forward" with no items to choose from selects nothing, so the loop
+/// reads on rather than confirming an empty list.
+#[test]
+fn select_one_forward_button_does_nothing_without_labels() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_695_000_000)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels: Vec<String> = Vec::new();
+    // "Forward" at column 20 cannot confirm an empty list, so Escape goes back.
+    EVENTS
+        .lock()
+        .unwrap()
+        .extend([click_at(20, 0), press(KeyCode::Esc)]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    assert_eq!(chosen, Navigation::Back);
+}
+
 /// Clicking the "Exit" top-bar button quits the table.
 #[test]
 fn select_video_exit_button_quits() {
@@ -188,4 +250,40 @@ fn select_video_forward_button_selects_the_highlighted_video() {
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
     assert_eq!(chosen, Navigation::Selected(1));
+}
+
+/// Clicking "Forward" with no row matching the query selects nothing, so the
+/// loop reads on rather than confirming an empty table.
+#[test]
+fn select_video_forward_button_does_nothing_without_a_match() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_706_000_000)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let videos = vec![english_video("First"), english_video("Second")];
+    // "zzz" matches no title, so "Forward" at column 20 has nothing to confirm;
+    // Escape then quits.
+    EVENTS.lock().unwrap().extend([
+        press(KeyCode::Char('z')),
+        press(KeyCode::Char('z')),
+        press(KeyCode::Char('z')),
+        click_at(20, 0),
+        press(KeyCode::Esc),
+    ]);
+    let chosen =
+        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
+    assert_eq!(chosen, Navigation::Quit);
 }

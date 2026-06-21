@@ -17,6 +17,22 @@ fn the_first_frame_clears_and_draws() {
     assert!(rendered.contains("hello"), "{rendered:?}");
 }
 
+/// The default screen is an empty one, so its first frame clears and draws
+/// like a freshly constructed screen.
+#[test]
+fn the_default_screen_draws_its_first_frame() {
+    let mut screen = Screen::default();
+    let mut output = Vec::new();
+    screen
+        .begin(4, 1, &mut output)
+        .unwrap()
+        .set_string(0, 0, "hi", Style::PLAIN);
+    screen.flush(&mut output).unwrap();
+    let rendered = String::from_utf8(output).unwrap();
+    assert!(rendered.contains("\u{1b}[2J"), "{rendered:?}");
+    assert!(rendered.contains("hi"), "{rendered:?}");
+}
+
 /// A later frame at the same size sends only the cells that changed, without
 /// clearing the screen or reprinting the unchanged text.
 #[test]

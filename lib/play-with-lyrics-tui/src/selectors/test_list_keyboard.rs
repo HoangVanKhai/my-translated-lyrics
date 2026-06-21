@@ -41,6 +41,38 @@ fn select_one_returns_the_highlighted_row() {
     assert_eq!(chosen, Navigation::Selected(2));
 }
 
+/// An unhandled key and a resize only prompt a redraw, so the loop reads on
+/// until a key it recognizes, here Escape.
+#[test]
+fn select_one_ignores_unhandled_keys_and_resizes() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_672_531_200)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    let labels = label_list(&["alpha", "beta"]);
+    // Left is not bound on a list page, and a resize only changes the layout.
+    EVENTS.lock().unwrap().extend([
+        press(KeyCode::Left),
+        Event::Resize(100, 30),
+        press(KeyCode::Esc),
+    ]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    assert_eq!(chosen, Navigation::Back);
+}
+
 /// Escape goes back from a list page, which is never the first page.
 #[test]
 fn select_one_goes_back_on_escape() {

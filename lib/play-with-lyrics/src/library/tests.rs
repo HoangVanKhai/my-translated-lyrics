@@ -60,6 +60,15 @@ fn reports_a_missing_video_file() {
 }
 
 #[test]
+fn a_missing_collection_directory_reports_no_video_file() {
+    let dir = Temp::new_dir();
+    let missing = dir.join("does-not-exist");
+
+    let error = find_video_file(&missing, TITLE).unwrap_err();
+    assert!(matches!(error, VideoLookupError::NotFound { .. }));
+}
+
+#[test]
 fn reports_multiple_matching_video_files() {
     let dir = Temp::new_dir();
     touch(&dir, &format!("{TITLE}.mkv"));

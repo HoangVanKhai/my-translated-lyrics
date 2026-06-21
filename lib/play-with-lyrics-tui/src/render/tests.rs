@@ -152,6 +152,17 @@ fn top_bar_draws_the_buttons_and_title() {
     assert_eq!(buffer.style_at(0, 0), Style::PLAIN);
 }
 
+/// A title too wide for the gap between the buttons is truncated to fit there,
+/// ending in an ellipsis rather than overrunning the buttons.
+#[test]
+fn top_bar_truncates_a_title_that_does_not_fit() {
+    let mut buffer = Buffer::new(80, 1);
+    let long_title = "x".repeat(80);
+    render_top_bar(&mut buffer, 80, &long_title, true, None);
+    let row = buffer.row_text(0);
+    assert!(row.contains('…'), "{row}");
+}
+
 /// When going back is disabled, the Go back button is drawn dimmed.
 #[test]
 fn top_bar_dims_the_disabled_go_back_button() {

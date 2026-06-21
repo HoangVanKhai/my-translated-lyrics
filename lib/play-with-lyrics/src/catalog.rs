@@ -97,3 +97,6 @@ pub fn language_label(language: Language) -> &'static str {
         Language::Chinese => "中文",
     }
 }
+
+#[cfg(test)]
+mod tests;

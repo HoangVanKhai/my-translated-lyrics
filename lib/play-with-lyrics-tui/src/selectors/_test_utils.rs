@@ -84,6 +84,16 @@ pub(super) fn scroll_down() -> Event {
     })
 }
 
+/// A scroll-wheel-up event.
+pub(super) fn scroll_up() -> Event {
+    Event::Mouse(MouseEvent {
+        kind: MouseEventKind::ScrollUp,
+        column: 0,
+        row: 0,
+        modifiers: KeyModifiers::NONE,
+    })
+}
+
 /// Pops the next scripted event from a test's own queue, reporting an error
 /// if the loop reads past the end of the script it was given.
 pub(super) fn pop_scripted(queue: &Mutex<VecDeque<Event>>) -> io::Result<Event> {
