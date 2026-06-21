@@ -1,9 +1,3 @@
-#![allow(
-    dead_code,
-    clippy::new_without_default,
-    reason = "each test binary pulls this shared module in but uses only the part it needs, and `Env` is a fixture builder for which a `Default` impl would be meaningless"
-)]
-
 use command_extra::CommandExtra;
 use lyrics_core::video_descriptor::Visibility;
 use pipe_trait::Pipe;
@@ -29,6 +23,7 @@ pub struct Env {
 }
 
 impl Env {
+    #[expect(clippy::new_without_default, reason = "it's a test code")]
     pub fn new() -> Self {
         let temp = Temp::new_dir();
         let source = temp.join("source");
