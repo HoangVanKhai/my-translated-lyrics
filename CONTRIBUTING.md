@@ -102,6 +102,173 @@ use super::SomeType;
 
 This rule applies whether the parent's binding is a private `use` or a `pub use`, because either kind is often an incidental import rather than part of the module's public contract.
 
+### Dependency Injection for Tests
+
+Some code paths cannot be reached by a real fixture. An interactive loop that blocks on the real terminal, a layout that depends on the live terminal size, and double-click timing that depends on wall-clock readings are all examples. For these paths we adopt the dependency-injection-for-tests pattern from pnpm's [`pacquet` code style guide](https://github.com/pnpm/pnpm/blob/74a2dc9027/pacquet/CODE_STYLE_GUIDE.md#dependency-injection-for-tests). The side effects a function needs are expressed as capability traits, production supplies a real provider, and a test supplies a fake.
+
+#### When to reach for it
+
+The default remains real fixtures: temporary directories, the fake-programs-on-`PATH` pattern, and integration tests. Reach for a dependency-injection seam only for paths that real fixtures cannot reach portably.
+
+- Terminal input loops and terminal geometry, which have no portable real fixture.
+- Wall-clock timing that would otherwise make a test depend on how fast the machine runs.
+- Filesystem error branches that the host will not reproduce on demand.
+- Process-global state.
+
+The upstream guide names the opposite smell as well: a function that carries a `Sys` generic but is only ever exercised through real fixtures is over-designed. If no test substitutes a fake for the seam, remove the generic and call the real operation directly.
+
+#### Naming
+
+- The generic parameter is named `Sys`.
+- The production provider is named `Host`.
+- A capability trait is named for the action it performs, such as `ReadEvent` or `WindowSize`, or for a plain noun where that reads better, such as `Clock`.
+- A fake is named for its behavior, such as `Scripted` for one that replays a recorded sequence or `FailingRead` for one that always returns an error.
+
+#### Shape
+
+Define one capability trait per side effect, with static methods that take no `&self`, because the provider holds no state of its own.
+
+```rust
+pub(crate) trait ReadEvent {
+    fn read_event() -> io::Result<Event>;
+}
+
+pub(crate) trait WindowSize {
+    fn window_size() -> io::Result<(u16, u16)>;
+}
+
+pub(crate) trait Clock {
+    fn now() -> SystemTime;
+}
+```
+
+Carry the capabilities as a single `Sys` generic with multiple bounds rather than one generic per capability. The `play-with-lyrics-tui` selector loops are a concrete example: their bound is `Sys: ReadEvent + WindowSize + Clock`.
+
+Keep capabilities at the level of leaf primitives, and compose higher-level behavior as ordinary free functions on top of them. The loop reads the current time through `Sys::now()` and feeds it to a pure `is_double_click(previous, now, row)` rather than asking a capability whether a click was a double click. The pure function is then testable on its own, with no seam at all.
+
+#### Add capabilities as needs arise
+
+Capabilities are introduced one at a time, as a test needs to reach a new path. In `play-with-lyrics-tui`, `ReadEvent` came first so the event handling could run without a TTY. `WindowSize` was added when the size-dependent layout, namely the native-name header, narrow-terminal truncation, and visible-row windowing, needed deterministic coverage. `Clock` was added when double-click detection would otherwise have depended on real timing. Each new capability is one more trait, one more bound on the same `Sys`, and one more `impl` block on `Host`, leaving the existing code untouched.
+
+#### Fakes and their state are function-scoped
+
+This is the key point. Each test defines its own fake `struct`, and, when the fake needs state, its own `static` for that state, both inside the test body. Rust allows `static`, `struct`, `const`, and `impl` items inside a function, and a function-local `static` still has `'static` lifetime, so each test stays self-contained and shares nothing with the others. The one fake implements every capability the loop requires.
+
+Do not hoist the fake or its state to module scope to share it across tests, and do not reach for `thread_local!` to paper over such sharing. The per-test `static` removes the sharing entirely. For a consumable sequence, rather than the upstream guide's constant `static FAKE_NOW`, a `static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new())` works as a function-local item.
+
+Small stateless helpers may stay at module scope, since they hold no state. Event constructors, an error builder, a default-size function, and a frozen clock are all fine to share.
+
+#### A worked example
+
+The capability traits and the production provider live in one module. `Host` reads from the real terminal.
+
+```rust
+use crossterm::event::{Event, read};
+use crossterm::terminal::size;
+use std::io;
+use std::time::SystemTime;
+
+pub(crate) trait ReadEvent {
+    fn read_event() -> io::Result<Event>;
+}
+
+pub(crate) trait WindowSize {
+    fn window_size() -> io::Result<(u16, u16)>;
+}
+
+pub(crate) trait Clock {
+    fn now() -> SystemTime;
+}
+
+/// The production provider: it reads from the real terminal.
+pub(crate) struct Host;
+
+impl ReadEvent for Host {
+    fn read_event() -> io::Result<Event> {
+        read()
+    }
+}
+
+impl WindowSize for Host {
+    fn window_size() -> io::Result<(u16, u16)> {
+        size()
+    }
+}
+
+impl Clock for Host {
+    fn now() -> SystemTime {
+        SystemTime::now()
+    }
+}
+```
+
+The public entry point is a thin wrapper that sets up the terminal and then runs the inner loop with `Host`. The inner loop is generic over `Sys` and holds all the logic worth testing.
+
+```rust
+pub fn select_video(
+    videos: &[Video],
+    query: &mut String,
+    selected: Option<usize>,
+) -> io::Result<Navigation> {
+    let mut guard = TerminalGuard::enter()?;
+    select_video_loop::<Host>(&mut guard.output, videos, query, selected)
+}
+
+pub(crate) fn select_video_loop<Sys>(
+    output: &mut impl Write,
+    videos: &[Video],
+    query: &mut String,
+    selected: Option<usize>,
+) -> io::Result<Navigation>
+where
+    Sys: ReadEvent + WindowSize + Clock,
+{
+    // Reads events through `Sys::read_event()`, the terminal size through
+    // `Sys::window_size()`, and the clock through `Sys::now()`.
+    // ...
+}
+```
+
+A test defines its own scripted queue and its own fake, both inside the test body, and runs the loop with the fake in place of `Host`. The fake implements every capability the loop requires.
+
+```rust
+#[test]
+fn select_video_filters_then_selects() {
+    static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
+    struct Scripted;
+    impl ReadEvent for Scripted {
+        fn read_event() -> io::Result<Event> {
+            pop_scripted(&EVENTS)
+        }
+    }
+    impl WindowSize for Scripted {
+        fn window_size() -> io::Result<(u16, u16)> {
+            standard_size()
+        }
+    }
+    impl Clock for Scripted {
+        fn now() -> SystemTime {
+            SystemTime::UNIX_EPOCH + Duration::from_secs(1_762_678_056)
+        }
+    }
+
+    let videos = vec![video("Alpha"), video("Beta")];
+    // Type "beta" so only the second row matches, then select it.
+    EVENTS.lock().unwrap().extend([
+        press(KeyCode::Char('b')),
+        press(KeyCode::Char('e')),
+        press(KeyCode::Char('t')),
+        press(KeyCode::Char('a')),
+        press(KeyCode::Enter),
+    ]);
+    let chosen =
+        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
+    assert_eq!(chosen, Navigation::Selected(1));
+}
+```
+
+Here `press` and `pop_scripted` are the stateless helpers that stay at module scope, while `EVENTS` and `Scripted` belong to the one test that uses them. See `lib/play-with-lyrics-tui/src/host.rs` for the capabilities and `Host`, `lib/play-with-lyrics-tui/src/selectors/video.rs` for the `select_video` wrapper and its `select_video_loop`, and the `lib/play-with-lyrics-tui/src/selectors/test_*.rs` modules for the tests.
+
 ### Using `pipe-trait`
 
 This codebase uses the [`pipe-trait`](https://docs.rs/pipe-trait) crate for method-chaining through unary functions, keeping code in a natural left-to-right reading order. Import it as `use pipe_trait::Pipe;`.

@@ -82,7 +82,10 @@ overrides:
     words:
       - clippy
       - combinators
+      - crossterm
+      - Deque
       - newtype
+      - pacquet
       - rustup
       - serde
       - usize
