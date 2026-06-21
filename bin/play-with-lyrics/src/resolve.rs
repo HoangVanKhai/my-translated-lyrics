@@ -170,11 +170,12 @@ pub(crate) fn resolve_player(args: &Args) -> Result<Resolution<Player>, Terminat
 /// Returns a [`Failure::NotInteractive`] when an interactive selection is
 /// required but standard input is not a terminal.
 fn require_terminal(what: &'static str) -> Result<(), Termination> {
-    if io::stdin().is_terminal() {
-        Ok(())
-    } else {
-        Err(Failure::NotInteractive(NotInteractive { what }).into())
-    }
+    io::stdin()
+        .is_terminal()
+        .then_some(())
+        .ok_or(NotInteractive { what })
+        .map_err(Failure::NotInteractive)
+        .map_err(Termination::Failed)
 }
 
 /// Joins the displayed forms of `items` with commas, for an error message
