@@ -82,6 +82,8 @@ overrides:
     words:
       - clippy
       - combinators
+      - crossterm
+      - Deque
       - newtype
       - rustup
       - serde
