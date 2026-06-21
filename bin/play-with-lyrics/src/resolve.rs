@@ -8,6 +8,7 @@ use crate::failure::{
 use fuzzy_select::fuzzy::resolve_unique;
 use fuzzy_select::selection::Searchable;
 use into_deduped::IntoDeduped;
+use itertools::Itertools;
 use lyrics_core::video_descriptor::Language;
 use pipe_trait::Pipe;
 use play_with_lyrics::catalog::{Video, language_label};
@@ -184,9 +185,5 @@ fn join_display<Item>(items: &[Item]) -> String
 where
     Item: Display,
 {
-    items
-        .iter()
-        .map(ToString::to_string)
-        .collect::<Vec<_>>()
-        .join(", ")
+    items.iter().join(", ")
 }

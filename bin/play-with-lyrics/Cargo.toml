@@ -15,6 +15,7 @@ derive_more.workspace = true
 exit-codes.workspace = true
 fuzzy-select.workspace = true
 into-deduped.workspace = true
+itertools.workspace = true
 lyrics-core.workspace = true
 pipe-trait.workspace = true
 play-with-lyrics.workspace = true

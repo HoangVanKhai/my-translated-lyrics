@@ -660,6 +660,7 @@ dependencies = [
  "exit-codes",
  "fuzzy-select",
  "into-deduped",
+ "itertools",
  "lyrics-core",
  "pipe-trait",
  "play-with-lyrics",
