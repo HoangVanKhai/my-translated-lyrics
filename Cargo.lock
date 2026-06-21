@@ -676,6 +676,7 @@ dependencies = [
  "crossterm",
  "fuzzy-select",
  "lyrics-core",
+ "pipe-trait",
  "play-with-lyrics",
  "pretty_assertions",
  "terminal-screen",

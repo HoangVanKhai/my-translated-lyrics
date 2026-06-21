@@ -3,6 +3,7 @@
 //! line into the frame buffer, and the small geometry helpers the pages share
 //! with the click handling.
 
+use pipe_trait::Pipe;
 use std::ops::Range;
 use std::time::{Duration, SystemTime};
 use terminal_screen::{Buffer, Style};
@@ -122,7 +123,8 @@ pub(crate) fn column_spans(total: usize) -> [Range<usize>; 3] {
 /// Vietnamese, and 2 is Chinese, or `None` for a click on a separator or past
 /// the columns.
 pub(crate) fn column_at(total: usize, column: usize) -> Option<usize> {
-    column_spans(total)
+    total
+        .pipe(column_spans)
         .iter()
         .position(|span| span.contains(&column))
 }
