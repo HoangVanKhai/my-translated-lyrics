@@ -1,0 +1,198 @@
+WEBVTT
+Language: vi
+
+STYLE
+::cue {
+  background-color: transparent;
+  text-shadow: 2px 2px 2px black;
+}
+::cue(c.creditRole) {
+  color: #AAAA22;
+}
+::cue(c.creditName) {
+  color: #AAAAAA;
+}
+::cue(c.title) {
+  color: #FFD966;
+  font-weight: bold;
+}
+
+00:00:01.689 --> 00:00:02.844
+<c.creditRole>Viết lời:</c> <c.creditName>举烛</c>
+
+00:00:02.844 --> 00:00:04.078
+<c.creditRole>Sáng tác:</c> <c.creditName>纯白P</c>
+
+00:00:04.078 --> 00:00:05.329
+<c.creditRole>Phối khí:</c> <c.creditName>纯白P</c>
+
+00:00:05.329 --> 00:00:06.633
+<c.creditRole>Trình bày:</c> <c.creditName>Luo Tianyi, Yuezheng Ling</c>
+
+00:00:06.633 --> 00:00:08.277
+<c.creditRole>Đàn nhị:</c> <c.creditName>陆二胡</c>
+
+00:00:08.277 --> 00:00:09.979
+<c.creditRole>Mix:</c> <c.creditName>纯白P</c>
+
+00:00:09.979 --> 00:00:11.641
+<c.creditRole>Minh họa:</c> <c.creditName>贝贝</c>
+
+00:00:11.641 --> 00:00:13.432
+<c.creditRole>Hình ảnh:</c> <c.creditName>凌月尘</c>
+
+00:00:13.432 --> 00:00:17.798
+<c.title>Minh Tiêu Đãi Thùy</c>
+
+00:00:18.280 --> 00:00:20.896
+Ngước mắt nhìn trời đêm thăm thẳm
+
+00:00:20.896 --> 00:00:25.980
+Đèn hoa vừa thắp sáng vầng không
+
+00:00:25.980 --> 00:00:28.928
+Trong khoảnh khắc, hợp tan tựa mộng
+
+00:00:28.928 --> 00:00:34.220
+Đêm nay có gì khác lạ chăng?
+
+00:00:34.220 --> 00:00:37.060
+Cúi đầu nhìn sắc vàng rực rỡ
+
+00:00:37.060 --> 00:00:42.210
+Càng soi rõ tiếng cười nói rộn vang
+
+00:00:42.210 --> 00:00:45.025
+Cũng cảm thán một đời tất bật
+
+00:00:45.025 --> 00:00:49.691
+Điều chi khiến lòng nàng khẽ rung động?
+
+00:01:08.590 --> 00:01:12.710
+Sớm nay đợi ai, chờ sấm chớp tan đi ngày tạnh ráo quay về
+
+00:01:12.710 --> 00:01:17.110
+Đêm nay vì ai, giữ ánh đèn che khuất mặt trăng, nụ cười rạng ngời nơi chân mày
+
+00:01:17.110 --> 00:01:20.451
+Nếu ánh đèn kia còn nhớ khuôn mặt ấy
+
+00:01:20.451 --> 00:01:24.750
+Thì ký ức sao nỡ hóa tro tàn
+
+00:01:24.750 --> 00:01:28.750
+Sớm nay theo ai, cùng dõi mắt trông về phía hào quang
+
+00:01:28.750 --> 00:01:33.160
+Đêm nay cùng ai, viết nốt nét bút cuối cho ngày nắng rạng
+
+00:01:33.160 --> 00:01:36.515
+Thoáng thấy trong đôi mắt bạn điểm sao trời
+
+00:01:36.515 --> 00:01:41.682
+Ấy là điều trân quý nhất thế gian
+
+00:01:42.280 --> 00:01:44.038
+<c.creditRole>Viết lời:</c> <c.creditName>举烛</c>
+
+00:01:44.038 --> 00:01:45.920
+<c.creditRole>Sáng tác:</c> <c.creditName>纯白P</c>
+
+00:01:45.920 --> 00:01:47.796
+<c.creditRole>Phối khí:</c> <c.creditName>纯白P</c>
+
+00:01:47.796 --> 00:01:49.712
+<c.creditRole>Trình bày:</c> <c.creditName>Luo Tianyi, Yuezheng Ling</c>
+
+00:01:49.712 --> 00:01:51.882
+<c.creditRole>Đàn nhị:</c> <c.creditName>陆二胡</c>
+
+00:01:51.882 --> 00:01:54.242
+<c.creditRole>Mix:</c> <c.creditName>纯白P</c>
+
+00:01:54.242 --> 00:01:56.389
+<c.creditRole>Minh họa:</c> <c.creditName>贝贝</c>
+
+00:01:56.389 --> 00:01:58.213
+<c.creditRole>Hình ảnh:</c> <c.creditName>凌月尘</c>
+
+00:01:58.213 --> 00:02:01.010
+Cũng từng hỏi giữa chốn lầu ngọc ấy
+
+00:02:01.010 --> 00:02:06.210
+Vai gánh vác nặng nề biết bao nhiêu?
+
+00:02:06.210 --> 00:02:08.941
+Bạn có thể ngước nhìn lên không trung
+
+00:02:08.941 --> 00:02:14.151
+Ánh đèn hoa đã phủ kín cả ngân hà
+
+00:02:32.456 --> 00:02:36.680
+Sớm nay đợi ai, chờ sấm chớp tan đi ngày tạnh ráo quay về
+
+00:02:36.680 --> 00:02:41.300
+Đêm nay vì ai, giữ ánh đèn che khuất mặt trăng, nụ cười rạng ngời nơi chân mày
+
+00:02:41.300 --> 00:02:44.401
+Nếu còn nhớ nụ cười bạn dưới ánh đèn
+
+00:02:44.401 --> 00:02:48.791
+Thì ký ức sao nỡ hóa tro tàn
+
+00:02:48.791 --> 00:02:52.750
+Sớm nay theo ai, cùng dõi mắt trông về phía hào quang
+
+00:02:52.750 --> 00:02:57.320
+Đêm nay cùng ai, viết nốt nét bút cuối cho ngày nắng rạng
+
+00:02:57.320 --> 00:03:00.431
+Thoáng thấy trong đôi mắt bạn điểm sao trời
+
+00:03:00.431 --> 00:03:05.798
+Ấy là điều trân quý nhất thế gian
+
+00:03:05.820 --> 00:03:09.929
+Dẫu cho non sông có thể đổi dời
+
+00:03:09.929 --> 00:03:14.020
+Vẫn còn hoa đăng chờ đợi ánh trăng thanh
+
+00:03:14.020 --> 00:03:21.980
+Khói lửa vạn nhà, có bao giờ lụi tắt vì ai?
+
+00:03:21.980 --> 00:03:25.959
+Chẳng quản đường phía trước lắm gian nan
+
+00:03:25.959 --> 00:03:29.500
+Chẳng màng chuyến đi này bao nhiêu năm tháng
+
+00:03:29.500 --> 00:03:36.691
+Chỉ nguyện cùng nhau xem trọn cảnh trăng khuyết trăng tròn
+
+00:03:36.691 --> 00:03:40.570
+Đêm mai vì ai, dưới đèn lưu lại tâm nguyện không hối tiếc
+
+00:03:40.570 --> 00:03:45.170
+Ngày mai cùng ai, đợi sương tuyết nhuộm trắng cả hàng mi
+
+00:03:45.170 --> 00:03:48.455
+Gặp lại lúc này, đôi ta vẫn như xưa
+
+00:03:48.455 --> 00:03:52.630
+Lại ngắm nhìn ánh đèn hoa bay khắp lối
+
+00:03:52.630 --> 00:03:56.720
+Sáng mai cùng ai, trải qua mưa sa cùng sấm giật
+
+00:03:56.720 --> 00:04:01.100
+Đêm mai cùng ai, nếm trải thăng trầm của hỉ lạc u sầu
+
+00:04:01.100 --> 00:04:04.507
+Dõi nhìn đôi mắt lấp lánh của bạn
+
+00:04:04.507 --> 00:04:08.951
+Đêm mai, rốt cuộc là đợi ai?
+
+00:04:09.317 --> 00:04:16.349
+<c.title>Minh Tiêu Đãi Thùy</c>

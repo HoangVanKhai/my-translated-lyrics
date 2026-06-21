@@ -1,0 +1,95 @@
+# clr: Xóa chữ trên màn hình
+# LRC: Lời bài hát (không rõ người trình bày)
+# ttl: Tiêu đề ca khúc
+# cre: Thông tin sản xuất
+# eov: Kết thúc MV
+
+00:02.910 LRC: Lỡ trao lòng cho liễu trong mưa, từng lá quấn lấy nhau
+00:06.900 LRC: Lỡ nhận lầm dưới rặng liễu, tiếng mưa từng tiếng buốt giá
+00:10.950 LRC: Lỡ xem một nét mực thành cả non sông
+00:14.160 LRC: Một thoáng ngoảnh đầu, trọn kiếp chẳng đổi dời
+00:16.200 LRC: Hối rằng chẳng nên gõ cửa non xanh
+00:19.110 LRC: Lỡ trách chim oanh trên cành, hót lên vì lẽ chi
+00:23.190 LRC: Lỡ lạc ra ngoài rừng, sa lồng chẳng trở về
+00:27.360 LRC: Lỗi tại kẻ si tình vốn đa sầu đa cảm
+00:30.450 LRC: Vẽ vời thêm câu phú, tự chuốc lấy muộn phiền
+00:32.430 LRC: Tựa dòng nước trôi hôn lên bãi sông
+00:35.840 clr
+
+00:36.340 cre: Sáng tác 纯白P
+               Phối khí 纯白P
+               Viết lời 举烛
+00:39.876 cre: Trình bày Luo Tianyi/Yuezheng Ling
+               Điều giáo 无形歌无形
+               Guitar YK_Lin
+00:44.038 cre: Minh họa 巫烨
+               Mix Irecorder
+               Hình ảnh 凌月尘
+00:48.838 clr
+
+00:49.304 ttl: Thác Cô Tô
+00:52.614 clr
+
+00:53.010 LRC: Thuyền côi áo tơi đơn chiếc, thẳng tiến vào khói mây
+00:57.000 LRC: Qua cầu buông mái chèo, chờ bóng ai hiện về
+01:01.020 LRC: Sách hiền thơ tuyệt cú, thảy phó cho mấy đoạn lời hoang đường
+01:05.100 LRC: Mới hận thân mình tài hèn học cạn
+01:07.830 LRC: Đêm khuya ngoài Phong Kiều, thuyền vì ai neo đậu mấy phen
+01:11.850 LRC: Chê điển tích ngụ ý quá vụng về, lại quá nông cạn rõ ràng
+01:15.900 LRC: Giang Nam mãi chuộng mưa khói, chỉ bởi khách qua đường dễ lệ tuôn
+01:20.460 LRC: Lại khiến ta quên cả con đường thuở mới đến
+01:26.310 LRC: Lỡ trao lòng cho liễu trong mưa, từng lá quấn lấy nhau
+01:30.270 LRC: Lỡ nhận lầm dưới rặng liễu, tiếng mưa từng tiếng buốt giá
+01:34.350 LRC: Lỡ xem một nét mực thành cả non sông
+01:37.560 LRC: Một thoáng ngoảnh đầu, trọn kiếp chẳng đổi dời
+01:39.600 LRC: Hối rằng chẳng nên gõ cửa non xanh
+01:42.480 LRC: Lỡ trách chim oanh trên cành, hót lên vì lẽ chi
+01:46.560 LRC: Lỡ lạc ra ngoài rừng, sa lồng chẳng trở về
+01:50.730 LRC: Lỗi tại kẻ si tình vốn đa sầu đa cảm
+01:53.820 LRC: Vẽ vời thêm câu phú, tự chuốc lấy muộn phiền
+01:55.830 LRC: Tựa dòng nước trôi hôn lên bãi sông
+01:59.249 cre: Sáng tác 纯白P
+               Phối khí 纯白P
+               Viết lời 举烛
+02:03.146 cre: Trình bày Luo Tianyi/Yuezheng Ling
+               Điều giáo 无形歌无形
+               Guitar YK_Lin
+02:06.913 cre: Minh họa 巫烨
+               Mix Irecorder
+               Hình ảnh 凌月尘
+02:11.825 clr
+
+02:16.350 LRC: Tiền trần kiếp này, còn nợ duyên cùng ai
+02:20.370 LRC: Thổi tắt đèn côi, chờ ai vào giấc ngủ
+02:24.480 LRC: Hận dài sầu ngắn, còn trách đêm nay giấc mộng hãy còn nông
+02:28.530 LRC: Chở chẳng nổi cả một thuyền ly biệt
+02:31.080 LRC: Người đời đều bảo Cô Tô khôn kham nổi cảnh tình nhân ly biệt
+02:35.340 LRC: Sợ mưa dầm chẳng chừa khoảng trắng, đem sầu tư trải kín mặt giấy
+02:39.450 LRC: Cuốn sách trong tay nải, ta lật chẳng nổi trang cuối cùng
+02:43.890 LRC: Chẳng cho ta điểm thêm một nét chú giải vào lời phán
+02:49.710 LRC: Lỡ trao lòng cho thuyền ngoài lầu, tầng mây nào kham nổi
+02:53.670 LRC: Lỡ nhận lầm lầu ngoài thuyền, ly biệt cũng gian nan
+02:57.750 LRC: Lỡ xem chiếc thuyền con thành nghìn cánh buồm
+03:00.960 LRC: Một lần ly biệt, dâu bể đã đổi dời
+03:03.000 LRC: Hối rằng chẳng nên gặp non xanh
+03:05.880 LRC: Lỡ trách mưa trong khói, như nối rồi lại đứt quãng
+03:09.990 LRC: Lỡ lạc vào mưa tựa khói, mãi chẳng quay về
+03:14.010 LRC: Lỗi tại kẻ si tình lòng tham luyến đến vậy
+03:17.220 LRC: Chẳng để dòng nước kia xuôi về đông
+03:19.200 LRC: Chỉ quẩn quanh non xanh trước cửa
+03:22.600 cre: Sáng tác 纯白P
+               Phối khí 纯白P
+               Viết lời 举烛
+03:26.761 cre: Trình bày Luo Tianyi/Yuezheng Ling
+               Điều giáo 无形歌无形
+               Guitar YK_Lin
+03:30.751 cre: Minh họa 巫烨
+               Mix Irecorder
+               Hình ảnh 凌月尘
+03:35.437 clr
+
+03:39.600 LRC: Một lần ly biệt, đất trời rộng mở đôi đường
+03:43.500 LRC: Nào ai nỡ ngoảnh đầu nhìn kỹ
+03:47.715 clr
+
+03:47.715 eov

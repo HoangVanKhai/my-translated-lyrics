@@ -1,0 +1,76 @@
+# clr: Xóa chữ trên màn hình
+# LRC: Lời bài hát (không rõ người trình bày)
+# ttl: Tiêu đề ca khúc
+# cre: Thông tin sản xuất
+# eov: Kết thúc MV
+
+00:01.167 cre: Soạn nhạc/Biên khúc: 洛雨辰p
+               Trợ lý: 年糕
+               Tác từ: 雷小晏
+00:04.433 cre: Guitar điện/Acoustic: distantal
+               Nhạc cụ dây: 海因喝水上火
+00:07.793 cre: Điều giáo: 鬼面p
+               Mix nhạc: 蓝婉元漪
+00:10.954 cre: Minh họa: 山下鸭鸭窝
+               Video: 梦游
+00:14.210 clr
+
+00:20.729 ttl: Đào Nguyên Tình Ký
+00:26.830 LRC: Sắc xuân đầy vườn, hoa đào rực rỡ, tình cờ gặp ánh mắt sóng ngang
+00:40.037 LRC: Gió đông chợt biến, nhan sắc khuynh thành, mới tin hồng trần vốn có tiền duyên
+00:53.641 LRC: Mưa rỏ mái rêu, đồng hồ nước điểm canh ba
+00:57.235 LRC: Đuôi xanh nàng quẫy, làm rơi ánh sao nơi nghiên mực
+01:00.455 LRC: Trong lòng ta, giữa dải giang sơn bỗng hiện ra bóng hình nửa đuôi cá hồng
+01:07.053 LRC: Nguyện hứa kiếp này, lại sợ tương tư sớm tối
+01:10.053 LRC: Thành biếc khóa chặt chuông vàng
+01:12.933 LRC: Chẳng quản đường xa bao dặm trường
+01:18.282 LRC: Lần đầu gặp nơi vườn đào, một ánh nhìn định tình, nét mực họa thành cá bơi
+01:25.126 LRC: Mưa hồng thấm áo, tay áo múa nhẹ, lời dặn dò dịu dàng, thầm trao trái tim băng thanh
+01:31.782 LRC: Lặng lo nỗi niềm người - yêu khác lối
+01:35.850 LRC: Bụng đầy thi thư vạn cuốn
+01:39.181 LRC: Lời khó thốt ra, vì tình mà si, bởi tình mà sầu
+01:42.514 clr
+
+01:42.515 LRC: Nguyện cùng người chung bước dài lâu
+01:46.075 clr
+
+01:59.445 cre: Soạn nhạc/Biên khúc: 洛雨辰p
+               Trợ lý: 年糕
+               Tác từ: 雷小晏
+02:03.086 cre: Guitar điện/Acoustic: distantal
+               Nhạc cụ dây: 海因喝水上火
+02:06.392 cre: Điều giáo: 鬼面p
+               Mix nhạc: 蓝婉元漪
+02:09.449 cre: Minh họa: 山下鸭鸭窝
+               Video: 梦游
+02:12.821 clr
+
+02:19.323 ttl: Đào Nguyên Tình Ký
+02:25.387 clr
+
+02:25.588 LRC: Giấy hoa đào phủ kín muôn vàn niềm vui
+02:29.156 LRC: Lòng vẫn biết cảnh tiên vốn là hư ảo
+02:32.332 LRC: Nhưng chẳng nỡ kìm lòng mà mộng tưởng, dưới hoa dưới trăng nàng khoác áo hồng trang
+02:39.128 LRC: Nguyện hứa kiếp này, lại sợ tương tư sớm tối
+02:42.035 LRC: Thành biếc khóa chặt chuông vàng
+02:44.929 LRC: Chẳng quản đường xa bao dặm trường
+02:50.039 clr
+
+02:50.653 LRC: Lại thấy vườn đào, bao nỗi suy tư, tơ tình quấn quýt ngón tay mềm
+02:57.267 LRC: Trách sao nay đào đã kết trái, mà tình chưa thành quả, chẳng than nỗi biệt ly dài
+03:03.831 LRC: Đợi đến ngày quân công thành danh toại
+03:07.618 LRC: Định sẽ cùng khanh dài lâu gắn bó
+03:11.396 LRC: Đến lúc bạc đầu, chớ có u sầu, kiếp này chỉ nguyện cùng người chung bước
+03:16.680 clr
+
+03:17.086 LRC: Lại thấy vườn đào, bao nỗi suy tư, tơ tình quấn quýt ngón tay mềm
+03:23.345 LRC: Trách sao nay đào đã kết trái, mà tình chưa thành quả, chẳng than nỗi biệt ly dài
+03:29.959 LRC: Đợi đến ngày quân công thành danh toại
+03:34.214 LRC: Định sẽ cùng khanh dài lâu gắn bó
+03:37.591 LRC: Đến lúc bạc đầu, chớ có u sầu, kiếp này chỉ nguyện cùng người chung bước
+03:44.123 clr
+
+03:44.125 LRC: Đến lúc bạc đầu, chớ có u sầu, kiếp này chỉ nguyện cùng người chung bước
+03:50.655 clr
+
+03:50.655 eov

@@ -1,0 +1,17 @@
+credit-roles:
+  - { vi: Hình ảnh, zh: 映像 }
+  - { vi: Minh họa, zh: 曲绘 }
+  - { vi: Mix, zh: 混音 }
+  - { vi: Phối khí, zh: 编曲 }
+  - { vi: Sáng tác, zh: 作曲 }
+  - { vi: Trình bày, zh: 演唱 }
+  - { vi: Viết lời, zh: 作词 }
+  - { vi: Đàn nhị, zh: 二胡 }
+
+credit-names:
+  - { vi: "Luo Tianyi, Yuezheng Ling", zh: 洛天依、乐正绫 }
+  - { vi: 举烛, zh: 举烛 }
+  - { vi: 凌月尘, zh: 凌月尘 }
+  - { vi: 纯白P, zh: 纯白P }
+  - { vi: 贝贝, zh: 贝贝 }
+  - { vi: 陆二胡, zh: 陆二胡 }

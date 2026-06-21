@@ -1,0 +1,78 @@
+# clr: Xóa chữ trên màn hình
+# LRC: Lời bài hát (không rõ người trình bày)
+# ttl: Tiêu đề ca khúc
+# cre: Thông tin sản xuất
+# eov: Kết thúc MV
+
+00:05.433 cre: Biên khúc: 清风最梦
+00:06.000 cre: Soạn nhạc: 清风最梦
+00:06.500 cre: Tác từ: 清风最梦
+00:07.000 cre: Hòa âm: 清风最梦/Dinstakovich
+00:07.612 cre: Trình bày: Yuezheng Ling/Luo Tianyi
+00:08.132 cre: Điều giáo: 清风最梦
+00:08.887 cre: Mixing: 清风最梦
+00:09.631 cre: Minh họa: 梦夏
+00:10.324 cre: Thiết kế trang phục: 狐狸爱画画
+00:10.999 cre: Video: 睡不醒的纤某人_AXIDI
+00:11.736 clr
+
+00:19.871 ttl: Nguyệt Luân Hồi
+00:22.991 LRC: Dưới chân từng bước chân nhảy múa
+00:26.320 LRC: (Khẽ múa một điệu tựa chim hồng)
+00:28.790 LRC: Sắc đêm như mực loang vào gió
+00:31.610 LRC: (Khúc dạo của trăng hòa cùng chén trà)
+00:34.640 LRC: Bóng dáng ai đã biến mất không dấu vết
+00:37.120 LRC: (Theo làn hương trà tan vào chốn thiên cung)
+00:39.800 LRC: Ánh đèn soi rọi vạn nhà rực đỏ
+00:42.590 LRC: (Xuyên qua song cửa chiếu vào giấc mơ)
+00:44.600 LRC: Thời gian chẳng ngừng khắc họa nhân quả
+00:48.240 LRC: (Cứ lặp đi lặp lại những nét họa vần xoay)
+00:50.110 LRC: Hơi thở tựa như manh mối của định mệnh
+00:53.640 LRC: (Chẳng thể phân định, chẳng thể thấu triệt)
+00:59.010 LRC: Điều ta hằng kiếm tìm là ai, là ai?
+01:01.690 LRC: (Suy tư hóa thành tia lửa bay tán loạn khắp trời)
+01:04.270 LRC: Nhịp điệu này tựa như nhịp tim đuổi theo
+01:07.090 LRC: (Hòa cùng nước thu trời xa, hát về thị phi phù hoa)
+01:10.020 LRC: Quỹ đạo vầng trăng không ngừng luân hồi
+01:14.500 LRC: Ai đã để lại dư vị trên lối cũ?
+01:18.070 LRC: (Cành quế vàng lại vừa đâm chồi mới)
+01:20.651 clr
+
+01:31.383 cre: Biên khúc: 清风最梦
+01:32.016 cre: Soạn nhạc: 清风最梦
+01:32.546 cre: Tác từ: 清风最梦
+01:33.083 cre: Hòa âm: 清风最梦/Dinstakovich
+01:33.583 cre: Trình bày: Yuezheng Ling/Luo Tianyi
+01:34.119 cre: Điều giáo: 清风最梦
+01:34.861 cre: Mixing: 清风最梦
+01:35.614 cre: Minh họa: 梦夏
+01:36.311 cre: Thiết kế trang phục: 狐狸爱画画
+01:36.998 cre: Video: 睡不醒的纤某人_AXIDI
+01:37.748 clr
+
+01:39.448 ttl: Nguyệt Luân Hồi
+01:42.710 LRC: Gió đêm bên tai khẽ lời tụng niệm
+01:45.266 LRC: (Nâng chén vọng nguyệt nơi thủy tạ đình đài)
+01:48.130 LRC: Chuyện hợp tan, buồn vui trong cõi u minh
+01:50.740 LRC: (Trăng khuyết trăng tròn đều do thiên ý xoay vần)
+01:53.640 LRC: Sao băng vạch ngang trời đêm thăm thẳm
+01:56.150 LRC: (Viết lên câu đố giữa vạn cổ thương khung)
+01:59.154 LRC: Thế gian tụ tán quá vội vàng
+02:01.740 LRC: (Chỉ còn sót lại chút mơ hồ dưới ánh trăng)
+02:03.654 LRC: Tương lai dừng bước chờ đợi trong màn đêm
+02:07.110 LRC: (Lặng nhìn thế gian dâu bể, sông dài cuộn chảy)
+02:09.150 LRC: Lời giải đáp ẩn giấu sau ánh trăng
+02:12.620 LRC: (Đáp án định mệnh làm sao thấu hiểu được đây?)
+02:18.038 LRC: Điều ta hằng kiếm tìm là ai, là ai?
+02:20.730 LRC: (Suy tư hóa thành tia lửa bay tán loạn khắp trời)
+02:23.286 LRC: Nhịp điệu này tựa như nhịp tim đuổi theo
+02:26.200 LRC: (Hòa cùng nước thu trời xa, hát về thị phi phù hoa)
+02:28.910 LRC: Quỹ đạo vầng trăng không ngừng luân hồi
+02:33.540 LRC: Ai đã để lại dư vị trên lối cũ?
+02:37.030 LRC: (Cành quế vàng lại vừa đâm chồi mới)
+02:39.669 clr
+
+03:01.532 ttl: Nguyệt Luân Hồi
+03:14.367 clr
+
+03:14.367 eov

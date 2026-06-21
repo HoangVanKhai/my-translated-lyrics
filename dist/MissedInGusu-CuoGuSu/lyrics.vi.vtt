@@ -1,0 +1,210 @@
+WEBVTT
+Language: vi
+
+STYLE
+::cue {
+  background-color: transparent;
+  text-shadow: 2px 2px 2px black;
+}
+::cue(c.creditRole) {
+  color: #AAAA22;
+}
+::cue(c.creditName) {
+  color: #AAAAAA;
+}
+::cue(c.title) {
+  color: #FFD966;
+  font-weight: bold;
+}
+
+00:00:02.910 --> 00:00:06.900
+Lỡ trao lòng cho liễu trong mưa, từng lá quấn lấy nhau
+
+00:00:06.900 --> 00:00:10.950
+Lỡ nhận lầm dưới rặng liễu, tiếng mưa từng tiếng buốt giá
+
+00:00:10.950 --> 00:00:14.160
+Lỡ xem một nét mực thành cả non sông
+
+00:00:14.160 --> 00:00:16.200
+Một thoáng ngoảnh đầu, trọn kiếp chẳng đổi dời
+
+00:00:16.200 --> 00:00:19.110
+Hối rằng chẳng nên gõ cửa non xanh
+
+00:00:19.110 --> 00:00:23.190
+Lỡ trách chim oanh trên cành, hót lên vì lẽ chi
+
+00:00:23.190 --> 00:00:27.360
+Lỡ lạc ra ngoài rừng, sa lồng chẳng trở về
+
+00:00:27.360 --> 00:00:30.450
+Lỗi tại kẻ si tình vốn đa sầu đa cảm
+
+00:00:30.450 --> 00:00:32.430
+Vẽ vời thêm câu phú, tự chuốc lấy muộn phiền
+
+00:00:32.430 --> 00:00:35.840
+Tựa dòng nước trôi hôn lên bãi sông
+
+00:00:36.340 --> 00:00:39.876
+<c.creditRole>Sáng tác</c> <c.creditName>纯白P</c>
+<c.creditRole>Phối khí</c> <c.creditName>纯白P</c>
+<c.creditRole>Viết lời</c> <c.creditName>举烛</c>
+
+00:00:39.876 --> 00:00:44.038
+<c.creditRole>Trình bày</c> <c.creditName>Luo Tianyi/Yuezheng Ling</c>
+<c.creditRole>Điều giáo</c> <c.creditName>无形歌无形</c>
+<c.creditRole>Guitar</c> <c.creditName>YK_Lin</c>
+
+00:00:44.038 --> 00:00:48.838
+<c.creditRole>Minh họa</c> <c.creditName>巫烨</c>
+<c.creditRole>Mix</c> <c.creditName>Irecorder</c>
+<c.creditRole>Hình ảnh</c> <c.creditName>凌月尘</c>
+
+00:00:49.304 --> 00:00:52.614
+<c.title>Thác Cô Tô</c>
+
+00:00:53.010 --> 00:00:57.000
+Thuyền côi áo tơi đơn chiếc, thẳng tiến vào khói mây
+
+00:00:57.000 --> 00:01:01.020
+Qua cầu buông mái chèo, chờ bóng ai hiện về
+
+00:01:01.020 --> 00:01:05.100
+Sách hiền thơ tuyệt cú, thảy phó cho mấy đoạn lời hoang đường
+
+00:01:05.100 --> 00:01:07.830
+Mới hận thân mình tài hèn học cạn
+
+00:01:07.830 --> 00:01:11.850
+Đêm khuya ngoài Phong Kiều, thuyền vì ai neo đậu mấy phen
+
+00:01:11.850 --> 00:01:15.900
+Chê điển tích ngụ ý quá vụng về, lại quá nông cạn rõ ràng
+
+00:01:15.900 --> 00:01:20.460
+Giang Nam mãi chuộng mưa khói, chỉ bởi khách qua đường dễ lệ tuôn
+
+00:01:20.460 --> 00:01:26.310
+Lại khiến ta quên cả con đường thuở mới đến
+
+00:01:26.310 --> 00:01:30.270
+Lỡ trao lòng cho liễu trong mưa, từng lá quấn lấy nhau
+
+00:01:30.270 --> 00:01:34.350
+Lỡ nhận lầm dưới rặng liễu, tiếng mưa từng tiếng buốt giá
+
+00:01:34.350 --> 00:01:37.560
+Lỡ xem một nét mực thành cả non sông
+
+00:01:37.560 --> 00:01:39.600
+Một thoáng ngoảnh đầu, trọn kiếp chẳng đổi dời
+
+00:01:39.600 --> 00:01:42.480
+Hối rằng chẳng nên gõ cửa non xanh
+
+00:01:42.480 --> 00:01:46.560
+Lỡ trách chim oanh trên cành, hót lên vì lẽ chi
+
+00:01:46.560 --> 00:01:50.730
+Lỡ lạc ra ngoài rừng, sa lồng chẳng trở về
+
+00:01:50.730 --> 00:01:53.820
+Lỗi tại kẻ si tình vốn đa sầu đa cảm
+
+00:01:53.820 --> 00:01:55.830
+Vẽ vời thêm câu phú, tự chuốc lấy muộn phiền
+
+00:01:55.830 --> 00:01:59.249
+Tựa dòng nước trôi hôn lên bãi sông
+
+00:01:59.249 --> 00:02:03.146
+<c.creditRole>Sáng tác</c> <c.creditName>纯白P</c>
+<c.creditRole>Phối khí</c> <c.creditName>纯白P</c>
+<c.creditRole>Viết lời</c> <c.creditName>举烛</c>
+
+00:02:03.146 --> 00:02:06.913
+<c.creditRole>Trình bày</c> <c.creditName>Luo Tianyi/Yuezheng Ling</c>
+<c.creditRole>Điều giáo</c> <c.creditName>无形歌无形</c>
+<c.creditRole>Guitar</c> <c.creditName>YK_Lin</c>
+
+00:02:06.913 --> 00:02:11.825
+<c.creditRole>Minh họa</c> <c.creditName>巫烨</c>
+<c.creditRole>Mix</c> <c.creditName>Irecorder</c>
+<c.creditRole>Hình ảnh</c> <c.creditName>凌月尘</c>
+
+00:02:16.350 --> 00:02:20.370
+Tiền trần kiếp này, còn nợ duyên cùng ai
+
+00:02:20.370 --> 00:02:24.480
+Thổi tắt đèn côi, chờ ai vào giấc ngủ
+
+00:02:24.480 --> 00:02:28.530
+Hận dài sầu ngắn, còn trách đêm nay giấc mộng hãy còn nông
+
+00:02:28.530 --> 00:02:31.080
+Chở chẳng nổi cả một thuyền ly biệt
+
+00:02:31.080 --> 00:02:35.340
+Người đời đều bảo Cô Tô khôn kham nổi cảnh tình nhân ly biệt
+
+00:02:35.340 --> 00:02:39.450
+Sợ mưa dầm chẳng chừa khoảng trắng, đem sầu tư trải kín mặt giấy
+
+00:02:39.450 --> 00:02:43.890
+Cuốn sách trong tay nải, ta lật chẳng nổi trang cuối cùng
+
+00:02:43.890 --> 00:02:49.710
+Chẳng cho ta điểm thêm một nét chú giải vào lời phán
+
+00:02:49.710 --> 00:02:53.670
+Lỡ trao lòng cho thuyền ngoài lầu, tầng mây nào kham nổi
+
+00:02:53.670 --> 00:02:57.750
+Lỡ nhận lầm lầu ngoài thuyền, ly biệt cũng gian nan
+
+00:02:57.750 --> 00:03:00.960
+Lỡ xem chiếc thuyền con thành nghìn cánh buồm
+
+00:03:00.960 --> 00:03:03.000
+Một lần ly biệt, dâu bể đã đổi dời
+
+00:03:03.000 --> 00:03:05.880
+Hối rằng chẳng nên gặp non xanh
+
+00:03:05.880 --> 00:03:09.990
+Lỡ trách mưa trong khói, như nối rồi lại đứt quãng
+
+00:03:09.990 --> 00:03:14.010
+Lỡ lạc vào mưa tựa khói, mãi chẳng quay về
+
+00:03:14.010 --> 00:03:17.220
+Lỗi tại kẻ si tình lòng tham luyến đến vậy
+
+00:03:17.220 --> 00:03:19.200
+Chẳng để dòng nước kia xuôi về đông
+
+00:03:19.200 --> 00:03:22.600
+Chỉ quẩn quanh non xanh trước cửa
+
+00:03:22.600 --> 00:03:26.761
+<c.creditRole>Sáng tác</c> <c.creditName>纯白P</c>
+<c.creditRole>Phối khí</c> <c.creditName>纯白P</c>
+<c.creditRole>Viết lời</c> <c.creditName>举烛</c>
+
+00:03:26.761 --> 00:03:30.751
+<c.creditRole>Trình bày</c> <c.creditName>Luo Tianyi/Yuezheng Ling</c>
+<c.creditRole>Điều giáo</c> <c.creditName>无形歌无形</c>
+<c.creditRole>Guitar</c> <c.creditName>YK_Lin</c>
+
+00:03:30.751 --> 00:03:35.437
+<c.creditRole>Minh họa</c> <c.creditName>巫烨</c>
+<c.creditRole>Mix</c> <c.creditName>Irecorder</c>
+<c.creditRole>Hình ảnh</c> <c.creditName>凌月尘</c>
+
+00:03:39.600 --> 00:03:43.500
+Một lần ly biệt, đất trời rộng mở đôi đường
+
+00:03:43.500 --> 00:03:47.715
+Nào ai nỡ ngoảnh đầu nhìn kỹ

@@ -1,34 +1,34 @@
 1
 00:00:01,689 --> 00:00:02,844
-<font color="#AAAA22">作词：</font><font color="#AAAAAA">举烛</font>
+<font color="#AAAA22">作词</font>：<font color="#AAAAAA">举烛</font>
 
 2
 00:00:02,844 --> 00:00:04,078
-<font color="#AAAA22">作曲：</font><font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">作曲</font>：<font color="#AAAAAA">纯白P</font>
 
 3
 00:00:04,078 --> 00:00:05,329
-<font color="#AAAA22">编曲：</font><font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">编曲</font>：<font color="#AAAAAA">纯白P</font>
 
 4
 00:00:05,329 --> 00:00:06,633
-<font color="#AAAA22">演唱：</font><font color="#AAAAAA">洛天依、乐正绫</font>
+<font color="#AAAA22">演唱</font>：<font color="#AAAAAA">洛天依、乐正绫</font>
 
 5
 00:00:06,633 --> 00:00:08,277
-<font color="#AAAA22">二胡：</font><font color="#AAAAAA">陆二胡</font>
+<font color="#AAAA22">二胡</font>：<font color="#AAAAAA">陆二胡</font>
 
 6
 00:00:08,277 --> 00:00:09,979
-<font color="#AAAA22">混音：</font><font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">混音</font>：<font color="#AAAAAA">纯白P</font>
 
 7
 00:00:09,979 --> 00:00:11,641
-<font color="#AAAA22">曲绘：</font><font color="#AAAAAA">贝贝</font>
+<font color="#AAAA22">曲绘</font>：<font color="#AAAAAA">贝贝</font>
 
 8
 00:00:11,641 --> 00:00:13,432
-<font color="#AAAA22">映像：</font><font color="#AAAAAA">凌月尘</font>
+<font color="#AAAA22">映像</font>：<font color="#AAAAAA">凌月尘</font>
 
 9
 00:00:13,432 --> 00:00:17,798
@@ -100,35 +100,35 @@
 
 26
 00:01:42,280 --> 00:01:44,038
-<font color="#AAAA22">作词：</font><font color="#AAAAAA">举烛</font>
+<font color="#AAAA22">作词</font>：<font color="#AAAAAA">举烛</font>
 
 27
 00:01:44,038 --> 00:01:45,920
-<font color="#AAAA22">作曲：</font><font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">作曲</font>：<font color="#AAAAAA">纯白P</font>
 
 28
 00:01:45,920 --> 00:01:47,796
-<font color="#AAAA22">编曲：</font><font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">编曲</font>：<font color="#AAAAAA">纯白P</font>
 
 29
 00:01:47,796 --> 00:01:49,712
-<font color="#AAAA22">演唱：</font><font color="#AAAAAA">洛天依、乐正绫</font>
+<font color="#AAAA22">演唱</font>：<font color="#AAAAAA">洛天依、乐正绫</font>
 
 30
 00:01:49,712 --> 00:01:51,882
-<font color="#AAAA22">二胡：</font><font color="#AAAAAA">陆二胡</font>
+<font color="#AAAA22">二胡</font>：<font color="#AAAAAA">陆二胡</font>
 
 31
 00:01:51,882 --> 00:01:54,242
-<font color="#AAAA22">混音：</font><font color="#AAAAAA">纯白P</font>
+<font color="#AAAA22">混音</font>：<font color="#AAAAAA">纯白P</font>
 
 32
 00:01:54,242 --> 00:01:56,389
-<font color="#AAAA22">曲绘：</font><font color="#AAAAAA">贝贝</font>
+<font color="#AAAA22">曲绘</font>：<font color="#AAAAAA">贝贝</font>
 
 33
 00:01:56,389 --> 00:01:58,213
-<font color="#AAAA22">映像：</font><font color="#AAAAAA">凌月尘</font>
+<font color="#AAAA22">映像</font>：<font color="#AAAAAA">凌月尘</font>
 
 34
 00:01:58,213 --> 00:02:01,010
