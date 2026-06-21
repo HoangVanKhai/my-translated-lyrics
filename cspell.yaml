@@ -2,6 +2,7 @@ import:
   - '@cspell/dict-vi-vn/cspell-ext.json'
 words:
   - dylint
+  - peekable
 ignorePaths:
   - '**/credits.yaml'
   - '**/line-markers.toml'
@@ -66,9 +67,11 @@ overrides:
   - filename: '**/*.rs'
     words:
       - btreemap
+      - Deque
       - Feng
       - hardlink
       - maplit
+      - Queueable
       - rsplit
       - saphyr
       - Tianyi

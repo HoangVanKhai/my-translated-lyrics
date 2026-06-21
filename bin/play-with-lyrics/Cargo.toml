@@ -1,0 +1,34 @@
+[package]
+name = "play-with-lyrics-bin"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "play-with-lyrics"
+path = "src/main.rs"
+doc = false
+
+[dependencies]
+clap.workspace = true
+derive_more.workspace = true
+exit-codes.workspace = true
+fuzzy-select.workspace = true
+into-deduped.workspace = true
+itertools.workspace = true
+lyrics-core.workspace = true
+pipe-trait.workspace = true
+play-with-lyrics.workspace = true
+play-with-lyrics-tui.workspace = true
+strum.workspace = true
+
+[dev-dependencies]
+command-extra.workspace = true
+lyrics-core.workspace = true
+pipe-trait.workspace = true
+pretty_assertions.workspace = true
+test-utils.workspace = true
+toml.workspace = true
+
+[lints]
+workspace = true

@@ -16,10 +16,17 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(dylint_lib, values("perfec
 
 [workspace.dependencies]
 lyrics-core = { path = "lib/lyrics-core" }
+column-sort = { path = "lib/column-sort" }
 generate-subtitles = { path = "lib/generate-subtitles" }
+exit-codes = { path = "lib/exit-codes" }
+fuzzy-select = { path = "lib/fuzzy-select" }
+play-with-lyrics = { path = "lib/play-with-lyrics" }
+play-with-lyrics-tui = { path = "lib/play-with-lyrics-tui" }
+terminal-screen = { path = "lib/terminal-screen" }
 test-utils = { path = "lib/test-utils" }
 clap = { version = "4.6.1", features = ["derive"] }
 command-extra = "1.0.0"
+crossterm = "0.29.0"
 derive_more = { version = "2.1.1", features = ["add_assign", "as_ref", "deref", "display", "from", "into"] }
 into-deduped = "0.0.0"
 into-sorted = "0.0.3"
@@ -34,4 +41,5 @@ serde-saphyr = "0.0.24"
 strum = { version = "0.28.0", features = ["derive"] }
 text-block-macros = "0.2.0"
 toml = "1.1.2"
+unicode-width = "0.2.2"
 walkdir = "2.5.0"
