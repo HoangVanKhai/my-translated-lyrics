@@ -64,11 +64,13 @@ where
             && top.0 == column
         {
             top.1 = top.1.reversed();
-        } else if let Some(position) = self
+            return;
+        }
+        let position = self
             .priorities
             .iter()
-            .position(|&(candidate, _)| candidate == column)
-        {
+            .position(|&(candidate, _)| candidate == column);
+        if let Some(position) = position {
             let (promoted, _) = self.priorities.remove(position);
             self.priorities.insert(0, (promoted, Direction::Ascending));
         }
