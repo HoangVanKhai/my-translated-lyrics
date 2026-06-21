@@ -21,7 +21,6 @@ use std::cmp::Ordering;
 use std::io::{self, Write};
 use std::time::SystemTime;
 use terminal_screen::{Buffer, Screen, Style};
-use unicode_width::UnicodeWidthStr;
 
 /// Presents the fuzzy table of titles and reports the chosen row, a request
 /// to go back, or a request to quit. This is the first page, so going back
@@ -200,14 +199,12 @@ fn video_order(sort: ColumnSort<Language>) -> impl Fn(&Video, &Video) -> Orderin
 /// Draws the search bar at [`SEARCH_ROW`]: a dimmed magnifier, the italic
 /// "Search:" label, and the typed `query` in bold.
 fn render_search_bar(buffer: &mut Buffer, columns: usize, query: &str) {
-    let magnifier = "🔍︎";
-    buffer.set_string(0, SEARCH_ROW, magnifier, Style::DIM);
-    let label = " Search: ";
-    let label_start = magnifier.width();
-    buffer.set_string(label_start as u16, SEARCH_ROW, label, Style::ITALIC);
-    let query_start = label_start + label.width();
-    let shown = fit(query, columns.saturating_sub(query_start));
-    buffer.set_string(query_start as u16, SEARCH_ROW, &shown, Style::BOLD);
+    // Chain off each segment's end column so the layout matches the buffer's own
+    // widths; measuring separately would disagree on the magnifier's width.
+    let after_magnifier = buffer.set_string(0, SEARCH_ROW, "🔍︎", Style::DIM);
+    let after_label = buffer.set_string(after_magnifier, SEARCH_ROW, " Search: ", Style::ITALIC);
+    let shown = fit(query, columns.saturating_sub(after_label.into()));
+    buffer.set_string(after_label, SEARCH_ROW, &shown, Style::BOLD);
 }
 
 /// Draws the clickable column header at [`HEADER_ROW`]. The column the table is

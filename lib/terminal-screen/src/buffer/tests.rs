@@ -34,14 +34,15 @@ fn set_string_clips_at_the_right_edge() {
     assert_eq!(buffer.row_text(0), "abc");
 }
 
-/// A glyph followed by a text-presentation variation selector takes a single
-/// column, so the next glyph lands right after it.
+/// A variation selector changes a symbol's form but not its width, matching
+/// how terminals render it, so a selected glyph keeps its base column span.
 #[test]
-fn a_text_presentation_glyph_takes_one_column() {
+fn a_variation_selected_glyph_keeps_its_base_width() {
     let mut buffer = Buffer::new(4, 1);
-    // 🔍 with the text variation selector (U+FE0E) is one column wide.
+    // 🔍 is two columns; the text variation selector (U+FE0E) does not narrow it.
     buffer.set_string(0, 0, "🔍︎x", Style::PLAIN);
-    assert_eq!(buffer.row_text(0), "🔍x  ");
+    // 🔍 spans columns 0 and 1, so x lands in column 2.
+    assert_eq!(buffer.row_text(0), "🔍 x ");
 }
 
 /// A wide glyph that would run past the right edge is clipped, not written with

@@ -24,17 +24,19 @@ pub(crate) enum Cell {
     Trailing,
 }
 
-/// The display width of a glyph, accounting for a variation selector that can
-/// switch a symbol between its narrow text form and its wide emoji form.
+/// The display width of a glyph. A variation selector can widen a symbol to its
+/// emoji form, but terminals keep the base width even for a text-form selector
+/// (they change the color, not the width), so the wider of the two is used.
 pub(crate) fn glyph_width(ch: char, vs: Option<char>) -> u16 {
+    let base = ch.width().unwrap_or(0) as u16;
     match vs {
         Some(selector) => {
             let mut grapheme = String::with_capacity(ch.len_utf8() + selector.len_utf8());
             grapheme.push(ch);
             grapheme.push(selector);
-            grapheme.width() as u16
+            base.max(grapheme.width() as u16)
         }
-        None => ch.width().unwrap_or(0) as u16,
+        None => base,
     }
 }
 
@@ -97,8 +99,10 @@ impl Buffer {
 
     /// Writes `text` starting at `col`, `row` with a uniform `style`, advancing
     /// by each glyph's display width and stopping at the right edge. A variation
-    /// selector is kept with the glyph it follows.
-    pub fn set_string(&mut self, col: u16, row: u16, text: &str, style: Style) {
+    /// selector is kept with the glyph it follows. Returns the column just after
+    /// the text, so a caller can place the next segment without measuring widths
+    /// itself.
+    pub fn set_string(&mut self, col: u16, row: u16, text: &str, style: Style) -> u16 {
         let mut cursor = col;
         let mut chars = text.chars().peekable();
         while let Some(ch) = chars.next() {
@@ -114,6 +118,7 @@ impl Buffer {
             }
             cursor += self.place_glyph(cursor, row, ch, vs, style);
         }
+        cursor
     }
 
     /// The text of a row, with empty and trailing cells shown as blanks, to

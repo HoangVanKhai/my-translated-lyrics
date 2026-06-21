@@ -1715,11 +1715,12 @@ fn render_search_bar_styles_the_magnifier_label_and_query() {
     assert!(row.contains("abc"), "{row}");
     // The magnifier is dimmed, not italic.
     assert_eq!(buffer.style_at(0, SEARCH_ROW), Style::DIM);
-    // The "Search:" label is italic; column 2 is its first letter.
-    assert_eq!(buffer.style_at(2, SEARCH_ROW), Style::ITALIC);
-    // The typed query is bold. The magnifier (1) and " Search: " (9) take ten
-    // columns, so the query begins at column 10.
-    assert_eq!(buffer.style_at(10, SEARCH_ROW), Style::BOLD);
+    // The "Search:" label is italic. The magnifier spans columns 0-1 and column
+    // 2 is the label's leading space, so column 3 is its first letter.
+    assert_eq!(buffer.style_at(3, SEARCH_ROW), Style::ITALIC);
+    // The typed query is bold. The magnifier (2) and " Search: " (9) take eleven
+    // columns, so the query begins at column 11.
+    assert_eq!(buffer.style_at(11, SEARCH_ROW), Style::BOLD);
 }
 
 /// The search bar shows a magnifier with the italic "Search:" label and the
