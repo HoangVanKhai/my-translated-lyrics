@@ -165,7 +165,7 @@ fn focusing_a_filtered_out_item_is_a_no_op() {
 fn setting_the_query_filters_like_typing() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
-    selector.set_query("example");
+    selector.set_query("example".to_owned());
     assert_eq!(selector.filtered(), &[0]);
 }
 
@@ -186,6 +186,6 @@ fn the_order_persists_across_a_refilter() {
     let mut selector = Selector::new(&rows);
     selector.set_order(|left, right| right.en.cmp(left.en));
     // "Sample" matches the second and third rows, which stay descending.
-    selector.set_query("Sample");
+    selector.set_query("Sample".to_owned());
     assert_eq!(selector.filtered(), &[2, 1]);
 }

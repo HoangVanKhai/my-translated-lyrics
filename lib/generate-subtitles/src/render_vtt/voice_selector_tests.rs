@@ -3,15 +3,14 @@ use lyrics_core::line_markers_descriptor::VoiceName;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 
-fn sample_voice_name(text: impl Into<String>) -> VoiceName {
-    text.into()
-        .pipe(VoiceName::new)
+fn sample_voice_name(text: String) -> VoiceName {
+    text.pipe(VoiceName::new)
         .expect("test fixture passes the voice-name validator")
 }
 
 #[test]
 fn voice_selector_emits_double_quoted_attribute_selector() {
-    let voice_name = sample_voice_name("名字一");
+    let voice_name = sample_voice_name("名字一".to_owned());
     assert_eq!(
         VoiceSelector(&voice_name).to_string(),
         r#"v[voice="名字一"]"#,
@@ -22,7 +21,7 @@ fn voice_selector_emits_double_quoted_attribute_selector() {
 /// selector can splat a name containing `'` without any escape.
 #[test]
 fn voice_selector_preserves_ascii_apostrophes_inside_double_quotes() {
-    let voice_name = sample_voice_name("O'Brien");
+    let voice_name = sample_voice_name("O'Brien".to_owned());
     assert_eq!(
         VoiceSelector(&voice_name).to_string(),
         r#"v[voice="O'Brien"]"#,
@@ -41,7 +40,7 @@ fn voice_selector_preserves_ascii_apostrophes_inside_double_quotes() {
 /// `render_vtt/tests.rs` locks the cue-tag side.
 #[test]
 fn voice_selector_preserves_ampersand_verbatim() {
-    let voice_name = sample_voice_name("Alpha & Beta");
+    let voice_name = sample_voice_name("Alpha & Beta".to_owned());
     assert_eq!(
         VoiceSelector(&voice_name).to_string(),
         r#"v[voice="Alpha & Beta"]"#,
