@@ -1,8 +1,42 @@
 name: Test
 
+# The test suite compiles the Rust workspace and reads the lyrics data
+# directories, so it runs when Rust sources, cargo manifests, the toolchain
+# pin, the AI instruction templates and their generated files, the lyrics
+# data under sources/, dist/, and drafts/, the shared style palette, or this
+# workflow change. Edits to unrelated prose do not affect the build or the
+# tests.
 on:
-  - push
-  - pull_request
+  push:
+    paths:
+      - '**/*.rs'
+      - '**/Cargo.toml'
+      - Cargo.lock
+      - rust-toolchain
+      - template/ai-instructions/**
+      - CLAUDE.md
+      - AGENTS.md
+      - .github/copilot-instructions.md
+      - sources/**
+      - dist/**
+      - drafts/**
+      - styles.toml
+      - .github/workflows/test.yaml
+  pull_request:
+    paths:
+      - '**/*.rs'
+      - '**/Cargo.toml'
+      - Cargo.lock
+      - rust-toolchain
+      - template/ai-instructions/**
+      - CLAUDE.md
+      - AGENTS.md
+      - .github/copilot-instructions.md
+      - sources/**
+      - dist/**
+      - drafts/**
+      - styles.toml
+      - .github/workflows/test.yaml
 
 jobs:
   test:
@@ -35,15 +69,15 @@ jobs:
         run: cargo fmt -- --check
 
       - name: Clippy
-        run: cargo clippy --all-targets -- -D warnings
+        run: cargo clippy --workspace --all-targets -- -D warnings
 
       - name: Test
-        run: cargo test
+        run: cargo test --workspace
 
       - name: Doc
         env:
           RUSTDOCFLAGS: -D warnings
-        run: cargo doc --no-deps --document-private-items
+        run: cargo doc --workspace --no-deps --document-private-items
 
       - name: Clean workspace artifacts before cache
         if: always()

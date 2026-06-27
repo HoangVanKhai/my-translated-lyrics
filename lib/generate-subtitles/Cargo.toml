@@ -1,0 +1,27 @@
+[package]
+name = "generate-subtitles"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+derive_more.workspace = true
+into-deduped.workspace = true
+into-sorted.workspace = true
+lyrics-core.workspace = true
+pipe-trait.workspace = true
+serde.workspace = true
+serde-saphyr.workspace = true
+strum.workspace = true
+text-block-macros.workspace = true
+toml.workspace = true
+
+[dev-dependencies]
+itertools.workspace = true
+maplit.workspace = true
+pretty_assertions.workspace = true
+test-utils.workspace = true
+walkdir.workspace = true
+
+[lints]
+workspace = true

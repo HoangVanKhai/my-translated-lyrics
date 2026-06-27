@@ -1,0 +1,21 @@
+credit-roles:
+  - { vi: Guitar, zh: 吉他 }
+  - { vi: Hình ảnh, zh: 映像 }
+  - { vi: Minh họa, zh: 插画 }
+  - { vi: Mix, zh: 混音 }
+  - { vi: Phối khí, zh: 编曲 }
+  - { vi: Sáng tác, zh: 作曲 }
+  - { vi: Trình bày, zh: 演唱 }
+  - { vi: Viết lời, zh: 作词 }
+  - { vi: Điều giáo, zh: 调教 }
+
+credit-names:
+  - { vi: Irecorder, zh: Irecorder }
+  - { vi: Luo Tianyi, zh: 洛天依 }
+  - { vi: YK_Lin, zh: YK_Lin }
+  - { vi: Yuezheng Ling, zh: 乐正绫 }
+  - { vi: 举烛, zh: 举烛 }
+  - { vi: 凌月尘, zh: 凌月尘 }
+  - { vi: 巫烨, zh: 巫烨 }
+  - { vi: 无形歌无形, zh: 无形歌无形 }
+  - { vi: 纯白P, zh: 纯白P }

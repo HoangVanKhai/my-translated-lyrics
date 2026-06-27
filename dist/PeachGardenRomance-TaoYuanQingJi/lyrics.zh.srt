@@ -1,23 +1,23 @@
 1
 00:00:01,167 --> 00:00:04,433
-<font color="#AAAA22">曲/编：</font><font color="#AAAAAA">洛雨辰p</font>
-<font color="#AAAA22">协力：</font><font color="#AAAAAA">年糕</font>
-<font color="#AAAA22">作词：</font><font color="#AAAAAA">雷小晏</font>
+<font color="#AAAA22">曲/编</font>：<font color="#AAAAAA">洛雨辰p</font>
+<font color="#AAAA22">协力</font>：<font color="#AAAAAA">年糕</font>
+<font color="#AAAA22">作词</font>：<font color="#AAAAAA">雷小晏</font>
 
 2
 00:00:04,433 --> 00:00:07,793
-<font color="#AAAA22">电/木吉他：</font><font color="#AAAAAA">distantal</font>
-<font color="#AAAA22">弦乐：</font><font color="#AAAAAA">海因喝水上火</font>
+<font color="#AAAA22">电/木吉他</font>：<font color="#AAAAAA">distantal</font>
+<font color="#AAAA22">弦乐</font>：<font color="#AAAAAA">海因喝水上火</font>
 
 3
 00:00:07,793 --> 00:00:10,954
-<font color="#AAAA22">调教：</font><font color="#AAAAAA">鬼面p</font>
-<font color="#AAAA22">混音：</font><font color="#AAAAAA">蓝婉元漪</font>
+<font color="#AAAA22">调教</font>：<font color="#AAAAAA">鬼面p</font>
+<font color="#AAAA22">混音</font>：<font color="#AAAAAA">蓝婉元漪</font>
 
 4
 00:00:10,954 --> 00:00:14,210
-<font color="#AAAA22">曲绘：</font><font color="#AAAAAA">山下鸭鸭窝</font>
-<font color="#AAAA22">视频：</font><font color="#AAAAAA">梦游</font>
+<font color="#AAAA22">曲绘</font>：<font color="#AAAAAA">山下鸭鸭窝</font>
+<font color="#AAAA22">视频</font>：<font color="#AAAAAA">梦游</font>
 
 5
 00:00:20,729 --> 00:00:26,830
@@ -81,24 +81,24 @@
 
 20
 00:01:59,445 --> 00:02:03,086
-<font color="#AAAA22">曲/编：</font><font color="#AAAAAA">洛雨辰p</font>
-<font color="#AAAA22">协力：</font><font color="#AAAAAA">年糕</font>
-<font color="#AAAA22">作词：</font><font color="#AAAAAA">雷小晏</font>
+<font color="#AAAA22">曲/编</font>：<font color="#AAAAAA">洛雨辰p</font>
+<font color="#AAAA22">协力</font>：<font color="#AAAAAA">年糕</font>
+<font color="#AAAA22">作词</font>：<font color="#AAAAAA">雷小晏</font>
 
 21
 00:02:03,086 --> 00:02:06,392
-<font color="#AAAA22">电/木吉他：</font><font color="#AAAAAA">distantal</font>
-<font color="#AAAA22">弦乐：</font><font color="#AAAAAA">海因喝水上火</font>
+<font color="#AAAA22">电/木吉他</font>：<font color="#AAAAAA">distantal</font>
+<font color="#AAAA22">弦乐</font>：<font color="#AAAAAA">海因喝水上火</font>
 
 22
 00:02:06,392 --> 00:02:09,449
-<font color="#AAAA22">调教：</font><font color="#AAAAAA">鬼面p</font>
-<font color="#AAAA22">混音：</font><font color="#AAAAAA">蓝婉元漪</font>
+<font color="#AAAA22">调教</font>：<font color="#AAAAAA">鬼面p</font>
+<font color="#AAAA22">混音</font>：<font color="#AAAAAA">蓝婉元漪</font>
 
 23
 00:02:09,449 --> 00:02:12,821
-<font color="#AAAA22">曲绘：</font><font color="#AAAAAA">山下鸭鸭窝</font>
-<font color="#AAAA22">视频：</font><font color="#AAAAAA">梦游</font>
+<font color="#AAAA22">曲绘</font>：<font color="#AAAAAA">山下鸭鸭窝</font>
+<font color="#AAAA22">视频</font>：<font color="#AAAAAA">梦游</font>
 
 24
 00:02:19,323 --> 00:02:25,387

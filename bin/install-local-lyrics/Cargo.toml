@@ -1,0 +1,21 @@
+[package]
+name = "install-local-lyrics"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+clap.workspace = true
+itertools.workspace = true
+lyrics-core.workspace = true
+pipe-trait.workspace = true
+reflink.workspace = true
+toml.workspace = true
+
+[dev-dependencies]
+pretty_assertions.workspace = true
+test-utils.workspace = true
+text-block-macros.workspace = true
+
+[lints]
+workspace = true

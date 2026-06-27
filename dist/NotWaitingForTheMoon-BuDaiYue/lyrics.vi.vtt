@@ -1,0 +1,156 @@
+WEBVTT
+Language: vi
+
+STYLE
+::cue {
+  background-color: transparent;
+  text-shadow: 2px 2px 2px black;
+}
+::cue(c.creditRole) {
+  color: #AAAA22;
+}
+::cue(c.creditName) {
+  color: #AAAAAA;
+}
+::cue(c.creditSpecial) {
+  color: #55ABCD;
+}
+::cue(c.title) {
+  color: #FFD966;
+  font-weight: bold;
+}
+
+00:00:07.366 --> 00:00:12.762
+<c.title>Chẳng Đợi Trăng</c>
+
+00:00:12.762 --> 00:00:16.005
+Ngẩng đầu thấy trăng sáng bên mình, mới hay trời đã tối
+
+00:00:16.005 --> 00:00:19.040
+Một ngày thanh nhàn trôi qua, vui đùa cùng mèo nhỏ
+
+00:00:19.040 --> 00:00:22.334
+Muốn hướng về phố dài, xách theo một chiếc đèn hoa
+
+00:00:22.334 --> 00:00:26.120
+Đường đá xanh vừa lấm bùn, cành sen lại thêm vài phần sắc thắm
+
+00:00:26.120 --> 00:00:29.239
+Tiếng sáo lại gần, tiếng trà lâu mời khách chậm rãi vang lên
+
+00:00:29.239 --> 00:00:32.604
+Bánh hoa gạo nếp nhà ai, tỏa hương khiến lòng thèm thuồng
+
+00:00:32.604 --> 00:00:35.747
+Thấy bạn tay cầm xâu kẹo hồ lô
+
+00:00:35.747 --> 00:00:39.095
+Lén giấu một viên, che miệng hỏi xem ai đang đuổi theo
+
+00:00:39.095 --> 00:00:42.459
+Sánh bước thành đôi, đèn lồng nơi phố thị khẽ đung đưa
+
+00:00:42.462 --> 00:00:45.758
+Quạt tròn khẽ che, đếm bao đóa hoa cài tóc, dạo qua ngõ nhỏ
+
+00:00:45.763 --> 00:00:49.111
+Cùng ngắm lưu ly, vạt áo đầy gió mang theo hương thơm còn sót lại
+
+00:00:49.111 --> 00:00:53.191
+Gặp gỡ khó thay, khóe mày đưa tình, thủ thỉ chuyện trò miên man
+
+00:01:00.255 --> 00:01:05.821
+<c.title>Chẳng Đợi Trăng</c>
+
+00:01:05.821 --> 00:01:09.015
+Nắm tay bên cầu đá, sắc hồ nhạt nhòa
+
+00:01:09.015 --> 00:01:12.399
+Tựa sát bên thuyền hoa, khẽ chạm thử nước ven bờ
+
+00:01:12.399 --> 00:01:15.246
+Cùng bạn chèo thuyền, nghe tiếng mái chèo đẩy sóng
+
+00:01:15.246 --> 00:01:19.007
+Sóng gợn như tiếng hát khẽ khàng, cùng tiếng cười nói thấm ướt bên tai
+
+00:01:19.007 --> 00:01:22.315
+Chốn non nước mờ ảo níu ánh mắt đôi ta lưu luyến
+
+00:01:22.315 --> 00:01:25.648
+Tâm ý thời trẻ dại, ai biết được một khắc vui thú này
+
+00:01:25.648 --> 00:01:28.698
+Tâm tình lúc này, qua bao năm nhìn lại cũng thành chuyện thường
+
+00:01:28.698 --> 00:01:32.026
+Cảnh đẹp trước mắt, nhưng lại nói chuyện hợp tan của gió trăng
+
+00:01:32.026 --> 00:01:35.382
+Người qua kẻ lại ồn ào, hóa ra là tiếng sáo trống họa thành nhạc điệu
+
+00:01:35.412 --> 00:01:38.681
+Tiếng hát trên thuyền vang vọng, một khúc nhạc của Tạ Nương làm động lòng người
+
+00:01:38.705 --> 00:01:42.030
+Hào hứng nhất là lúc ngắm trăng, khẽ chỉnh lại y phục
+
+00:01:42.030 --> 00:01:46.147
+Thuyền quay về chốn cũ, năm tháng trôi qua vẫn còn kể lại
+
+00:01:46.147 --> 00:01:48.387
+<c.creditRole>Tác từ:</c> <c.creditName>花间有鹿来</c>
+
+00:01:48.387 --> 00:01:50.475
+<c.creditRole>Nhạc/Biên khúc/Mix:</c> <c.creditName>砖厂浪人</c>
+
+00:01:50.475 --> 00:01:52.438
+<c.creditRole>Điều giáo:</c> <c.creditName>流绪</c>
+
+00:01:52.438 --> 00:01:54.508
+<c.creditRole>Minh họa:</c> <c.creditName>甘小宁</c>
+
+00:01:54.508 --> 00:01:56.532
+<c.creditRole>Video:</c> <c.creditName>卷毛兔w</c>
+
+00:01:56.532 --> 00:01:59.110
+<c.creditRole>Nền Video:</c>
+<c.creditSpecial>[疏楼曲]</c> <c.creditName>青菏</c>
+<c.creditSpecial>[不能画]</c> <c.creditName>太阳暖暖</c>
+<c.creditSpecial>[不能画]</c> <c.creditName>行殊</c>
+
+00:02:11.808 --> 00:02:15.107
+Ngước mắt nhìn trời, một cây hoa lửa hóa thành luồng sáng
+
+00:02:15.107 --> 00:02:18.434
+Gửi gắm nguyện ước, mắt dõi theo sao rơi trong gió
+
+00:02:18.434 --> 00:02:21.695
+Thẫn thờ tựa lan can, đôi tay đan chặt mong đừng quên nhau
+
+00:02:21.695 --> 00:02:25.873
+Giấc mộng thanh khiết dần lay tỉnh, tình ý này gửi về phương nào giữa nhân gian?
+
+00:02:25.873 --> 00:02:28.160
+<c.creditRole>Tác từ:</c> <c.creditName>花间有鹿来</c>
+
+00:02:28.160 --> 00:02:30.292
+<c.creditRole>Nhạc/Biên khúc/Mix:</c> <c.creditName>砖厂浪人</c>
+
+00:02:30.292 --> 00:02:32.043
+<c.creditRole>Điều giáo:</c> <c.creditName>流绪</c>
+
+00:02:32.043 --> 00:02:34.184
+<c.creditRole>Minh họa:</c> <c.creditName>甘小宁</c>
+
+00:02:34.184 --> 00:02:36.367
+<c.creditRole>Video:</c> <c.creditName>卷毛兔w</c>
+
+00:02:36.367 --> 00:02:38.969
+<c.creditRole>Nền Video:</c>
+<c.creditSpecial>[疏楼曲]</c> <c.creditName>青菏</c>
+<c.creditSpecial>[不能画]</c> <c.creditName>太阳暖暖</c>
+<c.creditSpecial>[不能画]</c> <c.creditName>行殊</c>
+
+00:02:59.165 --> 00:03:05.997
+<c.title>Chẳng Đợi Trăng</c>

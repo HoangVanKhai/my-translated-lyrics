@@ -1,0 +1,117 @@
+# clr: Xóa chữ trên màn hình
+# LRC: Lời bài hát (không rõ người trình bày)
+# ttl: Tiêu đề ca khúc
+# cre: Thông tin sản xuất
+# eov: Kết thúc MV
+
+00:02.240 cre: Sáng tác/Chỉ đạo: 拾叁枝鸢尾
+               Soạn nhạc: WOVOP
+               Phối khí/Phối track: 阿落-itHH【千小莺】
+               Thể hiện: Luo Tianyi, Yuezheng Ling
+               Phối nhạc/Xử lý hậu kỳ: 月华P
+               Chỉnh giọng: 落泠P
+               Minh họa: 予忆Connect
+               PV: AnSekinen
+00:10.080 ttl: Vân Biên Mộng Thoại
+          cre: Điều phối sản xuất âm nhạc: WOVOP
+00:18.000 LRC: Ngày ấy tôi đã đứng đó, chờ mãi, chờ mãi, đã bao nhiêu năm rồi nhỉ?
+00:22.260 LRC: Thành trò cười cho lữ khách, mấy năm mới gặp một lần.
+00:25.890 LRC: Hoa bên cầu, năm lại năm, nở rồi tàn, đã úa vàng.
+00:30.240 LRC: Chớp mắt đã mấy mươi năm, vệt sáng ấy từ biên mây vụt tắt.
+00:34.440 LRC: Thường giật mình thức giấc giữa đêm thâu,
+00:38.010 LRC: Ngồi ngẩn ngơ trước gương.
+00:42.450 LRC: Nhìn thấy tôi ở đây, mỉm cười,
+00:46.470 LRC: Ẩn mình vào trong bức họa.
+00:50.520 LRC: Người ta thường nói việc đời khó lường,
+00:53.970 LRC: Như màn sương giữa rừng.
+00:58.365 LRC: Thoáng chốc biệt ly ngoại trường kiều,
+01:02.160 LRC: Vậy mà chẳng trở lại.
+01:04.920 LRC: Tiếng nước tí tách, lá rơi xào xạc,
+01:07.050 LRC: Giữa bóng tối, khó phân thật giả.
+01:09.420 LRC: Buông rèm, khuất bóng chiều tà.
+01:12.930 LRC: Bên tảng đá Tam Sinh, ngựa gầy trong gió tây.
+01:15.090 LRC: Dưới sông Vong Xuyên, chìm nổi lênh đênh.
+01:17.460 LRC: Viết về kiếp nào đã từng cầm kiếm rong chơi qua xuân hạ?
+01:21.000 LRC: Mở ngăn kéo, lật tập tranh ra,
+01:23.100 LRC: Kinh thành rực rỡ ánh hoa đăng,
+01:25.470 LRC: Đoán đố, chuốc rượu, lòng thiếu niên tựa biển trời bao la.
+01:28.920 LRC: Thân như bèo dạt, khó phân thật giả.
+01:31.080 LRC: Bước lên đò, liệu có thấy được thời thanh xuân tươi đẹp?
+01:33.510 LRC: Khi gió lên, mỉm cười đón nàng về.
+01:37.650 LRC: Liệu áng mây kia có thể thay ta đi tương phùng?
+01:41.010 LRC: Nguyện lòng ta theo dòng Lạc Thủy,
+01:43.170 LRC: Mà bờ bên kia chẳng thấy bóng người.
+01:44.970 LRC: Còn vương vấn gì non sông xã tắc?
+01:46.830 LRC: Khó mà được kề bên.
+01:48.990 LRC: Mối duyên này nguyện tạc vào thanh thạch,
+01:51.060 LRC: Hẹn ước ba đời chẳng đổi thay.
+01:52.950 LRC: Xin người đừng nhung nhớ khổ đau,
+01:54.840 LRC: Hãy để mặc ý trời.
+01:56.910 LRC: Ngắm nhìn người thương trong tranh,
+01:59.070 LRC: Gần trong gang tấc.
+02:01.080 LRC: Chẳng thấy cây sáo trên tay,
+02:02.850 LRC: Lấy chi tỏ tấc lòng?
+02:05.070 LRC: Giọt lệ ngọc nhẹ thấm phấn hồng,
+02:07.110 LRC: Ngón tay chậm rãi đặt quân cờ.
+02:09.030 LRC: Thương thay trúc đình trong viện,
+02:10.800 LRC: Đã quá quen với cảnh biệt ly.
+02:14.080 clr
+
+02:14.947 cre: Sáng tác/Chỉ đạo: 拾叁枝鸢尾
+               Soạn nhạc: WOVOP
+               Phối khí/Phối track: 阿落-itHH【千小莺】
+               Thể hiện: Luo Tianyi, Yuezheng Ling
+               Phối nhạc/Xử lý hậu kỳ: 月华P
+               Chỉnh giọng: 落泠P
+               Minh họa: 予忆Connect
+               PV: AnSekinen
+02:22.247 ttl: Vân Biên Mộng Thoại
+          cre: Điều phối sản xuất âm nhạc: WOVOP
+02:29.368 LRC: Bên cầu thanh thạch sáo trỗi, ngỡ cố nhân quay về.
+02:33.510 LRC: Trăng lên đầu liễu, trăm nhà treo đèn đợi người giải đố.
+02:37.500 LRC: Lợi kiếm phá không, tiếng trống dồn, ánh bạc lạnh soi trên giáp sắt.
+02:41.460 LRC: Trong khuê phòng lật sách, nào hay sáo trúc đã vùi sâu.
+02:45.570 LRC: Còn nhớ thuở nhỏ giữa đồng, mò dây, hái dưa.
+02:49.500 LRC: Tâm sự cô gái, lặng thầm chẳng nói, e ấp tựa đóa hoa.
+02:53.520 LRC: Đầu đường cuối ngõ, bóng đạo sĩ ngồi kể chuyện nhân gian.
+02:57.480 LRC: "Xin tiên sinh xem cho một quẻ."
+03:01.530 LRC: Mũ phượng khăn điều, chỉ tay ấy tựa như đôi cánh chim trời.
+03:05.580 LRC: Ngồi trước gương trang điểm, cài trâm vàng, khoác áo gấm ngọc.
+03:09.450 LRC: Nhìn nhau mỉm cười, người trong khúc có thấu ý tâm giao?
+03:13.440 LRC: Một giấc mộng xuân thu, hái đậu đỏ, chỉ muốn gửi về cho người.
+03:17.370 LRC: Lúc rạng đông mưa, người xa xứ từ giã lớp áo xưa.
+03:21.810 LRC: Nến sáng cháy dài cho kẻ viễn du, ngàn dặm lại thấy ai?
+03:25.557 LRC: Ngân Hà quấn quýt, dáng hao gầy, trường hận này bao giờ mới nguôi?
+03:29.719 LRC: Chẳng muốn gặp lại, tựa khói tựa tro.
+03:33.060 LRC: Nguyện lòng ta theo dòng Lạc Thủy,
+03:35.130 LRC: Để bên bờ được thấy em.
+03:36.960 LRC: Trong khoảnh khắc non sông xã tắc này,
+03:38.820 LRC: Nam Bắc nương tựa nhau.
+03:41.010 LRC: Mối duyên này nguyện tạc vào thanh thạch,
+03:43.110 LRC: Lấy lúc duyên tận làm kỳ hẹn.
+03:45.000 LRC: Xin người đừng truy hoài ký ức,
+03:46.770 LRC: Hãy vui hưởng ý trời này.
+03:48.990 LRC: Tay trong tay với người thương trong tranh,
+03:51.120 LRC: Lạy tạ đất trời lần nữa.
+03:53.010 LRC: Chẳng màng chi trường sinh bất tử,
+03:54.780 LRC: Nguyện bên nhau chẳng lìa xa.
+03:56.970 LRC: Đường xa gặp Mạnh Khương, nhìn nhau bùi ngùi,
+03:59.100 LRC: Tạ lỗi cùng người.
+04:01.050 LRC: Chỉ mong đến lúc tái ngộ,
+04:02.820 LRC: Lại cùng nhau dạo khắp đất trời.
+04:04.940 LRC: Lại cùng nhau dạo khắp đất trời.
+04:07.440 clr
+
+04:14.498 cre: Sáng tác/Chỉ đạo: 拾叁枝鸢尾
+               Soạn nhạc: WOVOP
+               Phối khí/Phối track: 阿落-itHH【千小莺】
+               Thể hiện: Luo Tianyi, Yuezheng Ling
+               Phối nhạc/Xử lý hậu kỳ: 月华P
+               Chỉnh giọng: 落泠P
+               Minh họa: 予忆Connect
+               PV: AnSekinen
+04:24.001 ttl: Vân Biên Mộng Thoại
+          cre: Điều phối sản xuất âm nhạc: WOVOP
+04:31.794 clr
+
+04:31.794 eov

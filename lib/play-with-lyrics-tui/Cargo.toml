@@ -1,0 +1,22 @@
+[package]
+name = "play-with-lyrics-tui"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+column-sort.workspace = true
+crossterm.workspace = true
+fuzzy-select.workspace = true
+lyrics-core.workspace = true
+pipe-trait.workspace = true
+play-with-lyrics.workspace = true
+terminal-screen.workspace = true
+unicode-width.workspace = true
+
+[dev-dependencies]
+pretty_assertions.workspace = true
+test-utils.workspace = true
+
+[lints]
+workspace = true

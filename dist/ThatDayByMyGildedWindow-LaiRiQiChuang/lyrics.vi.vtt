@@ -1,0 +1,168 @@
+WEBVTT
+Language: vi
+
+STYLE
+::cue {
+  background-color: transparent;
+  text-shadow: 2px 2px 2px black;
+}
+::cue(c.creditRole) {
+  color: #AAAA22;
+}
+::cue(c.creditName) {
+  color: #AAAAAA;
+}
+::cue(c.creditSpecial) {
+  color: #55ABCD;
+}
+::cue(c.title) {
+  color: #FFD966;
+  font-weight: bold;
+}
+
+00:00:01.434 --> 00:00:06.333
+<c.creditRole>Lời</c>  <c.creditName>北山薇</c>
+<c.creditRole>Nhạc/Phối khí</c>  <c.creditName>砖厂浪人</c>
+<c.creditRole>Điều giáo</c>  <c.creditName>潜水荷叶/鬼面P</c>
+
+00:00:07.666 --> 00:00:11.865
+<c.creditRole>Mix</c>  <c.creditName>拙木</c>
+<c.creditRole>Họa</c>  <c.creditName>巫烨</c>
+<c.creditRole>Video</c>  <c.creditName>梦游</c>
+
+00:00:13.365 --> 00:00:17.830
+<c.creditRole>Kế hoạch</c>  <c.creditName>花间有鹿来</c>
+<c.creditRole>Giám chế</c>  <c.creditName>莫羡</c>
+<c.creditRole>Sản xuất</c>  <c.creditName>幻月音乐团 <c.creditSpecial>(Âm nhạc)</c>/芜筝社 <c.creditSpecial>(Thị giác)</c></c>
+
+00:00:18.530 --> 00:00:22.029
+<c.title>Lai Nhật Ỷ Song</c>
+
+00:00:22.330 --> 00:00:27.540
+Trời trong núi xa loang lổ như lụa
+
+00:00:27.540 --> 00:00:32.950
+Thu dọn sắc trúc, lên đường cố nhân hẹn
+
+00:00:32.950 --> 00:00:38.350
+Vì ham cá giếc, chậm bước bên sông
+
+00:00:38.350 --> 00:00:44.020
+Bên sông chợt nghe tiếng cá nhảy lên
+
+00:00:44.020 --> 00:00:49.300
+Gõ cửa ba tiếng, vờ chẳng hay
+
+00:00:49.300 --> 00:00:54.730
+Trộm nghe cười nói, lúm đồng tiền thoáng hiện
+
+00:00:54.730 --> 00:01:00.000
+Rằng lũ chim nhỏ, vờn làn khói
+
+00:01:00.000 --> 00:01:04.960
+Rượu cũ chuyện mới, chưa viết đã thành chương
+
+00:01:04.960 --> 00:01:10.350
+Quét tuyết đẩy cửa, trăng trước song
+
+00:01:10.350 --> 00:01:15.670
+Một cây mai trắng như bướm ngọc
+
+00:01:15.670 --> 00:01:21.040
+Ý sáo Giang Thành, Trường An xa
+
+00:01:21.040 --> 00:01:26.260
+Đường nhỏ bụi trần lên phố thiên
+
+00:01:26.260 --> 00:01:31.630
+Si tăng sầu khách tìm nhân gian
+
+00:01:31.630 --> 00:01:36.960
+Sương thanh bóng lẻ mình tự thương
+
+00:01:36.960 --> 00:01:42.340
+Ngắt một nhành hoa, rơi vài cánh
+
+00:01:42.340 --> 00:01:47.546
+Lão say nhúng tuyết, núi làm nghiên
+
+00:01:49.512 --> 00:01:52.278
+<c.creditRole>Lời</c>  <c.creditName>北山薇</c>
+<c.creditRole>Nhạc/Phối khí</c>  <c.creditName>砖厂浪人</c>
+<c.creditRole>Điều giáo</c>  <c.creditName>潜水荷叶/鬼面P</c>
+
+00:01:54.878 --> 00:01:58.110
+<c.creditRole>Mix</c>  <c.creditName>拙木</c>
+<c.creditRole>Họa</c>  <c.creditName>巫烨</c>
+<c.creditRole>Video</c>  <c.creditName>梦游</c>
+
+00:01:59.510 --> 00:02:04.443
+<c.creditRole>Kế hoạch</c>  <c.creditName>花间有鹿来</c>
+<c.creditRole>Giám chế</c>  <c.creditName>莫羡</c>
+<c.creditRole>Sản xuất</c>  <c.creditName>幻月音乐团 <c.creditSpecial>(Âm nhạc)</c>/芜筝社 <c.creditSpecial>(Thị giác)</c></c>
+
+00:02:04.709 --> 00:02:08.442
+<c.title>Lai Nhật Ỷ Song</c>
+
+00:02:09.000 --> 00:02:14.310
+Gối chăn mượn nhau, tắt ngọn đèn cô
+
+00:02:14.310 --> 00:02:19.650
+Hoa mai cùng ngủ, tiếng gió ngâm trong đêm
+
+00:02:19.650 --> 00:02:24.990
+Bờ sông trong mộng, thuyền về cố viên
+
+00:02:24.990 --> 00:02:30.610
+Tuyết sông đầm đìa quét ngang trường thiên
+
+00:02:30.610 --> 00:02:36.000
+Vó ngựa xa xăm hối lời biệt
+
+00:02:36.000 --> 00:02:41.280
+Lại rót phong tuyết, phấn lệ tay áo che
+
+00:02:41.280 --> 00:02:46.590
+Gối chạm cùng tựa, mặt cùng đỏ
+
+00:02:46.590 --> 00:02:51.730
+Chưa say, chưa say, ngày sau ba nghìn chén
+
+00:02:51.730 --> 00:02:56.980
+Ngâm quá canh ba, đông mái hiên
+
+00:02:56.980 --> 00:03:02.340
+Trang thành tóc hạc, đợi mai tiên
+
+00:03:02.340 --> 00:03:07.560
+Đun trà, tỉ mỉ sắc bọt tuyết
+
+00:03:07.560 --> 00:03:12.990
+Nhụy lạnh hồn băng, hương vương mắt
+
+00:03:12.990 --> 00:03:18.310
+Thăm thẳm thư phong thả tầng mây
+
+00:03:18.310 --> 00:03:23.650
+Viễn khách đưa lại thư năm cũ
+
+00:03:23.650 --> 00:03:28.960
+Xuân phong xuân thảo trên thềm ngọc
+
+00:03:28.960 --> 00:03:34.091
+Lại hỏi ngày sau trước ỷ song
+
+00:03:36.291 --> 00:03:39.724
+<c.creditRole>Lời</c>  <c.creditName>北山薇</c>
+<c.creditRole>Nhạc/Phối khí</c>  <c.creditName>砖厂浪人</c>
+<c.creditRole>Điều giáo</c>  <c.creditName>潜水荷叶/鬼面P</c>
+
+00:03:41.461 --> 00:03:44.857
+<c.creditRole>Mix</c>  <c.creditName>拙木</c>
+<c.creditRole>Họa</c>  <c.creditName>巫烨</c>
+<c.creditRole>Video</c>  <c.creditName>梦游</c>
+
+00:03:46.189 --> 00:03:51.188
+<c.creditRole>Kế hoạch</c>  <c.creditName>花间有鹿来</c>
+<c.creditRole>Giám chế</c>  <c.creditName>莫羡</c>
+<c.creditRole>Sản xuất</c>  <c.creditName>幻月音乐团 <c.creditSpecial>(Âm nhạc)</c>/芜筝社 <c.creditSpecial>(Thị giác)</c></c>

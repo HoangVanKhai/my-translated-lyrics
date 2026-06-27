@@ -1,0 +1,24 @@
+[package]
+name = "play-with-lyrics"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+command-extra.workspace = true
+derive_more.workspace = true
+fuzzy-select.workspace = true
+into-deduped.workspace = true
+into-sorted.workspace = true
+itertools.workspace = true
+lyrics-core.workspace = true
+pipe-trait.workspace = true
+strum.workspace = true
+toml.workspace = true
+
+[dev-dependencies]
+pretty_assertions.workspace = true
+test-utils.workspace = true
+
+[lints]
+workspace = true

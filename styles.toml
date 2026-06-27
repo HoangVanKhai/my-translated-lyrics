@@ -1,0 +1,29 @@
+[credit]
+role = "#AAAA22"
+name = "#AAAAAA"
+special = "#55ABCD"
+
+[voices.LTY]
+color = "#66CCFF"
+
+[voices.lty]
+color = "#66CCFF"
+italic = true
+
+[voices.YZL]
+color = "#EE0000"
+
+[voices.yzl]
+color = "#EE0000"
+italic = true
+
+[voices."Y+L"]
+color = "#9966CC"
+
+[classes.title]
+color = "#FFD966"
+bold = true
+
+[classes.expo]
+color = "#CCCCCC"
+italic = true

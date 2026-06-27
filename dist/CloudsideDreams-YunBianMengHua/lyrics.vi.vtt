@@ -1,0 +1,285 @@
+WEBVTT
+Language: vi
+
+STYLE
+::cue {
+  background-color: transparent;
+  text-shadow: 2px 2px 2px black;
+}
+::cue(c.creditRole) {
+  color: #AAAA22;
+}
+::cue(c.creditName) {
+  color: #AAAAAA;
+}
+::cue(c.creditSpecial) {
+  color: #55ABCD;
+}
+::cue(c.title) {
+  color: #FFD966;
+  font-weight: bold;
+}
+
+00:00:02.240 --> 00:00:10.080
+<c.creditRole>Sáng tác/Chỉ đạo:</c> <c.creditName>拾叁枝鸢尾</c>
+<c.creditRole>Soạn nhạc:</c> <c.creditName>WOVOP</c>
+<c.creditRole>Phối khí/Phối track:</c> <c.creditName>阿落-itHH<c.creditSpecial>【千小莺】</c></c>
+<c.creditRole>Thể hiện:</c> <c.creditName>Luo Tianyi, Yuezheng Ling</c>
+<c.creditRole>Phối nhạc/Xử lý hậu kỳ:</c> <c.creditName>月华P</c>
+<c.creditRole>Chỉnh giọng:</c> <c.creditName>落泠P</c>
+<c.creditRole>Minh họa:</c> <c.creditName>予忆Connect</c>
+<c.creditRole>PV:</c> <c.creditName>AnSekinen</c>
+
+00:00:10.080 --> 00:00:18.000
+<c.title>Vân Biên Mộng Thoại</c>
+<c.creditRole>Điều phối sản xuất âm nhạc:</c> <c.creditName>WOVOP</c>
+
+00:00:18.000 --> 00:00:22.260
+Ngày ấy tôi đã đứng đó, chờ mãi, chờ mãi, đã bao nhiêu năm rồi nhỉ?
+
+00:00:22.260 --> 00:00:25.890
+Thành trò cười cho lữ khách, mấy năm mới gặp một lần.
+
+00:00:25.890 --> 00:00:30.240
+Hoa bên cầu, năm lại năm, nở rồi tàn, đã úa vàng.
+
+00:00:30.240 --> 00:00:34.440
+Chớp mắt đã mấy mươi năm, vệt sáng ấy từ biên mây vụt tắt.
+
+00:00:34.440 --> 00:00:38.010
+Thường giật mình thức giấc giữa đêm thâu,
+
+00:00:38.010 --> 00:00:42.450
+Ngồi ngẩn ngơ trước gương.
+
+00:00:42.450 --> 00:00:46.470
+Nhìn thấy tôi ở đây, mỉm cười,
+
+00:00:46.470 --> 00:00:50.520
+Ẩn mình vào trong bức họa.
+
+00:00:50.520 --> 00:00:53.970
+Người ta thường nói việc đời khó lường,
+
+00:00:53.970 --> 00:00:58.365
+Như màn sương giữa rừng.
+
+00:00:58.365 --> 00:01:02.160
+Thoáng chốc biệt ly ngoại trường kiều,
+
+00:01:02.160 --> 00:01:04.920
+Vậy mà chẳng trở lại.
+
+00:01:04.920 --> 00:01:07.050
+Tiếng nước tí tách, lá rơi xào xạc,
+
+00:01:07.050 --> 00:01:09.420
+Giữa bóng tối, khó phân thật giả.
+
+00:01:09.420 --> 00:01:12.930
+Buông rèm, khuất bóng chiều tà.
+
+00:01:12.930 --> 00:01:15.090
+Bên tảng đá Tam Sinh, ngựa gầy trong gió tây.
+
+00:01:15.090 --> 00:01:17.460
+Dưới sông Vong Xuyên, chìm nổi lênh đênh.
+
+00:01:17.460 --> 00:01:21.000
+Viết về kiếp nào đã từng cầm kiếm rong chơi qua xuân hạ?
+
+00:01:21.000 --> 00:01:23.100
+Mở ngăn kéo, lật tập tranh ra,
+
+00:01:23.100 --> 00:01:25.470
+Kinh thành rực rỡ ánh hoa đăng,
+
+00:01:25.470 --> 00:01:28.920
+Đoán đố, chuốc rượu, lòng thiếu niên tựa biển trời bao la.
+
+00:01:28.920 --> 00:01:31.080
+Thân như bèo dạt, khó phân thật giả.
+
+00:01:31.080 --> 00:01:33.510
+Bước lên đò, liệu có thấy được thời thanh xuân tươi đẹp?
+
+00:01:33.510 --> 00:01:37.650
+Khi gió lên, mỉm cười đón nàng về.
+
+00:01:37.650 --> 00:01:41.010
+Liệu áng mây kia có thể thay ta đi tương phùng?
+
+00:01:41.010 --> 00:01:43.170
+Nguyện lòng ta theo dòng Lạc Thủy,
+
+00:01:43.170 --> 00:01:44.970
+Mà bờ bên kia chẳng thấy bóng người.
+
+00:01:44.970 --> 00:01:46.830
+Còn vương vấn gì non sông xã tắc?
+
+00:01:46.830 --> 00:01:48.990
+Khó mà được kề bên.
+
+00:01:48.990 --> 00:01:51.060
+Mối duyên này nguyện tạc vào thanh thạch,
+
+00:01:51.060 --> 00:01:52.950
+Hẹn ước ba đời chẳng đổi thay.
+
+00:01:52.950 --> 00:01:54.840
+Xin người đừng nhung nhớ khổ đau,
+
+00:01:54.840 --> 00:01:56.910
+Hãy để mặc ý trời.
+
+00:01:56.910 --> 00:01:59.070
+Ngắm nhìn người thương trong tranh,
+
+00:01:59.070 --> 00:02:01.080
+Gần trong gang tấc.
+
+00:02:01.080 --> 00:02:02.850
+Chẳng thấy cây sáo trên tay,
+
+00:02:02.850 --> 00:02:05.070
+Lấy chi tỏ tấc lòng?
+
+00:02:05.070 --> 00:02:07.110
+Giọt lệ ngọc nhẹ thấm phấn hồng,
+
+00:02:07.110 --> 00:02:09.030
+Ngón tay chậm rãi đặt quân cờ.
+
+00:02:09.030 --> 00:02:10.800
+Thương thay trúc đình trong viện,
+
+00:02:10.800 --> 00:02:14.080
+Đã quá quen với cảnh biệt ly.
+
+00:02:14.947 --> 00:02:22.247
+<c.creditRole>Sáng tác/Chỉ đạo:</c> <c.creditName>拾叁枝鸢尾</c>
+<c.creditRole>Soạn nhạc:</c> <c.creditName>WOVOP</c>
+<c.creditRole>Phối khí/Phối track:</c> <c.creditName>阿落-itHH<c.creditSpecial>【千小莺】</c></c>
+<c.creditRole>Thể hiện:</c> <c.creditName>Luo Tianyi, Yuezheng Ling</c>
+<c.creditRole>Phối nhạc/Xử lý hậu kỳ:</c> <c.creditName>月华P</c>
+<c.creditRole>Chỉnh giọng:</c> <c.creditName>落泠P</c>
+<c.creditRole>Minh họa:</c> <c.creditName>予忆Connect</c>
+<c.creditRole>PV:</c> <c.creditName>AnSekinen</c>
+
+00:02:22.247 --> 00:02:29.368
+<c.title>Vân Biên Mộng Thoại</c>
+<c.creditRole>Điều phối sản xuất âm nhạc:</c> <c.creditName>WOVOP</c>
+
+00:02:29.368 --> 00:02:33.510
+Bên cầu thanh thạch sáo trỗi, ngỡ cố nhân quay về.
+
+00:02:33.510 --> 00:02:37.500
+Trăng lên đầu liễu, trăm nhà treo đèn đợi người giải đố.
+
+00:02:37.500 --> 00:02:41.460
+Lợi kiếm phá không, tiếng trống dồn, ánh bạc lạnh soi trên giáp sắt.
+
+00:02:41.460 --> 00:02:45.570
+Trong khuê phòng lật sách, nào hay sáo trúc đã vùi sâu.
+
+00:02:45.570 --> 00:02:49.500
+Còn nhớ thuở nhỏ giữa đồng, mò dây, hái dưa.
+
+00:02:49.500 --> 00:02:53.520
+Tâm sự cô gái, lặng thầm chẳng nói, e ấp tựa đóa hoa.
+
+00:02:53.520 --> 00:02:57.480
+Đầu đường cuối ngõ, bóng đạo sĩ ngồi kể chuyện nhân gian.
+
+00:02:57.480 --> 00:03:01.530
+"Xin tiên sinh xem cho một quẻ."
+
+00:03:01.530 --> 00:03:05.580
+Mũ phượng khăn điều, chỉ tay ấy tựa như đôi cánh chim trời.
+
+00:03:05.580 --> 00:03:09.450
+Ngồi trước gương trang điểm, cài trâm vàng, khoác áo gấm ngọc.
+
+00:03:09.450 --> 00:03:13.440
+Nhìn nhau mỉm cười, người trong khúc có thấu ý tâm giao?
+
+00:03:13.440 --> 00:03:17.370
+Một giấc mộng xuân thu, hái đậu đỏ, chỉ muốn gửi về cho người.
+
+00:03:17.370 --> 00:03:21.810
+Lúc rạng đông mưa, người xa xứ từ giã lớp áo xưa.
+
+00:03:21.810 --> 00:03:25.557
+Nến sáng cháy dài cho kẻ viễn du, ngàn dặm lại thấy ai?
+
+00:03:25.557 --> 00:03:29.719
+Ngân Hà quấn quýt, dáng hao gầy, trường hận này bao giờ mới nguôi?
+
+00:03:29.719 --> 00:03:33.060
+Chẳng muốn gặp lại, tựa khói tựa tro.
+
+00:03:33.060 --> 00:03:35.130
+Nguyện lòng ta theo dòng Lạc Thủy,
+
+00:03:35.130 --> 00:03:36.960
+Để bên bờ được thấy em.
+
+00:03:36.960 --> 00:03:38.820
+Trong khoảnh khắc non sông xã tắc này,
+
+00:03:38.820 --> 00:03:41.010
+Nam Bắc nương tựa nhau.
+
+00:03:41.010 --> 00:03:43.110
+Mối duyên này nguyện tạc vào thanh thạch,
+
+00:03:43.110 --> 00:03:45.000
+Lấy lúc duyên tận làm kỳ hẹn.
+
+00:03:45.000 --> 00:03:46.770
+Xin người đừng truy hoài ký ức,
+
+00:03:46.770 --> 00:03:48.990
+Hãy vui hưởng ý trời này.
+
+00:03:48.990 --> 00:03:51.120
+Tay trong tay với người thương trong tranh,
+
+00:03:51.120 --> 00:03:53.010
+Lạy tạ đất trời lần nữa.
+
+00:03:53.010 --> 00:03:54.780
+Chẳng màng chi trường sinh bất tử,
+
+00:03:54.780 --> 00:03:56.970
+Nguyện bên nhau chẳng lìa xa.
+
+00:03:56.970 --> 00:03:59.100
+Đường xa gặp Mạnh Khương, nhìn nhau bùi ngùi,
+
+00:03:59.100 --> 00:04:01.050
+Tạ lỗi cùng người.
+
+00:04:01.050 --> 00:04:02.820
+Chỉ mong đến lúc tái ngộ,
+
+00:04:02.820 --> 00:04:04.940
+Lại cùng nhau dạo khắp đất trời.
+
+00:04:04.940 --> 00:04:07.440
+Lại cùng nhau dạo khắp đất trời.
+
+00:04:14.498 --> 00:04:24.001
+<c.creditRole>Sáng tác/Chỉ đạo:</c> <c.creditName>拾叁枝鸢尾</c>
+<c.creditRole>Soạn nhạc:</c> <c.creditName>WOVOP</c>
+<c.creditRole>Phối khí/Phối track:</c> <c.creditName>阿落-itHH<c.creditSpecial>【千小莺】</c></c>
+<c.creditRole>Thể hiện:</c> <c.creditName>Luo Tianyi, Yuezheng Ling</c>
+<c.creditRole>Phối nhạc/Xử lý hậu kỳ:</c> <c.creditName>月华P</c>
+<c.creditRole>Chỉnh giọng:</c> <c.creditName>落泠P</c>
+<c.creditRole>Minh họa:</c> <c.creditName>予忆Connect</c>
+<c.creditRole>PV:</c> <c.creditName>AnSekinen</c>
+
+00:04:24.001 --> 00:04:31.794
+<c.title>Vân Biên Mộng Thoại</c>
+<c.creditRole>Điều phối sản xuất âm nhạc:</c> <c.creditName>WOVOP</c>
