@@ -82,8 +82,8 @@ where
 
     /// Replaces the whole query and refilters. Used to restore a previous
     /// search; the cursor returns to the top, as after any refilter.
-    pub fn set_query(&mut self, query: &str) {
-        self.query = query.to_string();
+    pub fn set_query(&mut self, query: impl Into<String>) {
+        self.query = query.into();
         self.refilter();
     }
 

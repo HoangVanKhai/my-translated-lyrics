@@ -1,8 +1,7 @@
 use super::{ColumnSort, Direction};
+use Direction::{Ascending, Descending};
 use core::cmp::Ordering;
 use pretty_assertions::assert_eq;
-
-use Direction::{Ascending, Descending};
 
 /// Clicking promotes a column, inverts the leading one, and keeps the demoted
 /// columns' order and directions, following the worked example.

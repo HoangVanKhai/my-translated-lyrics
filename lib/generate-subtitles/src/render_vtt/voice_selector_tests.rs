@@ -3,8 +3,8 @@ use lyrics_core::line_markers_descriptor::VoiceName;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 
-fn sample_voice_name(text: &str) -> VoiceName {
-    text.to_string()
+fn sample_voice_name(text: impl Into<String>) -> VoiceName {
+    text.into()
         .pipe(VoiceName::new)
         .expect("test fixture passes the voice-name validator")
 }

@@ -308,7 +308,7 @@ fn rejects_angle_bracket_in_continuation_line() {
 
 /// A line such as `00:00.000 <v>foo</v>` has no `:` separator,
 /// so without the reserved-character check running before
-/// `split_marker` the error would surface as `MissingMarker`
+/// `split_marker` the error would surface as [`MissingMarker`]
 /// even though the real problem is the angle brackets. Verify
 /// that the more specific diagnostic wins here.
 #[test]
@@ -455,7 +455,7 @@ fn rejects_repeated_timestamp_for_consecutive_cue_lines() {
 
 /// 12 spaces is neither the column-10 shorthand indent nor the
 /// 15-space continuation indent that `cre: ` expects, so the
-/// parser raises `MalformedIndentation` with both expected
+/// parser raises [`MalformedIndentation`] with both expected
 /// widths in the diagnostic.
 #[test]
 fn rejects_malformed_indentation_between_recognized_widths() {
@@ -478,7 +478,7 @@ fn rejects_malformed_indentation_between_recognized_widths() {
 /// The first non-blank, non-comment line at column zero is
 /// expected to open a cue or fire a control event; without a
 /// leading `MM:SS.mmm` shape the parser surfaces the dedicated
-/// `MalformedHeader` diagnostic.
+/// [`MalformedHeader`] diagnostic.
 #[test]
 fn rejects_malformed_header_when_column_zero_line_has_no_timestamp() {
     let input = "no timestamp here\n";
@@ -514,7 +514,7 @@ fn allows_eov_to_share_a_timestamp_with_the_preceding_clr() {
 /// yields the empty string. The empty body has no `:` and no
 /// marker, so `parse_marker_part` falls into the
 /// `split_marker(body) -> None` branch and raises
-/// `MissingMarker { content: "" }`. The dedicated `EmptyCueBody`
+/// `MissingMarker { content: "" }`. The dedicated [`EmptyCueBody`]
 /// variant cannot apply here because it carries the marker
 /// name, and a whitespace-only body has none. Lock the current
 /// outcome so a future reader does not assume the diagnostic

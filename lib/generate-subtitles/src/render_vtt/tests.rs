@@ -23,9 +23,9 @@ fn markers_with_credit_trigger() -> LineMarkersDesc {
     }
 }
 
-fn color(value: &str) -> Color {
+fn color(value: impl Into<String>) -> Color {
     value
-        .to_string()
+        .into()
         .pipe(Color::new)
         .expect("test fixture passes the color validator")
 }

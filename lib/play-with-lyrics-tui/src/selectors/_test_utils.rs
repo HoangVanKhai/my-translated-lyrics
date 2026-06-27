@@ -13,14 +13,14 @@ use test_utils::video_desc;
 
 /// A video with both an English and a Vietnamese title, so the table can be
 /// sorted by either column to a different order.
-pub(super) fn bilingual_video(english: &str, vietnamese: &str) -> Video {
+pub(super) fn bilingual_video(english: &str, vietnamese: impl Into<String>) -> Video {
     Video {
         desc: VideoDesc {
             collection: "Touhou Hero of Ice Fairy".to_string().try_into().unwrap(),
             video_title: english.to_string().try_into().unwrap(),
             song_titles: HashMap::from([
                 (Language::English, english.to_string()),
-                (Language::Vietnamese, vietnamese.to_string()),
+                (Language::Vietnamese, vietnamese.into()),
             ]),
             visibility: Visibility::Visible,
         },

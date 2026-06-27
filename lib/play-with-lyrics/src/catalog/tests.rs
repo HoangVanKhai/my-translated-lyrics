@@ -16,7 +16,7 @@ fn add_video(source: &Path, dir_name: &str, video_title: &str) {
     write_file(video_dir.join(VIDEO_CONFIG_FILE_NAME), contents).unwrap();
 }
 
-/// `load` reads every descriptor and returns the videos ordered by title. The
+/// [`load`] reads every descriptor and returns the videos ordered by title. The
 /// descriptors here carry no English title, so the order falls back to the raw
 /// video title.
 #[test]

@@ -178,10 +178,14 @@ impl InstallLocalLyricsEnv {
     }
 }
 
-pub fn video_desc(collection_name: &str, video_title: &str, visibility: Visibility) -> VideoDesc {
+pub fn video_desc(
+    collection_name: impl Into<String>,
+    video_title: impl Into<String>,
+    visibility: Visibility,
+) -> VideoDesc {
     VideoDesc {
-        collection: collection_name.to_string().try_into().unwrap(),
-        video_title: video_title.to_string().try_into().unwrap(),
+        collection: collection_name.into().try_into().unwrap(),
+        video_title: video_title.into().try_into().unwrap(),
         song_titles: hashmap! {
             Language::Vietnamese => "test".to_string(),
             Language::Chinese => "test".to_string(),
