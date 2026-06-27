@@ -49,7 +49,7 @@ where
     Sys: ReadEvent + WindowSize + Clock,
 {
     let mut selector = Selector::new(videos);
-    selector.set_query(query);
+    selector.set_query(query.clone());
     // The table sorts by English title first, then Vietnamese, then Chinese.
     // Clicking a column header changes the priority and direction.
     let mut sort = ColumnSort::new([Language::English, Language::Vietnamese, Language::Chinese]);

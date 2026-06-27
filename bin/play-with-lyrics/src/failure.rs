@@ -3,7 +3,7 @@
 //! [`Failure`] holds genuine errors, each carried by its own struct.
 //! [`Termination`] is the wider set of non-success stops: a failure, a user
 //! cancellation, or the player's own non-zero exit. `run` returns a
-//! `Termination`, and the `error: ` prefix is added once, on
+//! [`Termination`], and the `error: ` prefix is added once, on
 //! [`Termination::Failed`].
 
 use derive_more::Display;

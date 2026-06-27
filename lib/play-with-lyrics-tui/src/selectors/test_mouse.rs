@@ -184,7 +184,7 @@ fn select_video_scroll_up_moves_the_cursor() {
             standard_size()
         }
     }
-    let videos = vec![video("Alpha"), video("Beta")];
+    let videos = vec![video("Alpha".to_owned()), video("Beta".to_owned())];
     // Start on the second row; a hover only highlights, then a wheel-up returns
     // the cursor to the first row, which Enter selects.
     EVENTS
@@ -421,9 +421,9 @@ fn a_sort_between_clicks_is_not_a_double_click() {
         }
     }
     let videos = vec![
-        bilingual_video("Alpha", "Zulu"),
-        bilingual_video("Bravo", "Yankee"),
-        bilingual_video("Charlie", "Xray"),
+        bilingual_video("Alpha", "Zulu".to_owned()),
+        bilingual_video("Bravo", "Yankee".to_owned()),
+        bilingual_video("Charlie", "Xray".to_owned()),
     ];
     EVENTS.lock().unwrap().extend([
         click(3),
@@ -491,9 +491,9 @@ fn clicking_a_column_header_re_sorts_by_that_column() {
         }
     }
     let videos = vec![
-        bilingual_video("Alpha", "Zulu"),
-        bilingual_video("Bravo", "Yankee"),
-        bilingual_video("Charlie", "Xray"),
+        bilingual_video("Alpha", "Zulu".to_owned()),
+        bilingual_video("Bravo", "Yankee".to_owned()),
+        bilingual_video("Charlie", "Xray".to_owned()),
     ];
     // The default English sort shows Alpha, Bravo, Charlie. Column 30 on the
     // header row falls on the Vietnamese header; clicking it sorts by

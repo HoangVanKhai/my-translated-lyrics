@@ -28,7 +28,7 @@ pub const TIMESTAMP_STR_LEN: usize = 9;
 /// implementation detail; callers compose and destructure via the
 /// minute / second / millisecond API surface.
 ///
-/// The type carries an upper bound: every `Timestamp` represents a
+/// The type carries an upper bound: every [`Timestamp`] represents a
 /// point strictly earlier than `01:00:00.000`, i.e. less than one
 /// hour from video start. The `MM:SS.mmm` source format does not
 /// have an hour field, and no song in this repository is long
@@ -48,7 +48,7 @@ pub const TIMESTAMP_STR_LEN: usize = 9;
 pub struct Timestamp(u64);
 
 impl Timestamp {
-    /// Composes a `Timestamp` total from minutes, seconds, and
+    /// Composes a [`Timestamp`] total from minutes, seconds, and
     /// milliseconds components. The result is
     /// `minutes * MILLISECONDS_PER_MINUTE + seconds * MILLISECONDS_PER_SECOND + milliseconds`,
     /// so this constructor doubles as a single-unit conversion:
@@ -58,7 +58,7 @@ impl Timestamp {
     ///
     /// Individual components are not range-checked; the constructor
     /// only validates the composed total. `new(0, 120, 0)` is
-    /// accepted and yields the same `Timestamp` as `new(2, 0, 0)`.
+    /// accepted and yields the same [`Timestamp`] as `new(2, 0, 0)`.
     /// `None` is returned for two distinct reasons: when the
     /// weighted total reaches or exceeds one hour (the cap
     /// invariant), and when any intermediate `u64` multiplication
@@ -66,7 +66,7 @@ impl Timestamp {
     /// silently wrap in release builds and the wrapped value
     /// could happen to land below the cap, so the constructor
     /// uses checked arithmetic and propagates the overflow as
-    /// `None` rather than risking a stray valid `Timestamp` from
+    /// `None` rather than risking a stray valid [`Timestamp`] from
     /// nonsense input. Callers that need the strict `MM < 60` /
     /// `SS < 60` / `mmm < 1_000` component ranges of the
     /// `MM:SS.mmm` source format must perform those checks before
@@ -80,7 +80,7 @@ impl Timestamp {
     }
 
     /// Consumes a leading `MM:SS.mmm` prefix (9 ASCII characters)
-    /// from `input` and returns the parsed `Timestamp` along with the
+    /// from `input` and returns the parsed [`Timestamp`] along with the
     /// unconsumed tail. Follows the parse-don't-validate pattern:
     ///
     /// - `Ok((ts, tail))` indicates the prefix matched the shape and
@@ -93,7 +93,7 @@ impl Timestamp {
     ///   here" and route the line elsewhere.
     /// - `Err(TakeTimestampError::MinutesOutOfRange { ... })` indicates
     ///   the prefix has timestamp shape but the minutes component
-    ///   reaches or exceeds 60. `Timestamp` caps at one hour, so a
+    ///   reaches or exceeds 60. [`Timestamp`] caps at one hour, so a
     ///   two-digit `MM` field of 60 or more is rejected rather than
     ///   rolled over.
     /// - `Err(TakeTimestampError::SecondsOutOfRange { ... })` indicates
@@ -200,7 +200,7 @@ impl fmt::Debug for Timestamp {
 
 /// Thin wrapper around [`Timestamp`] that renders in the SubRip
 /// `HH:MM:SS,mmm` format. Construction and extraction go through
-/// `From`/`Into`; the inner `Timestamp` is not exposed directly so
+/// `From`/`Into`; the inner [`Timestamp`] is not exposed directly so
 /// that every call site is a named conversion rather than a
 /// positional tuple access.
 #[derive(Display, Clone, Copy, From, Into)]
@@ -300,7 +300,7 @@ impl FromStr for Timestamp {
 /// describes ways an `MM:SS.mmm` string fails to denote a valid
 /// timestamp value (used by any future `FromStr`-style parser),
 /// while [`TakeTimestampError`] describes ways the `take` combinator
-/// fails to produce a `Timestamp` from the start of its input.
+/// fails to produce a [`Timestamp`] from the start of its input.
 #[derive(Debug, Display, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum TakeTimestampError {

@@ -42,7 +42,11 @@ impl Env {
     pub fn add_video(&self) {
         let video_dir = self.source.join("ExampleSong");
         create_dir_all(&video_dir).unwrap();
-        let descriptor = video_desc(COLLECTION, VIDEO_TITLE, Visibility::Visible);
+        let descriptor = video_desc(
+            COLLECTION.to_owned(),
+            VIDEO_TITLE.to_owned(),
+            Visibility::Visible,
+        );
         let contents = toml::to_string(&descriptor).unwrap();
         write_file(video_dir.join("video.toml"), contents).unwrap();
     }
