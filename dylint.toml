@@ -4,7 +4,13 @@ libraries = [
 ]
 
 [perfectionist]
-enable = ["unordered_derives", "import_grouping_mismatch"]
+enable = ["import_grouping_mismatch", "unordered_derives"]
+
+["perfectionist::import_grouping_mismatch"]
+style = "single_block"
+
+["perfectionist::impure_macro_arguments"]
+extra_pure_methods = ["is_file"]
 
 ["perfectionist::unordered_derives"]
 style = "prefix_then_alphabetical"
@@ -22,9 +28,3 @@ prefix = [
   "Sum", "Product",
   "LowerHex", "UpperHex", "Octal",
 ]
-
-["perfectionist::import_grouping_mismatch"]
-style = "single_block"
-
-["perfectionist::impure_macro_arguments"]
-extra_pure_methods = ["is_file"]
