@@ -11,7 +11,11 @@ fn installs_subtitles_to_separated_and_unified_collections() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
     let collection_name = "Feng Ling Yu Xiu";
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
-    let desc = video_desc(collection_name, video_title, Visibility::default());
+    let desc = video_desc(
+        collection_name.to_owned(),
+        video_title.to_owned(),
+        Visibility::default(),
+    );
     let srt_content = text_block_fnl! {
         "1"
         "00:00:01,000 --> 00:00:02,000"
@@ -88,7 +92,11 @@ fn dry_run_does_not_install_subtitles() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
     let collection_name = "Feng Ling Yu Xiu";
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
-    let desc = video_desc(collection_name, video_title, Visibility::default());
+    let desc = video_desc(
+        collection_name.to_owned(),
+        video_title.to_owned(),
+        Visibility::default(),
+    );
     env.add_source_entry(
         "ExampleSong",
         &desc,
@@ -131,8 +139,8 @@ fn dry_run_does_not_install_subtitles() {
 fn skips_up_to_date_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
     let desc = video_desc(
-        "Feng Ling Yu Xiu",
-        "【示例表演者】《示例歌曲》Example Song [ExampleID]",
+        "Feng Ling Yu Xiu".to_owned(),
+        "【示例表演者】《示例歌曲》Example Song [ExampleID]".to_owned(),
         Visibility::default(),
     );
     env.add_source_entry(
@@ -162,7 +170,11 @@ fn updates_modified_source_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
     let collection_name = "Feng Ling Yu Xiu";
     let video_title = "【示例表演者】示例歌(Example Song)——“示例歌词”【示例标签】 [ExampleID]";
-    let desc = video_desc(collection_name, video_title, Visibility::default());
+    let desc = video_desc(
+        collection_name.to_owned(),
+        video_title.to_owned(),
+        Visibility::default(),
+    );
     let original = text_block_fnl! {
         "1"
         "00:00:01,000 --> 00:00:02,000"
@@ -225,7 +237,11 @@ fn dry_run_does_not_update_modified_source_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
     let collection_name = "Feng Ling Yu Xiu";
     let video_title = "【示例表演者】示例歌(Example Song)——“示例歌词”【示例标签】 [ExampleID]";
-    let desc = video_desc(collection_name, video_title, Visibility::default());
+    let desc = video_desc(
+        collection_name.to_owned(),
+        video_title.to_owned(),
+        Visibility::default(),
+    );
     let original = text_block_fnl! {
         "1"
         "00:00:01,000 --> 00:00:02,000"

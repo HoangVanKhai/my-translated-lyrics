@@ -23,9 +23,8 @@ fn markers_with_credit_trigger() -> LineMarkersDesc {
     }
 }
 
-fn color(value: &str) -> Color {
+fn color(value: String) -> Color {
     value
-        .to_string()
         .pipe(Color::new)
         .expect("test fixture passes the color validator")
 }
@@ -33,13 +32,13 @@ fn color(value: &str) -> Color {
 fn test_palette() -> StylePalette {
     StylePalette {
         credit: CreditPalette {
-            role: color("#AAAA22"),
-            name: color("#AAAAAA"),
-            special: color("#55ABCD"),
+            role: color("#AAAA22".to_owned()),
+            name: color("#AAAAAA".to_owned()),
+            special: color("#55ABCD".to_owned()),
         },
         voices: btreemap! {
             "vca".to_string() => Style {
-                color: Some(color("#66CCFF")),
+                color: Some(color("#66CCFF".to_owned())),
                 italic: false,
                 bold: false,
             },

@@ -30,7 +30,7 @@ fn select_video_filters_then_selects() {
             standard_size()
         }
     }
-    let videos = vec![video("Alpha"), video("Beta")];
+    let videos = vec![video("Alpha".to_owned()), video("Beta".to_owned())];
     // Type "beta" so only the second row matches, then select it.
     EVENTS.lock().unwrap().extend([
         press(KeyCode::Char('b')),
@@ -64,7 +64,7 @@ fn select_video_quits_on_ctrl_c() {
             standard_size()
         }
     }
-    let videos = vec![video("Alpha"), video("Beta")];
+    let videos = vec![video("Alpha".to_owned()), video("Beta".to_owned())];
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('c'))]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
@@ -91,7 +91,7 @@ fn select_video_moves_up_with_the_arrow_key() {
             standard_size()
         }
     }
-    let videos = vec![video("Alpha"), video("Beta")];
+    let videos = vec![video("Alpha".to_owned()), video("Beta".to_owned())];
     // Start on the second row, move up to the first, then select it.
     EVENTS
         .lock()
@@ -124,7 +124,7 @@ fn select_video_enter_without_a_match_reads_on() {
             standard_size()
         }
     }
-    let videos = vec![video("Alpha"), video("Beta")];
+    let videos = vec![video("Alpha".to_owned()), video("Beta".to_owned())];
     // "zzz" matches no title, so Enter has nothing to confirm; Escape then quits.
     EVENTS.lock().unwrap().extend([
         press(KeyCode::Char('z')),
@@ -159,7 +159,7 @@ fn select_video_ignores_unhandled_keys_and_other_events() {
             standard_size()
         }
     }
-    let videos = vec![video("Alpha"), video("Beta")];
+    let videos = vec![video("Alpha".to_owned()), video("Beta".to_owned())];
     // Left is not bound on the table, a resize only changes the layout, and a
     // focus change is unrelated to the selection.
     EVENTS.lock().unwrap().extend([
@@ -193,7 +193,7 @@ fn select_video_backspace_widens_the_query() {
             standard_size()
         }
     }
-    let videos = vec![video("Alpha"), video("Beta")];
+    let videos = vec![video("Alpha".to_owned()), video("Beta".to_owned())];
     // "bz" matches nothing; deleting the "z" leaves "b", which matches Beta.
     EVENTS.lock().unwrap().extend([
         press(KeyCode::Char('b')),
@@ -226,7 +226,7 @@ fn select_video_cancels_on_escape() {
             standard_size()
         }
     }
-    let videos = vec![video("Alpha")];
+    let videos = vec![video("Alpha".to_owned())];
     EVENTS.lock().unwrap().extend([press(KeyCode::Esc)]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
@@ -253,7 +253,7 @@ fn select_video_quits_on_ctrl_q() {
             standard_size()
         }
     }
-    let videos = vec![video("Alpha")];
+    let videos = vec![video("Alpha".to_owned())];
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
@@ -281,7 +281,7 @@ fn select_video_quits_on_ctrl_q_upper_case() {
             standard_size()
         }
     }
-    let videos = vec![video("Alpha")];
+    let videos = vec![video("Alpha".to_owned())];
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('Q'))]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
@@ -309,7 +309,7 @@ fn select_video_treats_a_bare_q_as_a_filter_character() {
             standard_size()
         }
     }
-    let videos = vec![video("Quartz"), video("Beta")];
+    let videos = vec![video("Quartz".to_owned()), video("Beta".to_owned())];
     // "q" filters down to the only title that contains it, then Enter picks
     // it; the loop does not treat the "q" as a quit.
     EVENTS
@@ -342,7 +342,7 @@ fn select_video_ctrl_backspace_goes_back() {
             standard_size()
         }
     }
-    let videos = vec![video("Alpha")];
+    let videos = vec![video("Alpha".to_owned())];
     EVENTS.lock().unwrap().extend([control(KeyCode::Backspace)]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
@@ -370,7 +370,7 @@ fn select_video_plain_backspace_does_not_go_back() {
             standard_size()
         }
     }
-    let videos = vec![video("Alpha")];
+    let videos = vec![video("Alpha".to_owned())];
     // Backspace on the empty box is a no-op; only the following quit ends it.
     EVENTS
         .lock()

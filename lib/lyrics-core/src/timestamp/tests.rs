@@ -64,10 +64,10 @@ fn vtt_time_uses_dot() {
     );
 }
 
-/// The display impl for `Timestamp` formats two ASCII digits, a
+/// The display impl for [`Timestamp`] formats two ASCII digits, a
 /// colon, two ASCII digits, a dot, and three ASCII digits, so
 /// every cap-respecting value renders to exactly
-/// `TIMESTAMP_STR_LEN` bytes. Lock that invariant at both
+/// [`TIMESTAMP_STR_LEN`] bytes. Lock that invariant at both
 /// ends of the legal range plus one mid-range value, so a future
 /// tweak to the format string trips here before any caller that
 /// slices on the constant produces silent UTF-8 panics.
@@ -83,7 +83,7 @@ fn rendered_length_matches_timestamp_str_len() {
     }
 }
 
-/// `Timestamp` is capped at one hour, so the largest value the
+/// [`Timestamp`] is capped at one hour, so the largest value the
 /// constructor accepts is 59:59.999. The SRT and VTT wrappers
 /// still emit `HH:MM:SS`, but the hour field at that value is
 /// always `00`.

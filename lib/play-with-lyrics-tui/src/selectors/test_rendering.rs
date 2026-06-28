@@ -37,7 +37,7 @@ fn select_video_header_shows_native_language_names() {
             Ok((80, 24))
         }
     }
-    let videos = vec![video("Alpha")];
+    let videos = vec![video("Alpha".to_owned())];
     // Quit right after the first frame is drawn.
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let mut buffer = Vec::new();
@@ -71,7 +71,7 @@ fn select_video_header_truncates_in_a_narrow_terminal() {
             Ok((24, 24))
         }
     }
-    let videos = vec![video("Alpha")];
+    let videos = vec![video("Alpha".to_owned())];
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let mut buffer = Vec::new();
     select_video_loop::<Scripted>(&mut buffer, &videos, &mut String::new(), None).unwrap();
@@ -143,7 +143,7 @@ fn select_video_renders_with_a_fallback_size_when_size_is_unavailable() {
             Err(io::Error::other("the terminal size is unavailable"))
         }
     }
-    let videos = vec![video("Alpha")];
+    let videos = vec![video("Alpha".to_owned())];
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let mut buffer = Vec::new();
     select_video_loop::<Scripted>(&mut buffer, &videos, &mut String::new(), None).unwrap();

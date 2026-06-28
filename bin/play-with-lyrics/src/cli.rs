@@ -12,12 +12,12 @@ use std::path::PathBuf;
 #[derive(Debug, Parser)]
 #[clap(about = "Play a local video with its translated subtitle")]
 pub(crate) struct Args {
-    /// Source directory of per-video `video.toml` descriptors, in the same
-    /// layout `install-local-lyrics` reads.
+    /// Source directory of per-video video.toml descriptors, in the same
+    /// layout install-local-lyrics reads.
     pub(crate) source: PathBuf,
 
     /// Media library directory holding the video files and the installed
-    /// subtitles, the same directory `install-local-lyrics` writes to.
+    /// subtitles, the same directory install-local-lyrics writes to.
     pub(crate) target: PathBuf,
 
     /// Pre-select the video by fuzzily matching its English, Vietnamese,
