@@ -55,7 +55,7 @@ impl From<PlayerArg> for Player {
 }
 
 /// The subtitle language chosen on the command line. The variants mirror
-/// the subtitle language type. On the command line the two-letter codes are the canonical
+/// [`Language`]. On the command line the two-letter codes are the canonical
 /// values, with the three-letter codes and the full names as aliases.
 #[derive(Debug, Clone, Copy, ValueEnum)]
 pub(crate) enum LanguageArg {
@@ -78,7 +78,7 @@ impl From<LanguageArg> for Language {
 }
 
 /// The subtitle format chosen on the command line. The variants mirror
-/// the subtitle format type. On the command line the file extensions are the
+/// [`SubtitleFormat`]. On the command line the file extensions are the
 /// canonical values, with the full format names as aliases.
 #[derive(Debug, Clone, Copy, ValueEnum)]
 pub(crate) enum FormatArg {

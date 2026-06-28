@@ -10,8 +10,9 @@ mod list;
 mod video;
 
 pub use list::select_one;
-use terminal_screen::Style;
 pub use video::select_video;
+
+use terminal_screen::Style;
 
 /// The base style for a selectable row at screen `row`: reverse video when it
 /// is the current selection, with bold added when the pointer hovers over it.
