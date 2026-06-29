@@ -8,7 +8,7 @@ enable = ["import_grouping_mismatch", "unordered_derives"]
 
 ["perfectionist::import_grouping_mismatch"]
 style = "single_block"
-reexports = "grouped"
+reexports = "split"
 
 ["perfectionist::impure_macro_arguments"]
 extra_pure_methods = ["is_file"]
