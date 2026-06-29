@@ -1,13 +1,21 @@
 [workspace.metadata.dylint]
 libraries = [
-  { git = "https://github.com/KSXGitHub/perfectionist", tag = "0.0.0-rc.20" },
+  { git = "https://github.com/KSXGitHub/perfectionist", tag = "0.0.0-rc.21" },
 ]
 
 [perfectionist]
 enable = ["import_grouping_mismatch", "unordered_derives"]
 
+# This crate keeps every module's `use` statements in one contiguous block.
+# The `reexports` knob became mandatory in rc.21, replacing the old
+# `separate_reexports` boolean. `grouped` reproduces the previous default
+# (`separate_reexports = true`): every `pub` re-export forms one leading
+# block above the private imports. Every re-export in this workspace lifts an
+# item out of a submodule, so the new `split` mode (submodule re-exports
+# above alias re-exports) would behave identically here.
 ["perfectionist::import_grouping_mismatch"]
 style = "single_block"
+reexports = "grouped"
 
 ["perfectionist::impure_macro_arguments"]
 extra_pure_methods = ["is_file"]
