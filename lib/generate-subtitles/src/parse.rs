@@ -32,7 +32,7 @@ const TIMESTAMP_PREFIX_WIDTH: usize = TIMESTAMP_STR_LEN + 1;
 /// Each part carries its own marker and text; the renderer emits
 /// the parts as a single subtitle block whose body has one line
 /// per part.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SubtitleCue {
     /// Timestamp at which the cue begins to display. Read directly
     /// from the `MM:SS.mmm` prefix on the cue-opening line.
@@ -48,7 +48,7 @@ pub struct SubtitleCue {
 }
 
 /// One marker-text pair within a [`SubtitleCue`].
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CuePart {
     /// The leading marker token that the cue-opening line declared, for
     /// example `ttl` in `ttl: 《Song》`.
@@ -65,7 +65,7 @@ pub struct CuePart {
 /// group with one part, a column-[`TIMESTAMP_PREFIX_WIDTH`] shorthand
 /// line appends a new part to that group, and a continuation line
 /// extends the most recent part's text.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 struct CueGroup {
     start: Timestamp,
     parts: Vec<CuePart>,
@@ -73,7 +73,7 @@ struct CueGroup {
 
 /// An intermediate event extracted from a source file before end times
 /// are resolved.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 enum Event {
     Cue(CueGroup),
     Clear(Timestamp),

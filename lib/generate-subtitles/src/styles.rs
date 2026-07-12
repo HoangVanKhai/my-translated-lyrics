@@ -21,7 +21,7 @@ use std::collections::BTreeMap;
 pub const STYLE_PALETTE_FILE_NAME: &str = "styles.toml";
 
 /// The full presentation palette, deserialized from `styles.toml`.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct StylePalette {
     /// Colors for the three built-in credit classes.
@@ -60,7 +60,7 @@ impl StylePalette {
 
 /// Colors for the three built-in credit classes. Unlike voice and class
 /// styles, credit cells are color-only and carry no decoration.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct CreditPalette {
     /// Color used for the role cell of every credit line.
@@ -73,7 +73,7 @@ pub struct CreditPalette {
 }
 
 /// Presentation attributes applied to a run of cue text.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Style {
     /// CSS color value, such as `"#FFD966"` or `"white"`.
@@ -102,7 +102,7 @@ impl Style {
 
 /// A CSS color value that is safe to interpolate into a `color: {...};`
 /// declaration and a `<font color="{...}">` attribute without escaping.
-#[derive(Debug, Display, Clone, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Display, Eq, PartialEq)]
 #[serde(try_from = "String")]
 pub struct Color(String);
 
@@ -149,7 +149,7 @@ fn is_forbidden_color_char(ch: char) -> bool {
     ) || ch.is_control()
 }
 
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum InvalidColor {
     #[display("color must not be empty")]
@@ -163,7 +163,7 @@ pub enum InvalidColor {
 }
 
 /// A marker declared by a song but missing from the palette.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum MissingStyle {
     #[display("no style is defined for voice marker {_0:?} in the palette")]

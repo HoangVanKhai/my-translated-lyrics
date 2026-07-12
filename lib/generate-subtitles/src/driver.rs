@@ -26,7 +26,7 @@ pub struct Song<'a> {
     pub languages: Vec<LanguageBundle>,
 }
 
-#[derive(Debug, Default, Clone, Copy, AddAssign)]
+#[derive(AddAssign, Clone, Copy, Debug, Default)]
 pub struct RenderCounts {
     pub added: usize,
     pub updated: usize,
@@ -46,7 +46,7 @@ impl RenderCounts {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 enum WriteOutcome {
     Added,
     Updated,
