@@ -9,7 +9,7 @@ use std::process::Command;
 use strum::{AsRefStr, Display, EnumString, VariantArray};
 
 /// A media player that can load an external subtitle file.
-#[derive(Debug, Display, Clone, Copy, PartialEq, Eq, AsRefStr, EnumString, VariantArray)]
+#[derive(AsRefStr, Clone, Copy, Debug, Display, EnumString, Eq, PartialEq, VariantArray)]
 pub enum Player {
     #[strum(serialize = "mpv")]
     Mpv,
@@ -40,17 +40,17 @@ impl Player {
 
 /// A subtitle file format, also referred to as the subtitle "type".
 #[derive(
-    Debug,
-    Display,
+    AsRefStr,
     Clone,
     Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    AsRefStr,
+    Debug,
+    Display,
     EnumString,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
     VariantArray,
 )]
 pub enum SubtitleFormat {

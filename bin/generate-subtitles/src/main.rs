@@ -9,7 +9,7 @@ use pipe_trait::Pipe;
 use std::fs::{DirEntry, read_dir};
 use std::path::PathBuf;
 
-#[derive(Debug, Clone, Parser)]
+#[derive(Clone, Debug, Parser)]
 #[clap(about = "Generate the subtitles")]
 struct Args {
     /// Source directory that contains one song subdirectory per video.

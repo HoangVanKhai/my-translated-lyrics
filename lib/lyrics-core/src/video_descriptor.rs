@@ -34,7 +34,7 @@ pub struct VideoDesc {
 
 /// Name of a managed target-collection directory. Can only be
 /// constructed from values listed in [`SEPARATED_COLLECTIONS`].
-#[derive(Display, Clone, AsRef, Deref, Into, Deserialize, Serialize)]
+#[derive(AsRef, Clone, Deref, Deserialize, Display, Into, Serialize)]
 #[as_ref(forward)]
 #[deref(forward)]
 #[serde(try_from = "String", into = "String")]
@@ -69,7 +69,7 @@ pub enum ParseCollectionNameError {
 /// title: it must be a single normal path component (so it can be used
 /// directly as the stem of an output filename), and it must contain
 /// no backslashes (for cross-platform consistency).
-#[derive(Display, Clone, AsRef, Deref, Into, Deserialize, Serialize)]
+#[derive(AsRef, Clone, Deref, Deserialize, Display, Into, Serialize)]
 #[as_ref(forward)]
 #[deref(forward)]
 #[serde(try_from = "String", into = "String")]
@@ -100,18 +100,18 @@ pub enum ParseVideoTitleError {
 }
 
 #[derive(
-    Debug,
-    strum::Display,
+    AsRefStr,
     Clone,
     Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    AsRefStr,
+    Debug,
     Deserialize,
+    strum::Display,
     EnumString,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
     Serialize,
 )]
 #[serde(try_from = "String", into = "String")]
@@ -138,7 +138,7 @@ impl From<Language> for String {
     }
 }
 
-#[derive(Default, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Visibility {
     /// The target subtitle files should be created and
@@ -201,7 +201,7 @@ impl FromStr for LyricsFileName {
     }
 }
 
-#[derive(strum::Display, Clone, Copy, AsRefStr, EnumString, VariantArray)]
+#[derive(AsRefStr, Clone, Copy, strum::Display, EnumString, VariantArray)]
 enum SubtitleFormat {
     #[strum(serialize = "srt")]
     SubRip,

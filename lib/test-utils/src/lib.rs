@@ -37,7 +37,7 @@ pub fn workspace_dir() -> &'static Path {
 }
 
 /// Temporary directory that will be cleaned up on drop.
-#[derive(Debug, AsRef, Deref)]
+#[derive(AsRef, Debug, Deref)]
 #[as_ref(forward)]
 #[deref(forward)]
 pub struct Temp(PathBuf);

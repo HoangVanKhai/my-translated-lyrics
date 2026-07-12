@@ -23,7 +23,7 @@ mod terminal;
 pub use selectors::{select_one, select_video};
 
 /// The outcome of an interactive selector.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Navigation {
     /// The user chose the item at this index.
     Selected(usize),

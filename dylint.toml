@@ -14,18 +14,4 @@ reexports = "split"
 extra_pure_methods = ["is_file"]
 
 ["perfectionist::unordered_derives"]
-style = "prefix_then_alphabetical"
-prefix = [
-  "Debug", "Display", "Error",
-  "Default",
-  "Clone", "Copy",
-  "PartialEq", "Eq", "PartialOrd", "Ord",
-  "Hash",
-  "AsRef", "AsMut", "Deref", "DerefMut",
-  "From", "Into", "TryFrom", "TryInto", "FromStr",
-  "IntoIterator",
-  "Add", "AddAssign", "Sub", "SubAssign", "Mul", "MulAssign", "Div", "DivAssign",
-  "BitOr", "BitOrAssign", "BitAnd", "BitAndAssign", "BitXor", "BitXorAssign",
-  "Sum", "Product",
-  "LowerHex", "UpperHex", "Octal",
-]
+style = "alphabetical"
