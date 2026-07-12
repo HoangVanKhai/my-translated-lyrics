@@ -53,10 +53,10 @@ fn uninstall(execute: bool, target: &Path) {
     }
 }
 
-/// Report that a target file is kept because it is newer than its source.
+/// Warn that a target file is kept because it is newer than its source.
 /// No filesystem change is made regardless of the `--execute` flag.
 fn keep(target: &Path, source: &Path) {
-    eprintln!("keep {target:?} (newer than {source:?})");
+    eprintln!("warning: Keeping {target:?} because it is newer than {source:?}");
 }
 
 fn install(execute: bool, source: &Path, target: &Path) {
@@ -276,10 +276,6 @@ fn main() {
         "info: {} files in the target location would be updated",
         files_need_update.len(),
     );
-    eprintln!(
-        "info: {} files in the target location are newer than the source and would be kept",
-        files_kept_newer.len(),
-    );
 
     eprintln!();
     eprintln!("stage: Removing old subtitles");
@@ -299,13 +295,12 @@ fn main() {
         install(execute, source, target);
     }
 
-    eprintln!();
-    eprintln!("stage: Keeping newer target files");
-    for (source, target) in files_kept_newer.iter().sorted() {
-        keep(target, source);
-    }
     if !files_kept_newer.is_empty() {
-        eprintln!("info: Pass --force to overwrite the newer target files.");
+        eprintln!();
+        for (source, target) in files_kept_newer.iter().sorted() {
+            keep(target, source);
+        }
+        eprintln!("info: Pass --force to overwrite files that are newer than their source.");
     }
 
     if !execute {

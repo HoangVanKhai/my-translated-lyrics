@@ -227,12 +227,6 @@ pub fn expected_stderr(
         updates.len(),
     )
     .unwrap();
-    writeln!(
-        out,
-        "info: {} files in the target location are newer than the source and would be kept",
-        kept.len(),
-    )
-    .unwrap();
     writeln!(out).unwrap();
     writeln!(out, "stage: Removing old subtitles").unwrap();
     for target in removes {
@@ -248,15 +242,18 @@ pub fn expected_stderr(
     for (source, target) in updates {
         writeln!(out, "copy {source:?} → {target:?}").unwrap();
     }
-    writeln!(out).unwrap();
-    writeln!(out, "stage: Keeping newer target files").unwrap();
-    for (source, target) in kept {
-        writeln!(out, "keep {target:?} (newer than {source:?})").unwrap();
-    }
     if !kept.is_empty() {
+        writeln!(out).unwrap();
+        for (source, target) in kept {
+            writeln!(
+                out,
+                "warning: Keeping {target:?} because it is newer than {source:?}",
+            )
+            .unwrap();
+        }
         writeln!(
             out,
-            "info: Pass --force to overwrite the newer target files.",
+            "info: Pass --force to overwrite files that are newer than their source.",
         )
         .unwrap();
     }
