@@ -24,6 +24,12 @@ struct Args {
     #[clap(long, short = 'x')]
     execute: bool,
 
+    /// Overwrite target files that are newer than their source. By default,
+    /// a target file whose modification time is newer than the source file is
+    /// kept so that newer changes at the target location are not destroyed.
+    #[clap(long, short = 'f')]
+    force: bool,
+
     /// Source directory of the subtitles.
     source: PathBuf,
 
@@ -47,6 +53,12 @@ fn uninstall(execute: bool, target: &Path) {
     if execute {
         remove_file(target).unwrap();
     }
+}
+
+/// Report that a target file is kept because it is newer than its source.
+/// No filesystem change is made regardless of the `--execute` flag.
+fn keep(target: &Path, source: &Path) {
+    eprintln!("keep {target:?} (newer than {source:?})");
 }
 
 fn install(execute: bool, source: &Path, target: &Path) {
@@ -83,6 +95,7 @@ fn is_subtitle_file(entry: &DirEntry) -> bool {
 fn main() {
     let Args {
         execute,
+        force,
         source,
         target,
     } = Args::parse();
@@ -154,6 +167,7 @@ fn main() {
     let mut files_need_uninstall: HashSet<&PathBuf> = existing_target_files.keys().collect();
     let mut files_need_install: Vec<(PathBuf, PathBuf)> =
         Vec::with_capacity(existing_target_files.len());
+    let mut files_kept_newer: Vec<(PathBuf, PathBuf)> = Vec::new();
 
     for (video_dir, desc) in &descriptors {
         // Hidden: do nothing. Any existing target files stay in
@@ -240,6 +254,15 @@ fn main() {
                     continue;
                 }
 
+                // A target file that is newer than its source may hold changes
+                // that were made directly at the target location. Keep it by
+                // default so those changes are not destroyed, unless `--force`
+                // was given.
+                if !force && target_file_snapshot.is_newer_than(source_file_snapshot) {
+                    files_kept_newer.push((source_file.clone(), target_file));
+                    continue;
+                }
+
                 files_need_update.push((source_file.clone(), target_file));
             }
         }
@@ -256,6 +279,10 @@ fn main() {
     eprintln!(
         "info: {} files in the target location would be updated",
         files_need_update.len(),
+    );
+    eprintln!(
+        "info: {} files in the target location are newer than the source and would be kept",
+        files_kept_newer.len(),
     );
 
     eprintln!();
@@ -274,6 +301,15 @@ fn main() {
     eprintln!("stage: Updating outdated subtitles");
     for (source, target) in files_need_update.iter().sorted() {
         install(execute, source, target);
+    }
+
+    eprintln!();
+    eprintln!("stage: Keeping newer target files");
+    for (source, target) in files_kept_newer.iter().sorted() {
+        keep(target, source);
+    }
+    if !files_kept_newer.is_empty() {
+        eprintln!("info: Pass --force to overwrite the newer target files.");
     }
 
     if !execute {

@@ -5,6 +5,7 @@ use std::fs::{read_to_string, symlink_metadata};
 use std::io;
 use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
+use std::time::SystemTime;
 
 #[derive(Clone)]
 pub struct FileSnapshot {
@@ -12,6 +13,7 @@ pub struct FileSnapshot {
     dev: u64,
     inode: u64,
     size: u64,
+    modified: SystemTime,
     content: OnceCell<String>,
 }
 
@@ -23,6 +25,7 @@ impl fmt::Debug for FileSnapshot {
             .field("dev", &self.dev)
             .field("inode", &self.inode)
             .field("size", &self.size)
+            .field("modified", &self.modified)
             .finish_non_exhaustive()
     }
 }
@@ -30,11 +33,13 @@ impl fmt::Debug for FileSnapshot {
 impl FileSnapshot {
     pub fn new(path: PathBuf) -> io::Result<Self> {
         let stats = symlink_metadata(&path)?;
+        let modified = stats.modified()?;
         Ok(FileSnapshot {
             path,
             dev: stats.dev(),
             inode: stats.ino(),
             size: stats.len(),
+            modified,
             content: OnceCell::new(),
         })
     }
@@ -75,5 +80,14 @@ impl FileSnapshot {
             Ok(content) => content == other,
             Err(error) => panic!("error: Cannot load file {:?}: {error}", &self.path),
         }
+    }
+
+    /// Reports whether this file was modified strictly after `other`.
+    ///
+    /// The comparison uses the modification time recorded when each
+    /// snapshot was taken. Equal modification times are not considered
+    /// newer, so this returns `false` when the two times coincide.
+    pub fn is_newer_than(&self, other: &Self) -> bool {
+        self.modified > other.modified
     }
 }
