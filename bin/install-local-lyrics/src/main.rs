@@ -24,9 +24,7 @@ struct Args {
     #[clap(long, short = 'x')]
     execute: bool,
 
-    /// Overwrite target files that are newer than their source. By default,
-    /// a target file whose modification time is newer than the source file is
-    /// kept so that newer changes at the target location are not destroyed.
+    /// Overwrite target files that are newer than their source instead of keeping them.
     #[clap(long, short = 'f')]
     force: bool,
 
