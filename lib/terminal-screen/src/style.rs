@@ -2,7 +2,7 @@
 
 /// The text attributes a cell is drawn with, as a small set of flags so a cell
 /// stays cheap to store and compare.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct Style(u8);
 
 impl Style {

@@ -228,7 +228,7 @@ fn without_diacritics(char: char) -> char {
 }
 
 /// Reason a fuzzy query failed to identify exactly one candidate.
-#[derive(Debug, Display, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Display, Eq, PartialEq)]
 pub enum ResolveError {
     /// No candidate matched the query.
     #[display("no candidate matched")]

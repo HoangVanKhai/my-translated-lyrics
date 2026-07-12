@@ -17,7 +17,7 @@ use lyrics_core::timestamp::{TakeTimestampError, Timestamp};
 /// Payload for [`ParseLyricsError::InvalidTimestamp`]. Wraps the
 /// underlying [`TakeTimestampError`] and pairs it with the source
 /// line number.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: {cause}")]
 pub struct InvalidTimestamp {
     pub line_number: usize,
@@ -27,7 +27,7 @@ pub struct InvalidTimestamp {
 /// Payload for [`ParseLyricsError::MissingMarker`]. Raised when a
 /// cue body has no `:` separator at all, and also when it has a `:`
 /// but the marker half before it is empty.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: cue body {content:?} carries no marker before the `:` separator")]
 pub struct MissingMarker {
     pub line_number: usize,
@@ -35,7 +35,7 @@ pub struct MissingMarker {
 }
 
 /// Payload for [`ParseLyricsError::MissingSeparatorAfterTimestamp`].
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: timestamp in {content:?} is not followed by whitespace")]
 pub struct MissingSeparatorAfterTimestamp {
     pub line_number: usize,
@@ -43,7 +43,7 @@ pub struct MissingSeparatorAfterTimestamp {
 }
 
 /// Payload for [`ParseLyricsError::ExtraTextAfterControlMarker`].
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "line {line_number}: control marker {marker:?} must stand alone but is followed by {trailing:?}"
 )]
@@ -54,7 +54,7 @@ pub struct ExtraTextAfterControlMarker {
 }
 
 /// Payload for [`ParseLyricsError::OutOfOrder`].
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("events out of order: event at {previous} is followed by an earlier event at {next}")]
 pub struct OutOfOrder {
     pub previous: Timestamp,
@@ -62,7 +62,7 @@ pub struct OutOfOrder {
 }
 
 /// Payload for [`ParseLyricsError::ReservedControlMarker`].
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "line {line_number}: marker {marker:?} is reserved for the `clr`/`eov` control tokens and cannot name a cue"
 )]
@@ -72,7 +72,7 @@ pub struct ReservedControlMarker {
 }
 
 /// Payload for [`ParseLyricsError::EmptyCueBody`].
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: cue with marker {marker:?} has an empty body")]
 pub struct EmptyCueBody {
     pub line_number: usize,
@@ -83,7 +83,7 @@ pub struct EmptyCueBody {
 /// a column-zero line does not begin with an `MM:SS.mmm` timestamp;
 /// every column-zero line in the source format is expected to open
 /// either a fresh cue or a `clr` / `eov` control event.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "line {line_number}: header line {content:?} does not begin with an `MM:SS.mmm` timestamp"
 )]
@@ -96,7 +96,7 @@ pub struct MalformedHeader {
 /// when a column-`TIMESTAMP_PREFIX_WIDTH` line carries a marker but
 /// no cue is open above it for the new marker to share a start
 /// time with.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "line {line_number}: shorthand marker line {content:?} appears before any timestamp opens a cue"
 )]
@@ -110,7 +110,7 @@ pub struct OrphanedShorthandMarker {
 /// accepted at this point in the input. `continuation_indent` is
 /// `None` when no part is currently open (so a continuation could
 /// not be valid here regardless of indent).
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct MalformedIndentation {
     pub line_number: usize,
     pub actual: usize,
@@ -140,7 +140,7 @@ impl fmt::Display for MalformedIndentation {
 /// way to attach multiple markers to a single timestamp, and a
 /// repeated timestamp form would create two separate cues that
 /// the renderer would emit as overlapping subtitle blocks.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "line {line_number}: timestamp {start} repeats the start time of the immediately previous event; \
     use the column-{TIMESTAMP_PREFIX_WIDTH} shorthand to attach a second marker to the same timestamp"
@@ -158,7 +158,7 @@ pub struct RepeatedTimestamp {
 /// poorly with the column-exact indentation rules the format
 /// uses to distinguish a continuation of the prior marker from a
 /// new marker at the same timestamp.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "line {line_number}: indentation contains a tab; only ASCII spaces are allowed in leading whitespace"
 )]
@@ -175,7 +175,7 @@ pub struct TabIndentation {
 /// source is almost certainly an attempt to hand-author WebVTT
 /// markup, which belongs in the renderer's vocabulary (class and
 /// voice markers in `line-markers.toml`), not in the prose.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "line {line_number}: cue text contains {character:?}, which the WebVTT cue-tag grammar reserves for tag delimiters"
 )]
@@ -187,13 +187,13 @@ pub struct CueTextReservedCharacter {
 /// Payload for [`ParseLyricsError::UnclosedCue`]. Carries the
 /// start timestamp of the cue that has no following event to
 /// close it.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("cue at {start} has no following cue or `clr`")]
 pub struct UnclosedCue {
     pub start: Timestamp,
 }
 
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum ParseLyricsError {
     TabIndentation(TabIndentation),

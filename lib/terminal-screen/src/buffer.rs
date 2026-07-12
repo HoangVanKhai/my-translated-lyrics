@@ -11,7 +11,7 @@ use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 /// text form and its wide emoji form. A wide glyph occupies more than one
 /// column, with `Trailing` in the columns after its first, so the grid keeps
 /// one cell per terminal column.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub(crate) enum Cell {
     #[default]
     Empty,
@@ -21,7 +21,7 @@ pub(crate) enum Cell {
 
 /// A styled glyph occupying a cell: its character, an optional trailing
 /// variation selector, and the style to draw it with.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) struct Glyph {
     pub(crate) char: char,
     /// A variation selector following `char`, when one was given.

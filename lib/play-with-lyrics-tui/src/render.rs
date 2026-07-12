@@ -185,7 +185,7 @@ pub(crate) fn draw_highlighted_line(
 
 /// A clickable button shown in the top bar, paired with the action a click on
 /// it performs.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum Button {
     /// Quit the program.
     Exit,

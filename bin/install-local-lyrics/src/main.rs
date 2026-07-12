@@ -17,7 +17,7 @@ use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 
-#[derive(Debug, Clone, Parser)]
+#[derive(Clone, Debug, Parser)]
 #[clap(about = "Synchronize the lyrics")]
 struct Args {
     /// For safety reasons, this programs list actions by default, this flag makes the program take those actions.
