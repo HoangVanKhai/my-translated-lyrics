@@ -103,7 +103,7 @@ pub fn render_vtt(
 /// The same shape is used at two levels: each [`CueRendering`] carries
 /// the per-cue flags, and [`render_vtt`] keeps a song-level
 /// accumulator that folds the per-cue flags in via `|=`.
-#[derive(Debug, Default, Clone, Copy, BitOrAssign)]
+#[derive(BitOrAssign, Clone, Copy, Debug, Default)]
 struct Features {
     used_credit_role: bool,
     used_credit_name: bool,
@@ -374,14 +374,14 @@ fn write_style_body(output: &mut String, style: &Style) {
 }
 
 /// Payload for [`RenderVttError::Credits`].
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("cue at {start} failed to render as a credit line: {cause}")]
 pub struct RenderVttErrorCreditsPayload {
     pub start: Timestamp,
     pub cause: ParseCreditError,
 }
 
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum RenderVttError {
     Credits(RenderVttErrorCreditsPayload),

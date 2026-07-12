@@ -31,7 +31,7 @@ use lyrics_core::video_descriptor::Language;
 use pipe_trait::Pipe;
 
 /// A structural lead/name pair extracted from one credit line.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CreditPair<'a> {
     /// What opens the line: a role, or a role-less bracket highlight.
     pub lead: CreditLead<'a>,
@@ -48,7 +48,7 @@ pub struct CreditPair<'a> {
 }
 
 /// What opens a credit line.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum CreditLead<'a> {
     /// A registered role, rendered in the credit role color.
     Role(&'a str),
@@ -82,7 +82,7 @@ impl<'a> CreditPair<'a> {
 /// by [`CreditPair::separator_style`]. Authors pick the layout by
 /// typing the matching colon in the source: full-width `：` in CJK
 /// lyrics, ASCII `:` in Latin-script lyrics.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum SeparatorStyle<'a> {
     /// The separator carried a full-width colon (`：`). The renderer
     /// emits a full-width colon between the lead and name spans with
@@ -135,7 +135,7 @@ impl SeparatorStyle<'_> {
 }
 
 /// A unit within the name region of a credit pair.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum NameSegment<'a> {
     /// A run of text that contains no parseable bracketed span.
     Unbracketed(Unbracketed<'a>),
@@ -145,7 +145,7 @@ pub enum NameSegment<'a> {
 }
 
 /// A string that contains no parseable bracketed span.
-#[derive(Debug, Display, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Display, Eq, PartialEq)]
 pub struct Unbracketed<'a>(&'a str);
 
 impl<'a> Unbracketed<'a> {
@@ -165,7 +165,7 @@ impl<'a> Unbracketed<'a> {
 ///
 /// [unbracketed]: Unbracketed
 /// [bracketed]: Bracketed
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 struct NameSegmentPair<'a>(Unbracketed<'a>, Bracketed<'a>);
 
 impl<'a> NameSegmentPair<'a> {
@@ -197,7 +197,7 @@ impl<'a> NameSegmentPair<'a> {
 /// A string that is guaranteed to open with a recognized bracket,
 /// close with its matching counterpart, and contain no further
 /// bracket characters in between.
-#[derive(Debug, Display, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Display, Eq, PartialEq)]
 pub struct Bracketed<'a>(&'a str);
 
 impl<'a> Bracketed<'a> {
@@ -231,7 +231,7 @@ impl<'a> Bracketed<'a> {
 }
 
 /// Reasons [`Bracketed::try_from`] can fail.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum ParseBracketedError {
     /// The input does not form a valid bracketed span: it is
@@ -426,7 +426,7 @@ fn is_role_boundary(following: &str) -> bool {
 /// Payload for an unknown-role error. Describes a credit line
 /// whose cursor rests on text that does not match any known role
 /// from `credits.yaml`.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "credit line {line:?} contains unrecognized text at byte offset {offset}; expected a known credit role from `credits.yaml`"
 )]
@@ -435,7 +435,7 @@ pub struct UnknownRole {
     pub offset: usize,
 }
 
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum ParseCreditError {
     UnknownRole(UnknownRole),

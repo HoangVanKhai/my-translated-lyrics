@@ -39,7 +39,7 @@ fn main() -> ExitCode {
 /// One step in the resolution sequence. A history of the steps that were
 /// resolved interactively lets the user go back through them. The order of the
 /// variants is the order of the pages, which [`step_back`] compares against.
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Eq, Ord, PartialEq, PartialOrd)]
 enum Stage {
     Video,
     Language,

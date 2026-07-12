@@ -60,7 +60,7 @@ pub struct LineMarkersDesc {
 /// class-name rules. It excludes whitespace, quotes, dots, braces,
 /// and anything outside basic ASCII, all of which would break the
 /// STYLE block or the inline tag if interpolated raw.
-#[derive(Debug, Display, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Display, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(try_from = "String", into = "String")]
 pub struct CssClassName(String);
 
@@ -132,7 +132,7 @@ fn is_class_name_continue(char: char) -> bool {
 /// renderer that name the destination grammar; each wrapper
 /// produces one of the two output shapes so the call site cannot
 /// cross them up.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(try_from = "String", into = "String")]
 pub struct VoiceName(String);
 
@@ -175,7 +175,7 @@ fn is_forbidden_voice_char(char: char) -> bool {
     matches!(char, '<' | '>' | '"' | '\\' | '\u{2028}' | '\u{2029}') || char.is_control()
 }
 
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum InvalidVoiceName {
     #[display("voice name must not be empty")]
@@ -186,7 +186,7 @@ pub enum InvalidVoiceName {
     ForbiddenCharacter(char),
 }
 
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum InvalidCssClassName {
     #[display("class name must not be empty")]

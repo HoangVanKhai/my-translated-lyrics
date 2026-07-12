@@ -206,14 +206,14 @@ fn write_name_segments(output: &mut String, palette: &StylePalette, segments: &[
 }
 
 /// Payload for [`RenderSrtError::Credits`].
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("cue at {start} failed to render as a credit line: {cause}")]
 pub struct RenderSrtErrorCreditsPayload {
     pub start: Timestamp,
     pub cause: ParseCreditError,
 }
 
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum RenderSrtError {
     Credits(RenderSrtErrorCreditsPayload),

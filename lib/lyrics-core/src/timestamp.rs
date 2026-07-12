@@ -38,7 +38,7 @@ pub const TIMESTAMP_STR_LEN: usize = 9;
 /// Renders through `Display` in the `MM:SS.mmm` source format. Error
 /// messages that quote a timestamp use this implementation so the
 /// output matches the form the source file used.
-#[derive(Display, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Copy, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[display(
     "{minutes:02}:{seconds:02}.{milliseconds:03}",
     minutes = _0 / MILLISECONDS_PER_MINUTE,
@@ -203,7 +203,7 @@ impl fmt::Debug for Timestamp {
 /// `From`/`Into`; the inner [`Timestamp`] is not exposed directly so
 /// that every call site is a named conversion rather than a
 /// positional tuple access.
-#[derive(Display, Clone, Copy, From, Into)]
+#[derive(Clone, Copy, Display, From, Into)]
 #[display(
     "{hours:02}:{minutes:02}:{seconds:02},{milliseconds:03}",
     hours = _0.0 / MILLISECONDS_PER_HOUR,
@@ -216,7 +216,7 @@ pub struct SrtTime(Timestamp);
 /// Thin wrapper around [`Timestamp`] that renders in the WebVTT
 /// `HH:MM:SS.mmm` format. See [`SrtTime`] for the same construction
 /// and extraction story.
-#[derive(Display, Clone, Copy, From, Into)]
+#[derive(Clone, Copy, Display, From, Into)]
 #[display(
     "{hours:02}:{minutes:02}:{seconds:02}.{milliseconds:03}",
     hours = _0.0 / MILLISECONDS_PER_HOUR,
@@ -228,7 +228,7 @@ pub struct VttTime(Timestamp);
 
 /// Payload for a minutes-out-of-range error. Describes an
 /// `MM:SS.mmm` prefix whose minutes component reaches or exceeds 60.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("invalid timestamp {raw:?}: minutes component {value} must be less than 60")]
 pub struct MinutesOutOfRange {
     pub raw: String,
@@ -237,7 +237,7 @@ pub struct MinutesOutOfRange {
 
 /// Payload for a seconds-out-of-range error. Describes an
 /// `MM:SS.mmm` prefix whose seconds component exceeds 59.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("invalid timestamp {raw:?}: seconds component {value} must be less than 60")]
 pub struct SecondsOutOfRange {
     pub raw: String,
@@ -253,7 +253,7 @@ pub struct SecondsOutOfRange {
 /// [`UnexpectedCharacter`](Self::UnexpectedCharacter) variant for
 /// inputs that started well but carry content past the nine
 /// consumed characters.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum ParseTimestampError {
     /// The input does not begin with an `MM:SS.mmm` shape.
@@ -301,7 +301,7 @@ impl FromStr for Timestamp {
 /// timestamp value (used by any future `FromStr`-style parser),
 /// while [`TakeTimestampError`] describes ways the `take` combinator
 /// fails to produce a [`Timestamp`] from the start of its input.
-#[derive(Debug, Display, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum TakeTimestampError {
     /// The input does not begin with an `MM:SS.mmm` shape.

@@ -18,7 +18,7 @@
 use core::cmp::Ordering;
 
 /// Whether a column is sorted ascending or descending.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Direction {
     Ascending,
     Descending,
@@ -36,7 +36,7 @@ impl Direction {
 
 /// The columns to sort by, in priority order with the highest first, each
 /// paired with its direction. `Column` is the caller's column identifier.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct ColumnSort<Column> {
     priorities: Vec<(Column, Direction)>,
 }
