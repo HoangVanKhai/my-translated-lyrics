@@ -252,8 +252,6 @@ fn main() {
                     continue;
                 }
 
-                // A newer target may carry edits made directly at the target
-                // location that an overwrite would destroy.
                 if !force && target_file_snapshot.is_newer_than(source_file_snapshot) {
                     files_kept_newer.push((source_file.clone(), target_file));
                     continue;
