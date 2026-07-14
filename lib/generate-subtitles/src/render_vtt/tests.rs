@@ -1,6 +1,9 @@
 use super::{RenderVttError, render_vtt};
+use crate::_test_utils::{
+    color, credits_with_one_role, markers_with_credit_trigger, style_palette,
+};
 use crate::parse::{CuePart, SubtitleCue};
-use crate::styles::{Color, CreditPalette, MissingStyle, Style, StylePalette};
+use crate::styles::{MissingStyle, Style, StylePalette};
 use lyrics_core::credits_descriptor::CreditsDesc;
 use lyrics_core::line_markers_descriptor::{CssClassName, LineMarkersDesc, VoiceName};
 use lyrics_core::timestamp::Timestamp;
@@ -9,42 +12,14 @@ use maplit::btreemap;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 
-fn credits_with_one_role() -> CreditsDesc {
-    CreditsDesc {
-        credit_roles: vec![btreemap! { Language::Vietnamese => "role-a".to_string() }],
-        ..Default::default()
-    }
-}
-
-fn markers_with_credit_trigger() -> LineMarkersDesc {
-    LineMarkersDesc {
-        credits: vec!["cre".to_string()],
-        ..Default::default()
-    }
-}
-
-fn color(value: String) -> Color {
-    value
-        .pipe(Color::new)
-        .expect("test fixture passes the color validator")
-}
-
 fn test_palette() -> StylePalette {
-    StylePalette {
-        credit: CreditPalette {
-            role: color("#AAAA22".to_owned()),
-            name: color("#AAAAAA".to_owned()),
-            special: color("#55ABCD".to_owned()),
+    style_palette(btreemap! {
+        "vca".to_string() => Style {
+            color: Some(color("#66CCFF".to_owned())),
+            italic: false,
+            bold: false,
         },
-        voices: btreemap! {
-            "vca".to_string() => Style {
-                color: Some(color("#66CCFF".to_owned())),
-                italic: false,
-                bold: false,
-            },
-        },
-        classes: btreemap! {},
-    }
+    })
 }
 
 #[test]

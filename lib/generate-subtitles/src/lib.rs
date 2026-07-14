@@ -25,5 +25,8 @@ pub mod styles;
 mod driver;
 mod escape;
 
+#[cfg(test)]
+mod _test_utils;
+
 pub use driver::{RenderCounts, Song, load_palette, load_song, render_song};
 pub use styles::StylePalette;
