@@ -105,7 +105,10 @@ fn keep(target: &Path, source: &Path) {
 /// reaches such a file only through `HOME` or `XDG_CONFIG_HOME`, both
 /// cleared, and does not fall back to the account's home directory from the
 /// password database, so a rule such as `*.srt` or an attribute such as
-/// `*.srt -diff` cannot reach the diff.
+/// `*.srt -diff` cannot reach the diff. The one attributes source that
+/// survives a cleared environment is the system-wide file, which lives at a
+/// compiled-in path with no override; it is neutralized in [`render_diff`],
+/// where the throwaway repository is built.
 fn git_command(repo: &Path) -> Command {
     let command = Command::new("git")
         .with_no_env()
@@ -221,6 +224,25 @@ fn render_diff(target_root: &Path, updates: &[(&Path, &Path)]) {
     // in the environment cannot seed `.git/info/exclude` or
     // `.git/info/attributes` into the repository and perturb the patch.
     run_git(repo, &["init", "-q", "--template="]);
+
+    // git reads a system-wide attributes file from a compiled-in path such
+    // as `/etc/gitattributes` that no environment variable or configuration
+    // setting can redirect, and `git add` honors it while staging. A
+    // normalization attribute there, for example `* text=auto`, would
+    // rewrite the staged target's line endings, re-encode it, or collapse
+    // an `$Id$` keyword, so the emitted patch would no longer match the real
+    // target files and could fail to apply or, worse, apply with altered
+    // content. A repository's own `.git/info/attributes` outranks the system
+    // file, so a neutralizing rule is written there before anything is
+    // staged. The empty template created no `.git/info`, so the directory is
+    // created first. `-diff` is deliberately omitted, because genuinely
+    // binary content is still carried by `git diff --binary`.
+    let info_dir = repo.join(".git").join("info");
+    create_dir_all(&info_dir)
+        .unwrap_or_else(|error| panic!("error: Cannot create {info_dir:?}: {error}"));
+    let attributes = info_dir.join("attributes");
+    write(&attributes, "* -text -ident working-tree-encoding=\n")
+        .unwrap_or_else(|error| panic!("error: Cannot write {attributes:?}: {error}"));
 
     let staged: Vec<PathBuf> = updates
         .iter()
