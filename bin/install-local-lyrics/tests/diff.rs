@@ -477,7 +477,7 @@ fn diff_reports_content_changes_without_mode_changes() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
     let collection_name = "Feng Ling Yu Xiu";
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
-    let _targets = prepare_outdated(
+    let (separated, unified) = prepare_outdated(
         &env,
         collection_name,
         video_title,
@@ -485,13 +485,15 @@ fn diff_reports_content_changes_without_mode_changes() {
         "old content\n",
     );
 
-    // Give the source a different mode than its targets, so overwriting a
-    // staged file by copying the source would introduce a mode change into
-    // the patch.
-    let source_file = env.source.join("ExampleSong").join("lyrics.vi.srt");
-    let mut permissions = metadata(&source_file).unwrap().permissions();
-    permissions.set_mode(0o755);
-    set_permissions(&source_file, permissions).unwrap();
+    // Give the target files a non-default mode. The staged file keeps the
+    // target's mode, so overwriting it by copying the source (which carries
+    // the source's mode) or by removing and recreating it (which resets the
+    // mode to the umask default) would introduce a mode change.
+    for target in [&separated, &unified] {
+        let mut permissions = metadata(target).unwrap().permissions();
+        permissions.set_mode(0o755);
+        set_permissions(target, permissions).unwrap();
+    }
 
     let output = env.run(["--diff"]);
     let patch_text = str::from_utf8(&output.stdout).unwrap();
@@ -504,5 +506,54 @@ fn diff_reports_content_changes_without_mode_changes() {
     assert!(
         patch_text.contains("-old content\n+new content\n"),
         "the content change is missing:\n{patch_text}",
+    );
+}
+
+#[test]
+fn diff_includes_targets_newer_than_source_only_with_force() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    let collection_name = "Feng Ling Yu Xiu";
+    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let desc = video_desc(
+        collection_name.to_owned(),
+        video_title.to_owned(),
+        Visibility::default(),
+    );
+    env.add_source_entry(
+        "ExampleSong",
+        &desc,
+        &[("lyrics.vi.srt", "source content\n")],
+    );
+
+    let separated = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
+    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
+    write_file(&separated, "target content\n").unwrap();
+    write_file(&unified, "target content\n").unwrap();
+
+    // The targets differ from the source and are newer than it.
+    let source_file = env.source.join("ExampleSong").join("lyrics.vi.srt");
+    set_mtime(&source_file, 1_000_000);
+    set_mtime(&separated, 2_000_000);
+    set_mtime(&unified, 2_000_000);
+
+    // A newer target is kept by default, so nothing is diffed.
+    let plain = env.run(["--diff"]);
+    assert!(
+        plain.stdout.is_empty(),
+        "a newer target must not be diffed without --force, got:\n{}",
+        String::from_utf8_lossy(&plain.stdout),
+    );
+
+    // With --force the newer target becomes an update and is diffed.
+    let forced = env.run(["--diff", "--force"]);
+    let patch_text = str::from_utf8(&forced.stdout).unwrap();
+    let separated_rel = format!("{collection_name}/{video_title}.vi.srt");
+    assert!(
+        patch_text.contains(&format!("diff --git a/{separated_rel} b/{separated_rel}")),
+        "the newer target is missing from the --force patch:\n{patch_text}",
+    );
+    assert!(
+        patch_text.contains("-target content\n+source content\n"),
+        "unexpected diff body:\n{patch_text}",
     );
 }
