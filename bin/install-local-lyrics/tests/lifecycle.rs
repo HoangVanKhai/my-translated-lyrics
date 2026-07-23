@@ -57,6 +57,7 @@ fn installs_subtitles_to_separated_and_unified_collections() {
                 (source_vtt, uni_vtt),
             ],
             &[],
+            &[],
             false,
         ),
     );
@@ -129,6 +130,7 @@ fn dry_run_does_not_install_subtitles() {
                 ),
             ],
             &[],
+            &[],
             true,
         ),
     );
@@ -161,7 +163,7 @@ fn skips_up_to_date_files() {
     let output = env.run(["--execute"]);
     assert_eq!(
         String::from_utf8_lossy(&output.stderr),
-        expected_stderr(2, &[], &[], &[], false),
+        expected_stderr(2, &[], &[], &[], &[], false),
     );
 }
 
@@ -219,6 +221,7 @@ fn updates_modified_source_files() {
                     env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
                 ),
             ],
+            &[],
             false,
         ),
     );
@@ -286,6 +289,7 @@ fn dry_run_does_not_update_modified_source_files() {
                     env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
                 ),
             ],
+            &[],
             true,
         ),
     );
@@ -311,7 +315,7 @@ fn removes_orphaned_target_files() {
     assert!(!orphaned.exists());
     assert_eq!(
         String::from_utf8_lossy(&output.stderr),
-        expected_stderr(1, &[orphaned], &[], &[], false),
+        expected_stderr(1, &[orphaned], &[], &[], &[], false),
     );
 }
 
@@ -327,6 +331,6 @@ fn dry_run_does_not_remove_orphaned_target_files() {
     assert!(orphaned.exists());
     assert_eq!(
         String::from_utf8_lossy(&output.stderr),
-        expected_stderr(1, &[orphaned], &[], &[], true),
+        expected_stderr(1, &[orphaned], &[], &[], &[], true),
     );
 }

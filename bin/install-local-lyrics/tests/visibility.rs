@@ -33,7 +33,7 @@ fn hidden_visibility_causes_removal() {
     assert!(!unified.exists());
     assert_eq!(
         String::from_utf8_lossy(&output.stderr),
-        expected_stderr(2, &[separated, unified], &[], &[], false),
+        expected_stderr(2, &[separated, unified], &[], &[], &[], false),
     );
 }
 
@@ -64,7 +64,7 @@ fn dry_run_does_not_remove_hidden_files() {
     assert!(unified.exists());
     assert_eq!(
         String::from_utf8_lossy(&output.stderr),
-        expected_stderr(2, &[separated, unified], &[], &[], true),
+        expected_stderr(2, &[separated, unified], &[], &[], &[], true),
     );
 }
 
@@ -97,7 +97,7 @@ fn manual_visibility_preserves_existing_files() {
     assert_eq!(unified.pipe_ref(read_to_string).unwrap(), manual_content);
     assert_eq!(
         String::from_utf8_lossy(&output.stderr),
-        expected_stderr(2, &[], &[], &[], false),
+        expected_stderr(2, &[], &[], &[], &[], false),
     );
 }
 
@@ -130,6 +130,6 @@ fn dry_run_manual_visibility_preserves_existing_files() {
     assert_eq!(unified.pipe_ref(read_to_string).unwrap(), manual_content);
     assert_eq!(
         String::from_utf8_lossy(&output.stderr),
-        expected_stderr(2, &[], &[], &[], true),
+        expected_stderr(2, &[], &[], &[], &[], true),
     );
 }

@@ -24,6 +24,10 @@ struct Args {
     #[clap(long, short = 'x')]
     execute: bool,
 
+    /// Overwrite target files that are newer than their source instead of keeping them.
+    #[clap(long, short = 'f')]
+    force: bool,
+
     /// Source directory of the subtitles.
     source: PathBuf,
 
@@ -47,6 +51,12 @@ fn uninstall(execute: bool, target: &Path) {
     if execute {
         remove_file(target).unwrap();
     }
+}
+
+/// Warn that a target file is kept because it is newer than its source.
+/// No filesystem change is made regardless of the `--execute` flag.
+fn keep(target: &Path, source: &Path) {
+    eprintln!("warning: Keeping {target:?} because it is newer than {source:?}");
 }
 
 fn install(execute: bool, source: &Path, target: &Path) {
@@ -83,6 +93,7 @@ fn is_subtitle_file(entry: &DirEntry) -> bool {
 fn main() {
     let Args {
         execute,
+        force,
         source,
         target,
     } = Args::parse();
@@ -154,6 +165,7 @@ fn main() {
     let mut files_need_uninstall: HashSet<&PathBuf> = existing_target_files.keys().collect();
     let mut files_need_install: Vec<(PathBuf, PathBuf)> =
         Vec::with_capacity(existing_target_files.len());
+    let mut files_kept_newer: Vec<(PathBuf, PathBuf)> = Vec::new();
 
     for (video_dir, desc) in &descriptors {
         // Hidden: do nothing. Any existing target files stay in
@@ -240,6 +252,11 @@ fn main() {
                     continue;
                 }
 
+                if !force && target_file_snapshot.is_newer_than(source_file_snapshot) {
+                    files_kept_newer.push((source_file.clone(), target_file));
+                    continue;
+                }
+
                 files_need_update.push((source_file.clone(), target_file));
             }
         }
@@ -274,6 +291,14 @@ fn main() {
     eprintln!("stage: Updating outdated subtitles");
     for (source, target) in files_need_update.iter().sorted() {
         install(execute, source, target);
+    }
+
+    if !files_kept_newer.is_empty() {
+        eprintln!();
+        for (source, target) in files_kept_newer.iter().sorted() {
+            keep(target, source);
+        }
+        eprintln!("info: Pass --force to overwrite files that are newer than their source.");
     }
 
     if !execute {

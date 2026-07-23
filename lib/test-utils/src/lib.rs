@@ -199,6 +199,7 @@ pub fn expected_stderr(
     removes: &[PathBuf],
     installs: &[(PathBuf, PathBuf)],
     updates: &[(PathBuf, PathBuf)],
+    kept: &[(PathBuf, PathBuf)],
     dry_run: bool,
 ) -> String {
     use std::fmt::Write;
@@ -240,6 +241,21 @@ pub fn expected_stderr(
     writeln!(out, "stage: Updating outdated subtitles").unwrap();
     for (source, target) in updates {
         writeln!(out, "copy {source:?} → {target:?}").unwrap();
+    }
+    if !kept.is_empty() {
+        writeln!(out).unwrap();
+        for (source, target) in kept {
+            writeln!(
+                out,
+                "warning: Keeping {target:?} because it is newer than {source:?}",
+            )
+            .unwrap();
+        }
+        writeln!(
+            out,
+            "info: Pass --force to overwrite files that are newer than their source.",
+        )
+        .unwrap();
     }
     if dry_run {
         writeln!(out).unwrap();
