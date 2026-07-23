@@ -263,9 +263,9 @@ fn honors_diff_despite_global_gitignore_and_gitattributes() {
     );
 
     // A global gitignore for *.srt and a `-diff` attribute for *.srt
-    // would, without the tool overriding git's default excludes and
-    // attributes files, drop these files from the patch or render them as
-    // binary.
+    // would drop these files from the patch or render them as binary
+    // unless the tool isolated git from the environment. The tool clears
+    // HOME and XDG_CONFIG_HOME, the only paths by which git locates them.
     let home = Temp::new_dir();
     let xdg_config = home.join(".config");
     let git_config = xdg_config.join("git");

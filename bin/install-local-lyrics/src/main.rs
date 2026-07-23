@@ -78,12 +78,14 @@ fn keep(target: &Path, source: &Path) {
 ///
 /// Isolation starts from an empty environment. `with_no_env` clears every
 /// inherited variable, which closes the whole class of git inputs in one
-/// step rather than denying each dangerous variable by name. Location and
-/// input variables such as `GIT_DIR`, `GIT_WORK_TREE`, `GIT_INDEX_FILE`,
-/// `GIT_DIFF_OPTS`, and `GIT_ATTR_SOURCE`, as well as the configuration
-/// injected through `GIT_CONFIG_COUNT` or `GIT_CONFIG_PARAMETERS`, are all
-/// gone without enumeration, and any variable a future git release adds is
-/// excluded by default. Only a minimal, known-safe set is restored:
+/// step rather than denying each dangerous variable by name. This removes
+/// the location and input variables such as `GIT_DIR`, `GIT_WORK_TREE`,
+/// `GIT_INDEX_FILE`, `GIT_DIFF_OPTS`, and `GIT_ATTR_SOURCE`, the
+/// configuration injected through `GIT_CONFIG_COUNT` or
+/// `GIT_CONFIG_PARAMETERS`, and `HOME` and `XDG_CONFIG_HOME`, which are the
+/// only paths through which git locates a personal ignore or attributes
+/// file. Any variable a future git release adds is excluded by default.
+/// Only a minimal set is restored:
 ///
 /// - `PATH` keeps git findable when it lives outside the default search
 ///   path, as with a Homebrew, Nix, or `/usr/local/bin` install. An empty
@@ -91,28 +93,26 @@ fn keep(target: &Path, source: &Path) {
 ///   library falls back to the system default path only when `PATH` is
 ///   absent. `PATH` is therefore left unset when the parent has none,
 ///   rather than set to the empty string.
-/// - `GIT_CONFIG_SYSTEM` is redirected to `/dev/null` so that the on-disk
-///   system configuration, which survives the cleared environment, cannot
-///   contribute. `GIT_CONFIG_GLOBAL` is redirected likewise, which
-///   neutralizes the user configuration explicitly instead of relying on
-///   the absence of `HOME`. Without this an injected `diff.noprefix` would
-///   strip the `a/`/`b/` prefixes the patch needs, and an injected
-///   `core.autocrlf` would rewrite line endings.
-/// - `core.excludesFile` and `core.attributesFile` are pointed at
-///   `/dev/null` so that no ignore rule can silently drop a file from the
-///   patch and no attribute such as `*.srt -diff` can turn a text change
-///   into a non-applicable binary patch.
+/// - `GIT_CONFIG_GLOBAL` and `GIT_CONFIG_SYSTEM` are redirected to
+///   `/dev/null`. The system configuration lives on the filesystem and so
+///   survives the cleared environment, and neutralizing both files prevents
+///   any configuration from re-introducing a `diff.noprefix` that would
+///   strip the `a/`/`b/` prefixes, a `core.autocrlf` that would rewrite
+///   line endings, or a `core.excludesFile` or `core.attributesFile` that
+///   would drop a file from the patch or reclassify a text change as binary.
+///
+/// A personal ignore or attributes file needs no dedicated override. Git
+/// reaches such a file only through `HOME` or `XDG_CONFIG_HOME`, both
+/// cleared, and does not fall back to the account's home directory from the
+/// password database, so a rule such as `*.srt` or an attribute such as
+/// `*.srt -diff` cannot reach the diff.
 fn git_command(repo: &Path) -> Command {
     let command = Command::new("git")
         .with_no_env()
         .with_env("GIT_CONFIG_GLOBAL", "/dev/null")
         .with_env("GIT_CONFIG_SYSTEM", "/dev/null")
         .with_arg("-C")
-        .with_arg(repo)
-        .with_arg("-c")
-        .with_arg("core.excludesFile=/dev/null")
-        .with_arg("-c")
-        .with_arg("core.attributesFile=/dev/null");
+        .with_arg(repo);
     match var_os("PATH") {
         Some(path) => command.with_env("PATH", path),
         None => command,
