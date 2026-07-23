@@ -373,9 +373,12 @@ fn honors_diff_despite_git_external_diff() {
     assert_eq!(read_to_string(&unified).unwrap(), "old\n");
 }
 
-#[test]
-fn honors_diff_despite_injected_config() {
-    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+/// Asserts that configuration injected through the given environment
+/// variables does not perturb the patch: the `a/`/`b/` prefixes survive
+/// and the patch still applies cleanly. Each caller injects
+/// `diff.noprefix=true`, which would otherwise strip the prefixes and
+/// leave a patch `git apply` cannot place.
+fn assert_config_injection_neutralized(env: &InstallLocalLyricsEnv, vars: &[(&str, &str)]) {
     let collection_name = "Feng Ling Yu Xiu";
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let source_content = text_block_fnl! {
@@ -389,24 +392,14 @@ fn honors_diff_despite_injected_config() {
         "line three"
     };
     let (separated, unified) = prepare_outdated(
-        &env,
+        env,
         collection_name,
         video_title,
         source_content,
         target_content,
     );
 
-    // Injecting diff.noprefix through GIT_CONFIG_COUNT would strip the
-    // a/ b/ prefixes and leave a patch git apply cannot place. The tool
-    // discards config injected through the environment.
-    let stdout = run_diff_with_env(
-        &env,
-        &[
-            ("GIT_CONFIG_COUNT", "1"),
-            ("GIT_CONFIG_KEY_0", "diff.noprefix"),
-            ("GIT_CONFIG_VALUE_0", "true"),
-        ],
-    );
+    let stdout = run_diff_with_env(env, vars);
     let patch_text = str::from_utf8(&stdout).unwrap();
 
     let separated_rel = format!("{collection_name}/{video_title}.vi.srt");
@@ -423,4 +416,23 @@ fn honors_diff_despite_injected_config() {
     remove_file(&patch_file).unwrap();
     assert_eq!(read_to_string(&separated).unwrap(), source_content);
     assert_eq!(read_to_string(&unified).unwrap(), source_content);
+}
+
+#[test]
+fn honors_diff_despite_config_injected_via_count() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    assert_config_injection_neutralized(
+        &env,
+        &[
+            ("GIT_CONFIG_COUNT", "1"),
+            ("GIT_CONFIG_KEY_0", "diff.noprefix"),
+            ("GIT_CONFIG_VALUE_0", "true"),
+        ],
+    );
+}
+
+#[test]
+fn honors_diff_despite_config_injected_via_parameters() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    assert_config_injection_neutralized(&env, &[("GIT_CONFIG_PARAMETERS", "'diff.noprefix=true'")]);
 }

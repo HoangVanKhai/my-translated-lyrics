@@ -74,8 +74,8 @@ fn keep(target: &Path, source: &Path) {
 
 /// Build a `git` command that runs inside `repo`, isolated from the
 /// developer's environment so that a personal setting cannot alter the
-/// patch. Isolation happens on three fronts because git reads
-/// configuration from more than one place:
+/// patch. Isolation happens on two fronts because git reads configuration
+/// and ignore rules from more than one place:
 ///
 /// - The global and system configuration files are redirected to
 ///   `/dev/null`, and the configuration injected through the environment
