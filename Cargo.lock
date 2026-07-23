@@ -434,6 +434,7 @@ name = "install-local-lyrics"
 version = "0.0.0"
 dependencies = [
  "clap",
+ "diff",
  "itertools",
  "lyrics-core",
  "pipe-trait",

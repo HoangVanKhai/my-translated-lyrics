@@ -118,14 +118,25 @@ impl InstallLocalLyricsEnv {
         }
     }
 
-    /// Runs `install-local-lyrics` and asserts it exits successfully.
-    pub fn run<Args: IntoIterator<Item = &'static str>>(&self, args: Args) -> std::process::Output {
-        let output = Command::new(self.bin)
+    /// Runs `install-local-lyrics` with the given arguments and returns
+    /// the raw process output without asserting on the exit status.
+    /// Callers that expect success should use `run`; callers that assert
+    /// on a failure, such as an argument conflict, use this instead.
+    pub fn run_allow_failure<Args>(&self, args: Args) -> std::process::Output
+    where
+        Args: IntoIterator<Item = &'static str>,
+    {
+        Command::new(self.bin)
             .with_args(args)
             .with_arg(&self.source)
             .with_arg(&self.target)
             .output()
-            .expect("failed to spawn install-local-lyrics");
+            .expect("failed to spawn install-local-lyrics")
+    }
+
+    /// Runs `install-local-lyrics` and asserts it exits successfully.
+    pub fn run<Args: IntoIterator<Item = &'static str>>(&self, args: Args) -> std::process::Output {
+        let output = self.run_allow_failure(args);
         let stdout = String::from_utf8_lossy(&output.stdout);
         let stdout = stdout.trim();
         if !stdout.is_empty() {

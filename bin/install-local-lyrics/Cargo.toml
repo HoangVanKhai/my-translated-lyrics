@@ -6,6 +6,7 @@ publish.workspace = true
 
 [dependencies]
 clap.workspace = true
+diff.workspace = true
 itertools.workspace = true
 lyrics-core.workspace = true
 pipe-trait.workspace = true

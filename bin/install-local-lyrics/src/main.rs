@@ -28,6 +28,11 @@ struct Args {
     #[clap(long, short = 'f')]
     force: bool,
 
+    /// Render a diff of the outdated subtitles that a dry run would update.
+    /// Diffing only inspects changes without applying them, so this flag conflicts with --execute.
+    #[clap(long, short = 'd', conflicts_with = "execute")]
+    diff: bool,
+
     /// Source directory of the subtitles.
     source: PathBuf,
 
@@ -57,6 +62,27 @@ fn uninstall(execute: bool, target: &Path) {
 /// No filesystem change is made regardless of the `--execute` flag.
 fn keep(target: &Path, source: &Path) {
     eprintln!("warning: Keeping {target:?} because it is newer than {source:?}");
+}
+
+/// Print a line-by-line diff between an outdated target file and its
+/// source to standard output. The diff shows how the target would change
+/// if the source overwrote it. It is only rendered on a dry run, so the
+/// target on disk still holds its current content when this runs.
+fn print_diff(source: &Path, target: &Path) {
+    let current = read_to_string(target)
+        .unwrap_or_else(|error| panic!("error: Cannot read {target:?}: {error}"));
+    let updated = read_to_string(source)
+        .unwrap_or_else(|error| panic!("error: Cannot read {source:?}: {error}"));
+    println!();
+    println!("--- {target:?} (current)");
+    println!("+++ {source:?} (new)");
+    for line in diff::lines(&current, &updated) {
+        match line {
+            diff::Result::Left(line) => println!("-{line}"),
+            diff::Result::Right(line) => println!("+{line}"),
+            diff::Result::Both(line, _) => println!(" {line}"),
+        }
+    }
 }
 
 fn install(execute: bool, source: &Path, target: &Path) {
@@ -94,6 +120,7 @@ fn main() {
     let Args {
         execute,
         force,
+        diff,
         source,
         target,
     } = Args::parse();
@@ -291,6 +318,9 @@ fn main() {
     eprintln!("stage: Updating outdated subtitles");
     for (source, target) in files_need_update.iter().sorted() {
         install(execute, source, target);
+        if diff {
+            print_diff(source, target);
+        }
     }
 
     if !files_kept_newer.is_empty() {
