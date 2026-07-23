@@ -74,22 +74,28 @@ fn keep(target: &Path, source: &Path) {
 
 /// Build a `git` command that runs inside `repo`, isolated from the
 /// developer's environment so that a personal setting cannot alter the
-/// patch. Isolation happens on two fronts because git reads configuration
-/// and ignore rules from more than one place:
+/// patch. Isolation happens on three fronts because git takes input from
+/// more than one place:
 ///
-/// - The global and system configuration files are redirected to
+/// - Configuration: the global and system files are redirected to
 ///   `/dev/null`, and the configuration injected through the environment
 ///   (`GIT_CONFIG_COUNT` with `GIT_CONFIG_KEY_<n>`, and the older
 ///   `GIT_CONFIG_PARAMETERS`) is discarded. Without this, an injected
 ///   `diff.noprefix` would strip the `a/`/`b/` prefixes the patch needs,
 ///   and an injected `core.autocrlf` would rewrite line endings.
-/// - The default excludes and attributes files are overridden. Git reads
-///   its default global gitignore and attributes file even when no
-///   configuration points at them, so a `*.srt` ignore rule would
-///   silently drop files from the patch and a `*.srt -diff` attribute
-///   would turn a text change into a non-applicable binary patch.
+/// - Ignore and attribute rules: the default excludes and attributes
+///   files are overridden. Git reads its default global gitignore and
+///   attributes file even when no configuration points at them, so a
+///   `*.srt` ignore rule would silently drop files from the patch and a
+///   `*.srt -diff` attribute would turn a text change into a
+///   non-applicable binary patch.
+/// - Repository location: the variables that redirect git at another
+///   repository are cleared, so the command operates only on `repo` as
+///   discovered through `-C`. Otherwise a `GIT_DIR` together with a
+///   `GIT_WORK_TREE`, as exported for a bare dotfiles repository, would
+///   send every invocation to the wrong place and yield an empty patch.
 fn git_command(repo: &Path) -> Command {
-    Command::new("git")
+    let mut command = Command::new("git")
         .with_env("GIT_CONFIG_GLOBAL", "/dev/null")
         .with_env("GIT_CONFIG_SYSTEM", "/dev/null")
         .with_env("GIT_CONFIG_COUNT", "0")
@@ -99,7 +105,21 @@ fn git_command(repo: &Path) -> Command {
         .with_arg("-c")
         .with_arg("core.excludesFile=/dev/null")
         .with_arg("-c")
-        .with_arg("core.attributesFile=/dev/null")
+        .with_arg("core.attributesFile=/dev/null");
+    // `command-extra` has no per-variable removal, so the location
+    // variables are cleared with the native `env_remove`.
+    for variable in [
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "GIT_INDEX_FILE",
+        "GIT_OBJECT_DIRECTORY",
+        "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+        "GIT_COMMON_DIR",
+        "GIT_CEILING_DIRECTORIES",
+    ] {
+        command.env_remove(variable);
+    }
+    command
 }
 
 /// Run a `git` subcommand inside `repo` and require it to succeed.
