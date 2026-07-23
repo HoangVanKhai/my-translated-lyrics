@@ -645,3 +645,78 @@ fn honors_diff_despite_git_diff_opts() {
     assert_eq!(read_to_string(&separated).unwrap(), source_content);
     assert_eq!(read_to_string(&unified).unwrap(), source_content);
 }
+
+#[test]
+fn honors_diff_despite_git_attr_source() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    let collection_name = "Feng Ling Yu Xiu";
+    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let source_content = text_block_fnl! {
+        "line one"
+        "line two changed"
+        "line three"
+    };
+    let target_content = text_block_fnl! {
+        "line one"
+        "line two"
+        "line three"
+    };
+    let (separated, unified) = prepare_outdated(
+        &env,
+        collection_name,
+        video_title,
+        source_content,
+        target_content,
+    );
+
+    // GIT_ATTR_SOURCE points attribute lookup at a tree the throwaway
+    // repository does not have, which aborts `git add` unless the tool
+    // clears it.
+    let stdout = run_diff_with_env(&env, &[("GIT_ATTR_SOURCE", "HEAD")]);
+    let patch_text = str::from_utf8(&stdout).unwrap();
+
+    let separated_rel = format!("{collection_name}/{video_title}.vi.srt");
+    assert!(
+        patch_text.contains(&format!("diff --git a/{separated_rel} b/{separated_rel}")),
+        "GIT_ATTR_SOURCE disrupted the diff:\n{patch_text}",
+    );
+    assert!(
+        patch_text.contains("-line two\n+line two changed\n"),
+        "unexpected diff body:\n{patch_text}",
+    );
+    assert_eq!(read_to_string(&separated).unwrap(), target_content);
+    assert_eq!(read_to_string(&unified).unwrap(), target_content);
+}
+
+#[test]
+fn diff_excludes_newly_installed_files() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    let collection_name = "Feng Ling Yu Xiu";
+    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let desc = video_desc(
+        collection_name.to_owned(),
+        video_title.to_owned(),
+        Visibility::default(),
+    );
+    // A source with no existing target files: these are new installs.
+    env.add_source_entry(
+        "ExampleSong",
+        &desc,
+        &[("lyrics.vi.srt", "brand new content\n")],
+    );
+
+    let output = env.run(["--diff"]);
+
+    // The plan reports the files as additions on stderr...
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("2 files would be added"),
+        "expected the files to be new installs:\n{stderr}",
+    );
+    // ...but a new install is not an outdated update, so it is not diffed.
+    assert!(
+        output.stdout.is_empty(),
+        "a newly installed file must not appear in the diff, got:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+    );
+}

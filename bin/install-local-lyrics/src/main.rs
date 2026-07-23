@@ -94,7 +94,8 @@ fn keep(target: &Path, source: &Path) {
 ///   cleared. `GIT_DIR` together with a `GIT_WORK_TREE`, as exported for
 ///   a bare dotfiles repository, would send every invocation to a foreign
 ///   repository and yield an empty patch. `GIT_DIFF_OPTS`, for example
-///   `--unified=0`, would strip the context `git apply` needs. The index
+///   `--unified=0`, would strip the context `git apply` needs, and
+///   `GIT_ATTR_SOURCE` would read attributes from another tree. The index
 ///   and object-store variables are cleared for the same reason.
 fn git_command(repo: &Path) -> Command {
     let mut command = Command::new("git")
@@ -119,6 +120,7 @@ fn git_command(repo: &Path) -> Command {
         "GIT_COMMON_DIR",
         "GIT_CEILING_DIRECTORIES",
         "GIT_DIFF_OPTS",
+        "GIT_ATTR_SOURCE",
     ] {
         command.env_remove(variable);
     }
