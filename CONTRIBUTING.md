@@ -269,6 +269,14 @@ fn select_video_filters_then_selects() {
 
 Here `press` and `pop_scripted` are the stateless helpers that stay at module scope, while `EVENTS` and `Scripted` belong to the one test that uses them. See `lib/play-with-lyrics-tui/src/host.rs` for the capabilities and `Host`, `lib/play-with-lyrics-tui/src/selectors/video.rs` for the `select_video` wrapper and its `select_video_loop`, and the `lib/play-with-lyrics-tui/src/selectors/test_*.rs` modules for the tests.
 
+### Test Data
+
+Test fixtures must use placeholder or generic content, never real-world material. Video titles, collection names, filenames, and lyric bodies that appear in tests must be invented placeholders or plainly generic strings. None of them may be the name of a real song, the name of a real performer, or the text of real lyrics.
+
+The existing integration tests set the pattern. A title such as `【示例表演者】《示例歌曲》Example Song [ExampleID]`, in which `示例` is Chinese for "sample", names a performer, a song, and an identifier that are all plainly invented. Lyric bodies stay just as generic, using filler lines such as `line one` and `line two` or a single placeholder word such as `Hello`.
+
+Two reasons motivate the convention. First, it keeps the fixtures free of third-party copyrighted material, so the repository never stores lyrics that it has no right to distribute. Second, it makes the intent of each test obvious, because a reader can tell at a glance that a value is a stand-in chosen for the test rather than data that carries meaning of its own.
+
 ### Using `pipe-trait`
 
 This codebase uses the [`pipe-trait`](https://docs.rs/pipe-trait) crate for method-chaining through unary functions, keeping code in a natural left-to-right reading order. Import it as `use pipe_trait::Pipe;`.
