@@ -607,3 +607,41 @@ fn honors_diff_despite_git_dir_and_work_tree() {
     assert_eq!(read_to_string(&separated).unwrap(), target_content);
     assert_eq!(read_to_string(&unified).unwrap(), target_content);
 }
+
+#[test]
+fn honors_diff_despite_git_diff_opts() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    let collection_name = "Feng Ling Yu Xiu";
+    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let source_content = text_block_fnl! {
+        "line one"
+        "line two changed"
+        "line three"
+    };
+    let target_content = text_block_fnl! {
+        "line one"
+        "line two"
+        "line three"
+    };
+    let (separated, unified) = prepare_outdated(
+        &env,
+        collection_name,
+        video_title,
+        source_content,
+        target_content,
+    );
+
+    // GIT_DIFF_OPTS=--unified=0 would strip the surrounding context that
+    // git apply needs, and no configuration or command-line flag can
+    // override it, so the tool must clear it. The resulting patch must
+    // still apply cleanly.
+    let patch = run_diff_with_env(&env, &[("GIT_DIFF_OPTS", "--unified=0")]);
+
+    run_git(&env.target, &["init", "-q", "."]);
+    let patch_file = env.target.join("outdated.patch");
+    write_file(&patch_file, &patch).unwrap();
+    run_git(&env.target, &["apply", "outdated.patch"]);
+    remove_file(&patch_file).unwrap();
+    assert_eq!(read_to_string(&separated).unwrap(), source_content);
+    assert_eq!(read_to_string(&unified).unwrap(), source_content);
+}

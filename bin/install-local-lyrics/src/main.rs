@@ -89,11 +89,13 @@ fn keep(target: &Path, source: &Path) {
 ///   `*.srt` ignore rule would silently drop files from the patch and a
 ///   `*.srt -diff` attribute would turn a text change into a
 ///   non-applicable binary patch.
-/// - Repository location: the variables that redirect git at another
-///   repository are cleared, so the command operates only on `repo` as
-///   discovered through `-C`. Otherwise a `GIT_DIR` together with a
-///   `GIT_WORK_TREE`, as exported for a bare dotfiles repository, would
-///   send every invocation to the wrong place and yield an empty patch.
+/// - Direct environment inputs: git honors a few variables that no
+///   configuration or command-line flag can override, so they are
+///   cleared. `GIT_DIR` together with a `GIT_WORK_TREE`, as exported for
+///   a bare dotfiles repository, would send every invocation to a foreign
+///   repository and yield an empty patch. `GIT_DIFF_OPTS`, for example
+///   `--unified=0`, would strip the context `git apply` needs. The index
+///   and object-store variables are cleared for the same reason.
 fn git_command(repo: &Path) -> Command {
     let mut command = Command::new("git")
         .with_env("GIT_CONFIG_GLOBAL", "/dev/null")
@@ -106,8 +108,8 @@ fn git_command(repo: &Path) -> Command {
         .with_arg("core.excludesFile=/dev/null")
         .with_arg("-c")
         .with_arg("core.attributesFile=/dev/null");
-    // `command-extra` has no per-variable removal, so the location
-    // variables are cleared with the native `env_remove`.
+    // `command-extra` has no per-variable removal, so these are cleared
+    // with the native `env_remove`.
     for variable in [
         "GIT_DIR",
         "GIT_WORK_TREE",
@@ -116,6 +118,7 @@ fn git_command(repo: &Path) -> Command {
         "GIT_ALTERNATE_OBJECT_DIRECTORIES",
         "GIT_COMMON_DIR",
         "GIT_CEILING_DIRECTORIES",
+        "GIT_DIFF_OPTS",
     ] {
         command.env_remove(variable);
     }
