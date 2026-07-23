@@ -471,3 +471,38 @@ fn removes_the_temporary_repository_after_diff() {
         "the temporary diff repository was not cleaned up: {leftovers:?}",
     );
 }
+
+#[test]
+fn diff_reports_content_changes_without_mode_changes() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    let collection_name = "Feng Ling Yu Xiu";
+    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let _targets = prepare_outdated(
+        &env,
+        collection_name,
+        video_title,
+        "new content\n",
+        "old content\n",
+    );
+
+    // Give the source a different mode than its targets, so overwriting a
+    // staged file by copying the source would introduce a mode change into
+    // the patch.
+    let source_file = env.source.join("ExampleSong").join("lyrics.vi.srt");
+    let mut permissions = metadata(&source_file).unwrap().permissions();
+    permissions.set_mode(0o755);
+    set_permissions(&source_file, permissions).unwrap();
+
+    let output = env.run(["--diff"]);
+    let patch_text = str::from_utf8(&output.stdout).unwrap();
+
+    // The patch reports the content change alone, never a mode change.
+    assert!(
+        !patch_text.contains("old mode") && !patch_text.contains("new mode"),
+        "the patch contains a mode change:\n{patch_text}",
+    );
+    assert!(
+        patch_text.contains("-old content\n+new content\n"),
+        "the content change is missing:\n{patch_text}",
+    );
+}
