@@ -2,8 +2,8 @@ use command_extra::CommandExtra;
 use lyrics_core::video_descriptor::{UNIFIED_COLLECTION, Visibility};
 use pretty_assertions::assert_eq;
 use std::fs::{
-    OpenOptions, create_dir_all, metadata, read, read_to_string, remove_file, set_permissions,
-    write as write_file,
+    OpenOptions, create_dir_all, metadata, read, read_dir, read_to_string, remove_file,
+    set_permissions, write as write_file,
 };
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
@@ -435,4 +435,39 @@ fn honors_diff_despite_config_injected_via_count() {
 fn honors_diff_despite_config_injected_via_parameters() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
     assert_config_injection_neutralized(&env, &[("GIT_CONFIG_PARAMETERS", "'diff.noprefix=true'")]);
+}
+
+#[test]
+fn removes_the_temporary_repository_after_diff() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    let _targets = prepare_outdated(
+        &env,
+        "Feng Ling Yu Xiu",
+        "【示例表演者】《示例歌曲》Example Song [ExampleID]",
+        "new\n",
+        "old\n",
+    );
+
+    // Point the binary's temporary directory (`std::env::temp_dir()` reads
+    // `TMPDIR`) at a private, initially empty directory, so the leftover
+    // check is not disturbed by other processes running in parallel.
+    let temp = Temp::new_dir();
+    let stdout = run_diff_with_env(&env, &[("TMPDIR", temp.to_str().unwrap())]);
+
+    // A diff was produced, so the throwaway repository was created.
+    assert!(!stdout.is_empty(), "expected a diff to be produced");
+
+    // Once the diff is done, no throwaway repository is left behind.
+    let leftovers: Vec<_> = read_dir(&*temp)
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name())
+        .filter(|name| {
+            name.to_string_lossy()
+                .starts_with("install-local-lyrics-diff.")
+        })
+        .collect();
+    assert!(
+        leftovers.is_empty(),
+        "the temporary diff repository was not cleaned up: {leftovers:?}",
+    );
 }
