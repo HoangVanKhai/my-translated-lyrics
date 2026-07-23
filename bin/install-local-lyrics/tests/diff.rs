@@ -72,6 +72,28 @@ fn run_git(dir: &Path, args: &[&str]) {
     assert!(status.success(), "git {args:?} failed");
 }
 
+/// Runs `install-local-lyrics --diff` with extra environment variables
+/// set, asserts it succeeds, and returns its standard output. It checks
+/// that a hostile git environment does not perturb the emitted patch.
+fn run_diff_with_env(env: &InstallLocalLyricsEnv, vars: &[(&str, &Path)]) -> Vec<u8> {
+    let mut command = Command::new(INSTALL_LOCAL_LYRICS);
+    for &(key, value) in vars {
+        command = command.with_env(key, value);
+    }
+    let output = command
+        .with_arg("--diff")
+        .with_arg(&env.source)
+        .with_arg(&env.target)
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "install-local-lyrics failed:\n{}",
+        String::from_utf8_lossy(&output.stderr),
+    );
+    output.stdout
+}
+
 #[test]
 fn diff_conflicts_with_execute() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
@@ -249,20 +271,11 @@ fn honors_diff_despite_global_gitignore_and_gitattributes() {
     write_file(git_config.join("ignore"), "*.srt\n").unwrap();
     write_file(git_config.join("attributes"), "*.srt -diff\n").unwrap();
 
-    let output = Command::new(INSTALL_LOCAL_LYRICS)
-        .with_env("HOME", &*home)
-        .with_env("XDG_CONFIG_HOME", &xdg_config)
-        .with_arg("--diff")
-        .with_arg(&env.source)
-        .with_arg(&env.target)
-        .output()
-        .unwrap();
-    assert!(
-        output.status.success(),
-        "install-local-lyrics failed:\n{}",
-        String::from_utf8_lossy(&output.stderr),
+    let stdout = run_diff_with_env(
+        &env,
+        &[("HOME", &*home), ("XDG_CONFIG_HOME", xdg_config.as_path())],
     );
-    let patch_text = str::from_utf8(&output.stdout).unwrap();
+    let patch_text = str::from_utf8(&stdout).unwrap();
 
     let separated_rel = format!("{collection_name}/{video_title}.vi.srt");
     assert!(
@@ -272,6 +285,50 @@ fn honors_diff_despite_global_gitignore_and_gitattributes() {
     assert!(
         patch_text.contains("-line two\n+line two changed\n"),
         "the .srt was rendered as binary rather than a text diff:\n{patch_text}",
+    );
+    assert_eq!(read_to_string(&separated).unwrap(), target_content);
+    assert_eq!(read_to_string(&unified).unwrap(), target_content);
+}
+
+#[test]
+fn honors_diff_despite_git_template_dir() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    let collection_name = "Feng Ling Yu Xiu";
+    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let source_content = text_block_fnl! {
+        "line one"
+        "line two changed"
+        "line three"
+    };
+    let target_content = text_block_fnl! {
+        "line one"
+        "line two"
+        "line three"
+    };
+    let (separated, unified) = prepare_outdated(
+        &env,
+        collection_name,
+        video_title,
+        source_content,
+        target_content,
+    );
+
+    // A GIT_TEMPLATE_DIR whose info/exclude ignores *.srt would, unless the
+    // tool initializes the repository from an empty template, seed that
+    // exclude into the throwaway repository and drop these files from the
+    // patch.
+    let template = Temp::new_dir();
+    let template_info = template.join("info");
+    create_dir_all(&template_info).unwrap();
+    write_file(template_info.join("exclude"), "*.srt\n").unwrap();
+
+    let stdout = run_diff_with_env(&env, &[("GIT_TEMPLATE_DIR", &*template)]);
+    let patch_text = str::from_utf8(&stdout).unwrap();
+
+    let separated_rel = format!("{collection_name}/{video_title}.vi.srt");
+    assert!(
+        patch_text.contains(&format!("diff --git a/{separated_rel} b/{separated_rel}")),
+        "the .srt was dropped from the patch:\n{patch_text}",
     );
     assert_eq!(read_to_string(&separated).unwrap(), target_content);
     assert_eq!(read_to_string(&unified).unwrap(), target_content);

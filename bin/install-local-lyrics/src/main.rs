@@ -187,7 +187,10 @@ fn render_diff(target_root: &Path, updates: &[(&Path, &Path)]) {
     // step panics.
     let repo_dir = create_temp_repo_dir();
     let repo = repo_dir.0.as_path();
-    run_git(repo, &["init", "-q"]);
+    // `--template=` starts from an empty template, so a `GIT_TEMPLATE_DIR`
+    // in the environment cannot seed `.git/info/exclude` or
+    // `.git/info/attributes` into the repository and perturb the patch.
+    run_git(repo, &["init", "-q", "--template="]);
 
     let staged: Vec<PathBuf> = updates
         .iter()
