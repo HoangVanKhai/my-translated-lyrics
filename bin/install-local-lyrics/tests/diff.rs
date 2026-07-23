@@ -2,8 +2,10 @@ use command_extra::CommandExtra;
 use lyrics_core::video_descriptor::{UNIFIED_COLLECTION, Visibility};
 use pretty_assertions::assert_eq;
 use std::fs::{
-    OpenOptions, create_dir_all, read, read_to_string, remove_file, write as write_file,
+    OpenOptions, create_dir_all, metadata, read, read_to_string, remove_file, set_permissions,
+    write as write_file,
 };
+use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{Duration, SystemTime};
@@ -75,7 +77,7 @@ fn run_git(dir: &Path, args: &[&str]) {
 /// Runs `install-local-lyrics --diff` with extra environment variables
 /// set, asserts it succeeds, and returns its standard output. It checks
 /// that a hostile git environment does not perturb the emitted patch.
-fn run_diff_with_env(env: &InstallLocalLyricsEnv, vars: &[(&str, &Path)]) -> Vec<u8> {
+fn run_diff_with_env(env: &InstallLocalLyricsEnv, vars: &[(&str, &str)]) -> Vec<u8> {
     let mut command = Command::new(INSTALL_LOCAL_LYRICS);
     for &(key, value) in vars {
         command = command.with_env(key, value);
@@ -273,7 +275,10 @@ fn honors_diff_despite_global_gitignore_and_gitattributes() {
 
     let stdout = run_diff_with_env(
         &env,
-        &[("HOME", &*home), ("XDG_CONFIG_HOME", xdg_config.as_path())],
+        &[
+            ("HOME", home.to_str().unwrap()),
+            ("XDG_CONFIG_HOME", xdg_config.to_str().unwrap()),
+        ],
     );
     let patch_text = str::from_utf8(&stdout).unwrap();
 
@@ -322,7 +327,7 @@ fn honors_diff_despite_git_template_dir() {
     create_dir_all(&template_info).unwrap();
     write_file(template_info.join("exclude"), "*.srt\n").unwrap();
 
-    let stdout = run_diff_with_env(&env, &[("GIT_TEMPLATE_DIR", &*template)]);
+    let stdout = run_diff_with_env(&env, &[("GIT_TEMPLATE_DIR", template.to_str().unwrap())]);
     let patch_text = str::from_utf8(&stdout).unwrap();
 
     let separated_rel = format!("{collection_name}/{video_title}.vi.srt");
@@ -332,4 +337,90 @@ fn honors_diff_despite_git_template_dir() {
     );
     assert_eq!(read_to_string(&separated).unwrap(), target_content);
     assert_eq!(read_to_string(&unified).unwrap(), target_content);
+}
+
+#[test]
+fn honors_diff_despite_git_external_diff() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    let collection_name = "Feng Ling Yu Xiu";
+    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let (separated, unified) =
+        prepare_outdated(&env, collection_name, video_title, "new\n", "old\n");
+
+    // GIT_EXTERNAL_DIFF names a program git would run in place of its own
+    // diff. Without `--no-ext-diff`, the patch would be the program's
+    // output instead of a real diff.
+    let script_dir = Temp::new_dir();
+    let script = script_dir.join("external-diff");
+    write_file(&script, "#!/bin/sh\necho HIJACKED\n").unwrap();
+    let mut permissions = metadata(&script).unwrap().permissions();
+    permissions.set_mode(0o755);
+    set_permissions(&script, permissions).unwrap();
+
+    let stdout = run_diff_with_env(&env, &[("GIT_EXTERNAL_DIFF", script.to_str().unwrap())]);
+    let patch_text = str::from_utf8(&stdout).unwrap();
+
+    let separated_rel = format!("{collection_name}/{video_title}.vi.srt");
+    assert!(
+        patch_text.contains(&format!("diff --git a/{separated_rel} b/{separated_rel}")),
+        "the external diff program replaced the patch:\n{patch_text}",
+    );
+    assert!(
+        !patch_text.contains("HIJACKED"),
+        "the external diff program ran:\n{patch_text}",
+    );
+    assert_eq!(read_to_string(&separated).unwrap(), "old\n");
+    assert_eq!(read_to_string(&unified).unwrap(), "old\n");
+}
+
+#[test]
+fn honors_diff_despite_injected_config() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    let collection_name = "Feng Ling Yu Xiu";
+    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let source_content = text_block_fnl! {
+        "line one"
+        "line two changed"
+        "line three"
+    };
+    let target_content = text_block_fnl! {
+        "line one"
+        "line two"
+        "line three"
+    };
+    let (separated, unified) = prepare_outdated(
+        &env,
+        collection_name,
+        video_title,
+        source_content,
+        target_content,
+    );
+
+    // Injecting diff.noprefix through GIT_CONFIG_COUNT would strip the
+    // a/ b/ prefixes and leave a patch git apply cannot place. The tool
+    // discards config injected through the environment.
+    let stdout = run_diff_with_env(
+        &env,
+        &[
+            ("GIT_CONFIG_COUNT", "1"),
+            ("GIT_CONFIG_KEY_0", "diff.noprefix"),
+            ("GIT_CONFIG_VALUE_0", "true"),
+        ],
+    );
+    let patch_text = str::from_utf8(&stdout).unwrap();
+
+    let separated_rel = format!("{collection_name}/{video_title}.vi.srt");
+    assert!(
+        patch_text.contains(&format!("diff --git a/{separated_rel} b/{separated_rel}")),
+        "injected config stripped the a/ b/ prefixes:\n{patch_text}",
+    );
+
+    // The patch still applies cleanly against the target directory.
+    run_git(&env.target, &["init", "-q", "."]);
+    let patch_file = env.target.join("outdated.patch");
+    write_file(&patch_file, &stdout).unwrap();
+    run_git(&env.target, &["apply", "outdated.patch"]);
+    remove_file(&patch_file).unwrap();
+    assert_eq!(read_to_string(&separated).unwrap(), source_content);
+    assert_eq!(read_to_string(&unified).unwrap(), source_content);
 }

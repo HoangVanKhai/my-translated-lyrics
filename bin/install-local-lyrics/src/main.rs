@@ -73,18 +73,27 @@ fn keep(target: &Path, source: &Path) {
 }
 
 /// Build a `git` command that runs inside `repo`, isolated from the
-/// developer's environment. The global and system configuration files are
-/// redirected to `/dev/null`, and the default excludes and attributes
-/// files are overridden, so that a personal setting cannot alter the
-/// patch. Redirecting the configuration alone is not enough: git reads its
-/// default excludes file (a global gitignore) and attributes file even
-/// when no configuration points at them, so a `*.srt` ignore rule would
-/// silently drop files from the patch and a `*.srt -diff` attribute would
-/// turn a text change into a non-applicable binary patch.
+/// developer's environment so that a personal setting cannot alter the
+/// patch. Isolation happens on three fronts because git reads
+/// configuration from more than one place:
+///
+/// - The global and system configuration files are redirected to
+///   `/dev/null`, and the configuration injected through the environment
+///   (`GIT_CONFIG_COUNT` with `GIT_CONFIG_KEY_<n>`, and the older
+///   `GIT_CONFIG_PARAMETERS`) is discarded. Without this, an injected
+///   `diff.noprefix` would strip the `a/`/`b/` prefixes the patch needs,
+///   and an injected `core.autocrlf` would rewrite line endings.
+/// - The default excludes and attributes files are overridden. Git reads
+///   its default global gitignore and attributes file even when no
+///   configuration points at them, so a `*.srt` ignore rule would
+///   silently drop files from the patch and a `*.srt -diff` attribute
+///   would turn a text change into a non-applicable binary patch.
 fn git_command(repo: &Path) -> Command {
     Command::new("git")
         .with_env("GIT_CONFIG_GLOBAL", "/dev/null")
         .with_env("GIT_CONFIG_SYSTEM", "/dev/null")
+        .with_env("GIT_CONFIG_COUNT", "0")
+        .with_env("GIT_CONFIG_PARAMETERS", "")
         .with_arg("-C")
         .with_arg(repo)
         .with_arg("-c")
@@ -109,7 +118,10 @@ fn run_git(repo: &Path, args: &[&str]) {
 /// their literal glyphs rather than octal escapes, which `git apply`
 /// still accepts. `--binary` makes the patch applicable even when a file's
 /// content is classified as binary, rather than emitting a lossy
-/// `Binary files differ` line.
+/// `Binary files differ` line. `--no-ext-diff` ignores any external diff
+/// program, whether set through `GIT_EXTERNAL_DIFF` or a `diff.external`
+/// configuration, which would otherwise replace the patch with the
+/// program's own output.
 fn git_diff(repo: &Path) -> Vec<u8> {
     let output = git_command(repo)
         .with_args([
@@ -118,6 +130,7 @@ fn git_diff(repo: &Path) -> Vec<u8> {
             "diff",
             "--no-color",
             "--binary",
+            "--no-ext-diff",
         ])
         .output()
         .unwrap_or_else(|error| panic!("error: Cannot run git diff: {error}"));
