@@ -2,7 +2,7 @@ use command_extra::CommandExtra;
 use lyrics_core::video_descriptor::{UNIFIED_COLLECTION, Visibility};
 use pretty_assertions::assert_eq;
 use std::fs::{OpenOptions, read_to_string, remove_file, write as write_file};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{Duration, SystemTime};
 use test_utils::{InstallLocalLyricsEnv, video_desc};
@@ -22,6 +22,37 @@ fn set_mtime(path: &Path, seconds_since_epoch: u64) {
         .unwrap()
         .set_modified(time)
         .unwrap();
+}
+
+/// Installs one outdated subtitle: a source that is newer than an
+/// already-present target whose content differs, in both the separated
+/// and unified collections. Returns the separated and unified target
+/// files.
+fn prepare_outdated(
+    env: &InstallLocalLyricsEnv,
+    collection_name: &str,
+    video_title: &str,
+    source_content: &str,
+    target_content: &str,
+) -> (PathBuf, PathBuf) {
+    let desc = video_desc(
+        collection_name.to_owned(),
+        video_title.to_owned(),
+        Visibility::default(),
+    );
+    env.add_source_entry("ExampleSong", &desc, &[("lyrics.vi.srt", source_content)]);
+
+    let separated = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
+    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
+    write_file(&separated, target_content).unwrap();
+    write_file(&unified, target_content).unwrap();
+
+    let source_file = env.source.join("ExampleSong").join("lyrics.vi.srt");
+    set_mtime(&separated, 1_000_000);
+    set_mtime(&unified, 1_000_000);
+    set_mtime(&source_file, 2_000_000);
+
+    (separated, unified)
 }
 
 /// Runs a `git` subcommand inside `dir` and asserts it succeeds. The
@@ -57,6 +88,30 @@ fn diff_conflicts_with_execute() {
 }
 
 #[test]
+fn dry_run_without_diff_flag_emits_no_stdout() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    let (separated, unified) = prepare_outdated(
+        &env,
+        "Feng Ling Yu Xiu",
+        "【示例表演者】《示例歌曲》Example Song [ExampleID]",
+        "new content\n",
+        "old content\n",
+    );
+
+    let output = env.run([]);
+
+    // The outdated files are reported on stderr, but a dry run without
+    // --diff must not write anything to stdout.
+    assert!(
+        output.stdout.is_empty(),
+        "a dry run without --diff must not write to stdout, got:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+    );
+    assert_eq!(read_to_string(&separated).unwrap(), "old content\n");
+    assert_eq!(read_to_string(&unified).unwrap(), "old content\n");
+}
+
+#[test]
 fn renders_git_apply_compatible_diff_of_outdated_subtitles() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
     let collection_name = "Feng Ling Yu Xiu";
@@ -72,22 +127,13 @@ fn renders_git_apply_compatible_diff_of_outdated_subtitles() {
         "line three"
     };
 
-    let desc = video_desc(
-        collection_name.to_owned(),
-        video_title.to_owned(),
-        Visibility::default(),
+    let (separated, unified) = prepare_outdated(
+        &env,
+        collection_name,
+        video_title,
+        source_content,
+        target_content,
     );
-    env.add_source_entry("ExampleSong", &desc, &[("lyrics.vi.srt", source_content)]);
-
-    let separated = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
-    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
-    write_file(&separated, target_content).unwrap();
-    write_file(&unified, target_content).unwrap();
-
-    let source_file = env.source.join("ExampleSong").join("lyrics.vi.srt");
-    set_mtime(&separated, 1_000_000);
-    set_mtime(&unified, 1_000_000);
-    set_mtime(&source_file, 2_000_000);
 
     let output = env.run(["--diff"]);
     let patch = output.stdout;

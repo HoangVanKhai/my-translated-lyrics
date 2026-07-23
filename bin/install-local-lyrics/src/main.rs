@@ -14,8 +14,8 @@ use reflink::reflink_or_copy;
 use std::collections::{HashMap, HashSet};
 use std::env::temp_dir;
 use std::fs::{
-    DirEntry, copy, create_dir_all, hard_link, read_dir, read_to_string, remove_dir_all,
-    remove_file,
+    DirEntry, copy, create_dir_all, hard_link, read, read_dir, read_to_string, remove_dir_all,
+    remove_file, write,
 };
 use std::io::{self, ErrorKind, Write};
 use std::iter::once;
@@ -70,18 +70,21 @@ fn keep(target: &Path, source: &Path) {
     eprintln!("warning: Keeping {target:?} because it is newer than {source:?}");
 }
 
-/// Run a `git` subcommand inside `repo` and require it to succeed.
-///
-/// The global and system configuration files are redirected to
-/// `/dev/null` so that a developer's own git settings, such as
-/// `core.autocrlf` or a disabled diff prefix, cannot alter the
-/// generated patch.
-fn run_git(repo: &Path, args: &[&str]) {
-    let status = Command::new("git")
+/// Build a `git` command that runs inside `repo` with the developer's
+/// global and system configuration ignored. Redirecting both files to
+/// `/dev/null` keeps a personal setting, such as `core.autocrlf` or a
+/// disabled diff prefix, from altering the generated patch.
+fn git_command(repo: &Path) -> Command {
+    Command::new("git")
         .with_env("GIT_CONFIG_GLOBAL", "/dev/null")
         .with_env("GIT_CONFIG_SYSTEM", "/dev/null")
         .with_arg("-C")
         .with_arg(repo)
+}
+
+/// Run a `git` subcommand inside `repo` and require it to succeed.
+fn run_git(repo: &Path, args: &[&str]) {
+    let status = git_command(repo)
         .with_args(args)
         .status()
         .unwrap_or_else(|error| panic!("error: Cannot run git {args:?}: {error}"));
@@ -95,11 +98,7 @@ fn run_git(repo: &Path, args: &[&str]) {
 /// their literal glyphs rather than octal escapes, which `git apply`
 /// still accepts.
 fn git_diff(repo: &Path) -> Vec<u8> {
-    let output = Command::new("git")
-        .with_env("GIT_CONFIG_GLOBAL", "/dev/null")
-        .with_env("GIT_CONFIG_SYSTEM", "/dev/null")
-        .with_arg("-C")
-        .with_arg(repo)
+    let output = git_command(repo)
         .with_args(["-c", "core.quotePath=false", "diff", "--no-color"])
         .output()
         .unwrap_or_else(|error| panic!("error: Cannot run git diff: {error}"));
@@ -108,6 +107,24 @@ fn git_diff(repo: &Path) -> Vec<u8> {
         panic!("error: git diff failed with {}: {stderr}", output.status);
     }
     output.stdout
+}
+
+/// A directory that is removed when the value is dropped, so that a panic
+/// while building the diff does not leave the throwaway git repository
+/// behind.
+struct TempRepoDir(PathBuf);
+
+impl Drop for TempRepoDir {
+    fn drop(&mut self) {
+        if let Err(error) = remove_dir_all(&self.0)
+            && error.kind() != ErrorKind::NotFound
+        {
+            eprintln!(
+                "warning: Failed to delete temporary diff directory {:?}: {error}",
+                self.0,
+            );
+        }
+    }
 }
 
 /// Render a single unified diff of all outdated subtitles to standard
@@ -121,17 +138,21 @@ fn git_diff(repo: &Path) -> Vec<u8> {
 /// handed to `git diff`. This runs only on a dry run, so the real target
 /// files are never modified.
 fn render_diff(target_root: &Path, updates: &[(&Path, &Path)]) {
-    let repo = temp_dir().join(format!("install-local-lyrics-diff.{}", std::process::id()));
+    let repo_dir =
+        TempRepoDir(temp_dir().join(format!("install-local-lyrics-diff.{}", std::process::id())));
+    let repo = repo_dir.0.as_path();
 
-    // Start from an empty directory, discarding one an earlier
-    // interrupted run may have left behind.
-    if let Err(error) = remove_dir_all(&repo)
+    // Start from an empty directory, discarding one that an earlier
+    // interrupted run may have left behind. The `TempRepoDir` guard
+    // removes the directory again on return, including when a later step
+    // panics.
+    if let Err(error) = remove_dir_all(repo)
         && error.kind() != ErrorKind::NotFound
     {
         panic!("error: Cannot clear temporary diff directory {repo:?}: {error}");
     }
-    create_dir_all(&repo).unwrap_or_else(|error| panic!("error: Cannot create {repo:?}: {error}"));
-    run_git(&repo, &["init", "-q"]);
+    create_dir_all(repo).unwrap_or_else(|error| panic!("error: Cannot create {repo:?}: {error}"));
+    run_git(repo, &["init", "-q"]);
 
     let staged: Vec<PathBuf> = updates
         .iter()
@@ -143,7 +164,8 @@ fn render_diff(target_root: &Path, updates: &[(&Path, &Path)]) {
         })
         .collect();
 
-    // Stage the current target files under their target-relative paths.
+    // Stage a copy of each current target file under its target-relative
+    // path. The copy carries the target's permissions.
     for ((_, target), staged) in updates.iter().zip(&staged) {
         if let Some(parent) = staged.parent() {
             create_dir_all(parent)
@@ -152,22 +174,25 @@ fn render_diff(target_root: &Path, updates: &[(&Path, &Path)]) {
         copy(target, staged)
             .unwrap_or_else(|error| panic!("error: Cannot copy {target:?} to {staged:?}: {error}"));
     }
-    run_git(&repo, &["add", "-A"]);
+    run_git(repo, &["add", "-A"]);
 
-    // Overwrite each staged file with the source content, so that
-    // `git diff` reports how the target would change once updated.
+    // Overwrite each staged file's content with the source while leaving
+    // its permissions untouched, so that `git diff` reports the content
+    // change alone and never a mode change.
     for ((source, _), staged) in updates.iter().zip(&staged) {
-        copy(source, staged)
-            .unwrap_or_else(|error| panic!("error: Cannot copy {source:?} to {staged:?}: {error}"));
+        let content =
+            read(source).unwrap_or_else(|error| panic!("error: Cannot read {source:?}: {error}"));
+        write(staged, &content)
+            .unwrap_or_else(|error| panic!("error: Cannot write {staged:?}: {error}"));
     }
 
-    let patch = git_diff(&repo);
-    io::stdout()
-        .write_all(&patch)
-        .unwrap_or_else(|error| panic!("error: Cannot write diff to standard output: {error}"));
-
-    if let Err(error) = remove_dir_all(&repo) {
-        eprintln!("warning: Failed to delete temporary diff directory {repo:?}: {error}");
+    let patch = git_diff(repo);
+    // A reader such as a pager may close the pipe before the whole patch
+    // is written. That is a clean end of output rather than a failure.
+    if let Err(error) = io::stdout().write_all(&patch)
+        && error.kind() != ErrorKind::BrokenPipe
+    {
+        panic!("error: Cannot write diff to standard output: {error}");
     }
 }
 

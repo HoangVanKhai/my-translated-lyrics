@@ -122,10 +122,10 @@ impl InstallLocalLyricsEnv {
     /// the raw process output without asserting on the exit status.
     /// Callers that expect success should use `run`; callers that assert
     /// on a failure, such as an argument conflict, use this instead.
-    pub fn run_allow_failure<Args>(&self, args: Args) -> std::process::Output
-    where
-        Args: IntoIterator<Item = &'static str>,
-    {
+    pub fn run_allow_failure<Args: IntoIterator<Item = &'static str>>(
+        &self,
+        args: Args,
+    ) -> std::process::Output {
         Command::new(self.bin)
             .with_args(args)
             .with_arg(&self.source)
