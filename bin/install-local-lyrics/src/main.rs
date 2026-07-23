@@ -236,7 +236,10 @@ fn render_diff(target_root: &Path, updates: &[(&Path, &Path)]) {
     // file, so a neutralizing rule is written there before anything is
     // staged. The empty template created no `.git/info`, so the directory is
     // created first. `-diff` is deliberately omitted, because genuinely
-    // binary content is still carried by `git diff --binary`.
+    // binary content is still carried by `git diff --binary`. A `filter`
+    // attribute needs no entry either: its clean driver is defined only in
+    // configuration, which the redirected `GIT_CONFIG_GLOBAL` and
+    // `GIT_CONFIG_SYSTEM` already suppress.
     let info_dir = repo.join(".git").join("info");
     create_dir_all(&info_dir)
         .unwrap_or_else(|error| panic!("error: Cannot create {info_dir:?}: {error}"));
