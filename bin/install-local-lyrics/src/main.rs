@@ -2,6 +2,7 @@
 #![cfg_attr(dylint_lib = "perfectionist", register_tool(perfectionist))]
 
 use clap::Parser;
+use command_extra::CommandExtra;
 use itertools::Itertools;
 use lyrics_core::file_snapshot::FileSnapshot;
 use lyrics_core::video_descriptor::{
@@ -9,13 +10,20 @@ use lyrics_core::video_descriptor::{
     VIDEO_CONFIG_FILE_NAME, VideoDesc, Visibility,
 };
 use pipe_trait::Pipe;
+use rand::distr::Alphanumeric;
+use rand::{RngExt, rng};
 use reflink::reflink_or_copy;
 use std::collections::{HashMap, HashSet};
-use std::fs::{DirEntry, hard_link, read_dir, read_to_string, remove_file};
-use std::io::{self, ErrorKind};
+use std::env::{temp_dir, var_os};
+use std::fs::{
+    DirEntry, copy, create_dir, create_dir_all, hard_link, read, read_dir, read_to_string,
+    remove_dir_all, remove_file, write,
+};
+use std::io::{self, ErrorKind, Write};
 use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 #[derive(Clone, Debug, Parser)]
 #[clap(about = "Synchronize the lyrics")]
@@ -27,6 +35,12 @@ struct Args {
     /// Overwrite target files that are newer than their source instead of keeping them.
     #[clap(long, short = 'f')]
     force: bool,
+
+    /// Render a diff of the outdated subtitles that a dry run would update.
+    /// Diffing only inspects changes without applying them, so this flag conflicts with --execute.
+    /// When no subtitle is outdated, the patch is empty.
+    #[clap(long, short = 'd', conflicts_with = "execute")]
+    diff: bool,
 
     /// Source directory of the subtitles.
     source: PathBuf,
@@ -57,6 +71,223 @@ fn uninstall(execute: bool, target: &Path) {
 /// No filesystem change is made regardless of the `--execute` flag.
 fn keep(target: &Path, source: &Path) {
     eprintln!("warning: Keeping {target:?} because it is newer than {source:?}");
+}
+
+/// Build a `git` command that runs inside `repo`, isolated from the
+/// developer's environment so that a personal setting cannot alter the
+/// patch.
+///
+/// Isolation starts from an empty environment. `with_no_env` clears every
+/// inherited variable, which closes the whole class of git inputs in one
+/// step rather than denying each dangerous variable by name. This removes
+/// the location and input variables such as `GIT_DIR`, `GIT_WORK_TREE`,
+/// `GIT_INDEX_FILE`, `GIT_DIFF_OPTS`, and `GIT_ATTR_SOURCE`, the
+/// configuration injected through `GIT_CONFIG_COUNT` or
+/// `GIT_CONFIG_PARAMETERS`, and `HOME` and `XDG_CONFIG_HOME`, which are the
+/// only paths through which git locates a personal ignore or attributes
+/// file. Any variable a future git release adds is excluded by default.
+/// Only a minimal set is restored:
+///
+/// - `PATH` keeps git findable when it lives outside the default search
+///   path, as with a Homebrew, Nix, or `/usr/local/bin` install. An empty
+///   `PATH` is not equivalent to an absent one, because the standard
+///   library falls back to the system default path only when `PATH` is
+///   absent. `PATH` is therefore left unset when the parent has none,
+///   rather than set to the empty string.
+/// - `GIT_CONFIG_GLOBAL` and `GIT_CONFIG_SYSTEM` are redirected to
+///   `/dev/null`. The system configuration lives on the filesystem and so
+///   survives the cleared environment, and neutralizing both files prevents
+///   any configuration from re-introducing a `diff.noprefix` that would
+///   strip the `a/`/`b/` prefixes, a `core.autocrlf` that would rewrite
+///   line endings, or a `core.excludesFile` or `core.attributesFile` that
+///   would drop a file from the patch or reclassify a text change as binary.
+///
+/// A personal ignore or attributes file needs no dedicated override. Git
+/// reaches such a file only through `HOME` or `XDG_CONFIG_HOME`, both
+/// cleared, and does not fall back to the account's home directory from the
+/// password database, so a rule such as `*.srt` or an attribute such as
+/// `*.srt -diff` cannot reach the diff. The one attributes source that
+/// survives a cleared environment is the system-wide file, which lives at a
+/// compiled-in path with no override; it is neutralized in [`render_diff`],
+/// where the throwaway repository is built.
+fn git_command(repo: &Path) -> Command {
+    let command = Command::new("git")
+        .with_no_env()
+        .with_env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .with_env("GIT_CONFIG_SYSTEM", "/dev/null")
+        .with_arg("-C")
+        .with_arg(repo);
+    match var_os("PATH") {
+        Some(path) => command.with_env("PATH", path),
+        None => command,
+    }
+}
+
+/// Run a `git` subcommand inside `repo` and require it to succeed.
+fn run_git(repo: &Path, args: &[&str]) {
+    let status = git_command(repo)
+        .with_args(args)
+        .status()
+        .unwrap_or_else(|error| panic!("error: Cannot run git {args:?}: {error}"));
+    if !status.success() {
+        panic!("error: git {args:?} failed with {status}");
+    }
+}
+
+/// Run `git diff` inside `repo` and return its standard output verbatim.
+/// `core.quotePath` is disabled so that non-ASCII file names appear as
+/// their literal glyphs rather than octal escapes, which `git apply`
+/// still accepts. `--binary` makes the patch applicable even when a file's
+/// content is classified as binary, rather than emitting a lossy
+/// `Binary files differ` line. `--no-ext-diff` ignores any external diff
+/// program, whether set through `GIT_EXTERNAL_DIFF` or a `diff.external`
+/// configuration, which would otherwise replace the patch with the
+/// program's own output.
+fn git_diff(repo: &Path) -> Vec<u8> {
+    let output = git_command(repo)
+        .with_args([
+            "-c",
+            "core.quotePath=false",
+            "diff",
+            "--no-color",
+            "--binary",
+            "--no-ext-diff",
+        ])
+        .output()
+        .unwrap_or_else(|error| panic!("error: Cannot run git diff: {error}"));
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        panic!("error: git diff failed with {}: {stderr}", output.status);
+    }
+    output.stdout
+}
+
+/// A directory that is removed when the value is dropped, so that a panic
+/// while building the diff does not leave the throwaway git repository
+/// behind.
+struct TempRepoDir(PathBuf);
+
+impl Drop for TempRepoDir {
+    fn drop(&mut self) {
+        if let Err(error) = remove_dir_all(&self.0)
+            && error.kind() != ErrorKind::NotFound
+        {
+            eprintln!(
+                "warning: Failed to delete temporary diff directory {:?}: {error}",
+                self.0,
+            );
+        }
+    }
+}
+
+/// Create a freshly named, empty directory under the system temporary
+/// directory and return a guard that removes it on drop.
+///
+/// The name is randomized and the directory is created exclusively, so a
+/// pre-existing entry left by another process, or a symlink planted by
+/// another user in a shared temporary directory, cannot be followed or
+/// force a collision. On the astronomically unlikely chance that the name
+/// already exists, another name is drawn.
+fn create_temp_repo_dir() -> TempRepoDir {
+    loop {
+        let name: String = rng()
+            .sample_iter(&Alphanumeric)
+            .take(15)
+            .map(char::from)
+            .collect();
+        let path = temp_dir().join(format!("install-local-lyrics-diff.{name}"));
+        match create_dir(&path) {
+            Ok(()) => return TempRepoDir(path),
+            Err(error) if error.kind() == ErrorKind::AlreadyExists => continue,
+            Err(error) => {
+                panic!("error: Cannot create temporary diff directory {path:?}: {error}")
+            }
+        }
+    }
+}
+
+/// Render a single unified diff of all outdated subtitles to standard
+/// output. The patch is produced by `git diff`, so it carries the usual
+/// `a/`/`b/` prefixes and limited context and can be replayed against the
+/// target directory with `git apply`.
+///
+/// No diff between the target files and their sources exists yet, so the
+/// current target files are staged in a throwaway git repository under
+/// their target-relative paths, overwritten with the source content, and
+/// handed to `git diff`. This runs only on a dry run, so the real target
+/// files are never modified.
+fn render_diff(target_root: &Path, updates: &[(&Path, &Path)]) {
+    // The guard removes the directory on return, including when a later
+    // step panics.
+    let repo_dir = create_temp_repo_dir();
+    let repo = repo_dir.0.as_path();
+    // `--template=` starts from an empty template, so a `GIT_TEMPLATE_DIR`
+    // in the environment cannot seed `.git/info/exclude` or
+    // `.git/info/attributes` into the repository and perturb the patch.
+    run_git(repo, &["init", "-q", "--template="]);
+
+    // git reads a system-wide attributes file from a compiled-in path such
+    // as `/etc/gitattributes` that no environment variable or configuration
+    // setting can redirect, and `git add` honors it while staging. A
+    // normalization attribute there, for example `* text=auto`, would
+    // rewrite the staged target's line endings, re-encode it, or collapse
+    // an `$Id$` keyword, so the emitted patch would no longer match the real
+    // target files and could fail to apply or, worse, apply with altered
+    // content. A repository's own `.git/info/attributes` outranks the system
+    // file, so a neutralizing rule is written there before anything is
+    // staged. The empty template created no `.git/info`, so the directory is
+    // created first. `-diff` is deliberately omitted, because genuinely
+    // binary content is still carried by `git diff --binary`. A `filter`
+    // attribute needs no entry either: its clean driver is defined only in
+    // configuration, which the redirected `GIT_CONFIG_GLOBAL` and
+    // `GIT_CONFIG_SYSTEM` already suppress.
+    let info_dir = repo.join(".git").join("info");
+    create_dir_all(&info_dir)
+        .unwrap_or_else(|error| panic!("error: Cannot create {info_dir:?}: {error}"));
+    let attributes = info_dir.join("attributes");
+    write(&attributes, "* -text -ident working-tree-encoding=\n")
+        .unwrap_or_else(|error| panic!("error: Cannot write {attributes:?}: {error}"));
+
+    let staged: Vec<PathBuf> = updates
+        .iter()
+        .map(|(_, target)| {
+            let relative = target.strip_prefix(target_root).unwrap_or_else(|error| {
+                panic!("error: {target:?} is not inside {target_root:?}: {error}")
+            });
+            repo.join(relative)
+        })
+        .collect();
+
+    // Stage a copy of each current target file under its target-relative
+    // path. The copy carries the target's permissions.
+    for ((_, target), staged) in updates.iter().zip(&staged) {
+        if let Some(parent) = staged.parent() {
+            create_dir_all(parent)
+                .unwrap_or_else(|error| panic!("error: Cannot create {parent:?}: {error}"));
+        }
+        copy(target, staged)
+            .unwrap_or_else(|error| panic!("error: Cannot copy {target:?} to {staged:?}: {error}"));
+    }
+    run_git(repo, &["add", "-A"]);
+
+    // Overwrite each staged file's content with the source while leaving
+    // its permissions untouched, so that `git diff` reports the content
+    // change alone and never a mode change.
+    for ((source, _), staged) in updates.iter().zip(&staged) {
+        let content =
+            read(source).unwrap_or_else(|error| panic!("error: Cannot read {source:?}: {error}"));
+        write(staged, &content)
+            .unwrap_or_else(|error| panic!("error: Cannot write {staged:?}: {error}"));
+    }
+
+    let patch = git_diff(repo);
+    // A reader such as a pager may close the pipe before the whole patch
+    // is written. That is a clean end of output rather than a failure.
+    if let Err(error) = io::stdout().write_all(&patch)
+        && error.kind() != ErrorKind::BrokenPipe
+    {
+        panic!("error: Cannot write diff to standard output: {error}");
+    }
 }
 
 fn install(execute: bool, source: &Path, target: &Path) {
@@ -94,6 +325,7 @@ fn main() {
     let Args {
         execute,
         force,
+        diff,
         source,
         target,
     } = Args::parse();
@@ -289,8 +521,16 @@ fn main() {
 
     eprintln!();
     eprintln!("stage: Updating outdated subtitles");
-    for (source, target) in files_need_update.iter().sorted() {
+    let updates: Vec<(&Path, &Path)> = files_need_update
+        .iter()
+        .sorted()
+        .map(|(source, target)| (source.as_path(), target.as_path()))
+        .collect();
+    for &(source, target) in &updates {
         install(execute, source, target);
+    }
+    if diff && !updates.is_empty() {
+        render_diff(&target, &updates);
     }
 
     if !files_kept_newer.is_empty() {
