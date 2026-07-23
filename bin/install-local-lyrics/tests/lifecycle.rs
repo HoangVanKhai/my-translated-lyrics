@@ -1,4 +1,5 @@
 use lyrics_core::video_descriptor::{UNIFIED_COLLECTION, Visibility};
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::fs::{remove_file, write as write_file};
 use test_utils::{InstallLocalLyricsEnv, expected_stderr, video_desc};
@@ -46,7 +47,7 @@ fn installs_subtitles_to_separated_and_unified_collections() {
     let uni_srt = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
     let uni_vtt = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.zh.vtt"));
     assert_eq!(
-        String::from_utf8_lossy(&output.stderr),
+        output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
         expected_stderr(
             0,
             &[],
@@ -115,7 +116,7 @@ fn dry_run_does_not_install_subtitles() {
 
     let source_srt = env.source.join("ExampleSong").join("lyrics.vi.srt");
     assert_eq!(
-        String::from_utf8_lossy(&output.stderr),
+        output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
         expected_stderr(
             0,
             &[],
@@ -162,7 +163,7 @@ fn skips_up_to_date_files() {
 
     let output = env.run(["--execute"]);
     assert_eq!(
-        String::from_utf8_lossy(&output.stderr),
+        output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
         expected_stderr(2, &[], &[], &[], &[], false),
     );
 }
@@ -206,7 +207,7 @@ fn updates_modified_source_files() {
     let output = env.run(["--execute"]);
 
     assert_eq!(
-        String::from_utf8_lossy(&output.stderr),
+        output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
         expected_stderr(
             2,
             &[],
@@ -274,7 +275,7 @@ fn dry_run_does_not_update_modified_source_files() {
     let output = env.run([]);
 
     assert_eq!(
-        String::from_utf8_lossy(&output.stderr),
+        output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
         expected_stderr(
             2,
             &[],
@@ -314,7 +315,7 @@ fn removes_orphaned_target_files() {
     let output = env.run(["--execute"]);
     assert!(!orphaned.exists());
     assert_eq!(
-        String::from_utf8_lossy(&output.stderr),
+        output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
         expected_stderr(1, &[orphaned], &[], &[], &[], false),
     );
 }
@@ -330,7 +331,7 @@ fn dry_run_does_not_remove_orphaned_target_files() {
     let output = env.run([]);
     assert!(orphaned.exists());
     assert_eq!(
-        String::from_utf8_lossy(&output.stderr),
+        output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
         expected_stderr(1, &[orphaned], &[], &[], &[], true),
     );
 }

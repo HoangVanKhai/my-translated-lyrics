@@ -169,5 +169,9 @@ impl Env {
 }
 
 pub fn stderr(output: &Output) -> String {
-    String::from_utf8_lossy(&output.stderr).into_owned()
+    output
+        .stderr
+        .pipe_as_ref(str::from_utf8)
+        .expect("stderr is valid UTF-8")
+        .to_string()
 }

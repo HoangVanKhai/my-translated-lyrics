@@ -42,7 +42,7 @@ fn select_video_header_shows_native_language_names() {
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let mut buffer = Vec::new();
     select_video_loop::<Scripted>(&mut buffer, &videos, &mut String::new(), None).unwrap();
-    let rendered = String::from_utf8_lossy(&buffer);
+    let rendered = str::from_utf8(&buffer).unwrap();
     assert!(rendered.contains("English"), "{rendered}");
     assert!(rendered.contains("Tiếng Việt"), "{rendered}");
     assert!(rendered.contains("中文"), "{rendered}");
@@ -75,7 +75,7 @@ fn select_video_header_truncates_in_a_narrow_terminal() {
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let mut buffer = Vec::new();
     select_video_loop::<Scripted>(&mut buffer, &videos, &mut String::new(), None).unwrap();
-    let rendered = String::from_utf8_lossy(&buffer);
+    let rendered = str::from_utf8(&buffer).unwrap();
     // "Tiếng Việt" is ten columns wide and cannot survive intact in six.
     assert!(!rendered.contains("Tiếng Việt"), "{rendered}");
     assert!(rendered.contains('…'), "{rendered}");
@@ -114,7 +114,7 @@ fn select_video_renders_only_the_visible_window() {
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let mut buffer = Vec::new();
     select_video_loop::<Scripted>(&mut buffer, &videos, &mut String::new(), None).unwrap();
-    let rendered = String::from_utf8_lossy(&buffer);
+    let rendered = str::from_utf8(&buffer).unwrap();
     assert!(rendered.contains("Alpha"), "{rendered}");
     assert!(rendered.contains("Bravo"), "{rendered}");
     assert!(!rendered.contains("Charlie"), "{rendered}");
@@ -147,7 +147,7 @@ fn select_video_renders_with_a_fallback_size_when_size_is_unavailable() {
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let mut buffer = Vec::new();
     select_video_loop::<Scripted>(&mut buffer, &videos, &mut String::new(), None).unwrap();
-    let rendered = String::from_utf8_lossy(&buffer);
+    let rendered = str::from_utf8(&buffer).unwrap();
     // The 80-column fallback is wide enough to show the native header.
     assert!(rendered.contains("Tiếng Việt"), "{rendered}");
 }
@@ -182,7 +182,7 @@ fn select_video_underlines_matched_characters() {
     ]);
     let mut buffer = Vec::new();
     select_video_loop::<Scripted>(&mut buffer, &videos, &mut String::new(), None).unwrap();
-    let rendered = String::from_utf8_lossy(&buffer);
+    let rendered = str::from_utf8(&buffer).unwrap();
     assert!(rendered.contains("\u{1b}[4m"), "{rendered:?}");
 }
 
@@ -210,7 +210,7 @@ fn select_video_does_not_underline_without_a_query() {
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let mut buffer = Vec::new();
     select_video_loop::<Scripted>(&mut buffer, &videos, &mut String::new(), None).unwrap();
-    let rendered = String::from_utf8_lossy(&buffer);
+    let rendered = str::from_utf8(&buffer).unwrap();
     assert!(!rendered.contains("\u{1b}[4m"), "{rendered:?}");
 }
 
@@ -239,7 +239,7 @@ fn select_video_footer_shows_delete_and_back() {
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
     let mut buffer = Vec::new();
     select_video_loop::<Scripted>(&mut buffer, &videos, &mut String::new(), None).unwrap();
-    let rendered = String::from_utf8_lossy(&buffer);
+    let rendered = str::from_utf8(&buffer).unwrap();
     assert!(rendered.contains("⌫ delete"), "{rendered:?}");
     assert!(rendered.contains("^⌫ back"), "{rendered:?}");
 }
@@ -268,7 +268,7 @@ fn select_one_shows_the_page_title_in_the_top_bar() {
     EVENTS.lock().unwrap().extend([press(KeyCode::Esc)]);
     let mut buffer = Vec::new();
     select_one_loop::<Scripted>(&mut buffer, "Select a Language", &labels, 0).unwrap();
-    let rendered = String::from_utf8_lossy(&buffer);
+    let rendered = str::from_utf8(&buffer).unwrap();
     assert!(rendered.contains("Select a Language"), "{rendered}");
 }
 
@@ -302,7 +302,7 @@ fn select_one_bolds_the_label_under_the_pointer() {
         .extend([hover_at(0, 2), press(KeyCode::Esc)]);
     let mut buffer = Vec::new();
     select_one_loop::<Scripted>(&mut buffer, "Select a Language", &labels, 0).unwrap();
-    let rendered = String::from_utf8_lossy(&buffer);
+    let rendered = str::from_utf8(&buffer).unwrap();
     assert!(rendered.contains("\u{1b}[1m"), "{rendered:?}");
 }
 
@@ -335,7 +335,7 @@ fn select_one_reverses_the_button_under_the_pointer() {
         .extend([hover_at(5, 0), control(KeyCode::Char('c'))]);
     let mut buffer = Vec::new();
     select_one_loop::<Scripted>(&mut buffer, "Select a Language", &labels, 0).unwrap();
-    let rendered = String::from_utf8_lossy(&buffer);
+    let rendered = str::from_utf8(&buffer).unwrap();
     assert!(rendered.contains("\u{1b}[7m"), "{rendered:?}");
 }
 
@@ -408,7 +408,7 @@ fn the_search_bar_shows_a_magnifier_with_styled_parts() {
     let mut buffer = Vec::new();
     let mut query = "alpha".to_string();
     select_video_loop::<Scripted>(&mut buffer, &videos, &mut query, None).unwrap();
-    let rendered = String::from_utf8_lossy(&buffer);
+    let rendered = str::from_utf8(&buffer).unwrap();
     // The magnifier is sent with its text-presentation variation selector.
     assert!(rendered.contains("🔍︎"), "{rendered:?}");
     // The label keeps a space before the typed query, the one-column gap.

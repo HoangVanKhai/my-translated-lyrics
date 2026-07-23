@@ -32,7 +32,7 @@ fn hidden_visibility_causes_removal() {
     assert!(!separated.exists());
     assert!(!unified.exists());
     assert_eq!(
-        String::from_utf8_lossy(&output.stderr),
+        output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
         expected_stderr(2, &[separated, unified], &[], &[], &[], false),
     );
 }
@@ -63,7 +63,7 @@ fn dry_run_does_not_remove_hidden_files() {
     assert!(separated.exists());
     assert!(unified.exists());
     assert_eq!(
-        String::from_utf8_lossy(&output.stderr),
+        output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
         expected_stderr(2, &[separated, unified], &[], &[], &[], true),
     );
 }
@@ -96,7 +96,7 @@ fn manual_visibility_preserves_existing_files() {
     assert_eq!(separated.pipe_ref(read_to_string).unwrap(), manual_content);
     assert_eq!(unified.pipe_ref(read_to_string).unwrap(), manual_content);
     assert_eq!(
-        String::from_utf8_lossy(&output.stderr),
+        output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
         expected_stderr(2, &[], &[], &[], &[], false),
     );
 }
@@ -129,7 +129,7 @@ fn dry_run_manual_visibility_preserves_existing_files() {
     assert_eq!(separated.pipe_ref(read_to_string).unwrap(), manual_content);
     assert_eq!(unified.pipe_ref(read_to_string).unwrap(), manual_content);
     assert_eq!(
-        String::from_utf8_lossy(&output.stderr),
+        output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
         expected_stderr(2, &[], &[], &[], &[], true),
     );
 }
