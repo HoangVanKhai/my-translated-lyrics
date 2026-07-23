@@ -2,6 +2,7 @@
 #![cfg_attr(dylint_lib = "perfectionist", register_tool(perfectionist))]
 
 use clap::Parser;
+use command_extra::CommandExtra;
 use itertools::Itertools;
 use lyrics_core::file_snapshot::FileSnapshot;
 use lyrics_core::video_descriptor::{
@@ -11,11 +12,16 @@ use lyrics_core::video_descriptor::{
 use pipe_trait::Pipe;
 use reflink::reflink_or_copy;
 use std::collections::{HashMap, HashSet};
-use std::fs::{DirEntry, hard_link, read_dir, read_to_string, remove_file};
-use std::io::{self, ErrorKind};
+use std::env::temp_dir;
+use std::fs::{
+    DirEntry, copy, create_dir_all, hard_link, read_dir, read_to_string, remove_dir_all,
+    remove_file,
+};
+use std::io::{self, ErrorKind, Write};
 use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 #[derive(Clone, Debug, Parser)]
 #[clap(about = "Synchronize the lyrics")]
@@ -64,24 +70,104 @@ fn keep(target: &Path, source: &Path) {
     eprintln!("warning: Keeping {target:?} because it is newer than {source:?}");
 }
 
-/// Print a line-by-line diff between an outdated target file and its
-/// source to standard output. The diff shows how the target would change
-/// if the source overwrote it. It is only rendered on a dry run, so the
-/// target on disk still holds its current content when this runs.
-fn print_diff(source: &Path, target: &Path) {
-    let current = read_to_string(target)
-        .unwrap_or_else(|error| panic!("error: Cannot read {target:?}: {error}"));
-    let updated = read_to_string(source)
-        .unwrap_or_else(|error| panic!("error: Cannot read {source:?}: {error}"));
-    println!();
-    println!("--- {target:?} (current)");
-    println!("+++ {source:?} (new)");
-    for line in diff::lines(&current, &updated) {
-        match line {
-            diff::Result::Left(line) => println!("-{line}"),
-            diff::Result::Right(line) => println!("+{line}"),
-            diff::Result::Both(line, _) => println!(" {line}"),
+/// Run a `git` subcommand inside `repo` and require it to succeed.
+///
+/// The global and system configuration files are redirected to
+/// `/dev/null` so that a developer's own git settings, such as
+/// `core.autocrlf` or a disabled diff prefix, cannot alter the
+/// generated patch.
+fn run_git(repo: &Path, args: &[&str]) {
+    let status = Command::new("git")
+        .with_env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .with_env("GIT_CONFIG_SYSTEM", "/dev/null")
+        .with_arg("-C")
+        .with_arg(repo)
+        .with_args(args)
+        .status()
+        .unwrap_or_else(|error| panic!("error: Cannot run git {args:?}: {error}"));
+    if !status.success() {
+        panic!("error: git {args:?} failed with {status}");
+    }
+}
+
+/// Run `git diff` inside `repo` and return its standard output verbatim.
+/// `core.quotePath` is disabled so that non-ASCII file names appear as
+/// their literal glyphs rather than octal escapes, which `git apply`
+/// still accepts.
+fn git_diff(repo: &Path) -> Vec<u8> {
+    let output = Command::new("git")
+        .with_env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .with_env("GIT_CONFIG_SYSTEM", "/dev/null")
+        .with_arg("-C")
+        .with_arg(repo)
+        .with_args(["-c", "core.quotePath=false", "diff", "--no-color"])
+        .output()
+        .unwrap_or_else(|error| panic!("error: Cannot run git diff: {error}"));
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        panic!("error: git diff failed with {}: {stderr}", output.status);
+    }
+    output.stdout
+}
+
+/// Render a single unified diff of all outdated subtitles to standard
+/// output. The patch is produced by `git diff`, so it carries the usual
+/// `a/`/`b/` prefixes and limited context and can be replayed against the
+/// target directory with `git apply`.
+///
+/// No diff between the target files and their sources exists yet, so the
+/// current target files are staged in a throwaway git repository under
+/// their target-relative paths, overwritten with the source content, and
+/// handed to `git diff`. This runs only on a dry run, so the real target
+/// files are never modified.
+fn render_diff(target_root: &Path, updates: &[(&Path, &Path)]) {
+    let repo = temp_dir().join(format!("install-local-lyrics-diff.{}", std::process::id()));
+
+    // Start from an empty directory, discarding one an earlier
+    // interrupted run may have left behind.
+    if let Err(error) = remove_dir_all(&repo)
+        && error.kind() != ErrorKind::NotFound
+    {
+        panic!("error: Cannot clear temporary diff directory {repo:?}: {error}");
+    }
+    create_dir_all(&repo).unwrap_or_else(|error| panic!("error: Cannot create {repo:?}: {error}"));
+    run_git(&repo, &["init", "-q"]);
+
+    let staged: Vec<PathBuf> = updates
+        .iter()
+        .map(|(_, target)| {
+            let relative = target.strip_prefix(target_root).unwrap_or_else(|error| {
+                panic!("error: {target:?} is not inside {target_root:?}: {error}")
+            });
+            repo.join(relative)
+        })
+        .collect();
+
+    // Stage the current target files under their target-relative paths.
+    for ((_, target), staged) in updates.iter().zip(&staged) {
+        if let Some(parent) = staged.parent() {
+            create_dir_all(parent)
+                .unwrap_or_else(|error| panic!("error: Cannot create {parent:?}: {error}"));
         }
+        copy(target, staged)
+            .unwrap_or_else(|error| panic!("error: Cannot copy {target:?} to {staged:?}: {error}"));
+    }
+    run_git(&repo, &["add", "-A"]);
+
+    // Overwrite each staged file with the source content, so that
+    // `git diff` reports how the target would change once updated.
+    for ((source, _), staged) in updates.iter().zip(&staged) {
+        copy(source, staged)
+            .unwrap_or_else(|error| panic!("error: Cannot copy {source:?} to {staged:?}: {error}"));
+    }
+
+    let patch = git_diff(&repo);
+    io::stdout()
+        .write_all(&patch)
+        .unwrap_or_else(|error| panic!("error: Cannot write diff to standard output: {error}"));
+
+    if let Err(error) = remove_dir_all(&repo) {
+        eprintln!("warning: Failed to delete temporary diff directory {repo:?}: {error}");
     }
 }
 
@@ -316,11 +402,16 @@ fn main() {
 
     eprintln!();
     eprintln!("stage: Updating outdated subtitles");
-    for (source, target) in files_need_update.iter().sorted() {
+    let updates: Vec<(&Path, &Path)> = files_need_update
+        .iter()
+        .sorted()
+        .map(|(source, target)| (source.as_path(), target.as_path()))
+        .collect();
+    for &(source, target) in &updates {
         install(execute, source, target);
-        if diff {
-            print_diff(source, target);
-        }
+    }
+    if diff && !updates.is_empty() {
+        render_diff(&target, &updates);
     }
 
     if !files_kept_newer.is_empty() {
