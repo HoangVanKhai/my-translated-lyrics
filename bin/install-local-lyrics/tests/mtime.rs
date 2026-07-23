@@ -1,4 +1,5 @@
 use lyrics_core::video_descriptor::{UNIFIED_COLLECTION, Visibility};
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::fs::{OpenOptions, read_to_string, write as write_file};
 use std::path::{Path, PathBuf};
@@ -70,7 +71,7 @@ fn keeps_target_files_newer_than_source() {
     let output = env.run(["--execute"]);
 
     assert_eq!(
-        String::from_utf8_lossy(&output.stderr),
+        output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
         expected_stderr(
             2,
             &[],
@@ -110,7 +111,7 @@ fn dry_run_keeps_target_files_newer_than_source() {
     let output = env.run([]);
 
     assert_eq!(
-        String::from_utf8_lossy(&output.stderr),
+        output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
         expected_stderr(
             2,
             &[],
@@ -149,7 +150,7 @@ fn force_overwrites_target_files_newer_than_source() {
     let output = env.run(["--execute", "--force"]);
 
     assert_eq!(
-        String::from_utf8_lossy(&output.stderr),
+        output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
         expected_stderr(
             2,
             &[],
@@ -189,7 +190,7 @@ fn updates_target_files_older_than_source() {
     let output = env.run(["--execute"]);
 
     assert_eq!(
-        String::from_utf8_lossy(&output.stderr),
+        output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
         expected_stderr(
             2,
             &[],
