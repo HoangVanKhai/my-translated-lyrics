@@ -10,6 +10,7 @@ command-extra.workspace = true
 itertools.workspace = true
 lyrics-core.workspace = true
 pipe-trait.workspace = true
+rand.workspace = true
 reflink.workspace = true
 toml.workspace = true
 

@@ -439,6 +439,7 @@ dependencies = [
  "lyrics-core",
  "pipe-trait",
  "pretty_assertions",
+ "rand",
  "reflink",
  "test-utils",
  "text-block-macros",

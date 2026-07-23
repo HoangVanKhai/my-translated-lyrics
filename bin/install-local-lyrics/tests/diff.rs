@@ -1,11 +1,13 @@
 use command_extra::CommandExtra;
 use lyrics_core::video_descriptor::{UNIFIED_COLLECTION, Visibility};
 use pretty_assertions::assert_eq;
-use std::fs::{OpenOptions, read_to_string, remove_file, write as write_file};
+use std::fs::{
+    OpenOptions, create_dir_all, read, read_to_string, remove_file, write as write_file,
+};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{Duration, SystemTime};
-use test_utils::{InstallLocalLyricsEnv, video_desc};
+use test_utils::{InstallLocalLyricsEnv, Temp, video_desc};
 use text_block_macros::text_block_fnl;
 
 const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
@@ -172,4 +174,105 @@ fn renders_git_apply_compatible_diff_of_outdated_subtitles() {
     remove_file(&patch_file).unwrap();
     assert_eq!(read_to_string(&separated).unwrap(), source_content);
     assert_eq!(read_to_string(&unified).unwrap(), source_content);
+}
+
+#[test]
+fn renders_git_apply_compatible_diff_for_binary_content() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    let collection_name = "Feng Ling Yu Xiu";
+    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    // A leading NUL byte makes git classify the content as binary. The
+    // two lengths differ so the outdated check never reads the bytes as
+    // UTF-8, which lets the binary target reach the diff.
+    let source_content = "\u{0}binary source content";
+    let target_content = "\u{0}binary target";
+    let (separated, unified) = prepare_outdated(
+        &env,
+        collection_name,
+        video_title,
+        source_content,
+        target_content,
+    );
+
+    let output = env.run(["--diff"]);
+    let patch = output.stdout;
+
+    // `--binary` yields an applicable binary patch rather than a lossy
+    // "Binary files differ" line.
+    assert!(
+        String::from_utf8_lossy(&patch).contains("GIT binary patch"),
+        "expected a binary patch:\n{}",
+        String::from_utf8_lossy(&patch),
+    );
+
+    run_git(&env.target, &["init", "-q", "."]);
+    let patch_file = env.target.join("outdated.patch");
+    write_file(&patch_file, &patch).unwrap();
+    run_git(&env.target, &["apply", "outdated.patch"]);
+    remove_file(&patch_file).unwrap();
+    let expected = source_content.as_bytes().to_vec();
+    assert_eq!(read(&separated).unwrap(), expected);
+    assert_eq!(read(&unified).unwrap(), expected);
+}
+
+#[test]
+fn honors_diff_despite_global_gitignore_and_gitattributes() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    let collection_name = "Feng Ling Yu Xiu";
+    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let source_content = text_block_fnl! {
+        "line one"
+        "line two changed"
+        "line three"
+    };
+    let target_content = text_block_fnl! {
+        "line one"
+        "line two"
+        "line three"
+    };
+    let (separated, unified) = prepare_outdated(
+        &env,
+        collection_name,
+        video_title,
+        source_content,
+        target_content,
+    );
+
+    // A global gitignore for *.srt and a `-diff` attribute for *.srt
+    // would, without the tool overriding git's default excludes and
+    // attributes files, drop these files from the patch or render them as
+    // binary.
+    let home = Temp::new_dir();
+    let xdg_config = home.join(".config");
+    let git_config = xdg_config.join("git");
+    create_dir_all(&git_config).unwrap();
+    write_file(git_config.join("ignore"), "*.srt\n").unwrap();
+    write_file(git_config.join("attributes"), "*.srt -diff\n").unwrap();
+
+    let output = Command::new(INSTALL_LOCAL_LYRICS)
+        .with_env("HOME", &*home)
+        .with_env("XDG_CONFIG_HOME", &xdg_config)
+        .with_arg("--diff")
+        .with_arg(&env.source)
+        .with_arg(&env.target)
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "install-local-lyrics failed:\n{}",
+        String::from_utf8_lossy(&output.stderr),
+    );
+    let patch_text = str::from_utf8(&output.stdout).unwrap();
+
+    let separated_rel = format!("{collection_name}/{video_title}.vi.srt");
+    assert!(
+        patch_text.contains(&format!("diff --git a/{separated_rel} b/{separated_rel}")),
+        "the .srt was dropped from the patch:\n{patch_text}",
+    );
+    assert!(
+        patch_text.contains("-line two\n+line two changed\n"),
+        "the .srt was rendered as binary rather than a text diff:\n{patch_text}",
+    );
+    assert_eq!(read_to_string(&separated).unwrap(), target_content);
+    assert_eq!(read_to_string(&unified).unwrap(), target_content);
 }

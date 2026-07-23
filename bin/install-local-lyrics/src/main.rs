@@ -10,12 +10,14 @@ use lyrics_core::video_descriptor::{
     VIDEO_CONFIG_FILE_NAME, VideoDesc, Visibility,
 };
 use pipe_trait::Pipe;
+use rand::distr::Alphanumeric;
+use rand::{RngExt, rng};
 use reflink::reflink_or_copy;
 use std::collections::{HashMap, HashSet};
 use std::env::temp_dir;
 use std::fs::{
-    DirEntry, copy, create_dir_all, hard_link, read, read_dir, read_to_string, remove_dir_all,
-    remove_file, write,
+    DirEntry, copy, create_dir, create_dir_all, hard_link, read, read_dir, read_to_string,
+    remove_dir_all, remove_file, write,
 };
 use std::io::{self, ErrorKind, Write};
 use std::iter::once;
@@ -70,16 +72,25 @@ fn keep(target: &Path, source: &Path) {
     eprintln!("warning: Keeping {target:?} because it is newer than {source:?}");
 }
 
-/// Build a `git` command that runs inside `repo` with the developer's
-/// global and system configuration ignored. Redirecting both files to
-/// `/dev/null` keeps a personal setting, such as `core.autocrlf` or a
-/// disabled diff prefix, from altering the generated patch.
+/// Build a `git` command that runs inside `repo`, isolated from the
+/// developer's environment. The global and system configuration files are
+/// redirected to `/dev/null`, and the default excludes and attributes
+/// files are overridden, so that a personal setting cannot alter the
+/// patch. Redirecting the configuration alone is not enough: git reads its
+/// default excludes file (a global gitignore) and attributes file even
+/// when no configuration points at them, so a `*.srt` ignore rule would
+/// silently drop files from the patch and a `*.srt -diff` attribute would
+/// turn a text change into a non-applicable binary patch.
 fn git_command(repo: &Path) -> Command {
     Command::new("git")
         .with_env("GIT_CONFIG_GLOBAL", "/dev/null")
         .with_env("GIT_CONFIG_SYSTEM", "/dev/null")
         .with_arg("-C")
         .with_arg(repo)
+        .with_arg("-c")
+        .with_arg("core.excludesFile=/dev/null")
+        .with_arg("-c")
+        .with_arg("core.attributesFile=/dev/null")
 }
 
 /// Run a `git` subcommand inside `repo` and require it to succeed.
@@ -96,10 +107,18 @@ fn run_git(repo: &Path, args: &[&str]) {
 /// Run `git diff` inside `repo` and return its standard output verbatim.
 /// `core.quotePath` is disabled so that non-ASCII file names appear as
 /// their literal glyphs rather than octal escapes, which `git apply`
-/// still accepts.
+/// still accepts. `--binary` makes the patch applicable even when a file's
+/// content is classified as binary, rather than emitting a lossy
+/// `Binary files differ` line.
 fn git_diff(repo: &Path) -> Vec<u8> {
     let output = git_command(repo)
-        .with_args(["-c", "core.quotePath=false", "diff", "--no-color"])
+        .with_args([
+            "-c",
+            "core.quotePath=false",
+            "diff",
+            "--no-color",
+            "--binary",
+        ])
         .output()
         .unwrap_or_else(|error| panic!("error: Cannot run git diff: {error}"));
     if !output.status.success() {
@@ -127,6 +146,32 @@ impl Drop for TempRepoDir {
     }
 }
 
+/// Create a freshly named, empty directory under the system temporary
+/// directory and return a guard that removes it on drop.
+///
+/// The name is randomized and the directory is created exclusively, so a
+/// pre-existing entry left by another process, or a symlink planted by
+/// another user in a shared temporary directory, cannot be followed or
+/// force a collision. On the astronomically unlikely chance that the name
+/// already exists, another name is drawn.
+fn create_temp_repo_dir() -> TempRepoDir {
+    loop {
+        let name: String = rng()
+            .sample_iter(&Alphanumeric)
+            .take(15)
+            .map(char::from)
+            .collect();
+        let path = temp_dir().join(format!("install-local-lyrics-diff.{name}"));
+        match create_dir(&path) {
+            Ok(()) => return TempRepoDir(path),
+            Err(error) if error.kind() == ErrorKind::AlreadyExists => continue,
+            Err(error) => {
+                panic!("error: Cannot create temporary diff directory {path:?}: {error}")
+            }
+        }
+    }
+}
+
 /// Render a single unified diff of all outdated subtitles to standard
 /// output. The patch is produced by `git diff`, so it carries the usual
 /// `a/`/`b/` prefixes and limited context and can be replayed against the
@@ -138,20 +183,10 @@ impl Drop for TempRepoDir {
 /// handed to `git diff`. This runs only on a dry run, so the real target
 /// files are never modified.
 fn render_diff(target_root: &Path, updates: &[(&Path, &Path)]) {
-    let repo_dir =
-        TempRepoDir(temp_dir().join(format!("install-local-lyrics-diff.{}", std::process::id())));
+    // The guard removes the directory on return, including when a later
+    // step panics.
+    let repo_dir = create_temp_repo_dir();
     let repo = repo_dir.0.as_path();
-
-    // Start from an empty directory, discarding one that an earlier
-    // interrupted run may have left behind. The `TempRepoDir` guard
-    // removes the directory again on return, including when a later step
-    // panics.
-    if let Err(error) = remove_dir_all(repo)
-        && error.kind() != ErrorKind::NotFound
-    {
-        panic!("error: Cannot clear temporary diff directory {repo:?}: {error}");
-    }
-    create_dir_all(repo).unwrap_or_else(|error| panic!("error: Cannot create {repo:?}: {error}"));
     run_git(repo, &["init", "-q"]);
 
     let staged: Vec<PathBuf> = updates
