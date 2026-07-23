@@ -720,3 +720,46 @@ fn diff_excludes_newly_installed_files() {
         String::from_utf8_lossy(&output.stdout),
     );
 }
+
+/// A subtitle with CRLF line endings keeps its carriage returns in the
+/// emitted patch, so `--diff` never silently rewrites a file's line
+/// endings. SubRip files commonly use CRLF, and a normalization step
+/// anywhere in the staging path would make the patch stop matching the real
+/// files. This guards the observable property directly. The system-wide
+/// attributes file that could force such a normalization lives at a
+/// compiled-in path that a portable, unprivileged test cannot plant, so
+/// that specific channel is exercised outside the suite; `render_diff`
+/// neutralizes it with a repository-level attributes file.
+#[test]
+fn diff_preserves_crlf_line_endings() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    let collection_name = "Feng Ling Yu Xiu";
+    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let source_content = "line one\r\nline two changed\r\nline three\r\n";
+    let target_content = "line one\r\nline two\r\n";
+    let (separated, unified) = prepare_outdated(
+        &env,
+        collection_name,
+        video_title,
+        source_content,
+        target_content,
+    );
+
+    let patch = env.run(["--diff"]).stdout;
+
+    let contains = |needle: &[u8]| patch.windows(needle.len()).any(|window| window == needle);
+    assert!(
+        contains(b"+line two changed\r\n"),
+        "the added line lost its CRLF ending:\n{}",
+        String::from_utf8_lossy(&patch),
+    );
+    assert!(
+        contains(b"-line two\r\n"),
+        "the removed line lost its CRLF ending:\n{}",
+        String::from_utf8_lossy(&patch),
+    );
+
+    // A dry run leaves the target files untouched and still CRLF.
+    assert_eq!(read_to_string(&separated).unwrap(), target_content);
+    assert_eq!(read_to_string(&unified).unwrap(), target_content);
+}
