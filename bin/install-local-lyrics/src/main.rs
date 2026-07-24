@@ -461,9 +461,11 @@ fn main() {
 
     eprintln!();
     eprintln!("stage: Updating outdated subtitles");
+    // `files_need_update` is not read after this, so sort it in place rather
+    // than materializing a second sorted collection with `Itertools::sorted`.
+    files_need_update.sort();
     let updates: Vec<(&Path, &Path)> = files_need_update
         .iter()
-        .sorted()
         .map(|(source, target)| (source.as_path(), target.as_path()))
         .collect();
     for &(source, target) in &updates {
