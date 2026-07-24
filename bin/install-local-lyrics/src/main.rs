@@ -71,43 +71,14 @@ fn keep(target: &Path, source: &Path) {
     eprintln!("warning: Keeping {target:?} because it is newer than {source:?}");
 }
 
-/// Build a `git` command that runs inside `repo`, isolated from the
-/// developer's environment so that a personal setting cannot alter the
-/// patch.
-///
-/// Isolation starts from an empty environment. `with_no_env` clears every
-/// inherited variable, which closes the whole class of git inputs in one
-/// step rather than denying each dangerous variable by name. This removes
-/// the location and input variables such as `GIT_DIR`, `GIT_WORK_TREE`,
-/// `GIT_INDEX_FILE`, `GIT_DIFF_OPTS`, and `GIT_ATTR_SOURCE`, the
-/// configuration injected through `GIT_CONFIG_COUNT` or
-/// `GIT_CONFIG_PARAMETERS`, and `HOME` and `XDG_CONFIG_HOME`, which are the
-/// only paths through which git locates a personal ignore or attributes
-/// file. Any variable a future git release adds is excluded by default.
-/// Only a minimal set is restored:
-///
-/// - `PATH` keeps git findable when it lives outside the default search
-///   path, as with a Homebrew, Nix, or `/usr/local/bin` install. An empty
-///   `PATH` is not equivalent to an absent one, because the standard
-///   library falls back to the system default path only when `PATH` is
-///   absent. `PATH` is therefore left unset when the parent has none,
-///   rather than set to the empty string.
-/// - `GIT_CONFIG_GLOBAL` and `GIT_CONFIG_SYSTEM` are redirected to
-///   `/dev/null`. The system configuration lives on the filesystem and so
-///   survives the cleared environment, and neutralizing both files prevents
-///   any configuration from re-introducing a `diff.noprefix` that would
-///   strip the `a/`/`b/` prefixes, a `core.autocrlf` that would rewrite
-///   line endings, or a `core.excludesFile` or `core.attributesFile` that
-///   would drop a file from the patch or reclassify a text change as binary.
-///
-/// A personal ignore or attributes file needs no dedicated override. Git
-/// reaches such a file only through `HOME` or `XDG_CONFIG_HOME`, both
-/// cleared, and does not fall back to the account's home directory from the
-/// password database, so a rule such as `*.srt` or an attribute such as
-/// `*.srt -diff` cannot reach the diff. The one attributes source that
-/// survives a cleared environment is the system-wide file, which lives at a
-/// compiled-in path with no override; it is neutralized in [`render_diff`],
-/// where the throwaway repository is built.
+/// Build a `git` command that runs in `repo` with a scrubbed environment,
+/// so no personal git setting can alter the patch. The environment is
+/// emptied and only `PATH` and `GIT_CONFIG_GLOBAL`/`GIT_CONFIG_SYSTEM`
+/// (pinned to `/dev/null`) are put back. Starting from nothing rather than
+/// denying known-bad variables one by one also excludes any a future git
+/// might add, and drops `HOME`/`XDG_CONFIG_HOME` so a personal ignore or
+/// attributes file cannot reach the diff. The one attributes source left is
+/// the system-wide file, neutralized in [`render_diff`].
 fn git_command(repo: &Path) -> Command {
     let command = Command::new("git")
         .with_no_env()
@@ -115,6 +86,8 @@ fn git_command(repo: &Path) -> Command {
         .with_env("GIT_CONFIG_SYSTEM", "/dev/null")
         .with_arg("-C")
         .with_arg(repo);
+    // Leave `PATH` unset when absent rather than empty, so git resolution
+    // still falls back to the system default path.
     match var_os("PATH") {
         Some(path) => command.with_env("PATH", path),
         None => command,
@@ -132,15 +105,9 @@ fn run_git(repo: &Path, args: &[&str]) {
     }
 }
 
-/// Run `git diff` inside `repo` and return its standard output verbatim.
-/// `core.quotePath` is disabled so that non-ASCII file names appear as
-/// their literal glyphs rather than octal escapes, which `git apply`
-/// still accepts. `--binary` makes the patch applicable even when a file's
-/// content is classified as binary, rather than emitting a lossy
-/// `Binary files differ` line. `--no-ext-diff` ignores any external diff
-/// program, whether set through `GIT_EXTERNAL_DIFF` or a `diff.external`
-/// configuration, which would otherwise replace the patch with the
-/// program's own output.
+/// Run `git diff` in `repo` and return the patch bytes. The flags keep the
+/// patch literal and `git apply`-able even for non-ASCII paths or binary
+/// content, and ignore any external diff program.
 fn git_diff(repo: &Path) -> Vec<u8> {
     let output = git_command(repo)
         .with_args([
@@ -160,9 +127,8 @@ fn git_diff(repo: &Path) -> Vec<u8> {
     output.stdout
 }
 
-/// A directory that is removed when the value is dropped, so that a panic
-/// while building the diff does not leave the throwaway git repository
-/// behind.
+/// A throwaway directory removed on drop, so a panic while building the
+/// diff leaves no git repository behind.
 struct TempRepoDir(PathBuf);
 
 impl Drop for TempRepoDir {
@@ -204,41 +170,21 @@ fn create_temp_repo_dir() -> TempRepoDir {
     }
 }
 
-/// Render a single unified diff of all outdated subtitles to standard
-/// output. The patch is produced by `git diff`, so it carries the usual
-/// `a/`/`b/` prefixes and limited context and can be replayed against the
-/// target directory with `git apply`.
-///
-/// No diff between the target files and their sources exists yet, so the
-/// current target files are staged in a throwaway git repository under
-/// their target-relative paths, overwritten with the source content, and
-/// handed to `git diff`. This runs only on a dry run, so the real target
-/// files are never modified.
+/// Write a single `git apply`-compatible diff of all outdated subtitles to
+/// standard output. No such diff exists on disk yet, so it is produced in a
+/// throwaway git repository. Runs only on a dry run, so the real target
+/// files are never touched.
 fn render_diff(target_root: &Path, updates: &[(&Path, &Path)]) {
-    // The guard removes the directory on return, including when a later
-    // step panics.
     let repo_dir = create_temp_repo_dir();
     let repo = repo_dir.0.as_path();
-    // `--template=` starts from an empty template, so a `GIT_TEMPLATE_DIR`
-    // in the environment cannot seed `.git/info/exclude` or
-    // `.git/info/attributes` into the repository and perturb the patch.
+    // Empty template, so nothing is seeded into the new repository.
     run_git(repo, &["init", "-q", "--template="]);
 
-    // git reads a system-wide attributes file from a compiled-in path such
-    // as `/etc/gitattributes` that no environment variable or configuration
-    // setting can redirect, and `git add` honors it while staging. A
-    // normalization attribute there, for example `* text=auto`, would
-    // rewrite the staged target's line endings, re-encode it, or collapse
-    // an `$Id$` keyword, so the emitted patch would no longer match the real
-    // target files and could fail to apply or, worse, apply with altered
-    // content. A repository's own `.git/info/attributes` outranks the system
-    // file, so a neutralizing rule is written there before anything is
-    // staged. The empty template created no `.git/info`, so the directory is
-    // created first. `-diff` is deliberately omitted, because genuinely
-    // binary content is still carried by `git diff --binary`. A `filter`
-    // attribute needs no entry either: its clean driver is defined only in
-    // configuration, which the redirected `GIT_CONFIG_GLOBAL` and
-    // `GIT_CONFIG_SYSTEM` already suppress.
+    // A system-wide gitattributes file, at a compiled-in path no variable
+    // can redirect, could normalize the staged content and break the patch,
+    // for example `text=auto` rewriting line endings. A repository-level
+    // attributes file outranks it, so neutralize those attributes here.
+    // `-diff` is left out so binary content still rides `git diff --binary`.
     let info_dir = repo.join(".git").join("info");
     create_dir_all(&info_dir)
         .unwrap_or_else(|error| panic!("error: Cannot create {info_dir:?}: {error}"));
@@ -279,8 +225,7 @@ fn render_diff(target_root: &Path, updates: &[(&Path, &Path)]) {
     }
 
     let patch = git_diff(repo);
-    // A reader such as a pager may close the pipe before the whole patch
-    // is written. That is a clean end of output rather than a failure.
+    // A reader may close the pipe early; that is a clean end, not a failure.
     if let Err(error) = io::stdout().write_all(&patch)
         && error.kind() != ErrorKind::BrokenPipe
     {
