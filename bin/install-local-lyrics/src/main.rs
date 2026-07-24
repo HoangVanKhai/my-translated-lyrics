@@ -131,6 +131,29 @@ fn git_diff(repo: &Path) -> Vec<u8> {
 /// diff leaves no git repository behind.
 struct TempRepoDir(PathBuf);
 
+impl TempRepoDir {
+    /// Create an exclusively owned, randomly named empty directory under the
+    /// system temporary directory. Exclusive creation refuses to follow a
+    /// symlink an attacker may have planted at a guessed path.
+    fn new() -> Self {
+        loop {
+            let name: String = rng()
+                .sample_iter(&Alphanumeric)
+                .take(15)
+                .map(char::from)
+                .collect();
+            let path = temp_dir().join(format!("install-local-lyrics-diff.{name}"));
+            match create_dir(&path) {
+                Ok(()) => return TempRepoDir(path),
+                Err(error) if error.kind() == ErrorKind::AlreadyExists => continue,
+                Err(error) => {
+                    panic!("error: Cannot create temporary diff directory {path:?}: {error}")
+                }
+            }
+        }
+    }
+}
+
 impl Drop for TempRepoDir {
     fn drop(&mut self) {
         if let Err(error) = remove_dir_all(&self.0)
@@ -144,38 +167,12 @@ impl Drop for TempRepoDir {
     }
 }
 
-/// Create a freshly named, empty directory under the system temporary
-/// directory and return a guard that removes it on drop.
-///
-/// The name is randomized and the directory is created exclusively, so a
-/// pre-existing entry left by another process, or a symlink planted by
-/// another user in a shared temporary directory, cannot be followed or
-/// force a collision. On the astronomically unlikely chance that the name
-/// already exists, another name is drawn.
-fn create_temp_repo_dir() -> TempRepoDir {
-    loop {
-        let name: String = rng()
-            .sample_iter(&Alphanumeric)
-            .take(15)
-            .map(char::from)
-            .collect();
-        let path = temp_dir().join(format!("install-local-lyrics-diff.{name}"));
-        match create_dir(&path) {
-            Ok(()) => return TempRepoDir(path),
-            Err(error) if error.kind() == ErrorKind::AlreadyExists => continue,
-            Err(error) => {
-                panic!("error: Cannot create temporary diff directory {path:?}: {error}")
-            }
-        }
-    }
-}
-
 /// Write a single `git apply`-compatible diff of all outdated subtitles to
 /// standard output. No such diff exists on disk yet, so it is produced in a
 /// throwaway git repository. Runs only on a dry run, so the real target
 /// files are never touched.
 fn render_diff(target_root: &Path, updates: &[(&Path, &Path)]) {
-    let repo_dir = create_temp_repo_dir();
+    let repo_dir = TempRepoDir::new();
     let repo = repo_dir.0.as_path();
     // Empty template, so nothing is seeded into the new repository.
     run_git(repo, &["init", "-q", "--template="]);
