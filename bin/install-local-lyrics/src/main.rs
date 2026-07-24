@@ -37,8 +37,6 @@ struct Args {
     force: bool,
 
     /// Render a diff of the outdated subtitles that a dry run would update.
-    /// Diffing only inspects changes without applying them, so this flag conflicts with --execute.
-    /// When no subtitle is outdated, the patch is empty.
     #[clap(long, short = 'd', conflicts_with = "execute")]
     diff: bool,
 
