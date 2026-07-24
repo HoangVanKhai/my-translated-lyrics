@@ -14,12 +14,13 @@ use rand::{RngExt, rng};
 use std::env::temp_dir;
 use std::ffi::OsString;
 use std::fs::{
-    DirEntry, create_dir, create_dir_all, read_dir, read_to_string, remove_dir_all,
+    DirEntry, OpenOptions, create_dir, create_dir_all, read_dir, read_to_string, remove_dir_all,
     write as write_file,
 };
 use std::iter::once;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::time::{Duration, SystemTime};
 
 /// Absolute path to the workspace root directory.
 ///
@@ -151,6 +152,28 @@ impl InstallLocalLyricsEnv {
         output
     }
 
+    /// Runs `install-local-lyrics --diff` with extra environment variables
+    /// set, asserts it succeeds, and returns its standard output. Used to
+    /// check that a hostile git environment does not perturb the patch.
+    pub fn run_diff_with_env(&self, vars: &[(&str, &str)]) -> Vec<u8> {
+        let mut command = Command::new(self.bin);
+        for &(key, value) in vars {
+            command = command.with_env(key, value);
+        }
+        let output = command
+            .with_arg("--diff")
+            .with_arg(&self.source)
+            .with_arg(&self.target)
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "install-local-lyrics failed:\n{}",
+            String::from_utf8_lossy(&output.stderr),
+        );
+        output.stdout
+    }
+
     /// Collects all subtitle file paths relative to the target
     /// directory, sorted for deterministic comparison.
     pub fn target_subtitle_files(&self) -> Vec<String> {
@@ -203,6 +226,64 @@ pub fn video_desc(
         },
         visibility,
     }
+}
+
+/// Sets the modification time of a file to a fixed point relative to the
+/// Unix epoch. Explicit times keep the source newer than the target so the
+/// target counts as outdated regardless of the order the test wrote them.
+pub fn set_mtime(path: &Path, seconds_since_epoch: u64) {
+    let time = SystemTime::UNIX_EPOCH + Duration::from_secs(seconds_since_epoch);
+    OpenOptions::new()
+        .write(true)
+        .open(path)
+        .unwrap()
+        .set_modified(time)
+        .unwrap();
+}
+
+/// Installs one outdated subtitle: a source newer than an already-present
+/// target whose content differs, in both the separated and unified
+/// collections. Returns the separated and unified target files.
+pub fn prepare_outdated(
+    env: &InstallLocalLyricsEnv,
+    collection_name: &str,
+    video_title: &str,
+    source_content: &str,
+    target_content: &str,
+) -> (PathBuf, PathBuf) {
+    let desc = video_desc(
+        collection_name.to_owned(),
+        video_title.to_owned(),
+        Visibility::default(),
+    );
+    env.add_source_entry("ExampleSong", &desc, &[("lyrics.vi.srt", source_content)]);
+
+    let separated = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
+    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
+    write_file(&separated, target_content).unwrap();
+    write_file(&unified, target_content).unwrap();
+
+    let source_file = env.source.join("ExampleSong").join("lyrics.vi.srt");
+    set_mtime(&separated, 1_000_000);
+    set_mtime(&unified, 1_000_000);
+    set_mtime(&source_file, 2_000_000);
+
+    (separated, unified)
+}
+
+/// Runs a `git` subcommand inside `dir` and asserts it succeeds. The global
+/// and system configuration files are redirected to `/dev/null` so the test
+/// does not depend on the developer's git settings.
+pub fn run_git(dir: &Path, args: &[&str]) {
+    let status = Command::new("git")
+        .with_env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .with_env("GIT_CONFIG_SYSTEM", "/dev/null")
+        .with_arg("-C")
+        .with_arg(dir)
+        .with_args(args)
+        .status()
+        .unwrap();
+    assert!(status.success(), "git {args:?} failed");
 }
 
 pub fn expected_stderr(
