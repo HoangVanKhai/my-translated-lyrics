@@ -119,8 +119,9 @@ fn git_diff(repo: &Path) -> Vec<u8> {
     output.stdout
 }
 
-/// A throwaway directory removed on drop, so a panic while building the
-/// diff leaves no git repository behind.
+/// The temporary directory that holds the throwaway git repository used to
+/// render the diff. It is removed on drop, so a panic while building the
+/// diff leaves no repository behind.
 struct TempRepoDir(PathBuf);
 
 impl TempRepoDir {
