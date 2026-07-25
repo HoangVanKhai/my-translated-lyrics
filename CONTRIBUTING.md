@@ -344,7 +344,7 @@ cmd.arg(value);
 let output = cmd.output().expect("spawn my-tool");
 ```
 
-The trait provides an owned counterpart for each standard builder method, and the names follow three prefix patterns. Methods that add or set a value keep the `with_*` prefix: `with_arg`, `with_args`, `with_current_dir`, `with_env`, `with_envs`, `with_stdin`, `with_stdout`, and `with_stderr`. The `with_envs` counterpart of `envs` sets several environment variables from an iterator of key-value pairs in one call. Removal takes the `without_*` prefix, so `without_env` is the counterpart of `env_remove`. Clearing takes the `with_no_*` prefix, so `with_no_env` is the counterpart of `env_clear`.
+The trait provides an owned counterpart for each standard builder method, and the names follow three prefix patterns. Methods that add or set a value keep the `with_*` prefix: `with_arg`, `with_args`, `with_current_dir`, `with_env`, `with_envs`, `with_stdin`, `with_stdout`, and `with_stderr`. Removal takes the `without_*` prefix, so `without_env` is the counterpart of `env_remove`. Clearing takes the `with_no_*` prefix, so `with_no_env` is the counterpart of `env_clear`.
 
 ### Parser Combinators
 
