@@ -90,8 +90,7 @@ fn git_command(repo: &Path) -> Command {
         .with_env("GIT_CONFIG_GLOBAL", "/dev/null")
         .with_env("GIT_CONFIG_SYSTEM", "/dev/null")
         .with_envs(var_os("PATH").map(|path| ("PATH", path)))
-        .with_arg("-C")
-        .with_arg(repo)
+        .with_current_dir(repo)
 }
 
 /// Run a `git` subcommand inside `repo` and require it to succeed.
@@ -106,18 +105,11 @@ fn run_git(repo: &Path, args: &[&str]) {
 }
 
 /// Run `git diff` in `repo` and return the patch bytes. The flags keep the
-/// patch literal and `git apply`-able even for non-ASCII paths or binary
-/// content, and ignore any external diff program.
+/// patch `git apply`-able even for binary content and ignore any external
+/// diff program.
 fn git_diff(repo: &Path) -> Vec<u8> {
     let output = git_command(repo)
-        .with_args([
-            "-c",
-            "core.quotePath=false",
-            "diff",
-            "--no-color",
-            "--binary",
-            "--no-ext-diff",
-        ])
+        .with_args(["diff", "--no-color", "--binary", "--no-ext-diff"])
         .output()
         .unwrap_or_else(|error| panic!("error: Cannot run git diff: {error}"));
     if !output.status.success() {
@@ -176,6 +168,8 @@ fn render_diff(target_root: &Path, updates: &[(PathBuf, PathBuf)], removals: &[&
     let repo = repo_dir.0.as_path();
     // Empty template, so nothing is seeded into the new repository.
     run_git(repo, &["init", "-q", "--template="]);
+    // Show non-ASCII paths literally in the patch; git apply still accepts them.
+    run_git(repo, &["config", "core.quotePath", "false"]);
 
     // A system-wide gitattributes file, at a compiled-in path no variable
     // can redirect, could normalize the staged content and break the patch,

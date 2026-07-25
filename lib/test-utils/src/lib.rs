@@ -278,8 +278,7 @@ pub fn run_git(dir: &Path, args: &[&str]) {
     let status = Command::new("git")
         .with_env("GIT_CONFIG_GLOBAL", "/dev/null")
         .with_env("GIT_CONFIG_SYSTEM", "/dev/null")
-        .with_arg("-C")
-        .with_arg(dir)
+        .with_current_dir(dir)
         .with_args(args)
         .status()
         .unwrap();
