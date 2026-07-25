@@ -162,7 +162,7 @@ impl InstallLocalLyricsEnv {
             .with_arg(&self.source)
             .with_arg(&self.target)
             .output()
-            .unwrap();
+            .expect("failed to spawn install-local-lyrics");
         assert!(
             output.status.success(),
             "install-local-lyrics failed:\n{}",
@@ -226,8 +226,9 @@ pub fn video_desc(
 }
 
 /// Sets the modification time of a file to a fixed point relative to the
-/// Unix epoch. Explicit times keep the source newer than the target so the
-/// target counts as outdated regardless of the order the test wrote them.
+/// Unix epoch. Explicit times keep the comparison between source and
+/// target deterministic instead of relying on wall-clock ordering, whose
+/// resolution varies between filesystems.
 pub fn set_mtime(path: &Path, seconds_since_epoch: u64) {
     let time = SystemTime::UNIX_EPOCH + Duration::from_secs(seconds_since_epoch);
     OpenOptions::new()
