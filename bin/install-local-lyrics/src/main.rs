@@ -29,6 +29,10 @@ use std::process::Command;
 #[derive(Clone, Debug, Parser)]
 #[clap(about = "Synchronize the lyrics")]
 struct Args {
+    /// Render a diff of the outdated subtitles that a dry run would update.
+    #[clap(long, short = 'd', conflicts_with = "execute")]
+    diff: bool,
+
     /// For safety reasons, this programs list actions by default, this flag makes the program take those actions.
     #[clap(long, short = 'x')]
     execute: bool,
@@ -36,10 +40,6 @@ struct Args {
     /// Overwrite target files that are newer than their source instead of keeping them.
     #[clap(long, short = 'f')]
     force: bool,
-
-    /// Render a diff of the outdated subtitles that a dry run would update.
-    #[clap(long, short = 'd', conflicts_with = "execute")]
-    diff: bool,
 
     /// Show the files that would be removed as deletions in the diff.
     #[clap(long, requires = "diff")]
@@ -261,9 +261,9 @@ fn is_subtitle_file(entry: &DirEntry) -> bool {
 
 fn main() {
     let Args {
+        diff,
         execute,
         force,
-        diff,
         include_removals,
         source,
         target,
