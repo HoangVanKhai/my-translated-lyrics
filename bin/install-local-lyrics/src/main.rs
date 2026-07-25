@@ -172,7 +172,7 @@ impl Drop for TempRepoDir {
 /// standard output. No such diff exists on disk yet, so it is produced in a
 /// throwaway git repository. Runs only on a dry run, so the real target
 /// files are never touched.
-fn render_diff(target_root: &Path, updates: &[(&Path, &Path)]) {
+fn render_diff(target_root: &Path, updates: &[(PathBuf, PathBuf)]) {
     let repo_dir = TempRepoDir::new();
     let repo = repo_dir.0.as_path();
     // Empty template, so nothing is seeded into the new repository.
@@ -462,14 +462,8 @@ fn main() {
 
     eprintln!();
     eprintln!("stage: Updating outdated subtitles");
-    // `files_need_update` is not read afterward, so consume it with
-    // `into_sorted` rather than building a second collection with `sorted`.
-    let files_need_update = files_need_update.into_sorted();
-    let updates: Vec<(&Path, &Path)> = files_need_update
-        .iter()
-        .map(|(source, target)| (source.as_path(), target.as_path()))
-        .collect();
-    for &(source, target) in &updates {
+    let updates = files_need_update.into_sorted();
+    for (source, target) in &updates {
         install(execute, source, target);
     }
     if diff && !updates.is_empty() {
