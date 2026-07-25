@@ -175,3 +175,53 @@ fn include_removals_requires_diff() {
         "expected the error to mention the required --diff, got:\n{stderr}",
     );
 }
+
+#[test]
+fn include_removals_shows_updates_and_removals_together() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    let collection_name = "Feng Ling Yu Xiu";
+    let (separated, unified) = prepare_outdated(
+        &env,
+        collection_name,
+        "【示例表演者】《示例歌曲》Example Song [ExampleID]",
+        "new content\n",
+        "old content\n",
+    );
+    // A target file with no matching source: the sync would remove it.
+    let removed_rel =
+        format!("{collection_name}/【示例表演者】《示例歌曲》Removed [RemovedID].vi.srt");
+    let removed = env.target.join(&removed_rel);
+    write_file(&removed, "line one\nline two\n").unwrap();
+
+    let patch = env.run(["--diff", "--include-removals"]).stdout;
+    let patch_text = str::from_utf8(&patch).unwrap();
+
+    // A single patch carries both the content update and the deletion.
+    assert!(
+        patch_text.contains("-old content\n+new content\n"),
+        "the update hunk is missing from the combined patch:\n{patch_text}",
+    );
+    assert!(
+        patch_text.contains(&format!("diff --git a/{removed_rel} b/{removed_rel}")),
+        "the removal is missing from the combined patch:\n{patch_text}",
+    );
+    assert!(
+        patch_text.contains("deleted file mode"),
+        "the removal is not shown as a deletion:\n{patch_text}",
+    );
+
+    // The dry run changes nothing on disk; the combined patch then applies
+    // cleanly, updating both targets and deleting the removed file.
+    assert!(removed.exists(), "the dry run must not delete the file");
+    run_git(&env.target, &["init", "-q", "."]);
+    let patch_file = env.target.join("outdated.patch");
+    write_file(&patch_file, &patch).unwrap();
+    run_git(&env.target, &["apply", "outdated.patch"]);
+    remove_file(&patch_file).unwrap();
+    assert_eq!(read_to_string(&separated).unwrap(), "new content\n");
+    assert_eq!(read_to_string(&unified).unwrap(), "new content\n");
+    assert!(
+        !removed.exists(),
+        "applying the combined patch must delete the removed file",
+    );
+}
