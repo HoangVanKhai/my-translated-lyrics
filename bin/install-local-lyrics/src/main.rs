@@ -3,6 +3,7 @@
 
 use clap::Parser;
 use command_extra::CommandExtra;
+use into_sorted::IntoSorted;
 use itertools::Itertools;
 use lyrics_core::file_snapshot::FileSnapshot;
 use lyrics_core::video_descriptor::{
@@ -461,9 +462,9 @@ fn main() {
 
     eprintln!();
     eprintln!("stage: Updating outdated subtitles");
-    // `files_need_update` is not read after this, so sort it in place rather
-    // than materializing a second sorted collection with `Itertools::sorted`.
-    files_need_update.sort();
+    // `files_need_update` is not read afterward, so consume it with
+    // `into_sorted` rather than building a second collection with `sorted`.
+    let files_need_update = files_need_update.into_sorted();
     let updates: Vec<(&Path, &Path)> = files_need_update
         .iter()
         .map(|(source, target)| (source.as_path(), target.as_path()))
