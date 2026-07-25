@@ -343,3 +343,92 @@ fn diff_preserves_crlf_line_endings() {
     assert_eq!(read_to_string(&separated).unwrap(), target_content);
     assert_eq!(read_to_string(&unified).unwrap(), target_content);
 }
+
+#[test]
+fn diff_excludes_removals_by_default() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    let collection_name = "Feng Ling Yu Xiu";
+    let (separated, unified) = prepare_outdated(
+        &env,
+        collection_name,
+        "【示例表演者】《示例歌曲》Example Song [ExampleID]",
+        "new content\n",
+        "old content\n",
+    );
+    // A target file with no matching source would be removed by the sync.
+    let orphan = env.target_path(
+        collection_name,
+        "【示例表演者】《示例歌曲》Orphan [RemovedID].vi.srt",
+    );
+    write_file(&orphan, "to be removed\n").unwrap();
+
+    let patch = env.run(["--diff"]).stdout;
+    let patch_text = str::from_utf8(&patch).unwrap();
+
+    // The outdated update is shown, but the removal is not, by default.
+    assert!(
+        patch_text.contains("-old content\n+new content\n"),
+        "the update is missing from the patch:\n{patch_text}",
+    );
+    assert!(
+        !patch_text.contains("Orphan"),
+        "a removed file must not appear in the diff by default:\n{patch_text}",
+    );
+
+    // The dry run changes nothing on disk.
+    assert_eq!(read_to_string(&separated).unwrap(), "old content\n");
+    assert_eq!(read_to_string(&unified).unwrap(), "old content\n");
+    assert!(orphan.exists(), "the dry run must not delete the removal");
+}
+
+#[test]
+fn include_removals_shows_removed_files_as_deletions() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    let collection_name = "Feng Ling Yu Xiu";
+    // A target file with no matching source: the sync would remove it.
+    let removed_rel =
+        format!("{collection_name}/【示例表演者】《示例歌曲》Removed [RemovedID].vi.srt");
+    let removed = env.target.join(&removed_rel);
+    write_file(&removed, "line one\nline two\n").unwrap();
+
+    let patch = env.run(["--diff", "--include-removals"]).stdout;
+    let patch_text = str::from_utf8(&patch).unwrap();
+
+    assert!(
+        patch_text.contains(&format!("diff --git a/{removed_rel} b/{removed_rel}")),
+        "the removed file is missing from the patch:\n{patch_text}",
+    );
+    assert!(
+        patch_text.contains("deleted file mode"),
+        "the removed file is not shown as a deletion:\n{patch_text}",
+    );
+
+    // The dry run leaves the file on disk; applying the patch deletes it.
+    assert!(removed.exists(), "the dry run must not delete the file");
+    run_git(&env.target, &["init", "-q", "."]);
+    let patch_file = env.target.join("outdated.patch");
+    write_file(&patch_file, &patch).unwrap();
+    run_git(&env.target, &["apply", "outdated.patch"]);
+    remove_file(&patch_file).unwrap();
+    assert!(
+        !removed.exists(),
+        "applying the patch must delete the removed file",
+    );
+}
+
+#[test]
+fn include_removals_requires_diff() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+
+    let output = env.run_allow_failure(["--include-removals"]);
+
+    assert!(
+        !output.status.success(),
+        "expected --include-removals without --diff to be rejected",
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("--diff"),
+        "expected the error to mention the required --diff, got:\n{stderr}",
+    );
+}

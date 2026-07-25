@@ -41,6 +41,10 @@ struct Args {
     #[clap(long, short = 'd', conflicts_with = "execute")]
     diff: bool,
 
+    /// Show the files that would be removed as deletions in the diff.
+    #[clap(long, requires = "diff")]
+    include_removals: bool,
+
     /// Source directory of the subtitles.
     source: PathBuf,
 
@@ -168,11 +172,11 @@ impl Drop for TempRepoDir {
     }
 }
 
-/// Write a single `git apply`-compatible diff of all outdated subtitles to
-/// standard output. No such diff exists on disk yet, so it is produced in a
-/// throwaway git repository. Runs only on a dry run, so the real target
-/// files are never touched.
-fn render_diff(target_root: &Path, updates: &[(PathBuf, PathBuf)]) {
+/// Write a single `git apply`-compatible diff to standard output: the
+/// content change of every outdated subtitle, plus the deletion of every
+/// `removals` entry. Produced in a throwaway git repository on a dry run,
+/// so the real target files are never touched.
+fn render_diff(target_root: &Path, updates: &[(PathBuf, PathBuf)], removals: &[&Path]) {
     let repo_dir = TempRepoDir::new();
     let repo = repo_dir.0.as_path();
     // Empty template, so nothing is seeded into the new repository.
@@ -190,36 +194,37 @@ fn render_diff(target_root: &Path, updates: &[(PathBuf, PathBuf)]) {
     write(&attributes, "* -text -ident working-tree-encoding=\n")
         .unwrap_or_else(|error| panic!("error: Cannot write {attributes:?}: {error}"));
 
-    let staged: Vec<PathBuf> = updates
-        .iter()
-        .map(|(_, target)| {
-            let relative = target.strip_prefix(target_root).unwrap_or_else(|error| {
-                panic!("error: {target:?} is not inside {target_root:?}: {error}")
-            });
-            repo.join(relative)
-        })
-        .collect();
-
-    // Stage a copy of each current target file under its target-relative
-    // path. The copy carries the target's permissions.
-    for ((_, target), staged) in updates.iter().zip(&staged) {
+    // Stage each current target file, keeping its permissions, under its
+    // target-relative path.
+    let stage = |target: &Path| {
+        let relative = target.strip_prefix(target_root).unwrap_or_else(|error| {
+            panic!("error: {target:?} is not inside {target_root:?}: {error}")
+        });
+        let staged = repo.join(relative);
         if let Some(parent) = staged.parent() {
             create_dir_all(parent)
                 .unwrap_or_else(|error| panic!("error: Cannot create {parent:?}: {error}"));
         }
-        copy(target, staged)
+        copy(target, &staged)
             .unwrap_or_else(|error| panic!("error: Cannot copy {target:?} to {staged:?}: {error}"));
-    }
+        staged
+    };
+    let updated: Vec<PathBuf> = updates.iter().map(|(_, target)| stage(target)).collect();
+    let removed: Vec<PathBuf> = removals.iter().map(|&target| stage(target)).collect();
     run_git(repo, &["add", "-A"]);
 
-    // Overwrite each staged file's content with the source while leaving
-    // its permissions untouched, so that `git diff` reports the content
-    // change alone and never a mode change.
-    for ((source, _), staged) in updates.iter().zip(&staged) {
+    // Overwrite each staged update with its source, keeping the staged
+    // permissions so `git diff` reports a content change and never a mode
+    // change; delete each staged removal so it appears as a deletion.
+    for ((source, _), staged) in updates.iter().zip(&updated) {
         let content =
             read(source).unwrap_or_else(|error| panic!("error: Cannot read {source:?}: {error}"));
         write(staged, &content)
             .unwrap_or_else(|error| panic!("error: Cannot write {staged:?}: {error}"));
+    }
+    for staged in &removed {
+        remove_file(staged)
+            .unwrap_or_else(|error| panic!("error: Cannot remove {staged:?}: {error}"));
     }
 
     let patch = git_diff(repo);
@@ -267,6 +272,7 @@ fn main() {
         execute,
         force,
         diff,
+        include_removals,
         source,
         target,
     } = Args::parse();
@@ -466,8 +472,18 @@ fn main() {
     for (source, target) in &updates {
         install(execute, source, target);
     }
-    if diff && !updates.is_empty() {
-        render_diff(&target, &updates);
+    let removals: Vec<&Path> = if include_removals {
+        files_need_uninstall
+            .iter()
+            .copied()
+            .map(PathBuf::as_path)
+            .sorted()
+            .collect()
+    } else {
+        Vec::new()
+    };
+    if diff && (!updates.is_empty() || !removals.is_empty()) {
+        render_diff(&target, &updates, &removals);
     }
 
     if !files_kept_newer.is_empty() {
