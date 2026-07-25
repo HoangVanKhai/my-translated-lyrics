@@ -327,7 +327,7 @@ let result = foo(value);
 
 This codebase uses the [`command-extra`](https://docs.rs/command-extra) crate to build `std::process::Command` values in a chainable, owned style. Import it as `use command_extra::CommandExtra;`.
 
-The standard `Command` builder methods, such as `arg`, `env`, and `current_dir`, take `&mut self` and return `&mut Command`. This makes them unsuitable for method chains that end in an owned value. The `CommandExtra` extension trait provides `.with_*` counterparts that take ownership and return an owned `Command`, enabling fluent one-expression construction:
+The standard `Command` builder methods, such as `arg`, `env`, and `current_dir`, take `&mut self` and return `&mut Command`. This makes them unsuitable for method chains that end in an owned value. The `CommandExtra` extension trait provides owned counterparts that take ownership and return an owned `Command`, enabling fluent one-expression construction:
 
 ```rust
 // Good: fully chainable, owned style
@@ -344,7 +344,7 @@ cmd.arg(value);
 let output = cmd.output().expect("spawn my-tool");
 ```
 
-Available `.with_*` methods mirror every standard builder method: `with_arg`, `with_args`, `with_env`, `with_envs`, `with_env_remove`, `with_env_clear`, `with_current_dir`, `with_stdin`, `with_stdout`, `with_stderr`.
+The trait provides an owned counterpart for each standard builder method, and the names follow three prefix patterns. Methods that add or set a value keep the `with_*` prefix: `with_arg`, `with_args`, `with_current_dir`, `with_env`, `with_stdin`, `with_stdout`, and `with_stderr`. Removal takes the `without_*` prefix, so `without_env` is the counterpart of `env_remove`. Clearing takes the `with_no_*` prefix, so `with_no_env` is the counterpart of `env_clear`.
 
 ### Parser Combinators
 
