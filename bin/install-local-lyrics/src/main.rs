@@ -217,8 +217,11 @@ fn render_diff(target_root: &Path, updates: &[(PathBuf, PathBuf)], removals: &[&
     }
 
     let patch = git_diff(repo);
-    // A reader may close the pipe early; that is a clean end, not a failure.
-    if let Err(error) = io::stdout().write_all(&patch)
+    // Write the patch and flush it, so no trailing byte stays buffered at
+    // exit. A reader may close the pipe early; that is a clean end, not a
+    // failure.
+    let mut stdout = io::stdout().lock();
+    if let Err(error) = stdout.write_all(&patch).and_then(|()| stdout.flush())
         && error.kind() != ErrorKind::BrokenPipe
     {
         panic!("error: Cannot write diff to standard output: {error}");
