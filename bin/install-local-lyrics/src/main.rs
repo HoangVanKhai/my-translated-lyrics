@@ -85,18 +85,13 @@ fn keep(target: &Path, source: &Path) {
 /// attributes file cannot reach the diff. The one attributes source left is
 /// the system-wide file, neutralized in [`render_diff`].
 fn git_command(repo: &Path) -> Command {
-    let command = Command::new("git")
+    Command::new("git")
         .with_no_env()
         .with_env("GIT_CONFIG_GLOBAL", "/dev/null")
         .with_env("GIT_CONFIG_SYSTEM", "/dev/null")
+        .with_envs(var_os("PATH").map(|path| ("PATH", path)))
         .with_arg("-C")
-        .with_arg(repo);
-    // Leave `PATH` unset when absent rather than empty, so git resolution
-    // still falls back to the system default path.
-    match var_os("PATH") {
-        Some(path) => command.with_env("PATH", path),
-        None => command,
-    }
+        .with_arg(repo)
 }
 
 /// Run a `git` subcommand inside `repo` and require it to succeed.
