@@ -129,12 +129,12 @@ impl TempRepoDir {
     /// symlink an attacker may have planted at a guessed path.
     fn new() -> Self {
         loop {
-            let name: String = rng()
+            let suffix: String = rng()
                 .sample_iter(&Alphanumeric)
                 .take(15)
                 .map(char::from)
                 .collect();
-            let path = temp_dir().join(format!("install-local-lyrics-diff.{name}"));
+            let path = temp_dir().join(format!("install-local-lyrics-diff.{suffix}"));
             match create_dir(&path) {
                 Ok(()) => return TempRepoDir(path),
                 Err(error) if error.kind() == ErrorKind::AlreadyExists => continue,
