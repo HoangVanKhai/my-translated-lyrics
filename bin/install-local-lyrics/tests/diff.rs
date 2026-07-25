@@ -121,8 +121,8 @@ fn renders_git_apply_compatible_diff_for_binary_content() {
     // A leading NUL byte makes git classify the content as binary. The
     // two lengths differ so the outdated check never reads the bytes as
     // UTF-8, which lets the binary target reach the diff.
-    let source_content = "\u{0}binary source content";
-    let target_content = "\u{0}binary target";
+    let source_content = "\0binary source content";
+    let target_content = "\0binary target";
     let (separated, unified) = prepare_outdated(
         &env,
         collection_name,
