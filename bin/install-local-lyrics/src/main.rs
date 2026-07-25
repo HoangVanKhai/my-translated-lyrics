@@ -18,7 +18,7 @@ use std::collections::{HashMap, HashSet};
 use std::env::{temp_dir, var_os};
 use std::fs::{
     DirEntry, copy, create_dir, create_dir_all, hard_link, read, read_dir, read_to_string,
-    remove_dir_all, remove_file, write,
+    remove_dir_all, remove_file, write as write_file,
 };
 use std::io::{self, ErrorKind, Write};
 use std::iter::once;
@@ -180,7 +180,7 @@ fn render_diff(target_root: &Path, updates: &[(PathBuf, PathBuf)], removals: &[&
     create_dir_all(&info_dir)
         .unwrap_or_else(|error| panic!("error: Cannot create {info_dir:?}: {error}"));
     let attributes = info_dir.join("attributes");
-    write(&attributes, "* -text -ident working-tree-encoding=\n")
+    write_file(&attributes, "* -text -ident working-tree-encoding=\n")
         .unwrap_or_else(|error| panic!("error: Cannot write {attributes:?}: {error}"));
 
     // Stage each current target file, keeping its permissions, under its
@@ -208,7 +208,7 @@ fn render_diff(target_root: &Path, updates: &[(PathBuf, PathBuf)], removals: &[&
     for ((source, _), staged) in updates.iter().zip(&updated) {
         let content =
             read(source).unwrap_or_else(|error| panic!("error: Cannot read {source:?}: {error}"));
-        write(staged, &content)
+        write_file(staged, &content)
             .unwrap_or_else(|error| panic!("error: Cannot write {staged:?}: {error}"));
     }
     for staged in &removed {
