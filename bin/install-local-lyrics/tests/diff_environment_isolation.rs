@@ -114,11 +114,11 @@ fn honors_diff_despite_git_diff_opts() {
     // git apply needs, and no configuration or command-line flag can
     // override it, so the tool must clear it. The resulting patch must
     // still apply cleanly.
-    let patch = env.run_diff_with_env(&[("GIT_DIFF_OPTS", "--unified=0")]);
+    let stdout = env.run_diff_with_env(&[("GIT_DIFF_OPTS", "--unified=0")]);
 
     run_git(&env.target, &["init", "-q", "."]);
     let patch_file = env.target.join("outdated.patch");
-    write_file(&patch_file, &patch).unwrap();
+    write_file(&patch_file, &stdout).unwrap();
     run_git(&env.target, &["apply", "outdated.patch"]);
     remove_file(&patch_file).unwrap();
     assert_eq!(read_to_string(&separated).unwrap(), source_content);
