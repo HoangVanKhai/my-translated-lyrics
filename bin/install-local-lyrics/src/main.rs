@@ -129,19 +129,17 @@ impl TempRepoDir {
     /// system temporary directory. Exclusive creation refuses to follow a
     /// symlink an attacker may have planted at a guessed path.
     fn new() -> Self {
-        loop {
-            let suffix: String = rng()
-                .sample_iter(&Alphanumeric)
-                .take(15)
-                .map(char::from)
-                .collect();
-            let path = temp_dir().join(format!("install-local-lyrics-diff.{suffix}"));
-            match create_dir(&path) {
-                Ok(()) => return TempRepoDir(path),
-                Err(error) if error.kind() == ErrorKind::AlreadyExists => continue,
-                Err(error) => {
-                    panic!("error: Cannot create temporary diff directory {path:?}: {error}")
-                }
+        let suffix: String = rng()
+            .sample_iter(&Alphanumeric)
+            .take(15)
+            .map(char::from)
+            .collect();
+        let path = temp_dir().join(format!("install-local-lyrics-diff.{suffix}"));
+        match create_dir(&path) {
+            Ok(()) => TempRepoDir(path),
+            Err(error) if error.kind() == ErrorKind::AlreadyExists => TempRepoDir::new(),
+            Err(error) => {
+                panic!("error: Cannot create temporary diff directory {path:?}: {error}")
             }
         }
     }
