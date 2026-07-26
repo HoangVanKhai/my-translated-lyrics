@@ -127,7 +127,8 @@ impl InstallLocalLyricsEnv {
         &self,
         args: Args,
     ) -> std::process::Output {
-        Command::new(self.bin)
+        self.bin
+            .pipe(Command::new)
             .with_args(args)
             .with_arg(&self.source)
             .with_arg(&self.target)
