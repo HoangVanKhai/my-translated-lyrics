@@ -157,7 +157,9 @@ impl InstallLocalLyricsEnv {
     /// set, asserts it succeeds, and returns its standard output. Used to
     /// check that a hostile git environment does not perturb the patch.
     pub fn run_diff_with_env(&self, vars: &[(&str, &str)]) -> Vec<u8> {
-        let output = Command::new(self.bin)
+        let output = self
+            .bin
+            .pipe(Command::new)
             .with_envs(vars.iter().copied())
             .with_arg("--diff")
             .with_arg(&self.source)
