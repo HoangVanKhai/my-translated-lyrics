@@ -463,16 +463,14 @@ fn main() {
     for (source, target) in &updates {
         install(execute, source, target);
     }
-    let removals: Vec<&Path> = if include_removals {
-        files_need_uninstall
-            .iter()
-            .copied()
-            .map(PathBuf::as_path)
-            .sorted()
-            .collect()
-    } else {
-        Vec::new()
-    };
+    let removals = include_removals
+        .then_some(&files_need_uninstall)
+        .into_iter()
+        .flatten()
+        .copied()
+        .map(PathBuf::as_path)
+        .collect::<Vec<&Path>>()
+        .into_sorted();
     if diff && (!updates.is_empty() || !removals.is_empty()) {
         render_diff(&target, &updates, &removals);
     }
