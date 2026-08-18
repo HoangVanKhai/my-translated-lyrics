@@ -83,7 +83,10 @@ fn rejects_a_descriptor_naming_an_undeclared_collection() {
 #[test]
 fn rejects_a_missing_manifest() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    remove_file(env.source.join(COLLECTIONS_CONFIG_FILE_NAME)).unwrap();
+    env.source
+        .join(COLLECTIONS_CONFIG_FILE_NAME)
+        .pipe(remove_file)
+        .unwrap();
 
     let output = env.run_unchecked(["--execute"]);
 
