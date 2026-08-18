@@ -21,6 +21,7 @@ use std::fs::{
     remove_dir_all, remove_file, write as write_file,
 };
 use std::io::{self, ErrorKind, Write};
+use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -413,10 +414,7 @@ fn main() {
             let unified_target_files = unified_target_dirs.iter().map(|dir| dir.join(&target_name));
 
             let source_file_snapshot = source_file.clone().pipe(FileSnapshot::new);
-            for target_file in [separated_target_file]
-                .into_iter()
-                .chain(unified_target_files)
-            {
+            for target_file in once(separated_target_file).chain(unified_target_files) {
                 let Some(target_file_snapshot) = existing_target_files.get(&target_file) else {
                     files_need_install.push((source_file.clone(), target_file));
                     continue;
