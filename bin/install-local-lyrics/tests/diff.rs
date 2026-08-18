@@ -177,8 +177,8 @@ fn removes_the_temporary_repository_after_diff() {
         .unwrap()
         .map(|entry| entry.unwrap().file_name())
         .filter(|name| {
-            name.to_string_lossy()
-                .starts_with("install-local-lyrics-diff.")
+            name.to_str()
+                .is_some_and(|name| name.starts_with("install-local-lyrics-diff."))
         })
         .collect();
     assert!(
