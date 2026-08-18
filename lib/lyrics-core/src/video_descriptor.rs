@@ -14,9 +14,7 @@ pub const VIDEO_CONFIG_FILE_NAME: &str = "video.toml";
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct VideoDesc {
-    /// Target collection this video belongs to. It must be one of the
-    /// separated collections that the `collections.toml` manifest
-    /// declares, which the consumer of the descriptor checks.
+    /// Target collection this video belongs to.
     pub collection: CollectionName,
     /// Title of the video to which this subtitle set applies.
     /// It is used as the stem of target subtitle filenames.
