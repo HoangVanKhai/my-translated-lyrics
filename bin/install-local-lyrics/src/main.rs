@@ -76,14 +76,9 @@ fn keep(target: &Path, source: &Path) {
     eprintln!("warning: Keeping {target:?} because it is newer than {source:?}");
 }
 
-/// Build a `git` command that runs in `repo` with a scrubbed environment,
-/// so no personal git setting can alter the patch. The environment is
-/// emptied and only `PATH` and `GIT_CONFIG_GLOBAL`/`GIT_CONFIG_SYSTEM`
-/// (pinned to `/dev/null`) are put back. Starting from nothing rather than
-/// denying known-bad variables one by one also excludes any a future git
-/// might add, and drops `HOME`/`XDG_CONFIG_HOME` so a personal ignore or
-/// attributes file cannot reach the diff. The one attributes source left is
-/// the system-wide file, neutralized in [`render_diff`].
+/// Build a `git` command that runs in `repo` with a scrubbed environment:
+/// only `PATH` and `GIT_CONFIG_GLOBAL`/`GIT_CONFIG_SYSTEM` (pinned to
+/// `/dev/null`) are kept.
 fn git_command(repo: &Path) -> Command {
     Command::new("git")
         .with_no_env()
@@ -131,8 +126,7 @@ struct TempRepoDir(PathBuf);
 
 impl TempRepoDir {
     /// Create an exclusively owned, randomly named empty directory under the
-    /// system temporary directory. Exclusive creation refuses to follow a
-    /// symlink an attacker may have planted at a guessed path.
+    /// system temporary directory.
     fn new() -> Self {
         let suffix: String = rng()
             .sample_iter(&Alphanumeric)
@@ -223,9 +217,7 @@ fn render_diff(target_root: &Path, updates: &[(PathBuf, PathBuf)], removals: &[&
     }
 
     let patch = git_diff(repo);
-    // Write the patch and flush it, so no trailing byte stays buffered at
-    // exit. A reader may close the pipe early; that is a clean end, not a
-    // failure.
+    // A reader may close the pipe early; that is a clean end, not a failure.
     let mut stdout = io::stdout().lock();
     if let Err(error) = stdout.write_all(&patch).and_then(|()| stdout.flush())
         && error.kind() != ErrorKind::BrokenPipe
