@@ -95,7 +95,8 @@ fn git_command(repo: &Path) -> Command {
 
 /// Run a `git` subcommand inside `repo` and require it to succeed.
 fn run_git(repo: &Path, args: &[&str]) {
-    let status = git_command(repo)
+    let status = repo
+        .pipe(git_command)
         .with_args(args)
         .status()
         .unwrap_or_else(|error| panic!("error: Cannot run git {args:?}: {error}"));
@@ -108,7 +109,8 @@ fn run_git(repo: &Path, args: &[&str]) {
 /// patch `git apply`-able even for binary content and ignore any external
 /// diff program.
 fn git_diff(repo: &Path) -> Vec<u8> {
-    let output = git_command(repo)
+    let output = repo
+        .pipe(git_command)
         .with_args(["diff", "--no-color", "--binary", "--no-ext-diff"])
         .output()
         .unwrap_or_else(|error| panic!("error: Cannot run git diff: {error}"));
@@ -176,7 +178,8 @@ fn render_diff(target_root: &Path, updates: &[(PathBuf, PathBuf)], removals: &[&
     // attributes file outranks it, so neutralize those attributes here.
     // `-diff` is left out so binary content still rides `git diff --binary`.
     let info_dir = repo.join(".git").join("info");
-    create_dir_all(&info_dir)
+    info_dir
+        .pipe_ref(create_dir_all)
         .unwrap_or_else(|error| panic!("error: Cannot create {info_dir:?}: {error}"));
     let attributes = info_dir.join("attributes");
     write_file(&attributes, "* -text -ident working-tree-encoding=\n")
@@ -190,7 +193,8 @@ fn render_diff(target_root: &Path, updates: &[(PathBuf, PathBuf)], removals: &[&
         });
         let staged = repo.join(relative);
         if let Some(parent) = staged.parent() {
-            create_dir_all(parent)
+            parent
+                .pipe(create_dir_all)
                 .unwrap_or_else(|error| panic!("error: Cannot create {parent:?}: {error}"));
         }
         copy(target, &staged)
