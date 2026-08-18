@@ -111,7 +111,10 @@ fn run_git(repo: &Path, args: &[&str]) {
 fn git_diff(repo: &Path) -> Vec<u8> {
     let output = repo
         .pipe(git_command)
-        .with_args(["diff", "--no-color", "--binary", "--no-ext-diff"])
+        .with_arg("diff")
+        .with_arg("--no-color")
+        .with_arg("--binary")
+        .with_arg("--no-ext-diff")
         .output()
         .unwrap_or_else(|error| panic!("error: Cannot run git diff: {error}"));
     if !output.status.success() {
