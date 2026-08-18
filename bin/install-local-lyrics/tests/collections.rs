@@ -1,5 +1,6 @@
 use lyrics_core::collections_descriptor::COLLECTIONS_CONFIG_FILE_NAME;
 use lyrics_core::video_descriptor::Visibility;
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::fs::{remove_file, write as write_file};
 use test_utils::{
@@ -69,7 +70,7 @@ fn rejects_a_descriptor_naming_an_undeclared_collection() {
         !output.status.success(),
         "expected an undeclared collection to fail the run",
     );
-    let stderr = String::from_utf8_lossy(&output.stderr);
+    let stderr = output.stderr.pipe_as_ref(str::from_utf8).unwrap();
     assert!(
         stderr.contains(r#"unknown collection: "Undeclared Example Collection""#),
         "expected the undeclared collection to be named, got:\n{stderr}",
@@ -90,7 +91,7 @@ fn rejects_a_missing_manifest() {
         !output.status.success(),
         "expected a missing manifest to fail the run",
     );
-    let stderr = String::from_utf8_lossy(&output.stderr);
+    let stderr = output.stderr.pipe_as_ref(str::from_utf8).unwrap();
     assert!(
         stderr.contains(COLLECTIONS_CONFIG_FILE_NAME),
         "expected the missing manifest to be named, got:\n{stderr}",
@@ -115,7 +116,7 @@ fn rejects_a_manifest_naming_a_collection_outside_the_library() {
         !output.status.success(),
         "expected an escaping collection name to fail the run",
     );
-    let stderr = String::from_utf8_lossy(&output.stderr);
+    let stderr = output.stderr.pipe_as_ref(str::from_utf8).unwrap();
     assert!(
         stderr.contains(r#"collection name must not contain a "." or ".." path component"#),
         "expected the shape of the collection name to be reported, got:\n{stderr}",
