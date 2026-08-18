@@ -17,7 +17,7 @@
 00:18.000 LRC: Ngày ấy tôi đã đứng đó, chờ mãi, chờ mãi, đã bao nhiêu năm rồi nhỉ?
 00:22.260 LRC: Thành trò cười cho lữ khách, mấy năm mới gặp một lần.
 00:25.890 LRC: Hoa bên cầu, năm lại năm, nở rồi tàn, đã úa vàng.
-00:30.240 LRC: Chớp mắt đã mấy mươi năm, vệt sáng ấy từ biên mây vụt tắt.
+00:30.240 LRC: Chớp mắt đã mấy mươi năm, vệt sáng ấy từ biên mây rơi xuống.
 00:34.440 LRC: Thường giật mình thức giấc giữa đêm thâu,
 00:38.010 LRC: Ngồi ngẩn ngơ trước gương.
 00:42.450 LRC: Nhìn thấy tôi ở đây, mỉm cười,
@@ -69,7 +69,7 @@
           cre: Điều phối sản xuất âm nhạc: WOVOP
 02:29.368 LRC: Bên cầu thanh thạch sáo trỗi, ngỡ cố nhân quay về.
 02:33.510 LRC: Trăng lên đầu liễu, trăm nhà treo đèn đợi người giải đố.
-02:37.500 LRC: Lợi kiếm phá không, tiếng trống dồn, ánh bạc lạnh soi trên giáp sắt.
+02:37.500 LRC: Lợi kiếm phá không, tiếng trống dồn, ánh lạnh soi trên giáp bạc.
 02:41.460 LRC: Trong khuê phòng lật sách, nào hay sáo trúc đã vùi sâu.
 02:45.570 LRC: Còn nhớ thuở nhỏ giữa đồng, mò dây, hái dưa.
 02:49.500 LRC: Tâm sự cô gái, lặng thầm chẳng nói, e ấp tựa đóa hoa.
@@ -81,7 +81,7 @@
 03:13.440 LRC: Một giấc mộng xuân thu, hái đậu đỏ, chỉ muốn gửi về cho người.
 03:17.370 LRC: Lúc rạng đông mưa, người xa xứ từ giã lớp áo xưa.
 03:21.810 LRC: Nến sáng cháy dài cho kẻ viễn du, ngàn dặm lại thấy ai?
-03:25.557 LRC: Ngân Hà quấn quýt, dáng hao gầy, trường hận này bao giờ mới nguôi?
+03:25.557 LRC: Ngân Hà quấn quýt, dáng hao gầy, trường hận này bao giờ người mới về?
 03:29.719 LRC: Chẳng muốn gặp lại, tựa khói tựa tro.
 03:33.060 LRC: Nguyện lòng ta theo dòng Lạc Thủy,
 03:35.130 LRC: Để bên bờ được thấy em.
