@@ -343,8 +343,6 @@ fn main() {
         Vec::with_capacity(existing_target_files.len());
     let mut files_kept_newer: Vec<(PathBuf, PathBuf)> = Vec::new();
 
-    // Every video goes into each of these, so they are built once rather
-    // than per descriptor.
     let unified_target_dirs: Vec<PathBuf> = collections
         .unified
         .iter()
