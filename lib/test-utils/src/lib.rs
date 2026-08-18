@@ -18,6 +18,7 @@ use std::fs::{
     DirEntry, OpenOptions, create_dir, create_dir_all, read_dir, read_to_string, remove_dir_all,
     write as write_file,
 };
+use std::iter::once;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{Duration, SystemTime};
@@ -215,7 +216,7 @@ impl InstallLocalLyricsEnv {
         SEPARATED_COLLECTIONS
             .iter()
             .copied()
-            .chain([UNIFIED_COLLECTION])
+            .chain(once(UNIFIED_COLLECTION))
             .flat_map(|name| {
                 self.target
                     .join(name)
