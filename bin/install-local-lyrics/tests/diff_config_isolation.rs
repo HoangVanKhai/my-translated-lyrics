@@ -1,6 +1,6 @@
 use pretty_assertions::assert_eq;
 use std::fs::{create_dir_all, read_to_string, remove_file, write as write_file};
-use test_utils::{InstallLocalLyricsEnv, Temp, prepare_outdated, run_git};
+use test_utils::{InstallLocalLyricsEnv, SEPARATED_COLLECTION, Temp, prepare_outdated, run_git};
 use text_block_macros::text_block_fnl;
 
 const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
@@ -8,7 +8,7 @@ const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
 #[test]
 fn honors_diff_despite_global_gitignore_and_gitattributes() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let source_content = text_block_fnl! {
         "line one"
@@ -61,7 +61,7 @@ fn honors_diff_despite_global_gitignore_and_gitattributes() {
 #[test]
 fn honors_diff_despite_git_template_dir() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let source_content = text_block_fnl! {
         "line one"
@@ -108,7 +108,7 @@ fn honors_diff_despite_git_template_dir() {
 /// `diff.noprefix=true`, which would otherwise strip the prefixes and
 /// leave a patch `git apply` cannot place.
 fn assert_config_injection_neutralized(env: &InstallLocalLyricsEnv, vars: &[(&str, &str)]) {
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let source_content = text_block_fnl! {
         "line one"
@@ -169,7 +169,7 @@ fn honors_diff_despite_config_injected_via_parameters() {
 #[test]
 fn honors_diff_despite_git_attr_source() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let source_content = text_block_fnl! {
         "line one"

@@ -1,10 +1,12 @@
-use lyrics_core::video_descriptor::{UNIFIED_COLLECTION, Visibility};
+use lyrics_core::video_descriptor::Visibility;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::fs::{OpenOptions, read_to_string, write as write_file};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
-use test_utils::{InstallLocalLyricsEnv, expected_stderr, video_desc};
+use test_utils::{
+    InstallLocalLyricsEnv, SEPARATED_COLLECTION, UNIFIED_COLLECTION, expected_stderr, video_desc,
+};
 
 const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
 
@@ -52,7 +54,7 @@ fn prepare_conflicting_files(
 #[test]
 fn keeps_target_files_newer_than_source() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let source_content = "source content";
     let target_content = "newer target content";
@@ -92,7 +94,7 @@ fn keeps_target_files_newer_than_source() {
 #[test]
 fn dry_run_keeps_target_files_newer_than_source() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let source_content = "source content";
     let target_content = "newer target content";
@@ -131,7 +133,7 @@ fn dry_run_keeps_target_files_newer_than_source() {
 #[test]
 fn force_overwrites_target_files_newer_than_source() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let source_content = "source content";
     let target_content = "newer target content";
@@ -171,7 +173,7 @@ fn force_overwrites_target_files_newer_than_source() {
 #[test]
 fn updates_target_files_older_than_source() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let source_content = "newer source content";
     let target_content = "older target content";

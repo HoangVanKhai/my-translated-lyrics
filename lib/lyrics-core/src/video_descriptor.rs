@@ -1,3 +1,4 @@
+use crate::collections_descriptor::CollectionName;
 use derive_more::{AsRef, Deref, Display, Into};
 use itertools::Itertools;
 use pipe_trait::Pipe;
@@ -7,21 +8,15 @@ use std::path::{Component, Path};
 use std::str::FromStr;
 use strum::{AsRefStr, EnumString, VariantArray};
 
-pub const SEPARATED_COLLECTIONS: &[&str] = &[
-    "Feng Ling Yu Xiu",
-    "Luo Tianyi, Yuezheng Ling/洛天依_乐正绫",
-    "Touhou Hero of Ice Fairy",
-];
-
-pub const UNIFIED_COLLECTION: &str = "Short Relaxing Playlist 2025";
-
 pub const VIDEO_CONFIG_FILE_NAME: &str = "video.toml";
 
 /// Parsed contents of a `video.toml` file.
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct VideoDesc {
-    /// Target collection this video belongs to.
+    /// Target collection this video belongs to. It must be one of the
+    /// separated collections that the `collections.toml` manifest
+    /// declares, which the consumer of the descriptor checks.
     pub collection: CollectionName,
     /// Title of the video to which this subtitle set applies.
     /// It is used as the stem of target subtitle filenames.
@@ -30,39 +25,6 @@ pub struct VideoDesc {
     pub song_titles: HashMap<Language, String>,
     #[serde(default)]
     pub visibility: Visibility,
-}
-
-/// Name of a managed target-collection directory. Can only be
-/// constructed from values listed in [`SEPARATED_COLLECTIONS`].
-#[derive(AsRef, Clone, Deref, Deserialize, Display, Into, Serialize)]
-#[as_ref(forward)]
-#[deref(forward)]
-#[serde(try_from = "String", into = "String")]
-pub struct CollectionName(
-    /// Owned `String` rather than `&'static str`: every valid value is
-    /// known statically today, but owning the string leaves room to
-    /// replace [`SEPARATED_COLLECTIONS`] with a runtime source later
-    /// without breaking the crate API.
-    String,
-);
-
-impl TryFrom<String> for CollectionName {
-    type Error = ParseCollectionNameError;
-
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        if SEPARATED_COLLECTIONS.contains(&value.as_str()) {
-            Ok(CollectionName(value))
-        } else {
-            Err(ParseCollectionNameError::UnknownCollection(value))
-        }
-    }
-}
-
-#[derive(Debug, Display)]
-#[non_exhaustive]
-pub enum ParseCollectionNameError {
-    #[display("unknown collection: {_0:?}")]
-    UnknownCollection(String),
 }
 
 /// Title of a video. The constructor enforces two invariants on the

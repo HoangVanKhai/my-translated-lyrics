@@ -4,9 +4,10 @@
 use command_extra::CommandExtra;
 use derive_more::{AsRef, Deref};
 use itertools::Itertools;
-use lyrics_core::video_descriptor::{
-    Language, SEPARATED_COLLECTIONS, UNIFIED_COLLECTION, VideoDesc, Visibility,
+use lyrics_core::collections_descriptor::{
+    COLLECTIONS_CONFIG_FILE_NAME, CollectionName, CollectionsDesc,
 };
+use lyrics_core::video_descriptor::{Language, VideoDesc, Visibility};
 use maplit::hashmap;
 use pipe_trait::Pipe;
 use rand::distr::Alphanumeric;
@@ -17,10 +18,27 @@ use std::fs::{
     DirEntry, OpenOptions, create_dir, create_dir_all, read_dir, read_to_string, remove_dir_all,
     write as write_file,
 };
-use std::iter::once;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{Duration, SystemTime};
+
+/// The separated collection a test names in its video descriptors when
+/// it does not care which one it uses.
+pub const SEPARATED_COLLECTION: &str = "Example Collection";
+
+/// The second declared separated collection, for a test that needs two
+/// of them. Declaring a collection that most tests never write into
+/// keeps the fixture honest, because a program that assumed a single
+/// separated collection instead of reading the declared list would still
+/// pass every test that uses only [`SEPARATED_COLLECTION`].
+pub const OTHER_SEPARATED_COLLECTION: &str = "Another Example Collection";
+
+/// The separated collections that [`InstallLocalLyricsEnv`] declares in
+/// the `collections.toml` of its source directory.
+pub const SEPARATED_COLLECTIONS: &[&str] = &[SEPARATED_COLLECTION, OTHER_SEPARATED_COLLECTION];
+
+/// The collection that receives a copy of every subtitle file.
+pub const UNIFIED_COLLECTION: &str = "Example Unified Collection";
 
 /// Absolute path to the workspace root directory.
 ///
@@ -80,20 +98,36 @@ pub struct InstallLocalLyricsEnv {
 
 impl InstallLocalLyricsEnv {
     /// Prepares a new environment with empty source and target
-    /// directories. The target directory is pre-populated with the
-    /// required collection subdirectories. The `bin` argument is the
-    /// path to the `install-local-lyrics` executable, which the caller
-    /// obtains through `env!("CARGO_BIN_EXE_install-local-lyrics")`.
+    /// directories. The source directory receives a `collections.toml`
+    /// declaring [`SEPARATED_COLLECTIONS`] and [`UNIFIED_COLLECTION`],
+    /// and the target directory is pre-populated with a subdirectory for
+    /// each of them. The `bin` argument is the path to the
+    /// `install-local-lyrics` executable, which the caller obtains
+    /// through `env!("CARGO_BIN_EXE_install-local-lyrics")`.
     pub fn prepare(bin: &'static str) -> Self {
         let temp = Temp::new_dir();
         let source = temp.join("source");
         let target = temp.join("target");
         create_dir(&source).unwrap();
         create_dir(&target).unwrap();
-        SEPARATED_COLLECTIONS
-            .iter()
-            .copied()
-            .chain(once(UNIFIED_COLLECTION))
+        let collections = CollectionsDesc {
+            unified: collection_name(UNIFIED_COLLECTION.to_owned()),
+            separated: SEPARATED_COLLECTIONS
+                .iter()
+                .copied()
+                .map(str::to_owned)
+                .map(collection_name)
+                .collect(),
+        };
+        // Serialized through the real descriptor type, so the fixture
+        // manifest cannot drift from the shape the program reads.
+        write_file(
+            source.join(COLLECTIONS_CONFIG_FILE_NAME),
+            toml::to_string(&collections).unwrap(),
+        )
+        .unwrap();
+        collections
+            .names()
             .map(|name| target.join(name))
             .try_for_each(create_dir_all)
             .unwrap();
@@ -181,7 +215,7 @@ impl InstallLocalLyricsEnv {
         SEPARATED_COLLECTIONS
             .iter()
             .copied()
-            .chain(once(UNIFIED_COLLECTION))
+            .chain([UNIFIED_COLLECTION])
             .flat_map(|name| {
                 self.target
                     .join(name)
@@ -211,6 +245,11 @@ impl InstallLocalLyricsEnv {
     pub fn target_path(&self, collection_name: &str, file_name: &str) -> PathBuf {
         self.target.join(collection_name).join(file_name)
     }
+}
+
+/// Wraps a fixture collection name, which is always of a valid shape.
+fn collection_name(value: String) -> CollectionName {
+    CollectionName::try_from(value).unwrap()
 }
 
 pub fn video_desc(

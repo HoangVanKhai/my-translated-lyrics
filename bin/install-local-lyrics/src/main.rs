@@ -5,10 +5,10 @@ use clap::Parser;
 use command_extra::CommandExtra;
 use into_sorted::IntoSorted;
 use itertools::Itertools;
+use lyrics_core::collections_descriptor::{COLLECTIONS_CONFIG_FILE_NAME, CollectionsDesc};
 use lyrics_core::file_snapshot::FileSnapshot;
 use lyrics_core::video_descriptor::{
-    LyricsFileName, ParseLyricsFileNameError, SEPARATED_COLLECTIONS, UNIFIED_COLLECTION,
-    VIDEO_CONFIG_FILE_NAME, VideoDesc, Visibility,
+    LyricsFileName, ParseLyricsFileNameError, VIDEO_CONFIG_FILE_NAME, VideoDesc, Visibility,
 };
 use pipe_trait::Pipe;
 use rand::distr::Alphanumeric;
@@ -21,7 +21,6 @@ use std::fs::{
     remove_dir_all, remove_file, write as write_file,
 };
 use std::io::{self, ErrorKind, Write};
-use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -267,6 +266,16 @@ fn main() {
         target,
     } = Args::parse();
 
+    // The collections manifest declares the directories that make up the
+    // target library. Read it first: every video descriptor below is
+    // checked against it, and the target directories to scan come from it.
+    let collections_path = source.join(COLLECTIONS_CONFIG_FILE_NAME);
+    let collections: CollectionsDesc = collections_path
+        .pipe_ref(read_to_string)
+        .unwrap_or_else(|error| panic!("error: Cannot read {collections_path:?}: {error}"))
+        .pipe_as_ref(toml::from_str)
+        .unwrap_or_else(|error| panic!("error: Cannot parse {collections_path:?}: {error}"));
+
     // Read all video descriptors from source directories
     let descriptors: Vec<(PathBuf, VideoDesc)> = source
         .pipe_ref(read_dir)
@@ -296,15 +305,16 @@ fn main() {
             let desc: VideoDesc = content
                 .pipe_as_ref(toml::from_str)
                 .unwrap_or_else(|error| panic!("error: Cannot parse {desc_path:?}: {error}"));
+            collections
+                .check_separated(&desc.collection)
+                .unwrap_or_else(|error| panic!("error: {desc_path:?}: {error}"));
             (video_dir, desc)
         })
         .collect(); // eagerly validate all video descriptors before touching any files
 
-    let existing_target_files: HashMap<PathBuf, FileSnapshot> = SEPARATED_COLLECTIONS
-        .iter()
-        .copied()
-        .chain(once(UNIFIED_COLLECTION))
-        .map(|suffix| target.join(suffix))
+    let existing_target_files: HashMap<PathBuf, FileSnapshot> = collections
+        .names()
+        .map(|name| target.join(name))
         .flat_map(|path| {
             path.pipe_ref(read_dir)
                 .unwrap_or_else(|error| panic!("error: Cannot read directory {path:?}: {error}"))
@@ -344,7 +354,7 @@ fn main() {
         }
 
         let separated_target_dir = target.join(&desc.collection);
-        let unified_target_dir = target.join(UNIFIED_COLLECTION);
+        let unified_target_dir = target.join(&collections.unified);
 
         if desc.visibility == Visibility::Manual {
             let prefix = format!("{}.", desc.video_title);

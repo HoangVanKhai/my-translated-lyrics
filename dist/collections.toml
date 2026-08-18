@@ -1,0 +1,17 @@
+# The collections that make up the target media library.
+#
+# `install-local-lyrics` reads this file to learn which directories of the
+# library it manages, and every `collection` field of a `dist/*/video.toml`
+# must name one of the separated collections declared here, so a typo in a
+# video descriptor fails the run instead of creating a stray directory.
+
+# The collection that receives a copy of every subtitle file, in addition
+# to the separated collection of the video it belongs to.
+unified = "Short Relaxing Playlist 2025"
+
+# The collections a video descriptor may name.
+separated = [
+  "Feng Ling Yu Xiu",
+  "Luo Tianyi, Yuezheng Ling/洛天依_乐正绫",
+  "Touhou Hero of Ice Fairy",
+]

@@ -1,15 +1,17 @@
-use lyrics_core::video_descriptor::{UNIFIED_COLLECTION, Visibility};
+use lyrics_core::video_descriptor::Visibility;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::fs::{read_to_string, write as write_file};
-use test_utils::{InstallLocalLyricsEnv, expected_stderr, video_desc};
+use test_utils::{
+    InstallLocalLyricsEnv, SEPARATED_COLLECTION, UNIFIED_COLLECTION, expected_stderr, video_desc,
+};
 
 const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
 
 #[test]
 fn hidden_visibility_causes_removal() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者 | 日本語タグ】《示例歌曲名》 [ExampleID]";
     let desc = video_desc(
         collection_name.to_owned(),
@@ -40,7 +42,7 @@ fn hidden_visibility_causes_removal() {
 #[test]
 fn dry_run_does_not_remove_hidden_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者 | 日本語タグ】《示例歌曲名》 [ExampleID]";
     let desc = video_desc(
         collection_name.to_owned(),
@@ -71,7 +73,7 @@ fn dry_run_does_not_remove_hidden_files() {
 #[test]
 fn manual_visibility_preserves_existing_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title =
         "【FULL ver.】Example Performer 示例表演者 - Example Song 示例歌曲【示例标签】";
     let desc = video_desc(
@@ -104,7 +106,7 @@ fn manual_visibility_preserves_existing_files() {
 #[test]
 fn dry_run_manual_visibility_preserves_existing_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title =
         "【FULL ver.】Example Performer 示例表演者 - Example Song 示例歌曲【示例标签】";
     let desc = video_desc(

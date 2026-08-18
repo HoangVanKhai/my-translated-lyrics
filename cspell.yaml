@@ -4,6 +4,7 @@ words:
   - dylint
   - peekable
 ignorePaths:
+  - '**/collections.toml'
   - '**/credits.yaml'
   - '**/line-markers.toml'
   - '**/video.toml'
@@ -68,17 +69,13 @@ overrides:
     words:
       - btreemap
       - Deque
-      - Feng
       - hardlink
       - maplit
       - noprefix
       - Queueable
       - rsplit
       - saphyr
-      - Tianyi
-      - Touhou
       - WEBVTT
-      - Yuezheng
   - filename: '**/*.md'
     words:
       - clippy
