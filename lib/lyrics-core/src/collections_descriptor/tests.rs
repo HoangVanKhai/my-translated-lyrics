@@ -93,14 +93,50 @@ fn check_separated_rejects_an_undeclared_collection() {
     ] {
         eprintln!("CASE: {name:?}");
         let error = desc.check_separated(name).unwrap_err();
-        assert_eq!(
-            error.to_string(),
-            format!(
-                "unknown collection: {name:?} (expected one of \
-                [\"Example Collection\", \"Example Group/Another Example Collection\"])",
-            ),
+        assert!(
+            error
+                .to_string()
+                .starts_with(&format!("unknown collection: {name:?}")),
+            "unexpected message: {error}",
         );
     }
+}
+
+/// A name that a declared one is a few edits away from reads as a typo,
+/// so the message points at the declared name.
+#[test]
+fn check_separated_hints_the_closest_declared_collection() {
+    let desc = manifest();
+    let cases = [
+        ("example collection", "Example Collection"),
+        ("ExampleCollection", "Example Collection"),
+        (
+            "Example Group/Another Example Collections",
+            "Example Group/Another Example Collection",
+        ),
+    ];
+    for (name, closest) in cases {
+        eprintln!("CASE: {name:?}");
+        let error = desc.check_separated(name).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            format!("unknown collection: {name:?}, did you mean {closest:?}?"),
+        );
+    }
+}
+
+/// A name that resembles nothing declared gets no hint, because a
+/// suggestion nobody asked for is worse than none.
+#[test]
+fn check_separated_omits_the_hint_when_nothing_is_close() {
+    let desc = manifest();
+    let error = desc
+        .check_separated("Undeclared Example Collection")
+        .unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        r#"unknown collection: "Undeclared Example Collection""#,
+    );
 }
 
 #[test]

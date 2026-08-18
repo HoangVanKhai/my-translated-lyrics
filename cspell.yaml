@@ -75,6 +75,7 @@ overrides:
       - Queueable
       - rsplit
       - saphyr
+      - strsim
       - WEBVTT
   - filename: '**/*.md'
     words:
