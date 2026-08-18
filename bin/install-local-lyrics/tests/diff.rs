@@ -14,7 +14,7 @@ const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
 fn diff_conflicts_with_execute() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
 
-    let output = env.run_allow_failure(["--diff", "--execute"]);
+    let output = env.run_unchecked(["--diff", "--execute"]);
 
     assert!(
         !output.status.success(),

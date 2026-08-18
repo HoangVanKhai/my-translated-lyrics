@@ -121,9 +121,10 @@ impl InstallLocalLyricsEnv {
 
     /// Runs `install-local-lyrics` with the given arguments and returns
     /// the raw process output without asserting on the exit status.
-    /// Callers that expect success should use `run`; callers that assert
-    /// on a failure, such as an argument conflict, use this instead.
-    pub fn run_allow_failure<Args: IntoIterator<Item = &'static str>>(
+    /// Callers that expect success should use [`run`](Self::run); callers
+    /// that assert on a failure, such as an argument conflict, use this
+    /// instead.
+    pub fn run_unchecked<Args: IntoIterator<Item = &'static str>>(
         &self,
         args: Args,
     ) -> std::process::Output {
@@ -138,7 +139,7 @@ impl InstallLocalLyricsEnv {
 
     /// Runs `install-local-lyrics` and asserts it exits successfully.
     pub fn run<Args: IntoIterator<Item = &'static str>>(&self, args: Args) -> std::process::Output {
-        let output = self.run_allow_failure(args);
+        let output = self.run_unchecked(args);
         let stdout = String::from_utf8_lossy(&output.stdout);
         let stdout = stdout.trim();
         if !stdout.is_empty() {

@@ -163,7 +163,7 @@ fn include_removals_shows_removed_files_as_deletions() {
 fn include_removals_requires_diff() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
 
-    let output = env.run_allow_failure(["--include-removals"]);
+    let output = env.run_unchecked(["--include-removals"]);
 
     assert!(
         !output.status.success(),
