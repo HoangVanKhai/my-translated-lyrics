@@ -68,14 +68,14 @@ pub struct UndeclaredCollection {
 }
 
 /// Name of a collection directory, relative to the root of the target
-/// media library. The constructor enforces the shape that every
-/// collection name shares: it must contain no backslashes (for
-/// cross-platform consistency), and it must be a non-empty sequence of
-/// plain path components joined by `/`, so that appending it to the
-/// library root can neither escape that root nor land on the root
-/// itself. Which names exist is the manifest's business rather than
-/// this type's; a name of the right shape that no manifest declares is
-/// an [`UndeclaredCollection`], not a [`ParseCollectionNameError`].
+/// media library.
+///
+/// The constructor accepts the names that stay inside that root once
+/// appended to it, and rejects the rest with the
+/// [`ParseCollectionNameError`] variant that states the broken rule.
+///
+/// Whether a name of an acceptable shape is declared anywhere is a
+/// question for [`CollectionsDesc`], not for this type.
 #[derive(AsRef, Clone, Deref, Deserialize, Display, Into, Serialize)]
 #[as_ref(forward)]
 #[deref(forward)]
