@@ -1,4 +1,5 @@
 use lyrics_core::video_descriptor::UNIFIED_COLLECTION;
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::fs::{
     metadata, read, read_dir, read_to_string, remove_file, set_permissions, write as write_file,
@@ -173,7 +174,8 @@ fn removes_the_temporary_repository_after_diff() {
     assert!(!stdout.is_empty(), "expected a diff to be produced");
 
     // Once the diff is done, no throwaway repository is left behind.
-    let leftovers: Vec<_> = read_dir(&*temp)
+    let leftovers: Vec<_> = temp
+        .pipe_ref(read_dir)
         .unwrap()
         .map(|entry| entry.unwrap().file_name())
         .filter(|name| {
@@ -211,7 +213,7 @@ fn diff_reports_content_changes_without_mode_changes() {
     }
 
     let output = env.run(["--diff"]);
-    let patch_text = str::from_utf8(&output.stdout).unwrap();
+    let patch_text = output.stdout.pipe_as_ref(str::from_utf8).unwrap();
 
     // The patch reports the content change alone, never a mode change.
     assert!(
