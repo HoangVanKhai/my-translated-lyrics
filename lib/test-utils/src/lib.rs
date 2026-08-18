@@ -248,7 +248,7 @@ impl InstallLocalLyricsEnv {
 }
 
 /// Wraps a fixture collection name, which is always of a valid shape.
-fn collection_name(name: impl Into<String>) -> CollectionName {
+pub fn collection_name(name: impl Into<String>) -> CollectionName {
     name.into().pipe(CollectionName::try_from).unwrap()
 }
 

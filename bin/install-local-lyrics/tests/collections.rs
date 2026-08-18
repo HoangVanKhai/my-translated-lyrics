@@ -1,11 +1,11 @@
-use lyrics_core::collections_descriptor::COLLECTIONS_CONFIG_FILE_NAME;
+use lyrics_core::collections_descriptor::{COLLECTIONS_CONFIG_FILE_NAME, CollectionsDesc};
 use lyrics_core::video_descriptor::Visibility;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::fs::{create_dir, remove_file, write as write_file};
 use test_utils::{
     InstallLocalLyricsEnv, OTHER_SEPARATED_COLLECTION, SEPARATED_COLLECTION, UNIFIED_COLLECTION,
-    video_desc,
+    collection_name, video_desc,
 };
 use text_block_macros::text_block_fnl;
 
@@ -59,10 +59,18 @@ fn installs_into_every_unified_collection() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let other_unified = "Another Example Unified Collection";
-    let manifest = format!(
-        "unified = [{UNIFIED_COLLECTION:?}, {other_unified:?}]\nseparated = [{SEPARATED_COLLECTION:?}]\n",
-    );
-    write_file(env.source.join(COLLECTIONS_CONFIG_FILE_NAME), manifest).unwrap();
+    let collections = CollectionsDesc {
+        unified: vec![
+            collection_name(UNIFIED_COLLECTION),
+            collection_name(other_unified),
+        ],
+        separated: vec![collection_name(SEPARATED_COLLECTION)],
+    };
+    write_file(
+        env.source.join(COLLECTIONS_CONFIG_FILE_NAME),
+        toml::to_string(&collections).unwrap(),
+    )
+    .unwrap();
     create_dir(env.target.join(other_unified)).unwrap();
     env.add_source_entry(
         "ExampleSong",
