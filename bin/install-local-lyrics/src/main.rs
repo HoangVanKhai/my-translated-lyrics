@@ -266,9 +266,6 @@ fn main() {
         target,
     } = Args::parse();
 
-    // The collections manifest declares the directories that make up the
-    // target library. Read it first: every video descriptor below is
-    // checked against it, and the target directories to scan come from it.
     let collections_path = source.join(COLLECTIONS_CONFIG_FILE_NAME);
     let collections: CollectionsDesc = collections_path
         .pipe_ref(read_to_string)
