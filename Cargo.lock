@@ -434,10 +434,13 @@ name = "install-local-lyrics"
 version = "0.0.0"
 dependencies = [
  "clap",
+ "command-extra",
+ "into-sorted",
  "itertools",
  "lyrics-core",
  "pipe-trait",
  "pretty_assertions",
+ "rand",
  "reflink",
  "test-utils",
  "text-block-macros",

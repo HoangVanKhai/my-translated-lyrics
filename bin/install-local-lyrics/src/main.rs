@@ -2,6 +2,8 @@
 #![cfg_attr(dylint_lib = "perfectionist", register_tool(perfectionist))]
 
 use clap::Parser;
+use command_extra::CommandExtra;
+use into_sorted::IntoSorted;
 use itertools::Itertools;
 use lyrics_core::file_snapshot::FileSnapshot;
 use lyrics_core::video_descriptor::{
@@ -9,17 +11,28 @@ use lyrics_core::video_descriptor::{
     VIDEO_CONFIG_FILE_NAME, VideoDesc, Visibility,
 };
 use pipe_trait::Pipe;
+use rand::distr::Alphanumeric;
+use rand::{RngExt, rng};
 use reflink::reflink_or_copy;
 use std::collections::{HashMap, HashSet};
-use std::fs::{DirEntry, hard_link, read_dir, read_to_string, remove_file};
-use std::io::{self, ErrorKind};
+use std::env::{temp_dir, var_os};
+use std::fs::{
+    DirEntry, copy, create_dir, create_dir_all, hard_link, read, read_dir, read_to_string,
+    remove_dir_all, remove_file, write as write_file,
+};
+use std::io::{self, ErrorKind, Write};
 use std::iter::once;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 #[derive(Clone, Debug, Parser)]
 #[clap(about = "Synchronize the lyrics")]
 struct Args {
+    /// Render a diff of the outdated subtitles that a dry run would update.
+    #[clap(long, short = 'd', conflicts_with = "execute")]
+    diff: bool,
+
     /// For safety reasons, this programs list actions by default, this flag makes the program take those actions.
     #[clap(long, short = 'x')]
     execute: bool,
@@ -27,6 +40,10 @@ struct Args {
     /// Overwrite target files that are newer than their source instead of keeping them.
     #[clap(long, short = 'f')]
     force: bool,
+
+    /// Show the files that would be removed as deletions in the diff.
+    #[clap(long, requires = "diff")]
+    include_removals: bool,
 
     /// Source directory of the subtitles.
     source: PathBuf,
@@ -57,6 +74,156 @@ fn uninstall(execute: bool, target: &Path) {
 /// No filesystem change is made regardless of the `--execute` flag.
 fn keep(target: &Path, source: &Path) {
     eprintln!("warning: Keeping {target:?} because it is newer than {source:?}");
+}
+
+/// Build a `git` command that runs in `repo` with a scrubbed environment:
+/// only `PATH` and `GIT_CONFIG_GLOBAL`/`GIT_CONFIG_SYSTEM` (pinned to
+/// `/dev/null`) are kept.
+fn git_command(repo: &Path) -> Command {
+    Command::new("git")
+        .with_no_env()
+        .with_env("GIT_CONFIG_GLOBAL", "/dev/null")
+        .with_env("GIT_CONFIG_SYSTEM", "/dev/null")
+        .with_envs(var_os("PATH").map(|path| ("PATH", path)))
+        .with_current_dir(repo)
+}
+
+/// Run a `git` subcommand inside `repo` and require it to succeed.
+fn run_git(repo: &Path, args: &[&str]) {
+    let status = repo
+        .pipe(git_command)
+        .with_args(args)
+        .status()
+        .unwrap_or_else(|error| panic!("error: Cannot run git {args:?}: {error}"));
+    if !status.success() {
+        panic!("error: git {args:?} failed with {status}");
+    }
+}
+
+/// Run `git diff` in `repo` and return the patch bytes. The flags keep the
+/// patch `git apply`-able even for binary content and ignore any external
+/// diff program.
+fn git_diff(repo: &Path) -> Vec<u8> {
+    let output = repo
+        .pipe(git_command)
+        .with_arg("diff")
+        .with_arg("--no-color")
+        .with_arg("--binary")
+        .with_arg("--no-ext-diff")
+        .output()
+        .unwrap_or_else(|error| panic!("error: Cannot run git diff: {error}"));
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        panic!("error: git diff failed with {}: {stderr}", output.status);
+    }
+    output.stdout
+}
+
+/// The temporary directory that holds the throwaway git repository used to
+/// render the diff. It is removed on drop, so a panic while building the
+/// diff leaves no repository behind.
+struct TempRepoDir(PathBuf);
+
+impl TempRepoDir {
+    /// Create an exclusively owned, randomly named empty directory under the
+    /// system temporary directory.
+    fn new() -> Self {
+        let suffix: String = rng()
+            .sample_iter(&Alphanumeric)
+            .take(15)
+            .map(char::from)
+            .collect();
+        let path = temp_dir().join(format!("install-local-lyrics-diff.{suffix}"));
+        match create_dir(&path) {
+            Ok(()) => TempRepoDir(path),
+            Err(error) if error.kind() == ErrorKind::AlreadyExists => TempRepoDir::new(),
+            Err(error) => {
+                panic!("error: Cannot create temporary diff directory {path:?}: {error}")
+            }
+        }
+    }
+}
+
+impl Drop for TempRepoDir {
+    fn drop(&mut self) {
+        if let Err(error) = remove_dir_all(&self.0)
+            && error.kind() != ErrorKind::NotFound
+        {
+            eprintln!(
+                "warning: Failed to delete temporary diff directory {:?}: {error}",
+                self.0,
+            );
+        }
+    }
+}
+
+/// Write a single `git apply`-compatible diff to standard output: the
+/// content change of every outdated subtitle, plus the deletion of every
+/// `removals` entry. Produced in a throwaway git repository on a dry run,
+/// so the real target files are never touched.
+fn render_diff(target_root: &Path, updates: &[(PathBuf, PathBuf)], removals: &[&Path]) {
+    let repo_dir = TempRepoDir::new();
+    let repo = repo_dir.0.as_path();
+    // Empty template, so nothing is seeded into the new repository.
+    run_git(repo, &["init", "-q", "--template="]);
+    // Show non-ASCII paths literally in the patch; git apply still accepts them.
+    run_git(repo, &["config", "core.quotePath", "false"]);
+
+    // A system-wide gitattributes file, at a compiled-in path no variable
+    // can redirect, could normalize the staged content and break the patch,
+    // for example `text=auto` rewriting line endings. A repository-level
+    // attributes file outranks it, so neutralize those attributes here.
+    // `-diff` is left out so binary content still rides `git diff --binary`.
+    let info_dir = repo.join(".git").join("info");
+    info_dir
+        .pipe_ref(create_dir_all)
+        .unwrap_or_else(|error| panic!("error: Cannot create {info_dir:?}: {error}"));
+    let attributes = info_dir.join("attributes");
+    write_file(&attributes, "* -text -ident working-tree-encoding=\n")
+        .unwrap_or_else(|error| panic!("error: Cannot write {attributes:?}: {error}"));
+
+    // Stage each current target file, keeping its permissions, under its
+    // target-relative path.
+    let stage = |target: &Path| {
+        let relative = target.strip_prefix(target_root).unwrap_or_else(|error| {
+            panic!("error: {target:?} is not inside {target_root:?}: {error}")
+        });
+        let staged = repo.join(relative);
+        if let Some(parent) = staged.parent() {
+            parent
+                .pipe(create_dir_all)
+                .unwrap_or_else(|error| panic!("error: Cannot create {parent:?}: {error}"));
+        }
+        copy(target, &staged)
+            .unwrap_or_else(|error| panic!("error: Cannot copy {target:?} to {staged:?}: {error}"));
+        staged
+    };
+    let updated: Vec<PathBuf> = updates.iter().map(|(_, target)| stage(target)).collect();
+    let removed: Vec<PathBuf> = removals.iter().map(|&target| stage(target)).collect();
+    run_git(repo, &["add", "-A"]);
+
+    // Overwrite each staged update with its source, keeping the staged
+    // permissions so `git diff` reports a content change and never a mode
+    // change; delete each staged removal so it appears as a deletion.
+    for ((source, _), staged) in updates.iter().zip(&updated) {
+        let content =
+            read(source).unwrap_or_else(|error| panic!("error: Cannot read {source:?}: {error}"));
+        write_file(staged, &content)
+            .unwrap_or_else(|error| panic!("error: Cannot write {staged:?}: {error}"));
+    }
+    for staged in &removed {
+        remove_file(staged)
+            .unwrap_or_else(|error| panic!("error: Cannot remove {staged:?}: {error}"));
+    }
+
+    let patch = git_diff(repo);
+    // A reader may close the pipe early; that is a clean end, not a failure.
+    let mut stdout = io::stdout().lock();
+    if let Err(error) = stdout.write_all(&patch).and_then(|()| stdout.flush())
+        && error.kind() != ErrorKind::BrokenPipe
+    {
+        panic!("error: Cannot write diff to standard output: {error}");
+    }
 }
 
 fn install(execute: bool, source: &Path, target: &Path) {
@@ -92,8 +259,10 @@ fn is_subtitle_file(entry: &DirEntry) -> bool {
 
 fn main() {
     let Args {
+        diff,
         execute,
         force,
+        include_removals,
         source,
         target,
     } = Args::parse();
@@ -289,8 +458,20 @@ fn main() {
 
     eprintln!();
     eprintln!("stage: Updating outdated subtitles");
-    for (source, target) in files_need_update.iter().sorted() {
+    let updates = files_need_update.into_sorted();
+    for (source, target) in &updates {
         install(execute, source, target);
+    }
+    let removals = include_removals
+        .then_some(&files_need_uninstall)
+        .into_iter()
+        .flatten()
+        .copied()
+        .map(PathBuf::as_path)
+        .collect::<Vec<&Path>>()
+        .into_sorted();
+    if diff && (!updates.is_empty() || !removals.is_empty()) {
+        render_diff(&target, &updates, &removals);
     }
 
     if !files_kept_newer.is_empty() {
