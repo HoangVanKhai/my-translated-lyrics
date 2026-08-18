@@ -135,8 +135,10 @@ fn collection_name_rejects_empty() {
     ));
 }
 
+/// A slash that separates nothing, whether it leads, trails, or follows
+/// another slash, is the one way a component can come out empty.
 #[test]
-fn collection_name_rejects_empty_component() {
+fn collection_name_rejects_stray_slash() {
     let cases = [
         "/Example Collection",
         "Example Collection/",
@@ -146,7 +148,7 @@ fn collection_name_rejects_empty_component() {
         eprintln!("CASE: {input:?}");
         assert!(matches!(
             input.to_string().pipe(CollectionName::try_from),
-            Err(ParseCollectionNameError::EmptyComponent),
+            Err(ParseCollectionNameError::StraySlash),
         ));
     }
 }

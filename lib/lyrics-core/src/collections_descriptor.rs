@@ -93,7 +93,7 @@ impl TryFrom<String> for CollectionName {
             return Err(ParseCollectionNameError::Empty);
         }
         value.split('/').try_for_each(|component| match component {
-            "" => Err(ParseCollectionNameError::EmptyComponent),
+            "" => Err(ParseCollectionNameError::StraySlash),
             "." | ".." => Err(ParseCollectionNameError::RelativeComponent),
             _ => Ok(()),
         })?;
@@ -108,8 +108,8 @@ pub enum ParseCollectionNameError {
     ContainsBackslash,
     #[display("collection name must not be empty")]
     Empty,
-    #[display("collection name must not contain an empty path component")]
-    EmptyComponent,
+    #[display(r#"collection name must not contain a leading, trailing, or repeated "/""#)]
+    StraySlash,
     #[display(r#"collection name must not contain a "." or ".." path component"#)]
     RelativeComponent,
 }
