@@ -9,14 +9,14 @@ use play_with_lyrics::catalog::Video;
 use std::collections::{HashMap, VecDeque};
 use std::io;
 use std::sync::Mutex;
-use test_utils::video_desc;
+use test_utils::{SEPARATED_COLLECTION, video_desc};
 
 /// A video with both an English and a Vietnamese title, so the table can be
 /// sorted by either column to a different order.
 pub(super) fn bilingual_video(english: &str, vietnamese: String) -> Video {
     Video {
         desc: VideoDesc {
-            collection: "Touhou Hero of Ice Fairy".to_string().try_into().unwrap(),
+            collection: SEPARATED_COLLECTION.to_string().try_into().unwrap(),
             video_title: english.to_string().try_into().unwrap(),
             song_titles: HashMap::from([
                 (Language::English, english.to_string()),
@@ -111,11 +111,7 @@ pub(super) fn label_list(values: &[&str]) -> Vec<String> {
 
 pub(super) fn video(title: String) -> Video {
     Video {
-        desc: video_desc(
-            "Touhou Hero of Ice Fairy".to_owned(),
-            title,
-            Visibility::Visible,
-        ),
+        desc: video_desc(SEPARATED_COLLECTION.to_owned(), title, Visibility::Visible),
     }
 }
 
@@ -125,7 +121,7 @@ pub(super) fn video(title: String) -> Video {
 pub(super) fn english_video(title: &str) -> Video {
     Video {
         desc: VideoDesc {
-            collection: "Touhou Hero of Ice Fairy".to_string().try_into().unwrap(),
+            collection: SEPARATED_COLLECTION.to_string().try_into().unwrap(),
             video_title: title.to_string().try_into().unwrap(),
             song_titles: HashMap::from([(Language::English, title.to_string())]),
             visibility: Visibility::Visible,

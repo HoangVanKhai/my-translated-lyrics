@@ -1,8 +1,10 @@
-use lyrics_core::video_descriptor::{UNIFIED_COLLECTION, Visibility};
+use lyrics_core::video_descriptor::Visibility;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::fs::{remove_file, write as write_file};
-use test_utils::{InstallLocalLyricsEnv, expected_stderr, video_desc};
+use test_utils::{
+    InstallLocalLyricsEnv, SEPARATED_COLLECTION, UNIFIED_COLLECTION, expected_stderr, video_desc,
+};
 use text_block_macros::text_block_fnl;
 
 const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
@@ -10,7 +12,7 @@ const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
 #[test]
 fn installs_subtitles_to_separated_and_unified_collections() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let desc = video_desc(
         collection_name.to_owned(),
@@ -92,7 +94,7 @@ fn installs_subtitles_to_separated_and_unified_collections() {
 #[test]
 fn dry_run_does_not_install_subtitles() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let desc = video_desc(
         collection_name.to_owned(),
@@ -142,7 +144,7 @@ fn dry_run_does_not_install_subtitles() {
 fn skips_up_to_date_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
     let desc = video_desc(
-        "Feng Ling Yu Xiu".to_owned(),
+        SEPARATED_COLLECTION.to_owned(),
         "【示例表演者】《示例歌曲》Example Song [ExampleID]".to_owned(),
         Visibility::default(),
     );
@@ -171,7 +173,7 @@ fn skips_up_to_date_files() {
 #[test]
 fn updates_modified_source_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】示例歌(Example Song)——“示例歌词”【示例标签】 [ExampleID]";
     let desc = video_desc(
         collection_name.to_owned(),
@@ -239,7 +241,7 @@ fn updates_modified_source_files() {
 #[test]
 fn dry_run_does_not_update_modified_source_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】示例歌(Example Song)——“示例歌词”【示例标签】 [ExampleID]";
     let desc = video_desc(
         collection_name.to_owned(),
@@ -307,7 +309,7 @@ fn dry_run_does_not_update_modified_source_files() {
 #[test]
 fn removes_orphaned_target_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
 
     let orphaned = env.target_path(collection_name, "Orphaned.vi.srt");
     write_file(&orphaned, "orphaned content").unwrap();
@@ -323,7 +325,7 @@ fn removes_orphaned_target_files() {
 #[test]
 fn dry_run_does_not_remove_orphaned_target_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
 
     let orphaned = env.target_path(collection_name, "Orphaned.vi.srt");
     write_file(&orphaned, "orphaned content").unwrap();

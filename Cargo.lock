@@ -550,6 +550,7 @@ dependencies = [
  "pretty_assertions",
  "serde",
  "serde-saphyr",
+ "strsim",
  "strum",
  "test-utils",
  "toml",
