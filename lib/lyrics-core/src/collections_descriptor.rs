@@ -90,14 +90,11 @@ impl TryFrom<String> for CollectionName {
         if value.is_empty() {
             return Err(ParseCollectionNameError::Empty);
         }
-        for component in value.split('/') {
-            if component.is_empty() {
-                return Err(ParseCollectionNameError::EmptyComponent);
-            }
-            if component == "." || component == ".." {
-                return Err(ParseCollectionNameError::RelativeComponent);
-            }
-        }
+        value.split('/').try_for_each(|component| match component {
+            "" => Err(ParseCollectionNameError::EmptyComponent),
+            "." | ".." => Err(ParseCollectionNameError::RelativeComponent),
+            _ => Ok(()),
+        })?;
         Ok(CollectionName(value))
     }
 }
