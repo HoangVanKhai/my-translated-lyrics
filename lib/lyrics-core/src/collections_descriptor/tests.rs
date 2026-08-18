@@ -48,6 +48,18 @@ fn names_lists_the_separated_collections_then_the_unified_one() {
 
 /// An unknown key is a typo or a stale field rather than a value the
 /// manifest carries, so parsing rejects it.
+/// The `separated` field may be left out, which declares no separated
+/// collection rather than failing the parse.
+#[test]
+fn manifest_defaults_separated_to_an_empty_list() {
+    let desc = r#"unified = "Example Unified Collection""#
+        .pipe(toml::from_str::<CollectionsDesc>)
+        .unwrap();
+    assert!(desc.separated.is_empty());
+    let names: Vec<&str> = desc.names().map(|name| &**name).collect();
+    assert_eq!(names, ["Example Unified Collection"]);
+}
+
 #[test]
 fn manifest_rejects_an_unknown_field() {
     let source = r#"

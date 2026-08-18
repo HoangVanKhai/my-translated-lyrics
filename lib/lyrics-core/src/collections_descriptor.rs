@@ -28,7 +28,9 @@ pub struct CollectionsDesc {
     /// The collection that receives a copy of every subtitle file, in
     /// addition to the separated collection of its video.
     pub unified: CollectionName,
-    /// The collections a video descriptor may name.
+    /// The collections a video descriptor may name. A manifest that
+    /// omits the field declares none of them.
+    #[serde(default)]
     pub separated: Vec<CollectionName>,
 }
 
