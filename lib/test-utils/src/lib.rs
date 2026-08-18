@@ -112,11 +112,10 @@ impl InstallLocalLyricsEnv {
         create_dir(&source).unwrap();
         create_dir(&target).unwrap();
         let collections = CollectionsDesc {
-            unified: collection_name(UNIFIED_COLLECTION.to_owned()),
+            unified: collection_name(UNIFIED_COLLECTION),
             separated: SEPARATED_COLLECTIONS
                 .iter()
                 .copied()
-                .map(str::to_owned)
                 .map(collection_name)
                 .collect(),
         };
@@ -249,8 +248,8 @@ impl InstallLocalLyricsEnv {
 }
 
 /// Wraps a fixture collection name, which is always of a valid shape.
-fn collection_name(value: String) -> CollectionName {
-    CollectionName::try_from(value).unwrap()
+fn collection_name(name: impl Into<String>) -> CollectionName {
+    name.into().pipe(CollectionName::try_from).unwrap()
 }
 
 pub fn video_desc(
