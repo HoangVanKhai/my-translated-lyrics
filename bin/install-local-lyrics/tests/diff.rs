@@ -119,9 +119,7 @@ fn renders_git_apply_compatible_diff_for_binary_content() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
     let collection_name = "Feng Ling Yu Xiu";
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
-    // A leading NUL byte makes git classify the content as binary. The
-    // two lengths differ so the outdated check never reads the bytes as
-    // UTF-8, which lets the binary target reach the diff.
+    // A leading NUL byte makes git treat the content as binary.
     let source_content = "\0binary source content";
     let target_content = "\0binary target";
     let (separated, unified) = prepare_outdated(
@@ -229,7 +227,7 @@ fn diff_reports_content_changes_without_mode_changes() {
 /// A CRLF subtitle keeps its carriage returns in the emitted patch, so
 /// `--diff` never silently rewrites line endings. A system-wide attributes
 /// file could force such a normalization, but planting one needs privileges
-/// a portable test lacks; `render_diff` neutralizes that channel.
+/// a portable test lacks.
 #[test]
 fn diff_preserves_crlf_line_endings() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);

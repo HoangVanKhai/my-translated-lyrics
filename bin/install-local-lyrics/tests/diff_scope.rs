@@ -73,13 +73,13 @@ fn diff_excludes_newly_installed_files() {
 
     let output = env.run(["--diff"]);
 
-    // The plan reports the files as additions on stderr...
+    // New installs are reported as additions on stderr, but they are not
+    // outdated updates, so they never enter the diff.
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
         stderr.contains("2 files would be added"),
         "expected the files to be new installs:\n{stderr}",
     );
-    // ...but a new install is not an outdated update, so it is not diffed.
     assert!(
         output.stdout.is_empty(),
         "a newly installed file must not appear in the diff, got:\n{}",
