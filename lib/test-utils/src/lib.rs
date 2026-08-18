@@ -112,7 +112,7 @@ impl InstallLocalLyricsEnv {
         create_dir(&source).unwrap();
         create_dir(&target).unwrap();
         let collections = CollectionsDesc {
-            unified: collection_name(UNIFIED_COLLECTION),
+            unified: vec![collection_name(UNIFIED_COLLECTION)],
             separated: SEPARATED_COLLECTIONS
                 .iter()
                 .copied()

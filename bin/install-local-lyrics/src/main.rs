@@ -343,6 +343,14 @@ fn main() {
         Vec::with_capacity(existing_target_files.len());
     let mut files_kept_newer: Vec<(PathBuf, PathBuf)> = Vec::new();
 
+    // Every video goes into each of these, so they are built once rather
+    // than per descriptor.
+    let unified_target_dirs: Vec<PathBuf> = collections
+        .unified
+        .iter()
+        .map(|name| target.join(name))
+        .collect();
+
     for (video_dir, desc) in &descriptors {
         // Hidden: do nothing. Any existing target files stay in
         // `files_need_uninstall` and will be removed.
@@ -351,17 +359,16 @@ fn main() {
         }
 
         let separated_target_dir = target.join(&desc.collection);
-        let unified_target_dir = target.join(&collections.unified);
 
         if desc.visibility == Visibility::Manual {
             let prefix = format!("{}.", desc.video_title);
             let separated = separated_target_dir.as_path();
-            let unified = unified_target_dir.as_path();
+            let unified = unified_target_dirs.as_slice();
             files_need_uninstall.retain(|target_path| {
                 let Some(parent) = target_path.parent() else {
                     return true;
                 };
-                if parent != separated && parent != unified {
+                if parent != separated && !unified.iter().any(|dir| dir == parent) {
                     return true;
                 }
                 let name = target_path
@@ -405,10 +412,13 @@ fn main() {
 
             let source_file = video_dir.join(local_name);
             let separated_target_file = separated_target_dir.join(&target_name);
-            let unified_target_file = unified_target_dir.join(&target_name);
+            let unified_target_files = unified_target_dirs.iter().map(|dir| dir.join(&target_name));
 
             let source_file_snapshot = source_file.clone().pipe(FileSnapshot::new);
-            for target_file in [separated_target_file, unified_target_file] {
+            for target_file in [separated_target_file]
+                .into_iter()
+                .chain(unified_target_files)
+            {
                 let Some(target_file_snapshot) = existing_target_files.get(&target_file) else {
                     files_need_install.push((source_file.clone(), target_file));
                     continue;

@@ -2,10 +2,11 @@
 //!
 //! The library is a flat set of collection directories. Each video
 //! belongs to one separated collection, named by the `collection` field
-//! of its `video.toml`, and every video additionally appears in the one
-//! unified collection. Both are declared by a single `collections.toml`
-//! manifest that sits beside the video directories it describes, rather
-//! than being hardcoded in Rust, so adding a collection is a data edit.
+//! of its `video.toml`, and every video additionally appears in each
+//! unified collection. Both kinds are declared by a single
+//! `collections.toml` manifest that sits beside the video directories it
+//! describes, rather than being hardcoded in Rust, so adding a
+//! collection is a data edit.
 //!
 //! Declaring the separated collections in one place also makes a typo in
 //! an individual `video.toml` detectable: a descriptor that names a
@@ -16,7 +17,6 @@
 use core::fmt;
 use derive_more::{AsRef, Deref, Display, Into};
 use serde::{Deserialize, Serialize};
-use std::iter::once;
 use strsim::levenshtein;
 
 /// Name of the collections manifest, relative to the directory of video
@@ -27,9 +27,11 @@ pub const COLLECTIONS_CONFIG_FILE_NAME: &str = "collections.toml";
 #[derive(Deserialize, Serialize)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct CollectionsDesc {
-    /// The collection that receives a copy of every subtitle file, in
-    /// addition to the separated collection of its video.
-    pub unified: CollectionName,
+    /// The collections that receive a copy of every subtitle file, in
+    /// addition to the separated collection the video belongs to. A
+    /// manifest that omits the field declares none of them.
+    #[serde(default)]
+    pub unified: Vec<CollectionName>,
     /// The collections a video descriptor may name. A manifest that
     /// omits the field declares none of them.
     #[serde(default)]
@@ -38,9 +40,9 @@ pub struct CollectionsDesc {
 
 impl CollectionsDesc {
     /// Every declared collection: the separated ones in the order the
-    /// manifest lists them, followed by the unified one.
+    /// manifest lists them, followed by the unified ones.
     pub fn names(&self) -> impl Iterator<Item = &CollectionName> {
-        self.separated.iter().chain(once(&self.unified))
+        self.separated.iter().chain(&self.unified)
     }
 
     /// Checks that `name` is one of the declared separated collections.

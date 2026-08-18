@@ -5,7 +5,7 @@ use pretty_assertions::assert_eq;
 /// A manifest in the shape of a real `collections.toml`, with a nested
 /// separated collection alongside a plain one.
 const MANIFEST: &str = r#"
-unified = "Example Unified Collection"
+unified = ["Example Unified Collection"]
 separated = [
   "Example Collection",
   "Example Group/Another Example Collection",
@@ -19,7 +19,8 @@ fn manifest() -> CollectionsDesc {
 #[test]
 fn manifest_declares_every_collection() {
     let desc = manifest();
-    assert_eq!(&*desc.unified, "Example Unified Collection");
+    let unified: Vec<&str> = desc.unified.iter().map(|name| &**name).collect();
+    assert_eq!(unified, ["Example Unified Collection"]);
     let separated: Vec<&str> = desc.separated.iter().map(|name| &**name).collect();
     assert_eq!(
         separated,
@@ -52,7 +53,7 @@ fn names_lists_the_separated_collections_then_the_unified_one() {
 /// collection rather than failing the parse.
 #[test]
 fn manifest_defaults_separated_to_an_empty_list() {
-    let desc = r#"unified = "Example Unified Collection""#
+    let desc = r#"unified = ["Example Unified Collection"]"#
         .pipe(toml::from_str::<CollectionsDesc>)
         .unwrap();
     assert!(desc.separated.is_empty());
@@ -60,12 +61,23 @@ fn manifest_defaults_separated_to_an_empty_list() {
     assert_eq!(names, ["Example Unified Collection"]);
 }
 
+/// The `unified` field may be left out too, which declares no unified
+/// collection rather than failing the parse.
+#[test]
+fn manifest_defaults_unified_to_an_empty_list() {
+    let desc =
+        r#"separated = ["Example Collection"]"#.pipe(toml::from_str::<CollectionsDesc>).unwrap();
+    assert!(desc.unified.is_empty());
+    let names: Vec<&str> = desc.names().map(|name| &**name).collect();
+    assert_eq!(names, ["Example Collection"]);
+}
+
 #[test]
 fn manifest_rejects_an_unknown_field() {
     let source = r#"
-unified = "Example Unified Collection"
+unified = ["Example Unified Collection"]
 separated = []
-unified-collection = "Example Unified Collection"
+unified-collection = ["Example Unified Collection"]
 "#;
     assert!(source.pipe(toml::from_str::<CollectionsDesc>).is_err());
 }

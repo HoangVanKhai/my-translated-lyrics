@@ -2,7 +2,7 @@ use lyrics_core::collections_descriptor::COLLECTIONS_CONFIG_FILE_NAME;
 use lyrics_core::video_descriptor::Visibility;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
-use std::fs::{remove_file, write as write_file};
+use std::fs::{create_dir, remove_file, write as write_file};
 use test_utils::{
     InstallLocalLyricsEnv, OTHER_SEPARATED_COLLECTION, SEPARATED_COLLECTION, UNIFIED_COLLECTION,
     video_desc,
@@ -49,6 +49,37 @@ fn installs_into_every_declared_collection() {
             format!("{UNIFIED_COLLECTION}/{other_title}.vi.srt"),
         ],
     );
+}
+
+/// A manifest may declare more than one unified collection, and every
+/// video is then installed into each of them alongside its separated
+/// collection.
+#[test]
+fn installs_into_every_unified_collection() {
+    let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
+    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let other_unified = "Another Example Unified Collection";
+    let manifest = format!(
+        "unified = [{UNIFIED_COLLECTION:?}, {other_unified:?}]\nseparated = [{SEPARATED_COLLECTION:?}]\n",
+    );
+    write_file(env.source.join(COLLECTIONS_CONFIG_FILE_NAME), manifest).unwrap();
+    create_dir(env.target.join(other_unified)).unwrap();
+    env.add_source_entry(
+        "ExampleSong",
+        &video_desc(
+            SEPARATED_COLLECTION.to_owned(),
+            video_title.to_owned(),
+            Visibility::default(),
+        ),
+        &[("lyrics.vi.srt", "line one\n")],
+    );
+
+    env.run(["--execute"]);
+
+    for collection in [SEPARATED_COLLECTION, UNIFIED_COLLECTION, other_unified] {
+        let installed = env.target_path(collection, &format!("{video_title}.vi.srt"));
+        assert!(installed.is_file(), "{installed:?} was not installed");
+    }
 }
 
 /// A descriptor that names a collection the manifest does not declare is
@@ -108,7 +139,7 @@ fn rejects_a_missing_manifest() {
 fn rejects_a_manifest_naming_a_collection_outside_the_library() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
     let manifest = text_block_fnl! {
-        r#"unified = "Example Unified Collection""#
+        r#"unified = ["Example Unified Collection"]"#
         r#"separated = ["../Escaping Example Collection"]"#
     };
     write_file(env.source.join(COLLECTIONS_CONFIG_FILE_NAME), manifest).unwrap();
