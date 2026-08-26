@@ -1,0 +1,109 @@
+# clr: Xóa chữ trên màn hình
+# LRC: Lời bài hát (không rõ người trình bày)
+# ttl: Tiêu đề ca khúc
+# txt: Chữ trên màn hình
+# cre: Thông tin sản xuất
+# eov: Kết thúc MV
+
+00:02.690 LRC: Chợt thấy ba phần xuân sắc, mưa nghiêng trên mái đình
+00:10.670 LRC: Ai còn canh cánh thuở nào
+00:13.265 LRC: Muôn nghìn cảnh đều đã ngắm qua
+00:17.697 LRC: Núi sông lại thêm một chặng, ngày này đã cách năm xưa
+00:25.140 LRC: Hẳn phải tìm khắp nhân gian, để lại cùng ôn chuyện gió trăng
+00:31.361 cre: Nhạc/Phối khí: 络绎
+               Tác từ: 花间
+               Viết hòa thanh: 砖厂浪人
+00:38.161 cre: Điều giáo: 潜水荷叶
+               Minh họa: 林羊
+               Sản xuất video: 斯是梨花
+00:45.492 cre: Trợ lý: 鬼面P
+               Giám chế: 北山薇
+               Tư liệu: 山晚樵渔 (无声诗)
+00:52.891 clr
+
+00:54.223 ttl: Yến Tử Bất Quy YANZIBUGUI
+01:01.222 LRC: Tiết Cốc Vũ làm bạn, đàn én rong chơi
+01:04.788 LRC: Nắm tay hái làn khói hương
+01:08.420 LRC: Non xuân pha mực, từng nét điểm thêm hương
+01:11.486 LRC: Khắp chốn hoa nhàn
+01:15.752 clr
+
+01:15.760 LRC: Đôi ta chèo thuyền khuấy bóng mây, ngâm vịnh ngắm mặt sông
+01:19.918 LRC: Cá giỡn nước, trời vừa hửng mà chẳng hay
+01:22.817 clr
+
+01:22.840 LRC: Gió bờ thổi tùy ý, sóng nhảy nước trôi xa
+01:25.883 LRC: Xếp ô lại mà vẫn chưa mỏi
+01:28.649 clr
+
+01:28.650 LRC: Nhấp nhẹ chén ráng mây
+01:30.916 LRC: Chẳng hay trời đã tà, ánh sáng lung linh, ngoảnh đầu cũng tựa bức tranh
+01:35.648 clr
+
+01:35.680 LRC: Trong men say ngắm nàng
+01:38.014 LRC: Còn ngắm nước gợn lăn tăn, cỏ cây thảy phong nhã
+01:42.847 clr
+
+01:42.870 LRC: Tiếng sáo đùa hoa đèn
+01:45.146 LRC: Chốc lát đón lời ca, thừa hứng biết bao tiêu sái
+01:50.179 LRC: Trời muộn, lửa chài soi xa
+01:52.311 LRC: Cười nói hỏi tháng năm
+01:54.478 LRC: Ngỡ rằng cùng chung chân trời
+01:57.678 clr
+
+01:58.810 ttl: Yến Tử Bất Quy YANZIBUGUI
+02:04.342 txt: Kế hoạch Xuy Ngọc
+02:11.608 LRC: Buổi đầu gặp gỡ, ba phần xuân sắc, mưa nghiêng trên mái đình
+02:19.710 LRC: Ai vẫn trằn trọc như xưa
+02:22.239 LRC: Lúc sắp tỉnh còn tham luyến
+02:26.871 clr
+
+02:26.900 LRC: Hồng trần cũng chẳng màng, chỉ không nỡ dứt duyên lành
+02:34.040 LRC: Đáng thương, thưởng cảnh mà sinh tình, chỉ bởi gió trăng
+02:41.495 LRC: Lỡ tựa lan can, chẳng thấy bóng én
+02:45.001 LRC: Hoa rụng, trăng sáng treo cao
+02:48.734 clr
+
+02:48.760 LRC: Nước khe rì rào lao xao như thấu lòng ta
+02:51.700 LRC: Đêm cô độc chẳng thành giấc
+02:54.432 clr
+
+02:55.974 LRC: Đôi ta thanh mai hẹn ước những ngày sau
+03:00.365 LRC: Mà nay giấc mộng trần khó tỏ
+03:03.131 clr
+
+03:03.140 LRC: Chớ hỏi chuyện đến đi, tiếng đàn còn lưu luyến
+03:06.197 LRC: Gió bụi cứ điểm loạn thêm
+03:08.896 clr
+
+03:08.910 LRC: Nhấp nhẹ chén ráng mây
+03:11.029 LRC: Nào ngờ bóng nước ánh lên lung linh, ngoảnh đầu cũng tựa bức tranh
+03:15.961 clr
+
+03:15.990 LRC: Trong men say ngắm nàng
+03:18.361 LRC: Còn ngắm sắc nhạt lay lắt, ánh nến thảy xôn xao
+03:23.293 clr
+
+03:23.320 LRC: Giấy rơi dưới ngòi bút
+03:25.460 LRC: Chốc lát mộng ngàn dặm thành, biết bao tiêu sái
+03:30.425 clr
+
+03:30.440 LRC: Lòng này tình ý vẫn như xưa
+03:32.625 LRC: Khẽ hát tháng năm xưa
+03:34.794 LRC: Tri kỷ cùng chung chân trời
+03:37.947 cre: Nhạc/Phối khí: 络绎
+               Tác từ: 花间
+               Viết hòa thanh: 砖厂浪人
+03:44.757 cre: Điều giáo: 潜水荷叶
+               Minh họa: 林羊
+               Sản xuất video: 斯是梨花
+03:51.922 cre: Trợ lý: 鬼面P
+               Giám chế: 北山薇
+               Tư liệu: 山晚樵渔 (无声诗)
+03:59.320 clr
+
+04:00.686 ttl: Yến Tử Bất Quy YANZIBUGUI
+04:06.585 txt: Kế hoạch Xuy Ngọc
+04:13.051 clr
+
+04:13.051 eov

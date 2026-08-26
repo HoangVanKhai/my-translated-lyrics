@@ -1,0 +1,202 @@
+WEBVTT
+Language: vi
+
+STYLE
+::cue {
+  background-color: transparent;
+  text-shadow: 2px 2px 2px black;
+}
+::cue(c.creditRole) {
+  color: #AAAA22;
+}
+::cue(c.creditName) {
+  color: #AAAAAA;
+}
+::cue(c.creditSpecial) {
+  color: #55ABCD;
+}
+::cue(c.title) {
+  color: #FFD966;
+  font-weight: bold;
+}
+::cue(c.expo) {
+  color: #CCCCCC;
+  font-style: italic;
+}
+
+00:00:02.690 --> 00:00:10.670
+Chợt thấy ba phần xuân sắc, mưa nghiêng trên mái đình
+
+00:00:10.670 --> 00:00:13.265
+Ai còn canh cánh thuở nào
+
+00:00:13.265 --> 00:00:17.697
+Muôn nghìn cảnh đều đã ngắm qua
+
+00:00:17.697 --> 00:00:25.140
+Núi sông lại thêm một chặng, ngày này đã cách năm xưa
+
+00:00:25.140 --> 00:00:31.361
+Hẳn phải tìm khắp nhân gian, để lại cùng ôn chuyện gió trăng
+
+00:00:31.361 --> 00:00:38.161
+<c.creditRole>Nhạc/Phối khí:</c> <c.creditName>络绎</c>
+<c.creditRole>Tác từ:</c> <c.creditName>花间</c>
+<c.creditRole>Viết hòa thanh:</c> <c.creditName>砖厂浪人</c>
+
+00:00:38.161 --> 00:00:45.492
+<c.creditRole>Điều giáo:</c> <c.creditName>潜水荷叶</c>
+<c.creditRole>Minh họa:</c> <c.creditName>林羊</c>
+<c.creditRole>Sản xuất video:</c> <c.creditName>斯是梨花</c>
+
+00:00:45.492 --> 00:00:52.891
+<c.creditRole>Trợ lý:</c> <c.creditName>鬼面P</c>
+<c.creditRole>Giám chế:</c> <c.creditName>北山薇</c>
+<c.creditRole>Tư liệu:</c> <c.creditName>山晚樵渔 <c.creditSpecial>(无声诗)</c></c>
+
+00:00:54.223 --> 00:01:01.222
+<c.title>Yến Tử Bất Quy YANZIBUGUI</c>
+
+00:01:01.222 --> 00:01:04.788
+Tiết Cốc Vũ làm bạn, đàn én rong chơi
+
+00:01:04.788 --> 00:01:08.420
+Nắm tay hái làn khói hương
+
+00:01:08.420 --> 00:01:11.486
+Non xuân pha mực, từng nét điểm thêm hương
+
+00:01:11.486 --> 00:01:15.752
+Khắp chốn hoa nhàn
+
+00:01:15.760 --> 00:01:19.918
+Đôi ta chèo thuyền khuấy bóng mây, ngâm vịnh ngắm mặt sông
+
+00:01:19.918 --> 00:01:22.817
+Cá giỡn nước, trời vừa hửng mà chẳng hay
+
+00:01:22.840 --> 00:01:25.883
+Gió bờ thổi tùy ý, sóng nhảy nước trôi xa
+
+00:01:25.883 --> 00:01:28.649
+Xếp ô lại mà vẫn chưa mỏi
+
+00:01:28.650 --> 00:01:30.916
+Nhấp nhẹ chén ráng mây
+
+00:01:30.916 --> 00:01:35.648
+Chẳng hay trời đã tà, ánh sáng lung linh, ngoảnh đầu cũng tựa bức tranh
+
+00:01:35.680 --> 00:01:38.014
+Trong men say ngắm nàng
+
+00:01:38.014 --> 00:01:42.847
+Còn ngắm nước gợn lăn tăn, cỏ cây thảy phong nhã
+
+00:01:42.870 --> 00:01:45.146
+Tiếng sáo đùa hoa đèn
+
+00:01:45.146 --> 00:01:50.179
+Chốc lát đón lời ca, thừa hứng biết bao tiêu sái
+
+00:01:50.179 --> 00:01:52.311
+Trời muộn, lửa chài soi xa
+
+00:01:52.311 --> 00:01:54.478
+Cười nói hỏi tháng năm
+
+00:01:54.478 --> 00:01:57.678
+Ngỡ rằng cùng chung chân trời
+
+00:01:58.810 --> 00:02:04.342
+<c.title>Yến Tử Bất Quy YANZIBUGUI</c>
+
+00:02:04.342 --> 00:02:11.608
+<c.expo>Kế hoạch Xuy Ngọc</c>
+
+00:02:11.608 --> 00:02:19.710
+Buổi đầu gặp gỡ, ba phần xuân sắc, mưa nghiêng trên mái đình
+
+00:02:19.710 --> 00:02:22.239
+Ai vẫn trằn trọc như xưa
+
+00:02:22.239 --> 00:02:26.871
+Lúc sắp tỉnh còn tham luyến
+
+00:02:26.900 --> 00:02:34.040
+Hồng trần cũng chẳng màng, chỉ không nỡ dứt duyên lành
+
+00:02:34.040 --> 00:02:41.495
+Đáng thương, thưởng cảnh mà sinh tình, chỉ bởi gió trăng
+
+00:02:41.495 --> 00:02:45.001
+Lỡ tựa lan can, chẳng thấy bóng én
+
+00:02:45.001 --> 00:02:48.734
+Hoa rụng, trăng sáng treo cao
+
+00:02:48.760 --> 00:02:51.700
+Nước khe rì rào lao xao như thấu lòng ta
+
+00:02:51.700 --> 00:02:54.432
+Đêm cô độc chẳng thành giấc
+
+00:02:55.974 --> 00:03:00.365
+Đôi ta thanh mai hẹn ước những ngày sau
+
+00:03:00.365 --> 00:03:03.131
+Mà nay giấc mộng trần khó tỏ
+
+00:03:03.140 --> 00:03:06.197
+Chớ hỏi chuyện đến đi, tiếng đàn còn lưu luyến
+
+00:03:06.197 --> 00:03:08.896
+Gió bụi cứ điểm loạn thêm
+
+00:03:08.910 --> 00:03:11.029
+Nhấp nhẹ chén ráng mây
+
+00:03:11.029 --> 00:03:15.961
+Nào ngờ bóng nước ánh lên lung linh, ngoảnh đầu cũng tựa bức tranh
+
+00:03:15.990 --> 00:03:18.361
+Trong men say ngắm nàng
+
+00:03:18.361 --> 00:03:23.293
+Còn ngắm sắc nhạt lay lắt, ánh nến thảy xôn xao
+
+00:03:23.320 --> 00:03:25.460
+Giấy rơi dưới ngòi bút
+
+00:03:25.460 --> 00:03:30.425
+Chốc lát mộng ngàn dặm thành, biết bao tiêu sái
+
+00:03:30.440 --> 00:03:32.625
+Lòng này tình ý vẫn như xưa
+
+00:03:32.625 --> 00:03:34.794
+Khẽ hát tháng năm xưa
+
+00:03:34.794 --> 00:03:37.947
+Tri kỷ cùng chung chân trời
+
+00:03:37.947 --> 00:03:44.757
+<c.creditRole>Nhạc/Phối khí:</c> <c.creditName>络绎</c>
+<c.creditRole>Tác từ:</c> <c.creditName>花间</c>
+<c.creditRole>Viết hòa thanh:</c> <c.creditName>砖厂浪人</c>
+
+00:03:44.757 --> 00:03:51.922
+<c.creditRole>Điều giáo:</c> <c.creditName>潜水荷叶</c>
+<c.creditRole>Minh họa:</c> <c.creditName>林羊</c>
+<c.creditRole>Sản xuất video:</c> <c.creditName>斯是梨花</c>
+
+00:03:51.922 --> 00:03:59.320
+<c.creditRole>Trợ lý:</c> <c.creditName>鬼面P</c>
+<c.creditRole>Giám chế:</c> <c.creditName>北山薇</c>
+<c.creditRole>Tư liệu:</c> <c.creditName>山晚樵渔 <c.creditSpecial>(无声诗)</c></c>
+
+00:04:00.686 --> 00:04:06.585
+<c.title>Yến Tử Bất Quy YANZIBUGUI</c>
+
+00:04:06.585 --> 00:04:13.051
+<c.expo>Kế hoạch Xuy Ngọc</c>
