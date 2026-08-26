@@ -29,7 +29,7 @@
 01:15.752 clr
 
 01:15.760 LRC: Đôi ta chèo thuyền khuấy bóng mây, ngâm vịnh ngắm mặt sông
-01:19.918 LRC: Cá giỡn nước, trời vừa hửng mà chẳng hay
+01:19.918 LRC: Đùa với đàn cá, chẳng hay trời vừa hửng
 01:22.817 clr
 
 01:22.840 LRC: Gió bờ thổi tùy ý, sóng nhảy nước trôi xa
@@ -58,13 +58,13 @@
 02:22.239 LRC: Lúc sắp tỉnh còn tham luyến
 02:26.871 clr
 
-02:26.900 LRC: Hồng trần cũng chẳng màng, chẳng nỡ buông duyên lành
+02:26.900 LRC: Hồng trần cũng hững hờ, chẳng nỡ buông duyên lành
 02:34.040 LRC: Đáng thương, thưởng cảnh mà sinh tình, chỉ bởi gió trăng
 02:41.495 LRC: Lỡ tựa lan can, chẳng thấy bóng én
 02:45.001 LRC: Hoa rụng, trăng sáng treo cao
 02:48.734 clr
 
-02:48.760 LRC: Nước khe rì rào lao xao như thấu lòng ta
+02:48.760 LRC: Nước khe lao xao rộn tiếng, thảy đều thấu lòng ta
 02:51.700 LRC: Đêm cô độc chẳng thành giấc
 02:54.432 clr
 
@@ -73,7 +73,7 @@
 03:03.131 clr
 
 03:03.140 LRC: Chớ hỏi chuyện đến đi, tiếng đàn còn lưu luyến
-03:06.197 LRC: Gió bụi cứ điểm loạn thêm
+03:06.197 LRC: Gió bụi cứ mãi rối bời
 03:08.896 clr
 
 03:08.910 LRC: Nhấp nhẹ chén ráng mây
