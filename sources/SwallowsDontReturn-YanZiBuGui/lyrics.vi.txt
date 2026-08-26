@@ -16,7 +16,7 @@
 00:38.161 cre: Điều giáo: 潜水荷叶
                Minh họa: 林羊
                Sản xuất video: 斯是梨花
-00:45.492 cre: Trợ lý: 鬼面P
+00:45.492 cre: Hỗ trợ: 鬼面P
                Giám chế: 北山薇
                Tư liệu: 山晚樵渔 (无声诗)
 00:52.891 clr
@@ -97,7 +97,7 @@
 03:44.757 cre: Điều giáo: 潜水荷叶
                Minh họa: 林羊
                Sản xuất video: 斯是梨花
-03:51.922 cre: Trợ lý: 鬼面P
+03:51.922 cre: Hỗ trợ: 鬼面P
                Giám chế: 北山薇
                Tư liệu: 山晚樵渔 (无声诗)
 03:59.320 clr
