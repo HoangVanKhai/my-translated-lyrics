@@ -6,8 +6,8 @@
 # eov: Kết thúc MV
 
 00:02.690 LRC: Chợt thấy ba phần xuân sắc, mưa nghiêng trên mái đình
-00:10.670 LRC: Ai còn canh cánh thuở nào
-00:13.265 LRC: Muôn nghìn cảnh đều đã ngắm qua
+00:10.670 LRC: Ai còn canh cánh thuở ấy
+00:13.265 LRC: Muôn nghìn cảnh đều ngắm khắp
 00:17.697 LRC: Núi sông lại thêm một chặng, ngày này đã cách năm xưa
 00:25.140 LRC: Hẳn phải tìm khắp nhân gian, để lại cùng ôn chuyện gió trăng
 00:31.361 cre: Nhạc/Phối khí: 络绎
@@ -24,7 +24,7 @@
 00:54.223 ttl: Yến Tử Bất Quy
 01:01.222 LRC: Tiết Cốc Vũ làm bạn, đàn én rong chơi
 01:04.788 LRC: Nắm tay hái làn khói hương
-01:08.420 LRC: Non xuân pha mực, từng nét điểm thêm hương
+01:08.420 LRC: Non xuân pha mực, từng chấm điểm thêm hương
 01:11.486 LRC: Khắp chốn hoa nhàn
 01:15.752 clr
 
