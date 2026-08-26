@@ -1,14 +1,17 @@
-use lyrics_core::video_descriptor::{UNIFIED_COLLECTION, Visibility};
+use lyrics_core::video_descriptor::Visibility;
 use pretty_assertions::assert_eq;
 use std::fs::{read_to_string, remove_file, write as write_file};
-use test_utils::{InstallLocalLyricsEnv, prepare_outdated, run_git, set_mtime, video_desc};
+use test_utils::{
+    InstallLocalLyricsEnv, SEPARATED_COLLECTION, UNIFIED_COLLECTION, prepare_outdated, run_git,
+    set_mtime, video_desc,
+};
 
 const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
 
 #[test]
 fn diff_includes_targets_newer_than_source_only_with_force() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let desc = video_desc(
         collection_name.to_owned(),
@@ -57,7 +60,7 @@ fn diff_includes_targets_newer_than_source_only_with_force() {
 #[test]
 fn diff_excludes_newly_installed_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let desc = video_desc(
         collection_name.to_owned(),
@@ -90,7 +93,7 @@ fn diff_excludes_newly_installed_files() {
 #[test]
 fn diff_excludes_removals_by_default() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let (separated, unified) = prepare_outdated(
         &env,
         collection_name,
@@ -127,7 +130,7 @@ fn diff_excludes_removals_by_default() {
 #[test]
 fn include_removals_shows_removed_files_as_deletions() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     // A target file with no matching source: the sync would remove it.
     let removed_rel =
         format!("{collection_name}/【示例表演者】《示例歌曲》Removed [RemovedID].vi.srt");
@@ -179,7 +182,7 @@ fn include_removals_requires_diff() {
 #[test]
 fn include_removals_shows_updates_and_removals_together() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let (separated, unified) = prepare_outdated(
         &env,
         collection_name,

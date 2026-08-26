@@ -5,10 +5,10 @@ use clap::Parser;
 use command_extra::CommandExtra;
 use into_sorted::IntoSorted;
 use itertools::Itertools;
+use lyrics_core::collections_descriptor::{COLLECTIONS_CONFIG_FILE_NAME, CollectionsDesc};
 use lyrics_core::file_snapshot::FileSnapshot;
 use lyrics_core::video_descriptor::{
-    LyricsFileName, ParseLyricsFileNameError, SEPARATED_COLLECTIONS, UNIFIED_COLLECTION,
-    VIDEO_CONFIG_FILE_NAME, VideoDesc, Visibility,
+    LyricsFileName, ParseLyricsFileNameError, VIDEO_CONFIG_FILE_NAME, VideoDesc, Visibility,
 };
 use pipe_trait::Pipe;
 use rand::distr::Alphanumeric;
@@ -267,6 +267,13 @@ fn main() {
         target,
     } = Args::parse();
 
+    let collections_path = source.join(COLLECTIONS_CONFIG_FILE_NAME);
+    let collections: CollectionsDesc = collections_path
+        .pipe_ref(read_to_string)
+        .unwrap_or_else(|error| panic!("error: Cannot read {collections_path:?}: {error}"))
+        .pipe_as_ref(toml::from_str)
+        .unwrap_or_else(|error| panic!("error: Cannot parse {collections_path:?}: {error}"));
+
     // Read all video descriptors from source directories
     let descriptors: Vec<(PathBuf, VideoDesc)> = source
         .pipe_ref(read_dir)
@@ -296,15 +303,16 @@ fn main() {
             let desc: VideoDesc = content
                 .pipe_as_ref(toml::from_str)
                 .unwrap_or_else(|error| panic!("error: Cannot parse {desc_path:?}: {error}"));
+            collections
+                .check_separated(&desc.collection)
+                .unwrap_or_else(|error| panic!("error: {desc_path:?}: {error}"));
             (video_dir, desc)
         })
         .collect(); // eagerly validate all video descriptors before touching any files
 
-    let existing_target_files: HashMap<PathBuf, FileSnapshot> = SEPARATED_COLLECTIONS
-        .iter()
-        .copied()
-        .chain(once(UNIFIED_COLLECTION))
-        .map(|suffix| target.join(suffix))
+    let existing_target_files: HashMap<PathBuf, FileSnapshot> = collections
+        .names()
+        .map(|name| target.join(name))
         .flat_map(|path| {
             path.pipe_ref(read_dir)
                 .unwrap_or_else(|error| panic!("error: Cannot read directory {path:?}: {error}"))
@@ -336,6 +344,12 @@ fn main() {
         Vec::with_capacity(existing_target_files.len());
     let mut files_kept_newer: Vec<(PathBuf, PathBuf)> = Vec::new();
 
+    let unified_target_dirs: Vec<PathBuf> = collections
+        .unified
+        .iter()
+        .map(|name| target.join(name))
+        .collect();
+
     for (video_dir, desc) in &descriptors {
         // Hidden: do nothing. Any existing target files stay in
         // `files_need_uninstall` and will be removed.
@@ -344,17 +358,16 @@ fn main() {
         }
 
         let separated_target_dir = target.join(&desc.collection);
-        let unified_target_dir = target.join(UNIFIED_COLLECTION);
 
         if desc.visibility == Visibility::Manual {
             let prefix = format!("{}.", desc.video_title);
             let separated = separated_target_dir.as_path();
-            let unified = unified_target_dir.as_path();
+            let unified = unified_target_dirs.as_slice();
             files_need_uninstall.retain(|target_path| {
                 let Some(parent) = target_path.parent() else {
                     return true;
                 };
-                if parent != separated && parent != unified {
+                if parent != separated && !unified.iter().any(|dir| dir == parent) {
                     return true;
                 }
                 let name = target_path
@@ -398,10 +411,10 @@ fn main() {
 
             let source_file = video_dir.join(local_name);
             let separated_target_file = separated_target_dir.join(&target_name);
-            let unified_target_file = unified_target_dir.join(&target_name);
+            let unified_target_files = unified_target_dirs.iter().map(|dir| dir.join(&target_name));
 
             let source_file_snapshot = source_file.clone().pipe(FileSnapshot::new);
-            for target_file in [separated_target_file, unified_target_file] {
+            for target_file in once(separated_target_file).chain(unified_target_files) {
                 let Some(target_file_snapshot) = existing_target_files.get(&target_file) else {
                     files_need_install.push((source_file.clone(), target_file));
                     continue;

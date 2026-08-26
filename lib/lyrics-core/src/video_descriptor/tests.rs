@@ -1,27 +1,5 @@
-use super::{
-    CollectionName, Language, LyricsFileName, ParseCollectionNameError, ParseLyricsFileNameError,
-    ParseVideoTitleError, SEPARATED_COLLECTIONS, VideoTitle,
-};
+use super::{Language, LyricsFileName, ParseLyricsFileNameError, ParseVideoTitleError, VideoTitle};
 use pipe_trait::Pipe;
-
-#[test]
-fn collection_name_accepts_known_values() {
-    for &value in SEPARATED_COLLECTIONS {
-        eprintln!("CASE: {value:?}");
-        let name = value.to_string().pipe(CollectionName::try_from).unwrap();
-        assert_eq!(&*name, value);
-    }
-}
-
-#[test]
-fn collection_name_rejects_unknown_value() {
-    assert!(matches!(
-        "Unknown Collection"
-            .to_string()
-            .pipe(CollectionName::try_from),
-        Err(ParseCollectionNameError::UnknownCollection(_))
-    ));
-}
 
 #[test]
 fn video_title_accepts_normal_component() {

@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use lyrics_core::collections_descriptor::COLLECTIONS_CONFIG_FILE_NAME;
 use lyrics_core::video_descriptor::{LyricsFileName, ParseLyricsFileNameError};
 use pipe_trait::Pipe;
 use std::fs::{DirEntry, read_dir};
@@ -7,6 +8,7 @@ use std::fs::{DirEntry, read_dir};
 ///
 /// ```text
 /// dist/
+/// ├── collections.toml
 /// ├── SongName/
 /// │   ├── video.toml
 /// │   ├── lyrics.vi.srt
@@ -16,7 +18,10 @@ use std::fs::{DirEntry, read_dir};
 /// ```
 ///
 /// Rejects files placed directly under the top-level directory (too shallow)
-/// and directories nested inside a song directory (too deep).
+/// and directories nested inside a song directory (too deep). The
+/// collections manifest is the one file that belongs directly under
+/// `dist/`, because it describes the whole set of songs rather than any
+/// single one of them.
 #[test]
 fn dist_drafts_and_sources_have_flat_structure() {
     for top_dir_name in ["dist", "drafts", "sources"] {
@@ -36,6 +41,14 @@ fn dist_drafts_and_sources_have_flat_structure() {
             let path = entry.path();
             let name = entry.file_name();
             let name = name.to_str().expect("path isn't valid UTF-8");
+
+            if top_dir_name == "dist" && name == COLLECTIONS_CONFIG_FILE_NAME {
+                assert!(
+                    path.is_file(),
+                    "`dist/{COLLECTIONS_CONFIG_FILE_NAME}` should be a file, not a directory",
+                );
+                continue;
+            }
 
             assert!(
                 path.is_dir(),

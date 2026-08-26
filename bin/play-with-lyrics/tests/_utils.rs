@@ -9,10 +9,9 @@ use std::fs::{
 use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 use std::process::{Command, Output, Stdio};
-use test_utils::{Temp, video_desc};
+use test_utils::{SEPARATED_COLLECTION, Temp, video_desc};
 
 const PLAY_WITH_LYRICS: &str = env!("CARGO_BIN_EXE_play-with-lyrics");
-const COLLECTION: &str = "Feng Ling Yu Xiu";
 pub const VIDEO_TITLE: &str = "Example Song [id]";
 
 /// A temporary source directory and media library for one test.
@@ -43,7 +42,7 @@ impl Env {
         let video_dir = self.source.join("ExampleSong");
         create_dir_all(&video_dir).unwrap();
         let descriptor = video_desc(
-            COLLECTION.to_owned(),
+            SEPARATED_COLLECTION.to_owned(),
             VIDEO_TITLE.to_owned(),
             Visibility::Visible,
         );
@@ -54,7 +53,7 @@ impl Env {
     /// The collection directory inside the media library, created on first
     /// use.
     pub fn collection_dir(&self) -> PathBuf {
-        let dir = self.target.join(COLLECTION);
+        let dir = self.target.join(SEPARATED_COLLECTION);
         create_dir_all(&dir).unwrap();
         dir
     }

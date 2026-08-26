@@ -1,11 +1,13 @@
-use lyrics_core::video_descriptor::UNIFIED_COLLECTION;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::fs::{
     metadata, read, read_dir, read_to_string, remove_file, set_permissions, write as write_file,
 };
 use std::os::unix::fs::PermissionsExt;
-use test_utils::{InstallLocalLyricsEnv, Temp, prepare_outdated, run_git};
+use test_utils::{
+    InstallLocalLyricsEnv, SEPARATED_COLLECTION, Temp, UNIFIED_COLLECTION, prepare_outdated,
+    run_git,
+};
 use text_block_macros::text_block_fnl;
 
 const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
@@ -32,7 +34,7 @@ fn dry_run_without_diff_flag_emits_no_stdout() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
     let (separated, unified) = prepare_outdated(
         &env,
-        "Feng Ling Yu Xiu",
+        SEPARATED_COLLECTION,
         "【示例表演者】《示例歌曲》Example Song [ExampleID]",
         "new content\n",
         "old content\n",
@@ -54,7 +56,7 @@ fn dry_run_without_diff_flag_emits_no_stdout() {
 #[test]
 fn renders_git_apply_compatible_diff_of_outdated_subtitles() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let source_content = text_block_fnl! {
         "line one"
@@ -117,7 +119,7 @@ fn renders_git_apply_compatible_diff_of_outdated_subtitles() {
 #[test]
 fn renders_git_apply_compatible_diff_for_binary_content() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     // A leading NUL byte makes git treat the content as binary.
     let source_content = "\0binary source content";
@@ -156,7 +158,7 @@ fn removes_the_temporary_repository_after_diff() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
     let _targets = prepare_outdated(
         &env,
-        "Feng Ling Yu Xiu",
+        SEPARATED_COLLECTION,
         "【示例表演者】《示例歌曲》Example Song [ExampleID]",
         "new\n",
         "old\n",
@@ -190,7 +192,7 @@ fn removes_the_temporary_repository_after_diff() {
 #[test]
 fn diff_reports_content_changes_without_mode_changes() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let (separated, unified) = prepare_outdated(
         &env,
@@ -231,7 +233,7 @@ fn diff_reports_content_changes_without_mode_changes() {
 #[test]
 fn diff_preserves_crlf_line_endings() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = "Feng Ling Yu Xiu";
+    let collection_name = SEPARATED_COLLECTION;
     let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let source_content = "line one\r\nline two changed\r\nline three\r\n";
     let target_content = "line one\r\nline two\r\n";
