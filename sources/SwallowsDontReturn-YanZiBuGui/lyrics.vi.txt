@@ -46,7 +46,7 @@
 
 01:42.870 LRC: Tiếng sáo đùa hoa đèn
 01:45.146 LRC: Chốc lát đón lời ca, thừa hứng biết bao tiêu sái
-01:50.179 LRC: Trời muộn, lửa chài soi xa
+01:50.179 LRC: Trời đã tối, lửa chài soi xa
 01:52.311 LRC: Cười nói hỏi tháng năm
 01:54.478 LRC: Ngỡ rằng cùng chung chân trời
 01:57.678 clr
