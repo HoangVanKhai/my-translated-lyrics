@@ -18,7 +18,7 @@
                Sản xuất video: 斯是梨花
 00:45.492 cre: Hỗ trợ: 鬼面P
                Giám chế: 北山薇
-               Tư liệu: 山晚樵渔 (无声诗)
+               Tư liệu: 山晚樵渔 (Thơ vô thanh)
 00:52.891 clr
 
 00:54.223 ttl: Yến Tử Bất Quy
@@ -99,7 +99,7 @@
                Sản xuất video: 斯是梨花
 03:51.922 cre: Hỗ trợ: 鬼面P
                Giám chế: 北山薇
-               Tư liệu: 山晚樵渔 (无声诗)
+               Tư liệu: 山晚樵渔 (Thơ vô thanh)
 03:59.320 clr
 
 04:00.686 ttl: Yến Tử Bất Quy

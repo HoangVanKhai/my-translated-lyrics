@@ -34,7 +34,7 @@ Hẳn phải tìm khắp nhân gian, để lại cùng ôn chuyện gió trăng
 00:00:45,492 --> 00:00:52,891
 <font color="#AAAA22">Hỗ trợ:</font> <font color="#AAAAAA">鬼面P</font>
 <font color="#AAAA22">Giám chế:</font> <font color="#AAAAAA">北山薇</font>
-<font color="#AAAA22">Tư liệu:</font> <font color="#AAAAAA">山晚樵渔 <font color="#55ABCD">(无声诗)</font></font>
+<font color="#AAAA22">Tư liệu:</font> <font color="#AAAAAA">山晚樵渔 <font color="#55ABCD">(Thơ vô thanh)</font></font>
 
 9
 00:00:54,223 --> 00:01:01,222
@@ -220,7 +220,7 @@ Tri kỷ cùng chung chân trời
 00:03:51,922 --> 00:03:59,320
 <font color="#AAAA22">Hỗ trợ:</font> <font color="#AAAAAA">鬼面P</font>
 <font color="#AAAA22">Giám chế:</font> <font color="#AAAAAA">北山薇</font>
-<font color="#AAAA22">Tư liệu:</font> <font color="#AAAAAA">山晚樵渔 <font color="#55ABCD">(无声诗)</font></font>
+<font color="#AAAA22">Tư liệu:</font> <font color="#AAAAAA">山晚樵渔 <font color="#55ABCD">(Thơ vô thanh)</font></font>
 
 54
 00:04:00,686 --> 00:04:06,585
