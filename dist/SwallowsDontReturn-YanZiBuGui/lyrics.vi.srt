@@ -38,7 +38,7 @@ Hẳn phải tìm khắp nhân gian, để lại cùng ôn chuyện gió trăng
 
 9
 00:00:54,223 --> 00:01:01,222
-<b><font color="#FFD966">Yến Tử Bất Quy YANZIBUGUI</font></b>
+<b><font color="#FFD966">Yến Tử Bất Quy</font></b>
 
 10
 00:01:01,222 --> 00:01:04,788
@@ -110,7 +110,7 @@ Ngỡ rằng cùng chung chân trời
 
 27
 00:01:58,810 --> 00:02:04,342
-<b><font color="#FFD966">Yến Tử Bất Quy YANZIBUGUI</font></b>
+<b><font color="#FFD966">Yến Tử Bất Quy</font></b>
 
 28
 00:02:04,342 --> 00:02:11,608
@@ -224,7 +224,7 @@ Tri kỷ cùng chung chân trời
 
 54
 00:04:00,686 --> 00:04:06,585
-<b><font color="#FFD966">Yến Tử Bất Quy YANZIBUGUI</font></b>
+<b><font color="#FFD966">Yến Tử Bất Quy</font></b>
 
 55
 00:04:06,585 --> 00:04:13,051

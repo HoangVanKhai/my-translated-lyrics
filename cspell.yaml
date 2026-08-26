@@ -42,7 +42,6 @@ overrides:
       - trỗi
       - Vsinger
       - WOVOP
-      - YANZIBUGUI
       - Yuezheng
   - filename:
       - '**/*.zh.srt'
@@ -58,7 +57,6 @@ overrides:
       - Tianyi
       - Vsinger
       - WOVOP
-      - YANZIBUGUI
       - Yuezheng
   - filename:
       - '**/*.en.srt'

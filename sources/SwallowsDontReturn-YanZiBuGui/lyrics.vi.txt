@@ -21,7 +21,7 @@
                Tư liệu: 山晚樵渔 (无声诗)
 00:52.891 clr
 
-00:54.223 ttl: Yến Tử Bất Quy YANZIBUGUI
+00:54.223 ttl: Yến Tử Bất Quy
 01:01.222 LRC: Tiết Cốc Vũ làm bạn, đàn én rong chơi
 01:04.788 LRC: Nắm tay hái làn khói hương
 01:08.420 LRC: Non xuân pha mực, từng nét điểm thêm hương
@@ -51,7 +51,7 @@
 01:54.478 LRC: Ngỡ rằng cùng chung chân trời
 01:57.678 clr
 
-01:58.810 ttl: Yến Tử Bất Quy YANZIBUGUI
+01:58.810 ttl: Yến Tử Bất Quy
 02:04.342 txt: Kế hoạch Xuy Ngọc
 02:11.608 LRC: Buổi đầu gặp gỡ, ba phần xuân sắc, mưa nghiêng trên mái đình
 02:19.710 LRC: Ai vẫn trằn trọc như xưa
@@ -102,7 +102,7 @@
                Tư liệu: 山晚樵渔 (无声诗)
 03:59.320 clr
 
-04:00.686 ttl: Yến Tử Bất Quy YANZIBUGUI
+04:00.686 ttl: Yến Tử Bất Quy
 04:06.585 txt: Kế hoạch Xuy Ngọc
 04:13.051 clr
 

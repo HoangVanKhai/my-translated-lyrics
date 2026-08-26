@@ -26,7 +26,7 @@
 
 7
 00:00:38,161 --> 00:00:45,492
-<font color="#AAAA22">调小校</font>：<font color="#AAAAAA">潜水荷叶</font>
+<font color="#AAAA22">调校</font>：<font color="#AAAAAA">潜水荷叶</font>
 <font color="#AAAA22">曲绘</font>：<font color="#AAAAAA">林羊</font>
 <font color="#AAAA22">视频制作</font>：<font color="#AAAAAA">斯是梨花</font>
 
@@ -38,7 +38,7 @@
 
 9
 00:00:54,223 --> 00:01:01,222
-<b><font color="#FFD966">燕子不归YANZIBUGUI</font></b>
+<b><font color="#FFD966">燕子不归</font></b>
 
 10
 00:01:01,222 --> 00:01:04,788
@@ -110,7 +110,7 @@
 
 27
 00:01:58,810 --> 00:02:04,342
-<b><font color="#FFD966">燕子不归YANZIBUGUI</font></b>
+<b><font color="#FFD966">燕子不归</font></b>
 
 28
 00:02:04,342 --> 00:02:11,608
@@ -212,7 +212,7 @@
 
 52
 00:03:44,757 --> 00:03:51,922
-<font color="#AAAA22">调小校</font>：<font color="#AAAAAA">潜水荷叶</font>
+<font color="#AAAA22">调校</font>：<font color="#AAAAAA">潜水荷叶</font>
 <font color="#AAAA22">曲绘</font>：<font color="#AAAAAA">林羊</font>
 <font color="#AAAA22">视频制作</font>：<font color="#AAAAAA">斯是梨花</font>
 
@@ -224,7 +224,7 @@
 
 54
 00:04:00,686 --> 00:04:06,585
-<b><font color="#FFD966">燕子不归YANZIBUGUI</font></b>
+<b><font color="#FFD966">燕子不归</font></b>
 
 55
 00:04:06,585 --> 00:04:13,051
