@@ -114,7 +114,7 @@ Ngỡ rằng cùng chung chân trời
 
 28
 00:02:04,342 --> 00:02:11,608
-<i><font color="#CCCCCC">Kế hoạch 吹玉</font></i>
+<i><font color="#CCCCCC">Dự án 吹玉</font></i>
 
 29
 00:02:11,608 --> 00:02:19,710
@@ -228,4 +228,4 @@ Tri kỷ cùng chung chân trời
 
 55
 00:04:06,585 --> 00:04:13,051
-<i><font color="#CCCCCC">Kế hoạch 吹玉</font></i>
+<i><font color="#CCCCCC">Dự án 吹玉</font></i>
