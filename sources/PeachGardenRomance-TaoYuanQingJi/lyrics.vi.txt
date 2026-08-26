@@ -5,7 +5,7 @@
 # eov: Kết thúc MV
 
 00:01.167 cre: Soạn nhạc/Biên khúc: 洛雨辰p
-               Trợ lý: 年糕
+               Hỗ trợ: 年糕
                Tác từ: 雷小晏
 00:04.433 cre: Guitar điện/Acoustic: distantal
                Nhạc cụ dây: 海因喝水上火
@@ -35,7 +35,7 @@
 01:46.075 clr
 
 01:59.445 cre: Soạn nhạc/Biên khúc: 洛雨辰p
-               Trợ lý: 年糕
+               Hỗ trợ: 年糕
                Tác từ: 雷小晏
 02:03.086 cre: Guitar điện/Acoustic: distantal
                Nhạc cụ dây: 海因喝水上火

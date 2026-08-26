@@ -7,7 +7,7 @@
 00:05.433 cre: Biên khúc: 清风最梦
 00:06.000 cre: Soạn nhạc: 清风最梦
 00:06.500 cre: Tác từ: 清风最梦
-00:07.000 cre: Hòa âm: 清风最梦/Dinstakovich
+00:07.000 cre: Viết hòa thanh: 清风最梦/Dinstakovich
 00:07.612 cre: Trình bày: Yuezheng Ling/Luo Tianyi
 00:08.132 cre: Điều giáo: 清风最梦
 00:08.887 cre: Mixing: 清风最梦
@@ -41,7 +41,7 @@
 01:31.383 cre: Biên khúc: 清风最梦
 01:32.016 cre: Soạn nhạc: 清风最梦
 01:32.546 cre: Tác từ: 清风最梦
-01:33.083 cre: Hòa âm: 清风最梦/Dinstakovich
+01:33.083 cre: Viết hòa thanh: 清风最梦/Dinstakovich
 01:33.583 cre: Trình bày: Yuezheng Ling/Luo Tianyi
 01:34.119 cre: Điều giáo: 清风最梦
 01:34.861 cre: Mixing: 清风最梦

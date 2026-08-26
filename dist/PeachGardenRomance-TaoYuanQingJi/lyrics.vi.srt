@@ -1,7 +1,7 @@
 1
 00:00:01,167 --> 00:00:04,433
 <font color="#AAAA22">Soạn nhạc/Biên khúc:</font> <font color="#AAAAAA">洛雨辰p</font>
-<font color="#AAAA22">Trợ lý:</font> <font color="#AAAAAA">年糕</font>
+<font color="#AAAA22">Hỗ trợ:</font> <font color="#AAAAAA">年糕</font>
 <font color="#AAAA22">Tác từ:</font> <font color="#AAAAAA">雷小晏</font>
 
 2
@@ -82,7 +82,7 @@ Nguyện cùng người chung bước dài lâu
 20
 00:01:59,445 --> 00:02:03,086
 <font color="#AAAA22">Soạn nhạc/Biên khúc:</font> <font color="#AAAAAA">洛雨辰p</font>
-<font color="#AAAA22">Trợ lý:</font> <font color="#AAAAAA">年糕</font>
+<font color="#AAAA22">Hỗ trợ:</font> <font color="#AAAAAA">年糕</font>
 <font color="#AAAA22">Tác từ:</font> <font color="#AAAAAA">雷小晏</font>
 
 21

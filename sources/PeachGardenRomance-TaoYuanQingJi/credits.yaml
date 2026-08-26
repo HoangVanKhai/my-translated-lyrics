@@ -1,10 +1,10 @@
 credit-roles:
   - { vi: Guitar điện/Acoustic, zh: 电/木吉他 }
+  - { vi: Hỗ trợ, zh: 协力 }
   - { vi: Minh họa, zh: 曲绘 }
   - { vi: Mix nhạc, zh: 混音 }
   - { vi: Nhạc cụ dây, zh: 弦乐 }
   - { vi: Soạn nhạc/Biên khúc, zh: 曲/编 }
-  - { vi: Trợ lý, zh: 协力 }
   - { vi: Tác từ, zh: 作词 }
   - { vi: Video, zh: 视频 }
   - { vi: Điều giáo, zh: 调教 }

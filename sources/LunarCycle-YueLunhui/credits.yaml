@@ -1,6 +1,5 @@
 credit-roles:
   - { vi: Biên khúc, zh: 编曲 }
-  - { vi: Hòa âm, zh: 和声编写 }
   - { vi: Minh họa, zh: 曲绘 }
   - { vi: Mixing, zh: 混音 }
   - { vi: Soạn nhạc, zh: 作曲 }
@@ -8,6 +7,7 @@ credit-roles:
   - { vi: Trình bày, zh: 演唱 }
   - { vi: Tác từ, zh: 作词 }
   - { vi: Video, zh: 映像 }
+  - { vi: Viết hòa thanh, zh: 和声编写 }
   - { vi: Điều giáo, zh: 调教 }
 
 credit-names:

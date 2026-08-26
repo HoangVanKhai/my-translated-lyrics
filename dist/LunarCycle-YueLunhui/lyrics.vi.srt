@@ -12,7 +12,7 @@
 
 4
 00:00:07,000 --> 00:00:07,612
-<font color="#AAAA22">Hòa âm:</font> <font color="#AAAAAA">清风最梦/Dinstakovich</font>
+<font color="#AAAA22">Viết hòa thanh:</font> <font color="#AAAAAA">清风最梦/Dinstakovich</font>
 
 5
 00:00:07,612 --> 00:00:08,132
@@ -132,7 +132,7 @@ Ai đã để lại dư vị trên lối cũ?
 
 34
 00:01:33,083 --> 00:01:33,583
-<font color="#AAAA22">Hòa âm:</font> <font color="#AAAAAA">清风最梦/Dinstakovich</font>
+<font color="#AAAA22">Viết hòa thanh:</font> <font color="#AAAAAA">清风最梦/Dinstakovich</font>
 
 35
 00:01:33,583 --> 00:01:34,119
