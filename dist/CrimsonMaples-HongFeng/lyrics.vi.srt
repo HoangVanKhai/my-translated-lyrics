@@ -86,11 +86,11 @@
 
 21
 00:01:50,534 --> 00:01:55,095
-<i><font color="#CCCCCC">“Bốn bể hoàn vũ, ta chỉ tin ngươi, khắp thế gian chẳng có người thứ hai.”</font></i>
+<i><font color="#CCCCCC">“Tứ hải hoàn vũ, ta chỉ tin ngươi, khắp thế gian chẳng có người thứ hai.”</font></i>
 
 22
 00:01:55,095 --> 00:01:59,091
-<i><font color="#CCCCCC">“Thận trọng, thận trọng!”</font></i>
+<i><font color="#CCCCCC">“Cẩn trọng, cẩn trọng!”</font></i>
 
 23
 00:01:59,091 --> 00:02:03,001
