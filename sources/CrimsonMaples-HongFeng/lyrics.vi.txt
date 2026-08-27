@@ -1,0 +1,70 @@
+# clr: Xóa chữ trên màn hình
+# spk: Lời thoại
+# LTY: Lạc Thiên Y
+# YZL: Nhạc Chính Lăng
+# Y+L: Lạc Thiên Y và Nhạc Chính Lăng
+# ttl: Tiêu đề ca khúc
+# cre: Thông tin sản xuất
+# eov: Kết thúc MV
+
+00:02.000 spk: “Nàng tên là gì?”
+00:04.989 spk: “Lăng, có muốn đi theo ta không?”
+00:08.071 clr
+
+00:16.320 cre: Trình bày: Luo Tianyi Yuezheng Ling
+               Soạn nhạc/Biên khúc: 阿落
+               Tác từ: 安陵影钦
+               Điều giáo: 星葵
+00:19.360 cre: Mixing/Mastering: 磷元素P
+               Video: 瞎摸er
+               Mỹ thuật: 綄风
+               Minh họa: 坦桑
+00:22.261 ttl: Hồng Phong
+00:27.486 YZL: Tiếng cầm tiễn dấu nhạn, lau sậy thẳm sâu
+00:32.887 YZL: Cũng tựa sơ phùng, thất huyền chẳng tìm ai
+00:39.499 LTY: Giữa vạn người chợt một ánh nhìn, mắt ẩn lưỡi đao
+00:46.522 LTY: Lạnh nhất là đây, xứng lá phong sương động thu
+00:53.124 YZL: Ta riêng có một kiếm, đối trận trần ai
+00:59.943 YZL: Đường hẹp rút kiếm quyết phù trầm
+01:05.660 LTY: Lạnh như tuyết, sáng như trăng
+01:09.414 LTY: Sinh sát chỉ một thoáng
+01:13.142 Y+L: Nơi tuyệt cảnh lật ngược càn khôn
+01:18.814 LTY: Lá đỏ rơi, thu động hiu hắt, gió nổi trường ca
+01:25.590 YZL: Cũng mặc ta, nghiêng tứ hải, vượt nghìn non
+01:32.175 Y+L: Dẫu cuồng tài, dẫu khảng khái
+01:35.385 Y+L: Dẫu tựa người quang minh
+01:38.731 YZL: Ban ta, kiếm trong tráp, khách trong lồng
+01:46.121 clr
+
+01:46.360 spk: “Ta với ngươi là giao tình gì? Là chí giao sinh tử.”
+01:50.534 spk: “Tứ hải hoàn vũ, ta chỉ tin ngươi, khắp thế gian chẳng có người thứ hai.”
+01:55.095 spk: “Cẩn trọng, cẩn trọng!”
+01:59.091 spk: “Trung tín nhân nghĩa của ngươi, đặt lên trước cả ta sao?”
+02:03.001 spk: “Sao ngươi nỡ bạc với ta!”
+02:06.720 spk: “......ban......kiếm của quả nhân, lệnh cho nàng......”
+02:10.637 clr
+
+02:12.689 LTY: Tên họ chẳng cần hỏi, thiên hạ đều hay
+02:18.126 LTY: Phải khiến cửu châu cúi đầu xưng thần
+02:24.475 YZL: Tự buộc thành kén, thân làm kiếm, thừa quân chi ân
+02:31.520 YZL: Lạnh nhất là đây, lá trong gương thân trong mộng
+02:38.575 YZL: Ta riêng chỉ một kiếm, chẳng vướng ái hận
+02:45.176 YZL: Vì người tuốt kiếm đạp hồng trần
+02:50.922 LTY: Say như phong, rực như lửa
+02:54.620 LTY: Sắc máu dậy tấc lòng
+02:58.268 Y+L: Làm đề tài cho người kể chuyện
+03:04.182 YZL: Ta riêng làm một kiếm, giữa vạn người đi lẻ loi
+03:11.632 LTY: Vì người phơi gan mật, thiếu niên du
+03:17.476 Y+L: Có hoa mới rót rượu, không trăng chẳng lên lầu
+03:23.842 Y+L: Chẳng dám khẽ lời hỏi, có nhớ chăng
+03:30.309 LTY: Lá đỏ rơi, thế tình bạc bẽo, gió nổi gác cao
+03:36.967 YZL: Tạm tặng ta, thu hoang đường, lội sóng đục
+03:43.567 Y+L: Mặc cuồng kiêu, mặc cô cao, mặc trời đất bao la
+03:50.519 Y+L: Lại rằng, dẫu danh kiếm, cũng gãy tan
+03:57.365 clr
+
+04:00.001 spk: “Cứ gọi ta là Thiên Y là được.”
+04:04.393 spk: “Ta với nàng sơ ngộ, cũng là vào mùa thu.”
+04:08.482 clr
+
+04:08.482 eov

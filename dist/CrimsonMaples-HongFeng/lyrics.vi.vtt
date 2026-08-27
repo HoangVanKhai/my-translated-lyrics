@@ -1,0 +1,169 @@
+WEBVTT
+Language: vi
+
+STYLE
+::cue {
+  background-color: transparent;
+  text-shadow: 2px 2px 2px black;
+}
+::cue(v[voice="Lạc Thiên Y"]) {
+  color: #66CCFF;
+}
+::cue(v[voice="Nhạc Chính Lăng"]) {
+  color: #EE0000;
+}
+::cue(v[voice="Lạc Thiên Y & Nhạc Chính Lăng"]) {
+  color: #9966CC;
+}
+::cue(c.creditRole) {
+  color: #AAAA22;
+}
+::cue(c.creditName) {
+  color: #AAAAAA;
+}
+::cue(c.title) {
+  color: #FFD966;
+  font-weight: bold;
+}
+::cue(c.expo) {
+  color: #CCCCCC;
+  font-style: italic;
+}
+
+00:00:02.000 --> 00:00:04.989
+<c.expo>“Nàng tên là gì?”</c>
+
+00:00:04.989 --> 00:00:08.071
+<c.expo>“Lăng, có muốn đi theo ta không?”</c>
+
+00:00:16.320 --> 00:00:19.360
+<c.creditRole>Trình bày:</c> <c.creditName>Luo Tianyi Yuezheng Ling</c>
+<c.creditRole>Soạn nhạc/Biên khúc:</c> <c.creditName>阿落</c>
+<c.creditRole>Tác từ:</c> <c.creditName>安陵影钦</c>
+<c.creditRole>Điều giáo:</c> <c.creditName>星葵</c>
+
+00:00:19.360 --> 00:00:22.261
+<c.creditRole>Mixing/Mastering:</c> <c.creditName>磷元素P</c>
+<c.creditRole>Video:</c> <c.creditName>瞎摸er</c>
+<c.creditRole>Mỹ thuật:</c> <c.creditName>綄风</c>
+<c.creditRole>Minh họa:</c> <c.creditName>坦桑</c>
+
+00:00:22.261 --> 00:00:27.486
+<c.title>Hồng Phong</c>
+
+00:00:27.486 --> 00:00:32.887
+<v Nhạc Chính Lăng>Tiếng cầm tiễn dấu nhạn, lau sậy thẳm sâu</v>
+
+00:00:32.887 --> 00:00:39.499
+<v Nhạc Chính Lăng>Cũng tựa sơ phùng, thất huyền chẳng tìm ai</v>
+
+00:00:39.499 --> 00:00:46.522
+<v Lạc Thiên Y>Giữa vạn người chợt một ánh nhìn, mắt ẩn lưỡi đao</v>
+
+00:00:46.522 --> 00:00:53.124
+<v Lạc Thiên Y>Lạnh nhất là đây, xứng lá phong sương động thu</v>
+
+00:00:53.124 --> 00:00:59.943
+<v Nhạc Chính Lăng>Ta riêng có một kiếm, đối trận trần ai</v>
+
+00:00:59.943 --> 00:01:05.660
+<v Nhạc Chính Lăng>Đường hẹp rút kiếm quyết phù trầm</v>
+
+00:01:05.660 --> 00:01:09.414
+<v Lạc Thiên Y>Lạnh như tuyết, sáng như trăng</v>
+
+00:01:09.414 --> 00:01:13.142
+<v Lạc Thiên Y>Sinh sát chỉ một thoáng</v>
+
+00:01:13.142 --> 00:01:18.814
+<v Lạc Thiên Y & Nhạc Chính Lăng>Nơi tuyệt cảnh lật ngược càn khôn</v>
+
+00:01:18.814 --> 00:01:25.590
+<v Lạc Thiên Y>Lá đỏ rơi, thu động hiu hắt, gió nổi trường ca</v>
+
+00:01:25.590 --> 00:01:32.175
+<v Nhạc Chính Lăng>Cũng mặc ta, nghiêng tứ hải, vượt nghìn non</v>
+
+00:01:32.175 --> 00:01:35.385
+<v Lạc Thiên Y & Nhạc Chính Lăng>Dẫu cuồng tài, dẫu khảng khái</v>
+
+00:01:35.385 --> 00:01:38.731
+<v Lạc Thiên Y & Nhạc Chính Lăng>Dẫu tựa người quang minh</v>
+
+00:01:38.731 --> 00:01:46.121
+<v Nhạc Chính Lăng>Ban ta, kiếm trong tráp, khách trong lồng</v>
+
+00:01:46.360 --> 00:01:50.534
+<c.expo>“Ta với ngươi là giao tình gì? Là chí giao sinh tử.”</c>
+
+00:01:50.534 --> 00:01:55.095
+<c.expo>“Tứ hải hoàn vũ, ta chỉ tin ngươi, khắp thế gian chẳng có người thứ hai.”</c>
+
+00:01:55.095 --> 00:01:59.091
+<c.expo>“Cẩn trọng, cẩn trọng!”</c>
+
+00:01:59.091 --> 00:02:03.001
+<c.expo>“Trung tín nhân nghĩa của ngươi, đặt lên trước cả ta sao?”</c>
+
+00:02:03.001 --> 00:02:06.720
+<c.expo>“Sao ngươi nỡ bạc với ta!”</c>
+
+00:02:06.720 --> 00:02:10.637
+<c.expo>“......ban......kiếm của quả nhân, lệnh cho nàng......”</c>
+
+00:02:12.689 --> 00:02:18.126
+<v Lạc Thiên Y>Tên họ chẳng cần hỏi, thiên hạ đều hay</v>
+
+00:02:18.126 --> 00:02:24.475
+<v Lạc Thiên Y>Phải khiến cửu châu cúi đầu xưng thần</v>
+
+00:02:24.475 --> 00:02:31.520
+<v Nhạc Chính Lăng>Tự buộc thành kén, thân làm kiếm, thừa quân chi ân</v>
+
+00:02:31.520 --> 00:02:38.575
+<v Nhạc Chính Lăng>Lạnh nhất là đây, lá trong gương thân trong mộng</v>
+
+00:02:38.575 --> 00:02:45.176
+<v Nhạc Chính Lăng>Ta riêng chỉ một kiếm, chẳng vướng ái hận</v>
+
+00:02:45.176 --> 00:02:50.922
+<v Nhạc Chính Lăng>Vì người tuốt kiếm đạp hồng trần</v>
+
+00:02:50.922 --> 00:02:54.620
+<v Lạc Thiên Y>Say như phong, rực như lửa</v>
+
+00:02:54.620 --> 00:02:58.268
+<v Lạc Thiên Y>Sắc máu dậy tấc lòng</v>
+
+00:02:58.268 --> 00:03:04.182
+<v Lạc Thiên Y & Nhạc Chính Lăng>Làm đề tài cho người kể chuyện</v>
+
+00:03:04.182 --> 00:03:11.632
+<v Nhạc Chính Lăng>Ta riêng làm một kiếm, giữa vạn người đi lẻ loi</v>
+
+00:03:11.632 --> 00:03:17.476
+<v Lạc Thiên Y>Vì người phơi gan mật, thiếu niên du</v>
+
+00:03:17.476 --> 00:03:23.842
+<v Lạc Thiên Y & Nhạc Chính Lăng>Có hoa mới rót rượu, không trăng chẳng lên lầu</v>
+
+00:03:23.842 --> 00:03:30.309
+<v Lạc Thiên Y & Nhạc Chính Lăng>Chẳng dám khẽ lời hỏi, có nhớ chăng</v>
+
+00:03:30.309 --> 00:03:36.967
+<v Lạc Thiên Y>Lá đỏ rơi, thế tình bạc bẽo, gió nổi gác cao</v>
+
+00:03:36.967 --> 00:03:43.567
+<v Nhạc Chính Lăng>Tạm tặng ta, thu hoang đường, lội sóng đục</v>
+
+00:03:43.567 --> 00:03:50.519
+<v Lạc Thiên Y & Nhạc Chính Lăng>Mặc cuồng kiêu, mặc cô cao, mặc trời đất bao la</v>
+
+00:03:50.519 --> 00:03:57.365
+<v Lạc Thiên Y & Nhạc Chính Lăng>Lại rằng, dẫu danh kiếm, cũng gãy tan</v>
+
+00:04:00.001 --> 00:04:04.393
+<c.expo>“Cứ gọi ta là Thiên Y là được.”</c>
+
+00:04:04.393 --> 00:04:08.482
+<c.expo>“Ta với nàng sơ ngộ, cũng là vào mùa thu.”</c>

@@ -1,0 +1,181 @@
+1
+00:00:02,000 --> 00:00:04,989
+<i><font color="#CCCCCC">“Nàng tên là gì?”</font></i>
+
+2
+00:00:04,989 --> 00:00:08,071
+<i><font color="#CCCCCC">“Lăng, có muốn đi theo ta không?”</font></i>
+
+3
+00:00:16,320 --> 00:00:19,360
+<font color="#AAAA22">Trình bày:</font> <font color="#AAAAAA">Luo Tianyi Yuezheng Ling</font>
+<font color="#AAAA22">Soạn nhạc/Biên khúc:</font> <font color="#AAAAAA">阿落</font>
+<font color="#AAAA22">Tác từ:</font> <font color="#AAAAAA">安陵影钦</font>
+<font color="#AAAA22">Điều giáo:</font> <font color="#AAAAAA">星葵</font>
+
+4
+00:00:19,360 --> 00:00:22,261
+<font color="#AAAA22">Mixing/Mastering:</font> <font color="#AAAAAA">磷元素P</font>
+<font color="#AAAA22">Video:</font> <font color="#AAAAAA">瞎摸er</font>
+<font color="#AAAA22">Mỹ thuật:</font> <font color="#AAAAAA">綄风</font>
+<font color="#AAAA22">Minh họa:</font> <font color="#AAAAAA">坦桑</font>
+
+5
+00:00:22,261 --> 00:00:27,486
+<b><font color="#FFD966">Hồng Phong</font></b>
+
+6
+00:00:27,486 --> 00:00:32,887
+<font color="#EE0000">Tiếng cầm tiễn dấu nhạn, lau sậy thẳm sâu</font>
+
+7
+00:00:32,887 --> 00:00:39,499
+<font color="#EE0000">Cũng tựa sơ phùng, thất huyền chẳng tìm ai</font>
+
+8
+00:00:39,499 --> 00:00:46,522
+<font color="#66CCFF">Giữa vạn người chợt một ánh nhìn, mắt ẩn lưỡi đao</font>
+
+9
+00:00:46,522 --> 00:00:53,124
+<font color="#66CCFF">Lạnh nhất là đây, xứng lá phong sương động thu</font>
+
+10
+00:00:53,124 --> 00:00:59,943
+<font color="#EE0000">Ta riêng có một kiếm, đối trận trần ai</font>
+
+11
+00:00:59,943 --> 00:01:05,660
+<font color="#EE0000">Đường hẹp rút kiếm quyết phù trầm</font>
+
+12
+00:01:05,660 --> 00:01:09,414
+<font color="#66CCFF">Lạnh như tuyết, sáng như trăng</font>
+
+13
+00:01:09,414 --> 00:01:13,142
+<font color="#66CCFF">Sinh sát chỉ một thoáng</font>
+
+14
+00:01:13,142 --> 00:01:18,814
+<font color="#9966CC">Nơi tuyệt cảnh lật ngược càn khôn</font>
+
+15
+00:01:18,814 --> 00:01:25,590
+<font color="#66CCFF">Lá đỏ rơi, thu động hiu hắt, gió nổi trường ca</font>
+
+16
+00:01:25,590 --> 00:01:32,175
+<font color="#EE0000">Cũng mặc ta, nghiêng tứ hải, vượt nghìn non</font>
+
+17
+00:01:32,175 --> 00:01:35,385
+<font color="#9966CC">Dẫu cuồng tài, dẫu khảng khái</font>
+
+18
+00:01:35,385 --> 00:01:38,731
+<font color="#9966CC">Dẫu tựa người quang minh</font>
+
+19
+00:01:38,731 --> 00:01:46,121
+<font color="#EE0000">Ban ta, kiếm trong tráp, khách trong lồng</font>
+
+20
+00:01:46,360 --> 00:01:50,534
+<i><font color="#CCCCCC">“Ta với ngươi là giao tình gì? Là chí giao sinh tử.”</font></i>
+
+21
+00:01:50,534 --> 00:01:55,095
+<i><font color="#CCCCCC">“Tứ hải hoàn vũ, ta chỉ tin ngươi, khắp thế gian chẳng có người thứ hai.”</font></i>
+
+22
+00:01:55,095 --> 00:01:59,091
+<i><font color="#CCCCCC">“Cẩn trọng, cẩn trọng!”</font></i>
+
+23
+00:01:59,091 --> 00:02:03,001
+<i><font color="#CCCCCC">“Trung tín nhân nghĩa của ngươi, đặt lên trước cả ta sao?”</font></i>
+
+24
+00:02:03,001 --> 00:02:06,720
+<i><font color="#CCCCCC">“Sao ngươi nỡ bạc với ta!”</font></i>
+
+25
+00:02:06,720 --> 00:02:10,637
+<i><font color="#CCCCCC">“......ban......kiếm của quả nhân, lệnh cho nàng......”</font></i>
+
+26
+00:02:12,689 --> 00:02:18,126
+<font color="#66CCFF">Tên họ chẳng cần hỏi, thiên hạ đều hay</font>
+
+27
+00:02:18,126 --> 00:02:24,475
+<font color="#66CCFF">Phải khiến cửu châu cúi đầu xưng thần</font>
+
+28
+00:02:24,475 --> 00:02:31,520
+<font color="#EE0000">Tự buộc thành kén, thân làm kiếm, thừa quân chi ân</font>
+
+29
+00:02:31,520 --> 00:02:38,575
+<font color="#EE0000">Lạnh nhất là đây, lá trong gương thân trong mộng</font>
+
+30
+00:02:38,575 --> 00:02:45,176
+<font color="#EE0000">Ta riêng chỉ một kiếm, chẳng vướng ái hận</font>
+
+31
+00:02:45,176 --> 00:02:50,922
+<font color="#EE0000">Vì người tuốt kiếm đạp hồng trần</font>
+
+32
+00:02:50,922 --> 00:02:54,620
+<font color="#66CCFF">Say như phong, rực như lửa</font>
+
+33
+00:02:54,620 --> 00:02:58,268
+<font color="#66CCFF">Sắc máu dậy tấc lòng</font>
+
+34
+00:02:58,268 --> 00:03:04,182
+<font color="#9966CC">Làm đề tài cho người kể chuyện</font>
+
+35
+00:03:04,182 --> 00:03:11,632
+<font color="#EE0000">Ta riêng làm một kiếm, giữa vạn người đi lẻ loi</font>
+
+36
+00:03:11,632 --> 00:03:17,476
+<font color="#66CCFF">Vì người phơi gan mật, thiếu niên du</font>
+
+37
+00:03:17,476 --> 00:03:23,842
+<font color="#9966CC">Có hoa mới rót rượu, không trăng chẳng lên lầu</font>
+
+38
+00:03:23,842 --> 00:03:30,309
+<font color="#9966CC">Chẳng dám khẽ lời hỏi, có nhớ chăng</font>
+
+39
+00:03:30,309 --> 00:03:36,967
+<font color="#66CCFF">Lá đỏ rơi, thế tình bạc bẽo, gió nổi gác cao</font>
+
+40
+00:03:36,967 --> 00:03:43,567
+<font color="#EE0000">Tạm tặng ta, thu hoang đường, lội sóng đục</font>
+
+41
+00:03:43,567 --> 00:03:50,519
+<font color="#9966CC">Mặc cuồng kiêu, mặc cô cao, mặc trời đất bao la</font>
+
+42
+00:03:50,519 --> 00:03:57,365
+<font color="#9966CC">Lại rằng, dẫu danh kiếm, cũng gãy tan</font>
+
+43
+00:04:00,001 --> 00:04:04,393
+<i><font color="#CCCCCC">“Cứ gọi ta là Thiên Y là được.”</font></i>
+
+44
+00:04:04,393 --> 00:04:08,482
+<i><font color="#CCCCCC">“Ta với nàng sơ ngộ, cũng là vào mùa thu.”</font></i>
