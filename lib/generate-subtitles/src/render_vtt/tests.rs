@@ -27,7 +27,7 @@ fn cue_text_html_meta_characters_are_escaped() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![cue_part("plain", "<a> & <b>")],
+        parts: vec![cue_part("plain".to_owned(), "<a> & <b>".to_owned())],
     }];
     let output = render_vtt(
         &cues,
@@ -55,7 +55,10 @@ fn role_only_header_and_role_less_lines_render() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![cue_part("cre", "role-a\n[label-a] name-a")],
+        parts: vec![cue_part(
+            "cre".to_owned(),
+            "role-a\n[label-a] name-a".to_owned(),
+        )],
     }];
     let output = render_vtt(
         &cues,
@@ -97,7 +100,7 @@ fn voice_name_containing_ampersand_is_emitted_verbatim_in_cue_tag() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![cue_part("vca", "body")],
+        parts: vec![cue_part("vca".to_owned(), "body".to_owned())],
     }];
     let output = render_vtt(
         &cues,
@@ -126,7 +129,7 @@ fn unknown_role_in_credit_line_produces_credits_error() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![cue_part("cre", "unknown-role name-a")],
+        parts: vec![cue_part("cre".to_owned(), "unknown-role name-a".to_owned())],
     }];
     let err = render_vtt(
         &cues,
@@ -158,7 +161,7 @@ fn class_declared_without_palette_entry_produces_style_error() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![cue_part("ttl", "body")],
+        parts: vec![cue_part("ttl".to_owned(), "body".to_owned())],
     }];
     let err = render_vtt(
         &cues,
@@ -190,7 +193,7 @@ fn voice_declared_without_palette_entry_produces_style_error() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![cue_part("unk", "body")],
+        parts: vec![cue_part("unk".to_owned(), "body".to_owned())],
     }];
     let err = render_vtt(
         &cues,

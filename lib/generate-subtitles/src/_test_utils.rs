@@ -19,10 +19,10 @@ use std::collections::BTreeMap;
 /// both renderers, so every fixture except the ones that assert that
 /// invisibility is built through this constructor rather than naming
 /// the field.
-pub(crate) fn cue_part(marker: &str, text: &str) -> CuePart {
+pub(crate) fn cue_part(marker: String, text: String) -> CuePart {
     CuePart {
-        marker: marker.to_string(),
-        text: text.to_string(),
+        marker,
+        text,
         annotations: Vec::new(),
     }
 }

@@ -7,7 +7,7 @@
 //! Any other event opens a new cue; continuation lines that lack a
 //! leading timestamp are appended to the most recently opened cue.
 //!
-//! A line indented to [`TIMESTAMP_PREFIX_WIDTH`] whose marker is
+//! A line indented to the shorthand column whose marker is
 //! [`ANNOTATION_MARKER`] is an annotation. It carries no timestamp
 //! and opens no event; instead it attaches commentary, context, or a
 //! translation note to the cue part written above it. A part may
