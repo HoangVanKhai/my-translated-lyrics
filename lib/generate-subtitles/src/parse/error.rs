@@ -73,12 +73,8 @@ pub struct ReservedControlMarker {
 }
 
 /// Payload for [`ParseLyricsError::TimestampedAnnotation`]. Raised
-/// when an annotation line carries a timestamp of its own. An
-/// annotation borrows the timing of the cue part it is attached to
-/// and is written without a timestamp at column
-/// `TIMESTAMP_PREFIX_WIDTH`; a timestamped one would open a cue and
-/// so render the note into the subtitles, which is never what the
-/// author meant.
+/// when an annotation line carries a timestamp instead of sitting at
+/// column `TIMESTAMP_PREFIX_WIDTH`.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "line {line_number}: annotation marker `{ANNOTATION_MARKER}` carries a timestamp; \
@@ -90,10 +86,7 @@ pub struct TimestampedAnnotation {
 
 /// Payload for [`ParseLyricsError::EmptyAnnotation`]. Raised when an
 /// annotation line has no text after its `:` separator, or omits the
-/// separator altogether. The `clr` and `eov` control markers are
-/// allowed to stand alone because their meaning is the marker
-/// itself; an annotation exists only to carry prose, so a bodiless
-/// one is always a mistake.
+/// separator altogether.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: annotation marker `{ANNOTATION_MARKER}` has an empty body")]
 pub struct EmptyAnnotation {
@@ -135,8 +128,7 @@ pub struct OrphanedShorthandMarker {
 }
 
 /// Payload for [`ParseLyricsError::OrphanedAnnotation`]. Raised when
-/// an annotation line appears before any cue is open, leaving it
-/// with no cue part to attach to.
+/// an annotation line appears before any cue is open.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "line {line_number}: annotation line {content:?} appears before any timestamp opens a cue"

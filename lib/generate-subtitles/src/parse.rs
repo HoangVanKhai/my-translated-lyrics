@@ -7,18 +7,12 @@
 //! Any other event opens a new cue; continuation lines that lack a
 //! leading timestamp are appended to the most recently opened cue.
 //!
-//! A line indented to the shorthand column whose marker is
-//! [`ANNOTATION_MARKER`] is an annotation. It carries no timestamp
-//! and opens no event; instead it attaches commentary, context, or a
-//! translation note to the cue part written above it. A part may
-//! carry any number of annotations, one per `ann` line. Neither
-//! renderer reads them, so an annotation never reaches the generated
-//! subtitles.
-//!
-//! A continuation line always extends the most recently opened
-//! marker line, whether that line opened a cue part or an
-//! annotation. A part's own continuation lines therefore belong
-//! before the annotations attached to it.
+//! A line at the shorthand column whose marker is
+//! [`ANNOTATION_MARKER`] attaches commentary to the cue part above
+//! it. It carries no timestamp, opens no event, and reaches neither
+//! renderer. A part may carry any number of annotations, and a
+//! continuation line after one extends that annotation rather than
+//! the part.
 //!
 //! [`ANNOTATION_MARKER`]: lyrics_core::line_markers_descriptor::ANNOTATION_MARKER
 //! [`CLEAR_MARKER`]: lyrics_core::line_markers_descriptor::CLEAR_MARKER
@@ -72,22 +66,15 @@ pub struct CuePart {
     /// and any continuation lines.
     pub text: String,
     /// Commentary attached to this part by [`ANNOTATION_MARKER`]
-    /// lines beneath it, in the order it was written. Each entry is
-    /// one annotation, with line breaks preserved between its
-    /// opening line and any continuation lines. The renderers do not
-    /// read this field; it exists for readers of the source file and
-    /// for any future consumer that presents the notes alongside the
-    /// lyrics.
+    /// lines beneath it, in source order, with line breaks preserved
+    /// within each entry. Neither renderer reads this field.
     ///
     /// [`ANNOTATION_MARKER`]: lyrics_core::line_markers_descriptor::ANNOTATION_MARKER
     pub annotations: Vec<String>,
 }
 
-/// Which of the two text bodies a continuation line extends. The
-/// parser tracks this alongside the expected continuation indent
-/// because a cue part and an annotation attached to it both accept
-/// continuation lines, and the most recently opened marker line
-/// decides which of the two a given continuation belongs to.
+/// Which text body a continuation line extends: the cue part itself,
+/// or an annotation attached to it.
 #[derive(Clone, Copy)]
 enum ContinuationTarget {
     /// The text of the most recently opened cue part.
@@ -97,8 +84,8 @@ enum ContinuationTarget {
     AnnotationText,
 }
 
-/// The marker line a continuation would currently extend, together
-/// with the indent such a continuation must carry.
+/// The marker line a continuation would extend, and the indent such
+/// a continuation must carry.
 #[derive(Clone, Copy)]
 struct OpenMarkerLine {
     /// Byte width of the line's `marker: ` prefix. A continuation of
@@ -328,14 +315,9 @@ fn handle_shorthand_marker_line(
     Ok(())
 }
 
-/// Attaches an annotation to the most recently opened cue part. The
-/// caller has already established that `body` names the annotation
-/// marker, so what remains is to check that a part exists to carry
-/// the note and that the note has a body.
-///
-/// The annotation binds to the last part of the open cue group
-/// rather than to the group as a whole, which is what lets a
-/// multi-part cue annotate each of its parts separately.
+/// Attaches an annotation to the last part of the open cue group.
+/// The caller has established that `body` names the annotation
+/// marker.
 fn handle_annotation_line(
     body: &str,
     line_number: usize,

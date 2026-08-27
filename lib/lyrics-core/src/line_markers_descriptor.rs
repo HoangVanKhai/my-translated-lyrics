@@ -19,18 +19,10 @@ pub const CLEAR_MARKER: &str = "clr";
 /// `eov` line with an open cue is not treated as a cue boundary.
 pub const END_OF_VIDEO_MARKER: &str = "eov";
 
-/// Built-in marker name for an annotation. An annotation carries
-/// commentary, context, or a translation note about the cue part it
-/// is attached to, for the benefit of a reader of the source file.
-/// It never reaches the generated subtitles.
-///
-/// The name is reserved in the same way as [`CLEAR_MARKER`] and
-/// [`END_OF_VIDEO_MARKER`], and for the same reason: its meaning is
-/// fixed by the parser rather than assigned per song. It differs
-/// from those two in shape. They must stand alone on their line,
-/// whereas an annotation always carries a body, and they open a
-/// timestamped event of their own, whereas an annotation is written
-/// without a timestamp beneath the line it annotates.
+/// Built-in marker name for an annotation. Lines that start with
+/// this marker carry commentary about the cue part above them. They
+/// take no timestamp of their own and are ignored by both
+/// renderers.
 pub const ANNOTATION_MARKER: &str = "ann";
 
 /// Parsed contents of a `line-markers.toml` file.
