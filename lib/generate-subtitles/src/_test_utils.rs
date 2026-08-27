@@ -6,6 +6,7 @@
 //! own copy, so a change to a shared type is made in one place instead
 //! of two that can silently drift apart.
 
+use crate::parse::CuePart;
 use crate::styles::{Color, CreditPalette, Style, StylePalette};
 use lyrics_core::credits_descriptor::CreditsDesc;
 use lyrics_core::line_markers_descriptor::LineMarkersDesc;
@@ -13,6 +14,18 @@ use lyrics_core::video_descriptor::Language;
 use maplit::btreemap;
 use pipe_trait::Pipe;
 use std::collections::BTreeMap;
+
+/// A cue part carrying no annotations. Annotations are invisible to
+/// both renderers, so every fixture except the ones that assert that
+/// invisibility is built through this constructor rather than naming
+/// the field.
+pub(crate) fn cue_part(marker: &str, text: &str) -> CuePart {
+    CuePart {
+        marker: marker.to_string(),
+        text: text.to_string(),
+        annotations: Vec::new(),
+    }
+}
 
 /// A credits descriptor declaring a single Vietnamese role, `role-a`.
 pub(crate) fn credits_with_one_role() -> CreditsDesc {

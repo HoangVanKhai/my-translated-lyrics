@@ -1,8 +1,9 @@
 use super::error::{
-    CueTextReservedCharacter, EmptyCueBody, ExtraTextAfterControlMarker, InvalidTimestamp,
-    MalformedHeader, MalformedIndentation, MissingMarker, MissingSeparatorAfterTimestamp,
-    OrphanedShorthandMarker, OutOfOrder, ParseLyricsError, RepeatedTimestamp,
-    ReservedControlMarker, TabIndentation, UnclosedCue,
+    CueTextReservedCharacter, EmptyAnnotation, EmptyCueBody, ExtraTextAfterControlMarker,
+    InvalidTimestamp, MalformedHeader, MalformedIndentation, MissingMarker,
+    MissingSeparatorAfterTimestamp, OrphanedAnnotation, OrphanedShorthandMarker, OutOfOrder,
+    ParseLyricsError, RepeatedTimestamp, ReservedControlMarker, TabIndentation,
+    TimestampedAnnotation, UnclosedCue,
 };
 use super::parse_lyrics;
 use lyrics_core::timestamp::{SecondsOutOfRange, TakeTimestampError, Timestamp};
@@ -531,5 +532,213 @@ fn whitespace_only_cue_body_falls_through_to_missing_marker() {
             line_number: 1,
             content: String::new(),
         }),
+    );
+}
+
+/// An `ann` line at the column-10 shorthand indent attaches its text
+/// to the cue part written above it. It opens no cue of its own, so
+/// the cue count and every timestamp are the same as they would be
+/// with the annotation deleted.
+#[test]
+fn annotation_attaches_to_the_part_above_it() {
+    let input = text_block_fnl! {
+        "00:00.000 ttl: title body"
+        "00:02.000 LRC: lyric body"
+        "          ann: a note about the lyric"
+        "00:06.000 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(cues.len(), 2);
+    assert_eq!(cues[0].parts[0].annotations, Vec::<String>::new());
+    assert_eq!(cues[1].start, Timestamp::new(0, 2, 0).unwrap());
+    assert_eq!(cues[1].end, Timestamp::new(0, 6, 0).unwrap());
+    assert_eq!(cues[1].parts.len(), 1);
+    assert_eq!(cues[1].parts[0].marker, "LRC");
+    assert_eq!(cues[1].parts[0].text, "lyric body");
+    assert_eq!(cues[1].parts[0].annotations, ["a note about the lyric"]);
+}
+
+/// One line can carry more than one note, so consecutive `ann` lines
+/// each append a separate annotation to the same part rather than
+/// the later ones replacing or extending the earlier ones.
+#[test]
+fn consecutive_annotations_stack_on_one_part() {
+    let input = text_block_fnl! {
+        "00:00.000 LRC: lyric body"
+        "          ann: first note"
+        "          ann: second note"
+        "00:04.000 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(cues[0].parts[0].annotations, ["first note", "second note"]);
+}
+
+/// An annotation accepts continuation lines under the same
+/// column-exact rule as a cue part, indented by
+/// `TIMESTAMP_PREFIX_WIDTH + len("ann: ")`, which is 15.
+#[test]
+fn annotation_accepts_continuation_lines() {
+    let input = text_block_fnl! {
+        "00:00.000 LRC: lyric body"
+        "          ann: first line of the note"
+        "               second line of the note"
+        "00:04.000 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(
+        cues[0].parts[0].annotations,
+        ["first line of the note\nsecond line of the note"],
+    );
+    assert_eq!(cues[0].parts[0].text, "lyric body");
+}
+
+/// A continuation line extends the most recently opened marker line,
+/// so once an annotation is open the continuation belongs to the
+/// note rather than to the part above it. `cre: ` and `ann: ` share
+/// a prefix width of 5, which makes this the case where the two
+/// destinations are indistinguishable by indent alone; the ordering
+/// rule is what separates them. A part's own continuation lines
+/// therefore have to be written before its annotations.
+#[test]
+fn continuation_after_an_annotation_extends_the_annotation() {
+    let input = text_block_fnl! {
+        "00:00.000 cre: first line"
+        "               second line"
+        "          ann: note opener"
+        "               note continuation"
+        "00:04.000 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(cues[0].parts[0].text, "first line\nsecond line");
+    assert_eq!(
+        cues[0].parts[0].annotations,
+        ["note opener\nnote continuation"],
+    );
+}
+
+/// A shorthand marker line after an annotation opens a fresh part
+/// and moves the continuation scope back to that part's text, so an
+/// annotation does not strand the rest of the cue group.
+#[test]
+fn shorthand_marker_after_an_annotation_opens_a_new_part() {
+    let input = text_block_fnl! {
+        "00:00.000 ttl: title body"
+        "          ann: a note about the title"
+        "          cre: credit body"
+        "               credit continuation"
+        "00:04.000 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(cues[0].parts.len(), 2);
+    assert_eq!(cues[0].parts[0].annotations, ["a note about the title"]);
+    assert_eq!(cues[0].parts[1].marker, "cre");
+    assert_eq!(cues[0].parts[1].text, "credit body\ncredit continuation");
+    assert_eq!(cues[0].parts[1].annotations, Vec::<String>::new());
+}
+
+/// `<` and `>` are rejected in cue text because the renderers hand
+/// that text to the WebVTT cue-tag grammar. Annotation text reaches
+/// no renderer, so the same characters are ordinary punctuation
+/// there and must survive both the opening line and a continuation.
+#[test]
+fn annotation_text_accepts_angle_brackets() {
+    let input = text_block_fnl! {
+        "00:00.000 LRC: lyric body"
+        "          ann: compare <source a>"
+        "               with <source b>"
+        "00:04.000 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(
+        cues[0].parts[0].annotations,
+        ["compare <source a>\nwith <source b>"],
+    );
+}
+
+/// An annotation takes the timing of the part it is attached to, so
+/// writing it at column zero with a timestamp is an authoring
+/// mistake rather than a cue named `ann`. Both the `ann: text` and
+/// the bodiless `ann` shapes report it.
+#[test]
+fn rejects_timestamped_annotation() {
+    let with_body = text_block_fnl! {
+        "00:00.000 LRC: lyric body"
+        "00:02.000 ann: a note"
+        "00:04.000 clr"
+    };
+    assert_eq!(
+        parse_lyrics(with_body).unwrap_err(),
+        ParseLyricsError::TimestampedAnnotation(TimestampedAnnotation { line_number: 2 }),
+    );
+
+    let without_body = text_block_fnl! {
+        "00:00.000 LRC: lyric body"
+        "00:02.000 ann"
+        "00:04.000 clr"
+    };
+    assert_eq!(
+        parse_lyrics(without_body).unwrap_err(),
+        ParseLyricsError::TimestampedAnnotation(TimestampedAnnotation { line_number: 2 }),
+    );
+}
+
+/// Unlike `clr` and `eov`, an annotation exists only to carry prose,
+/// so both the empty-after-separator and the separator-less shapes
+/// are rejected rather than being read as a marker-less line.
+#[test]
+fn rejects_annotation_without_a_body() {
+    let empty_body = text_block_fnl! {
+        "00:00.000 LRC: lyric body"
+        "          ann:"
+        "00:04.000 clr"
+    };
+    assert_eq!(
+        parse_lyrics(empty_body).unwrap_err(),
+        ParseLyricsError::EmptyAnnotation(EmptyAnnotation { line_number: 2 }),
+    );
+
+    let no_separator = text_block_fnl! {
+        "00:00.000 LRC: lyric body"
+        "          ann"
+        "00:04.000 clr"
+    };
+    assert_eq!(
+        parse_lyrics(no_separator).unwrap_err(),
+        ParseLyricsError::EmptyAnnotation(EmptyAnnotation { line_number: 2 }),
+    );
+}
+
+/// An annotation needs a part to attach to, so one that appears
+/// before any cue is open reports its own diagnostic rather than the
+/// shorthand-marker one.
+#[test]
+fn rejects_annotation_before_any_cue_is_open() {
+    let input = text_block_fnl! {
+        "          ann: orphan note"
+        "00:01.000 clr"
+    };
+    assert_eq!(
+        parse_lyrics(input).unwrap_err(),
+        ParseLyricsError::OrphanedAnnotation(OrphanedAnnotation {
+            line_number: 1,
+            content: "ann: orphan note".to_string(),
+        }),
+    );
+}
+
+/// The annotation marker is reserved wholesale, so a song cannot
+/// declare `ann` as one of its own markers by writing it with a
+/// timestamp. This is the same reservation `clr` and `eov` carry,
+/// reported through the annotation-specific diagnostic because the
+/// likely intent differs.
+#[test]
+fn annotation_marker_cannot_name_a_cue() {
+    let input = text_block_fnl! {
+        "00:00.000 ann: not a cue"
+        "00:02.000 clr"
+    };
+    assert_eq!(
+        parse_lyrics(input).unwrap_err(),
+        ParseLyricsError::TimestampedAnnotation(TimestampedAnnotation { line_number: 1 }),
     );
 }

@@ -27,6 +27,11 @@
 //!   space, or a verbatim ASCII space gutter.
 //! * Any other marker emits the cue text unwrapped.
 //!
+//! Annotations attached to a cue part are not rendered. They are
+//! written for readers of the source files rather than for viewers of
+//! the video, so they reach neither the cue text nor a WebVTT `NOTE`
+//! block.
+//!
 //! [`LineMarkersDesc`]: lyrics_core::line_markers_descriptor::LineMarkersDesc
 //! [`LineMarkersDesc::voices`]: lyrics_core::line_markers_descriptor::LineMarkersDesc::voices
 //! [`LineMarkersDesc::classes`]: lyrics_core::line_markers_descriptor::LineMarkersDesc::classes

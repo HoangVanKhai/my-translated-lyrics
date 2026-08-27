@@ -1,5 +1,7 @@
 use super::{RenderSrtError, render_srt};
-use crate::_test_utils::{credits_with_one_role, markers_with_credit_trigger, style_palette};
+use crate::_test_utils::{
+    credits_with_one_role, cue_part, markers_with_credit_trigger, style_palette,
+};
 use crate::parse::{CuePart, SubtitleCue};
 use crate::styles::{MissingStyle, StylePalette};
 use lyrics_core::credits_descriptor::CreditsDesc;
@@ -19,10 +21,7 @@ fn cue_text_html_meta_characters_are_escaped() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![CuePart {
-            marker: "plain".to_string(),
-            text: "<a> & <b>".to_string(),
-        }],
+        parts: vec![cue_part("plain", "<a> & <b>")],
     }];
     let output = render_srt(
         &cues,
@@ -51,10 +50,7 @@ fn role_only_header_and_role_less_lines_render() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![CuePart {
-            marker: "cre".to_string(),
-            text: "role-a\n[label-a] name-a".to_string(),
-        }],
+        parts: vec![cue_part("cre", "role-a\n[label-a] name-a")],
     }];
     let output = render_srt(
         &cues,
@@ -78,10 +74,7 @@ fn unknown_role_in_credit_line_produces_credits_error() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![CuePart {
-            marker: "cre".to_string(),
-            text: "unknown-role name-a".to_string(),
-        }],
+        parts: vec![cue_part("cre", "unknown-role name-a")],
     }];
     let err = render_srt(
         &cues,
@@ -113,10 +106,7 @@ fn class_declared_without_palette_entry_produces_style_error() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![CuePart {
-            marker: "ttl".to_string(),
-            text: "body".to_string(),
-        }],
+        parts: vec![cue_part("ttl", "body")],
     }];
     let err = render_srt(
         &cues,
@@ -148,10 +138,7 @@ fn voice_declared_without_palette_entry_produces_style_error() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![CuePart {
-            marker: "unk".to_string(),
-            text: "body".to_string(),
-        }],
+        parts: vec![cue_part("unk", "body")],
     }];
     let err = render_srt(
         &cues,
@@ -165,4 +152,36 @@ fn voice_declared_without_palette_entry_produces_style_error() {
         RenderSrtError::Style(MissingStyle::Voice(name)) => assert_eq!(name, "unk"),
         other => panic!("expected a missing-voice-style error, got {other:?}"),
     }
+}
+
+/// Annotations are written for readers of the source files and must
+/// not reach the video. SubRip has no comment syntax at all, so the
+/// only correct treatment is to drop them.
+#[test]
+fn annotations_are_not_rendered() {
+    let cues = vec![SubtitleCue {
+        start: Timestamp::new(0, 0, 0).unwrap(),
+        end: Timestamp::new(0, 5, 0).unwrap(),
+        parts: vec![CuePart {
+            marker: "plain".to_string(),
+            text: "visible body".to_string(),
+            annotations: vec!["hidden note".to_string(), "another note".to_string()],
+        }],
+    }];
+    let output = render_srt(
+        &cues,
+        &LineMarkersDesc::default(),
+        &CreditsDesc::default(),
+        &test_palette(),
+        &Language::Vietnamese,
+    )
+    .unwrap();
+    assert!(
+        output.contains("visible body"),
+        "expected the cue text in output:\n{output}",
+    );
+    assert!(
+        !output.contains("hidden note") && !output.contains("another note"),
+        "annotation text must not appear in the rendered output:\n{output}",
+    );
 }

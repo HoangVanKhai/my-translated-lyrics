@@ -12,6 +12,7 @@
 use super::TIMESTAMP_PREFIX_WIDTH;
 use core::fmt;
 use derive_more::Display;
+use lyrics_core::line_markers_descriptor::ANNOTATION_MARKER;
 use lyrics_core::timestamp::{TakeTimestampError, Timestamp};
 
 /// Payload for [`ParseLyricsError::InvalidTimestamp`]. Wraps the
@@ -71,6 +72,34 @@ pub struct ReservedControlMarker {
     pub marker: String,
 }
 
+/// Payload for [`ParseLyricsError::TimestampedAnnotation`]. Raised
+/// when an annotation line carries a timestamp of its own. An
+/// annotation borrows the timing of the cue part it is attached to
+/// and is written without a timestamp at column
+/// `TIMESTAMP_PREFIX_WIDTH`; a timestamped one would open a cue and
+/// so render the note into the subtitles, which is never what the
+/// author meant.
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display(
+    "line {line_number}: annotation marker `{ANNOTATION_MARKER}` carries a timestamp; \
+    write the annotation at column {TIMESTAMP_PREFIX_WIDTH}, beneath the line it annotates"
+)]
+pub struct TimestampedAnnotation {
+    pub line_number: usize,
+}
+
+/// Payload for [`ParseLyricsError::EmptyAnnotation`]. Raised when an
+/// annotation line has no text after its `:` separator, or omits the
+/// separator altogether. The `clr` and `eov` control markers are
+/// allowed to stand alone because their meaning is the marker
+/// itself; an annotation exists only to carry prose, so a bodiless
+/// one is always a mistake.
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display("line {line_number}: annotation marker `{ANNOTATION_MARKER}` has an empty body")]
+pub struct EmptyAnnotation {
+    pub line_number: usize,
+}
+
 /// Payload for [`ParseLyricsError::EmptyCueBody`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: cue with marker {marker:?} has an empty body")]
@@ -101,6 +130,18 @@ pub struct MalformedHeader {
     "line {line_number}: shorthand marker line {content:?} appears before any timestamp opens a cue"
 )]
 pub struct OrphanedShorthandMarker {
+    pub line_number: usize,
+    pub content: String,
+}
+
+/// Payload for [`ParseLyricsError::OrphanedAnnotation`]. Raised when
+/// an annotation line appears before any cue is open, leaving it
+/// with no cue part to attach to.
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display(
+    "line {line_number}: annotation line {content:?} appears before any timestamp opens a cue"
+)]
+pub struct OrphanedAnnotation {
     pub line_number: usize,
     pub content: String,
 }
@@ -207,7 +248,10 @@ pub enum ParseLyricsError {
     CueTextReservedCharacter(CueTextReservedCharacter),
     MissingMarker(MissingMarker),
     ReservedControlMarker(ReservedControlMarker),
+    TimestampedAnnotation(TimestampedAnnotation),
     EmptyCueBody(EmptyCueBody),
+    EmptyAnnotation(EmptyAnnotation),
     OrphanedShorthandMarker(OrphanedShorthandMarker),
+    OrphanedAnnotation(OrphanedAnnotation),
     UnclosedCue(UnclosedCue),
 }

@@ -7,18 +7,33 @@
 //! Any other event opens a new cue; continuation lines that lack a
 //! leading timestamp are appended to the most recently opened cue.
 //!
+//! A line indented to [`TIMESTAMP_PREFIX_WIDTH`] whose marker is
+//! [`ANNOTATION_MARKER`] is an annotation. It carries no timestamp
+//! and opens no event; instead it attaches commentary, context, or a
+//! translation note to the cue part written above it. A part may
+//! carry any number of annotations, one per `ann` line. Neither
+//! renderer reads them, so an annotation never reaches the generated
+//! subtitles.
+//!
+//! A continuation line always extends the most recently opened
+//! marker line, whether that line opened a cue part or an
+//! annotation. A part's own continuation lines therefore belong
+//! before the annotations attached to it.
+//!
+//! [`ANNOTATION_MARKER`]: lyrics_core::line_markers_descriptor::ANNOTATION_MARKER
 //! [`CLEAR_MARKER`]: lyrics_core::line_markers_descriptor::CLEAR_MARKER
 //! [`END_OF_VIDEO_MARKER`]: lyrics_core::line_markers_descriptor::END_OF_VIDEO_MARKER
 
 pub mod error;
 
 use error::{
-    CueTextReservedCharacter, EmptyCueBody, ExtraTextAfterControlMarker, InvalidTimestamp,
-    MalformedHeader, MalformedIndentation, MissingMarker, MissingSeparatorAfterTimestamp,
-    OrphanedShorthandMarker, OutOfOrder, ParseLyricsError, RepeatedTimestamp,
-    ReservedControlMarker, TabIndentation, UnclosedCue,
+    CueTextReservedCharacter, EmptyAnnotation, EmptyCueBody, ExtraTextAfterControlMarker,
+    InvalidTimestamp, MalformedHeader, MalformedIndentation, MissingMarker,
+    MissingSeparatorAfterTimestamp, OrphanedAnnotation, OrphanedShorthandMarker, OutOfOrder,
+    ParseLyricsError, RepeatedTimestamp, ReservedControlMarker, TabIndentation,
+    TimestampedAnnotation, UnclosedCue,
 };
-use lyrics_core::line_markers_descriptor::{CLEAR_MARKER, END_OF_VIDEO_MARKER};
+use lyrics_core::line_markers_descriptor::{ANNOTATION_MARKER, CLEAR_MARKER, END_OF_VIDEO_MARKER};
 use lyrics_core::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
 
 /// Indent width of a line that opens a new marker at the same start
@@ -56,6 +71,41 @@ pub struct CuePart {
     /// Cue text, with line breaks preserved between the opening line
     /// and any continuation lines.
     pub text: String,
+    /// Commentary attached to this part by [`ANNOTATION_MARKER`]
+    /// lines beneath it, in the order it was written. Each entry is
+    /// one annotation, with line breaks preserved between its
+    /// opening line and any continuation lines. The renderers do not
+    /// read this field; it exists for readers of the source file and
+    /// for any future consumer that presents the notes alongside the
+    /// lyrics.
+    ///
+    /// [`ANNOTATION_MARKER`]: lyrics_core::line_markers_descriptor::ANNOTATION_MARKER
+    pub annotations: Vec<String>,
+}
+
+/// Which of the two text bodies a continuation line extends. The
+/// parser tracks this alongside the expected continuation indent
+/// because a cue part and an annotation attached to it both accept
+/// continuation lines, and the most recently opened marker line
+/// decides which of the two a given continuation belongs to.
+#[derive(Clone, Copy)]
+enum ContinuationTarget {
+    /// The text of the most recently opened cue part.
+    PartText,
+    /// The most recent annotation of the most recently opened cue
+    /// part.
+    AnnotationText,
+}
+
+/// The marker line a continuation would currently extend, together
+/// with the indent such a continuation must carry.
+#[derive(Clone, Copy)]
+struct OpenMarkerLine {
+    /// Byte width of the line's `marker: ` prefix. A continuation of
+    /// it is indented by [`TIMESTAMP_PREFIX_WIDTH`] plus this width.
+    marker_prefix_width: usize,
+    /// Where that continuation's text is appended.
+    target: ContinuationTarget,
 }
 
 /// Payload of an [`Event::Cue`]. The start time is the one declared
@@ -97,11 +147,11 @@ pub fn parse_lyrics(content: &str) -> Result<Vec<SubtitleCue>, ParseLyricsError>
 fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
     let mut events = Vec::<Event>::new();
     let mut last_cue_index: Option<usize> = None;
-    // Byte length of `marker: ` for the most recently added part of
-    // the most recently opened cue group. A continuation line is
-    // valid only when its indent equals
-    // `TIMESTAMP_PREFIX_WIDTH + last_part_marker_prefix_width`.
-    let mut last_part_marker_prefix_width: Option<usize> = None;
+    // The most recently opened marker line, which is the one a
+    // continuation line would extend. A continuation is valid only
+    // when its indent equals `TIMESTAMP_PREFIX_WIDTH` plus that
+    // line's `marker: ` prefix width.
+    let mut open_marker_line: Option<OpenMarkerLine> = None;
 
     for (line_index, raw_line) in content.lines().enumerate() {
         let line_number = line_index + 1;
@@ -124,7 +174,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                 line_number,
                 &mut events,
                 &mut last_cue_index,
-                &mut last_part_marker_prefix_width,
+                &mut open_marker_line,
             )?;
         } else if indent == TIMESTAMP_PREFIX_WIDTH {
             handle_shorthand_marker_line(
@@ -132,20 +182,20 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                 line_number,
                 &mut events,
                 last_cue_index,
-                &mut last_part_marker_prefix_width,
+                &mut open_marker_line,
             )?;
-        } else if last_part_marker_prefix_width
-            .is_some_and(|width| indent == TIMESTAMP_PREFIX_WIDTH + width)
+        } else if let Some(open) = open_marker_line
+            && indent == TIMESTAMP_PREFIX_WIDTH + open.marker_prefix_width
         {
-            handle_continuation_line(body, line_number, &mut events, last_cue_index)?;
+            handle_continuation_line(body, line_number, &mut events, last_cue_index, open.target)?;
         } else {
             return Err(ParseLyricsError::MalformedIndentation(
                 MalformedIndentation {
                     line_number,
                     actual: indent,
                     shorthand_indent: TIMESTAMP_PREFIX_WIDTH,
-                    continuation_indent: last_part_marker_prefix_width
-                        .map(|width| TIMESTAMP_PREFIX_WIDTH + width),
+                    continuation_indent: open_marker_line
+                        .map(|open| TIMESTAMP_PREFIX_WIDTH + open.marker_prefix_width),
                 },
             ));
         }
@@ -159,7 +209,7 @@ fn handle_header_line(
     line_number: usize,
     events: &mut Vec<Event>,
     last_cue_index: &mut Option<usize>,
-    last_part_marker_prefix_width: &mut Option<usize>,
+    open_marker_line: &mut Option<OpenMarkerLine>,
 ) -> Result<(), ParseLyricsError> {
     let (start, after_prefix) = match Timestamp::take(body) {
         Ok(parsed) => parsed,
@@ -203,7 +253,7 @@ fn handle_header_line(
             check_event_order(start, line_number, events)?;
             events.push(Event::Clear(start));
             *last_cue_index = None;
-            *last_part_marker_prefix_width = None;
+            *open_marker_line = None;
         }
         // `eov` is documented as "ignored entirely"; it pushes no
         // event and so does not participate in the repeated- or
@@ -214,6 +264,17 @@ fn handle_header_line(
         return Ok(());
     }
 
+    // An annotation takes the timing of the cue part it is attached
+    // to, so it is written without a timestamp. Catching the
+    // timestamped shape here keeps it from parsing as an ordinary cue
+    // that happens to be named `ann`, which would render the note
+    // into the subtitles.
+    if names_annotation_marker(cue_body) {
+        return Err(ParseLyricsError::TimestampedAnnotation(
+            TimestampedAnnotation { line_number },
+        ));
+    }
+
     check_event_order(start, line_number, events)?;
     let (marker, text) = parse_marker_part(cue_body, line_number)?;
     events.push(Event::Cue(CueGroup {
@@ -221,10 +282,14 @@ fn handle_header_line(
         parts: vec![CuePart {
             marker: marker.to_string(),
             text: text.to_string(),
+            annotations: Vec::new(),
         }],
     }));
     *last_cue_index = Some(events.len() - 1);
-    *last_part_marker_prefix_width = Some(marker_prefix_width(marker));
+    *open_marker_line = Some(OpenMarkerLine {
+        marker_prefix_width: marker_prefix_width(marker),
+        target: ContinuationTarget::PartText,
+    });
     Ok(())
 }
 
@@ -233,8 +298,12 @@ fn handle_shorthand_marker_line(
     line_number: usize,
     events: &mut [Event],
     last_cue_index: Option<usize>,
-    last_part_marker_prefix_width: &mut Option<usize>,
+    open_marker_line: &mut Option<OpenMarkerLine>,
 ) -> Result<(), ParseLyricsError> {
+    if names_annotation_marker(body) {
+        return handle_annotation_line(body, line_number, events, last_cue_index, open_marker_line);
+    }
+
     let Some(cue_index) = last_cue_index else {
         return Err(ParseLyricsError::OrphanedShorthandMarker(
             OrphanedShorthandMarker {
@@ -250,8 +319,58 @@ fn handle_shorthand_marker_line(
     group.parts.push(CuePart {
         marker: marker.to_string(),
         text: text.to_string(),
+        annotations: Vec::new(),
     });
-    *last_part_marker_prefix_width = Some(marker_prefix_width(marker));
+    *open_marker_line = Some(OpenMarkerLine {
+        marker_prefix_width: marker_prefix_width(marker),
+        target: ContinuationTarget::PartText,
+    });
+    Ok(())
+}
+
+/// Attaches an annotation to the most recently opened cue part. The
+/// caller has already established that `body` names the annotation
+/// marker, so what remains is to check that a part exists to carry
+/// the note and that the note has a body.
+///
+/// The annotation binds to the last part of the open cue group
+/// rather than to the group as a whole, which is what lets a
+/// multi-part cue annotate each of its parts separately.
+fn handle_annotation_line(
+    body: &str,
+    line_number: usize,
+    events: &mut [Event],
+    last_cue_index: Option<usize>,
+    open_marker_line: &mut Option<OpenMarkerLine>,
+) -> Result<(), ParseLyricsError> {
+    let Some(cue_index) = last_cue_index else {
+        return Err(ParseLyricsError::OrphanedAnnotation(OrphanedAnnotation {
+            line_number,
+            content: body.to_string(),
+        }));
+    };
+    // `names_annotation_marker` accepts the separator-less `ann`
+    // shape so that it lands here rather than in the generic
+    // no-marker diagnostic; both bodiless shapes are the same
+    // authoring mistake and share one message.
+    let text = split_marker(body).map_or("", |(_, text)| text);
+    if text.is_empty() {
+        return Err(ParseLyricsError::EmptyAnnotation(EmptyAnnotation {
+            line_number,
+        }));
+    }
+    let Event::Cue(group) = &mut events[cue_index] else {
+        unreachable!("last_cue_index must point at a Cue event");
+    };
+    let part = group
+        .parts
+        .last_mut()
+        .expect("a cue group always has at least one part once it is opened");
+    part.annotations.push(text.to_string());
+    *open_marker_line = Some(OpenMarkerLine {
+        marker_prefix_width: marker_prefix_width(ANNOTATION_MARKER),
+        target: ContinuationTarget::AnnotationText,
+    });
     Ok(())
 }
 
@@ -260,10 +379,16 @@ fn handle_continuation_line(
     line_number: usize,
     events: &mut [Event],
     last_cue_index: Option<usize>,
+    target: ContinuationTarget,
 ) -> Result<(), ParseLyricsError> {
     let cue_index =
         last_cue_index.expect("indent matched continuation width, so a prior cue must exist");
-    reject_reserved_cue_text_characters(body, line_number)?;
+    // Only cue text is checked for the reserved tag delimiters.
+    // Annotation text is never handed to a renderer, so `<` and `>`
+    // carry no meaning there and are ordinary punctuation.
+    if matches!(target, ContinuationTarget::PartText) {
+        reject_reserved_cue_text_characters(body, line_number)?;
+    }
     let Event::Cue(group) = &mut events[cue_index] else {
         unreachable!("last_cue_index must point at a Cue event");
     };
@@ -271,8 +396,15 @@ fn handle_continuation_line(
         .parts
         .last_mut()
         .expect("a cue group always has at least one part once it is opened");
-    part.text.push('\n');
-    part.text.push_str(body);
+    let destination = match target {
+        ContinuationTarget::PartText => &mut part.text,
+        ContinuationTarget::AnnotationText => part
+            .annotations
+            .last_mut()
+            .expect("an annotation is open, so the part carries at least one"),
+    };
+    destination.push('\n');
+    destination.push_str(body);
     Ok(())
 }
 
@@ -358,6 +490,17 @@ fn resolve_cues(events: Vec<Event>) -> Result<Vec<SubtitleCue>, ParseLyricsError
     }
 
     Ok(cues)
+}
+
+/// Whether a line body names the annotation marker, with or without
+/// a `:` separator and a body after it. Both shapes are reported as
+/// annotations so that a bodiless `ann` line yields the annotation
+/// diagnostic rather than the generic "carries no marker" one.
+fn names_annotation_marker(body: &str) -> bool {
+    match split_marker(body) {
+        Some((marker, _)) => marker == ANNOTATION_MARKER,
+        None => body.trim_end() == ANNOTATION_MARKER,
+    }
 }
 
 /// Splits a line body like `marker: text` into its two halves. Returns
