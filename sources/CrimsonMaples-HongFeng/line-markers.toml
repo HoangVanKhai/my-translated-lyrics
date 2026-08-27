@@ -2,10 +2,17 @@ markers = [
   "cre",
   "ttl",
   "spk",
-  "LRC",
+  "LTY",
+  "YZL",
+  "Y+L",
 ]
 
 credits = ["cre"]
+
+[voices]
+LTY = { vi = "Lạc Thiên Y", zh = "洛天依" }
+YZL = { vi = "Nhạc Chính Lăng", zh = "乐正绫" }
+"Y+L" = { vi = "Lạc Thiên Y & Nhạc Chính Lăng", zh = "洛天依 & 乐正绫" }
 
 [classes]
 ttl = "title"
