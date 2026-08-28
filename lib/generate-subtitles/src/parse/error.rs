@@ -46,11 +46,11 @@ pub struct MissingSeparatorAfterTimestamp {
 /// Payload for [`ParseLyricsError::ExtraTextAfterControlMarker`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "line {line_number}: control marker {marker:?} must stand alone but is followed by {trailing:?}"
+    "line {line_number}: control marker `{marker}` must stand alone but is followed by {trailing:?}"
 )]
 pub struct ExtraTextAfterControlMarker {
     pub line_number: usize,
-    pub marker: String,
+    pub marker: ReservedMarker,
     pub trailing: String,
 }
 
@@ -64,10 +64,10 @@ pub struct OutOfOrder {
 
 /// Payload for [`ParseLyricsError::ReservedControlMarker`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("line {line_number}: marker {marker:?} is reserved by the parser and cannot name a cue")]
+#[display("line {line_number}: marker `{marker}` is reserved by the parser and cannot name a cue")]
 pub struct ReservedControlMarker {
     pub line_number: usize,
-    pub marker: String,
+    pub marker: ReservedMarker,
 }
 
 /// Payload for [`ParseLyricsError::EmptyAnnotation`]. Raised when an

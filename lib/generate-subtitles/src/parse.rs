@@ -225,7 +225,7 @@ fn handle_header_line(
             return Err(ParseLyricsError::ExtraTextAfterControlMarker(
                 ExtraTextAfterControlMarker {
                     line_number,
-                    marker: first_token.to_string(),
+                    marker: control_marker,
                     trailing: trailing.to_string(),
                 },
             ));
@@ -385,11 +385,11 @@ fn parse_marker_part(body: &str, line_number: usize) -> Result<(&str, &str), Par
             content: body.to_string(),
         })
     })?;
-    if marker.parse::<ReservedMarker>().is_ok() {
+    if let Ok(reserved) = marker.parse::<ReservedMarker>() {
         return Err(ParseLyricsError::ReservedControlMarker(
             ReservedControlMarker {
                 line_number,
-                marker: marker.to_string(),
+                marker: reserved,
             },
         ));
     }
