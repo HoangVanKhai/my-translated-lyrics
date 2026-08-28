@@ -27,14 +27,15 @@ pub(crate) fn credits_with_one_role() -> CreditsDesc {
 /// rendering.
 pub(crate) fn markers_with_credit_trigger() -> LineMarkersDesc {
     LineMarkersDesc {
-        credits: vec![marker_name("cre".to_owned())],
+        credits: vec![marker_name("cre")],
         ..Default::default()
     }
 }
 
 /// Wraps a marker token that the fixtures know to be declarable.
-pub(crate) fn marker_name(value: String) -> MarkerName {
+pub(crate) fn marker_name(value: impl Into<String>) -> MarkerName {
     value
+        .into()
         .pipe(MarkerName::new)
         .expect("test fixture passes the marker-name validator")
 }

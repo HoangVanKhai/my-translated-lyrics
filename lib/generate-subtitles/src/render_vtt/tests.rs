@@ -96,9 +96,9 @@ fn voice_name_containing_ampersand_is_emitted_verbatim_in_cue_tag() {
         .pipe(VoiceName::new)
         .expect("test fixture passes the voice-name validator");
     let markers = LineMarkersDesc {
-        markers: vec![marker_name("vca".to_owned())],
+        markers: vec![marker_name("vca")],
         voices: btreemap! {
-            marker_name("vca".to_owned()) => btreemap! { Language::Vietnamese => voice_name },
+            marker_name("vca") => btreemap! { Language::Vietnamese => voice_name },
         },
         ..Default::default()
     };
@@ -167,8 +167,8 @@ fn class_declared_without_palette_entry_produces_style_error() {
         .pipe(CssClassName::new)
         .expect("test fixture passes the class-name validator");
     let markers = LineMarkersDesc {
-        markers: vec![marker_name("ttl".to_owned())],
-        classes: btreemap! { marker_name("ttl".to_owned()) => class_name },
+        markers: vec![marker_name("ttl")],
+        classes: btreemap! { marker_name("ttl") => class_name },
         ..Default::default()
     };
     let cues = vec![SubtitleCue {
@@ -201,9 +201,9 @@ fn voice_declared_without_palette_entry_produces_style_error() {
         .pipe(VoiceName::new)
         .expect("test fixture passes the voice-name validator");
     let markers = LineMarkersDesc {
-        markers: vec![marker_name("unk".to_owned())],
+        markers: vec![marker_name("unk")],
         voices: btreemap! {
-            marker_name("unk".to_owned()) => btreemap! { Language::Vietnamese => voice_name },
+            marker_name("unk") => btreemap! { Language::Vietnamese => voice_name },
         },
         ..Default::default()
     };
