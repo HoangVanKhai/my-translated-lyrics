@@ -64,29 +64,14 @@ pub struct OutOfOrder {
 
 /// Payload for [`ParseLyricsError::ReservedControlMarker`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display(
-    "line {line_number}: marker {marker:?} is reserved for the `clr`/`eov` control tokens and cannot name a cue"
-)]
+#[display("line {line_number}: marker {marker:?} is reserved by the parser and cannot name a cue")]
 pub struct ReservedControlMarker {
     pub line_number: usize,
     pub marker: String,
 }
 
-/// Payload for [`ParseLyricsError::TimestampedAnnotation`]. Raised
-/// when an annotation line carries a timestamp instead of sitting at
-/// column `TIMESTAMP_PREFIX_WIDTH`.
-#[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display(
-    "line {line_number}: annotation marker `{ANNOTATION_MARKER}` carries a timestamp; \
-    write the annotation at column {TIMESTAMP_PREFIX_WIDTH}, beneath the line it annotates"
-)]
-pub struct TimestampedAnnotation {
-    pub line_number: usize,
-}
-
 /// Payload for [`ParseLyricsError::EmptyAnnotation`]. Raised when an
-/// annotation line has no text after its `:` separator, or omits the
-/// separator altogether.
+/// annotation line carries no text after its `:` separator.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: annotation marker `{ANNOTATION_MARKER}` has an empty body")]
 pub struct EmptyAnnotation {
@@ -128,11 +113,10 @@ pub struct OrphanedShorthandMarker {
 }
 
 /// Payload for [`ParseLyricsError::OrphanedAnnotation`]. Raised when
-/// an annotation line appears before any cue is open.
+/// an annotation line appears where no cue is open, whether before
+/// the first cue or after a `clr` has closed one.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display(
-    "line {line_number}: annotation line {content:?} appears before any timestamp opens a cue"
-)]
+#[display("line {line_number}: annotation line {content:?} appears where no cue is open")]
 pub struct OrphanedAnnotation {
     pub line_number: usize,
     pub content: String,
@@ -240,7 +224,6 @@ pub enum ParseLyricsError {
     CueTextReservedCharacter(CueTextReservedCharacter),
     MissingMarker(MissingMarker),
     ReservedControlMarker(ReservedControlMarker),
-    TimestampedAnnotation(TimestampedAnnotation),
     EmptyCueBody(EmptyCueBody),
     EmptyAnnotation(EmptyAnnotation),
     OrphanedShorthandMarker(OrphanedShorthandMarker),
