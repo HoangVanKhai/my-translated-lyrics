@@ -12,6 +12,7 @@
 use super::TIMESTAMP_PREFIX_WIDTH;
 use core::fmt;
 use derive_more::Display;
+use lyrics_core::line_markers_descriptor::ANNOTATION_MARKER;
 use lyrics_core::timestamp::{TakeTimestampError, Timestamp};
 
 /// Payload for [`ParseLyricsError::InvalidTimestamp`]. Wraps the
@@ -63,12 +64,18 @@ pub struct OutOfOrder {
 
 /// Payload for [`ParseLyricsError::ReservedControlMarker`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display(
-    "line {line_number}: marker {marker:?} is reserved for the `clr`/`eov` control tokens and cannot name a cue"
-)]
+#[display("line {line_number}: marker {marker:?} is reserved by the parser and cannot name a cue")]
 pub struct ReservedControlMarker {
     pub line_number: usize,
     pub marker: String,
+}
+
+/// Payload for [`ParseLyricsError::EmptyAnnotation`]. Raised when an
+/// annotation line carries no text after its `:` separator.
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display("line {line_number}: annotation marker `{ANNOTATION_MARKER}` has an empty body")]
+pub struct EmptyAnnotation {
+    pub line_number: usize,
 }
 
 /// Payload for [`ParseLyricsError::EmptyCueBody`].
@@ -101,6 +108,16 @@ pub struct MalformedHeader {
     "line {line_number}: shorthand marker line {content:?} appears before any timestamp opens a cue"
 )]
 pub struct OrphanedShorthandMarker {
+    pub line_number: usize,
+    pub content: String,
+}
+
+/// Payload for [`ParseLyricsError::OrphanedAnnotation`]. Raised when
+/// an annotation line appears where no cue is open, whether before
+/// the first cue or after a `clr` has closed one.
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display("line {line_number}: annotation line {content:?} appears where no cue is open")]
+pub struct OrphanedAnnotation {
     pub line_number: usize,
     pub content: String,
 }
@@ -208,6 +225,8 @@ pub enum ParseLyricsError {
     MissingMarker(MissingMarker),
     ReservedControlMarker(ReservedControlMarker),
     EmptyCueBody(EmptyCueBody),
+    EmptyAnnotation(EmptyAnnotation),
     OrphanedShorthandMarker(OrphanedShorthandMarker),
+    OrphanedAnnotation(OrphanedAnnotation),
     UnclosedCue(UnclosedCue),
 }
