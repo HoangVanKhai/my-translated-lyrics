@@ -33,9 +33,8 @@ pub(crate) fn markers_with_credit_trigger() -> LineMarkersDesc {
 }
 
 /// Wraps a marker token that the fixtures know to be declarable.
-pub(crate) fn marker_name(value: impl Into<String>) -> MarkerName {
-    value
-        .into()
+pub(crate) fn marker_name(name: impl Into<String>) -> MarkerName {
+    name.into()
         .pipe(MarkerName::new)
         .expect("test fixture passes the marker-name validator")
 }
