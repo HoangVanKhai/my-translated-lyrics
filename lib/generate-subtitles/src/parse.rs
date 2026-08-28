@@ -25,7 +25,9 @@ use error::{
     MissingSeparatorAfterTimestamp, OrphanedAnnotation, OrphanedShorthandMarker, OutOfOrder,
     ParseLyricsError, RepeatedTimestamp, ReservedControlMarker, TabIndentation, UnclosedCue,
 };
-use lyrics_core::line_markers_descriptor::{ANNOTATION_MARKER, CLEAR_MARKER, END_OF_VIDEO_MARKER};
+use lyrics_core::line_markers_descriptor::{
+    ANNOTATION_MARKER, CLEAR_MARKER, END_OF_VIDEO_MARKER, ReservedMarker,
+};
 use lyrics_core::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
 
 /// Indent width of a line that opens a new marker at the same start
@@ -384,7 +386,7 @@ fn parse_marker_part(body: &str, line_number: usize) -> Result<(&str, &str), Par
             content: body.to_string(),
         })
     })?;
-    if marker == CLEAR_MARKER || marker == END_OF_VIDEO_MARKER || marker == ANNOTATION_MARKER {
+    if ReservedMarker::from_token(marker).is_some() {
         return Err(ParseLyricsError::ReservedControlMarker(
             ReservedControlMarker {
                 line_number,

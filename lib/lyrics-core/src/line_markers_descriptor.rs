@@ -1,29 +1,79 @@
 use crate::video_descriptor::Language;
 use derive_more::Display;
 use serde::{Deserialize, Serialize};
+use std::borrow::Borrow;
 use std::collections::BTreeMap;
+use strum::VariantArray;
 
 pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 
-/// Built-in marker name for cue clearing. Lines that start with this
-/// marker cause the previously opened cue to end at the `clr`
-/// timestamp and produce no visible text of their own.
-pub const CLEAR_MARKER: &str = "clr";
+/// A marker whose meaning the parser fixes.
+///
+/// A reserved marker names no rendering role, so a song must not
+/// declare it in its `line-markers.toml`; [`MarkerName`] rejects
+/// every one of them at the deserialization boundary.
+///
+/// The variants are the single definition of the built-in marker
+/// set. The `*_MARKER` constants below are derived from them, and
+/// the [`VariantArray`] derive supplies the whole list to
+/// [`ReservedMarker::from_token`], so a new built-in marker is one
+/// variant away from being honored by every check. There is no
+/// second list to remember.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, VariantArray)]
+pub enum ReservedMarker {
+    /// Cue clearing. Lines that start with this marker cause the
+    /// previously opened cue to end at the marker's timestamp and
+    /// produce no visible text of their own.
+    Clear,
+    /// The end-of-video sentinel. Lines that start with this marker
+    /// are ignored entirely by the parser: they open no cue and
+    /// close no cue. The marker exists as a convention so that
+    /// source files can record, for human readers, the point at
+    /// which no further subtitle activity occurs. Every cue must
+    /// still be closed by a following cue or by a [`Clear`] marker;
+    /// reaching an end-of-video line with an open cue is not treated
+    /// as a cue boundary.
+    ///
+    /// [`Clear`]: ReservedMarker::Clear
+    EndOfVideo,
+    /// An annotation. Lines that start with this marker carry
+    /// commentary about the cue part above them. They take no
+    /// timestamp of their own and are ignored by both renderers.
+    Annotation,
+}
 
-/// Built-in marker name for the end-of-video sentinel. Lines that
-/// start with this marker are ignored entirely by the parser: they
-/// open no cue and close no cue. The marker exists as a convention
-/// so that source files can record, for human readers, the point at
-/// which no further subtitle activity occurs. Every cue must still
-/// be closed by a following cue or by a `clr` marker; reaching an
-/// `eov` line with an open cue is not treated as a cue boundary.
-pub const END_OF_VIDEO_MARKER: &str = "eov";
+impl ReservedMarker {
+    /// The token that names this marker at the start of a line in a
+    /// `lyrics.{lang}.txt` file.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            ReservedMarker::Clear => "clr",
+            ReservedMarker::EndOfVideo => "eov",
+            ReservedMarker::Annotation => "ann",
+        }
+    }
 
-/// Built-in marker name for an annotation. Lines that start with
-/// this marker carry commentary about the cue part above them. They
-/// take no timestamp of their own and are ignored by both
-/// renderers.
-pub const ANNOTATION_MARKER: &str = "ann";
+    /// The reserved marker that `token` names, or `None` when the
+    /// token is free for a song to declare.
+    pub fn from_token(token: &str) -> Option<Self> {
+        ReservedMarker::VARIANTS
+            .iter()
+            .copied()
+            .find(|marker| marker.as_str() == token)
+    }
+}
+
+/// Built-in marker name for cue clearing; the token of
+/// [`ReservedMarker::Clear`].
+pub const CLEAR_MARKER: &str = ReservedMarker::Clear.as_str();
+
+/// Built-in marker name for the end-of-video sentinel; the token of
+/// [`ReservedMarker::EndOfVideo`].
+pub const END_OF_VIDEO_MARKER: &str = ReservedMarker::EndOfVideo.as_str();
+
+/// Built-in marker name for an annotation; the token of
+/// [`ReservedMarker::Annotation`].
+pub const ANNOTATION_MARKER: &str = ReservedMarker::Annotation.as_str();
 
 /// Parsed contents of a `line-markers.toml` file.
 ///
@@ -37,26 +87,99 @@ pub const ANNOTATION_MARKER: &str = "ann";
 /// `generate-subtitles` crate and its submodules; see its
 /// `render_vtt` module for how each group is wrapped in the output,
 /// and its `styles` module for the shared presentation palette.
+///
+/// Every group below spells its marker names as [`MarkerName`]
+/// rather than `String`, and that type is what keeps a
+/// [`ReservedMarker`] out of the file. The rule therefore rides on
+/// the field types instead of on a separate pass over the groups: a
+/// group added later inherits the rule by naming its markers with
+/// the same type, and there is no list of groups that can fall out
+/// of step with the struct.
 #[derive(Default, Deserialize, Serialize)]
 pub struct LineMarkersDesc {
     /// Exhaustive inventory of markers used by this song, in the
     /// order the style block should emit per-marker rules.
     #[serde(default)]
-    pub markers: Vec<String>,
+    pub markers: Vec<MarkerName>,
     /// Markers that name a voice. Each value maps a language code to
     /// the voice name to emit for that language.
     #[serde(default)]
-    pub voices: BTreeMap<String, BTreeMap<Language, VoiceName>>,
+    pub voices: BTreeMap<MarkerName, BTreeMap<Language, VoiceName>>,
     /// Markers that name a class. The mapped value is the class name
     /// applied to the wrapping element.
     #[serde(default)]
-    pub classes: BTreeMap<String, CssClassName>,
+    pub classes: BTreeMap<MarkerName, CssClassName>,
     /// Markers that open a credit block. The cue body is parsed
     /// line-by-line against the `credit-roles` entries in the song's
     /// `credits.yaml`; the companion `credit-names` entries are not
     /// consumed by this path and are tracked separately.
     #[serde(default)]
-    pub credits: Vec<String>,
+    pub credits: Vec<MarkerName>,
+}
+
+impl LineMarkersDesc {
+    /// Whether `marker` opens a credit block in this song. The
+    /// argument is the plain token a parsed cue part carries.
+    pub fn is_credit(&self, marker: &str) -> bool {
+        self.credits.iter().any(|credit| credit.as_str() == marker)
+    }
+}
+
+/// A marker name that a song declares in its `line-markers.toml`.
+///
+/// The single rule is that the name must not be a
+/// [`ReservedMarker`]. Those tokens already carry a meaning fixed by
+/// the parser, so a declaration of one is dead at best and
+/// misleading at worst. A `clr` or `eov` entry under `[voices]` or
+/// `[classes]` yields a STYLE rule that no cue can match, because
+/// the parser consumes such lines before they ever become a cue
+/// part. An `ann` entry is worse still: every `ann:` line is taken
+/// as an annotation, so the declared voice never renders and its
+/// lines turn into invisible notes.
+///
+/// No further shape is imposed. Markers are free-form tokens chosen
+/// by each song, and the ones in `sources/*/line-markers.toml` today
+/// mix ASCII letters, digits, and `+`.
+#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(try_from = "String", into = "String")]
+pub struct MarkerName(String);
+
+impl MarkerName {
+    /// Wraps `source` if and only if it names no [`ReservedMarker`].
+    pub fn new(source: String) -> Result<Self, InvalidMarkerName> {
+        match ReservedMarker::from_token(&source) {
+            Some(reserved) => Err(InvalidMarkerName::Reserved(reserved)),
+            None => Ok(MarkerName(source)),
+        }
+    }
+
+    /// The underlying marker text.
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl TryFrom<String> for MarkerName {
+    type Error = InvalidMarkerName;
+
+    fn try_from(source: String) -> Result<Self, Self::Error> {
+        MarkerName::new(source)
+    }
+}
+
+impl From<MarkerName> for String {
+    fn from(value: MarkerName) -> Self {
+        value.0
+    }
+}
+
+/// Lets a `BTreeMap` keyed by [`MarkerName`] be looked up with the
+/// plain token that a parsed cue part carries, without allocating a
+/// validated copy of a name that the descriptor already validated.
+impl Borrow<str> for MarkerName {
+    fn borrow(&self) -> &str {
+        &self.0
+    }
 }
 
 /// A CSS class name that is safe to splat into a `::cue(c.{name})`
@@ -202,6 +325,16 @@ pub enum InvalidCssClassName {
     InvalidLeadingCharacter(char),
     #[display("class name must contain only ASCII letters, digits, `-`, and `_`, got {_0:?}")]
     InvalidCharacter(char),
+}
+
+#[derive(Clone, Copy, Debug, Display, Eq, PartialEq)]
+#[non_exhaustive]
+pub enum InvalidMarkerName {
+    #[display(
+        "marker name {:?} is reserved by the parser and must not be declared",
+        _0.as_str()
+    )]
+    Reserved(ReservedMarker),
 }
 
 #[cfg(test)]

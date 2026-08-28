@@ -1,14 +1,15 @@
 //! Shared fixtures for the SRT and VTT renderer tests. Both renderers
 //! exercise the same format-agnostic scaffolding: a credits descriptor,
-//! a line-markers descriptor that triggers credit rendering, a [`Color`]
-//! constructor wrapper, and a [`StylePalette`]. Each renderer's test
-//! module pulls the pieces it needs from here rather than defining its
-//! own copy, so a change to a shared type is made in one place instead
-//! of two that can silently drift apart.
+//! a line-markers descriptor that triggers credit rendering, a
+//! [`MarkerName`] constructor wrapper, a [`Color`] constructor wrapper,
+//! and a [`StylePalette`]. Each renderer's test module pulls the pieces
+//! it needs from here rather than defining its own copy, so a change to
+//! a shared type is made in one place instead of two that can silently
+//! drift apart.
 
 use crate::styles::{Color, CreditPalette, Style, StylePalette};
 use lyrics_core::credits_descriptor::CreditsDesc;
-use lyrics_core::line_markers_descriptor::LineMarkersDesc;
+use lyrics_core::line_markers_descriptor::{LineMarkersDesc, MarkerName};
 use lyrics_core::video_descriptor::Language;
 use maplit::btreemap;
 use pipe_trait::Pipe;
@@ -26,9 +27,16 @@ pub(crate) fn credits_with_one_role() -> CreditsDesc {
 /// rendering.
 pub(crate) fn markers_with_credit_trigger() -> LineMarkersDesc {
     LineMarkersDesc {
-        credits: vec!["cre".to_string()],
+        credits: vec![marker_name("cre".to_owned())],
         ..Default::default()
     }
+}
+
+/// Wraps a marker token that the fixtures know to be declarable.
+pub(crate) fn marker_name(value: String) -> MarkerName {
+    value
+        .pipe(MarkerName::new)
+        .expect("test fixture passes the marker-name validator")
 }
 
 /// Wraps a color string that the fixtures know to be valid.

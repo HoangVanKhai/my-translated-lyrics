@@ -163,7 +163,7 @@ fn render_cue_part(
     let marker = &part.marker;
     let voice_name = markers
         .voices
-        .get(marker)
+        .get(marker.as_str())
         .and_then(|by_language| by_language.get(language));
 
     // `VoiceName::new` rejects `<`, `>`, `"`, `\`, `U+2028`,
@@ -178,7 +178,7 @@ fn render_cue_part(
         write!(output, "<v {}>", voice_name.as_str()).unwrap();
     }
 
-    if markers.credits.contains(marker) {
+    if markers.is_credit(marker) {
         for (index, line) in part.text.lines().enumerate() {
             if index > 0 {
                 output.push('\n');
@@ -191,7 +191,7 @@ fn render_cue_part(
             })?;
             render_credit_line(output, features, &pairs);
         }
-    } else if let Some(class_name) = markers.classes.get(marker) {
+    } else if let Some(class_name) = markers.classes.get(marker.as_str()) {
         write!(output, "<c.{class_name}>{}</c>", Escaped(&part.text)).unwrap();
     } else {
         write!(output, "{}", Escaped(&part.text)).unwrap();
@@ -287,7 +287,7 @@ fn write_style_block(
         // Every declared voice marker must resolve to a palette style,
         // even when this particular language omits its voice name, so a
         // missing entry surfaces regardless of which language renders.
-        let style = palette.voice_style(marker_name)?;
+        let style = palette.voice_style(marker_name.as_str())?;
         let Some(voice_name) = by_language.get(language) else {
             continue;
         };

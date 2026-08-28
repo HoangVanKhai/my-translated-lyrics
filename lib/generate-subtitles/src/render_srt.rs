@@ -81,7 +81,7 @@ fn render_cue_part(
 ) -> Result<(), RenderSrtError> {
     let marker = &part.marker;
 
-    if markers.credits.contains(marker) {
+    if markers.is_credit(marker) {
         for (index, line) in part.text.lines().enumerate() {
             if index > 0 {
                 output.push('\n');

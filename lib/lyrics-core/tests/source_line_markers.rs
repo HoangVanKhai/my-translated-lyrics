@@ -4,6 +4,8 @@ use pipe_trait::Pipe;
 use std::fs::{DirEntry, read_dir, read_to_string};
 
 /// Every `sources/*/line-markers.toml` must parse as a valid [`LineMarkersDesc`].
+/// The parse also enforces the descriptor's own rules, so a song that
+/// declares a marker the parser reserves fails here.
 #[test]
 fn source_line_markers_descriptors() {
     let sources_dir = test_utils::workspace_dir().join("sources");

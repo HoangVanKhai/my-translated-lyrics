@@ -1,7 +1,11 @@
-use super::{CssClassName, InvalidCssClassName, InvalidVoiceName, VoiceName};
+use super::{
+    CssClassName, InvalidCssClassName, InvalidMarkerName, InvalidVoiceName, LineMarkersDesc,
+    MarkerName, ReservedMarker, VoiceName,
+};
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use serde::{Deserialize, Serialize};
+use strum::VariantArray;
 
 #[test]
 fn accepts_simple_ascii_names() {
@@ -134,6 +138,11 @@ struct VoiceNameHolder {
     value: VoiceName,
 }
 
+#[derive(Debug, Deserialize, PartialEq, Serialize)]
+struct MarkerNameHolder {
+    value: MarkerName,
+}
+
 #[test]
 fn css_class_name_round_trips_through_toml() {
     let original = CssClassHolder {
@@ -169,5 +178,99 @@ fn voice_name_toml_rejects_invalid_source() {
     assert!(
         err.to_string().contains("voice name"),
         "error message should surface the validator's diagnostic: {err}",
+    );
+}
+
+#[test]
+fn marker_name_accepts_ordinary_tokens() {
+    for source in ["ttl", "cre", "MKA", "mk-b", "m+n", "名字"] {
+        assert_eq!(
+            source.to_string().pipe(MarkerName::new).unwrap().as_str(),
+            source,
+        );
+    }
+}
+
+/// The rejected set is read off [`ReservedMarker`] rather than
+/// restated here, so a marker added to the enum is covered by this
+/// test without an edit.
+#[test]
+fn marker_name_rejects_every_reserved_marker() {
+    for reserved in ReservedMarker::VARIANTS {
+        assert_eq!(
+            reserved
+                .as_str()
+                .to_string()
+                .pipe(MarkerName::new)
+                .unwrap_err(),
+            InvalidMarkerName::Reserved(*reserved),
+        );
+    }
+}
+
+#[test]
+fn marker_name_round_trips_through_toml() {
+    let original = MarkerNameHolder {
+        value: "m+n".to_string().pipe(MarkerName::new).unwrap(),
+    };
+    let serialized = toml::to_string(&original).unwrap();
+    let deserialized: MarkerNameHolder = toml::from_str(&serialized).unwrap();
+    assert_eq!(deserialized, original);
+}
+
+/// A `line-markers.toml` naming a reserved marker fails to parse
+/// wherever the name appears. The four groups are spelled out one by
+/// one because each has its own TOML shape; the rule itself is
+/// carried by [`MarkerName`], which is the type of every marker name
+/// in the descriptor, so a group added later is covered by
+/// construction rather than by an addition to this list.
+#[test]
+fn line_markers_descriptor_rejects_a_reserved_marker_in_every_group() {
+    for reserved in ReservedMarker::VARIANTS {
+        let marker = reserved.as_str();
+        let sources = [
+            format!("markers = [{marker:?}]"),
+            format!("credits = [{marker:?}]"),
+            format!("[voices]\n{marker:?} = {{ vi = \"Voice A\" }}"),
+            format!("[classes]\n{marker:?} = \"title\""),
+        ];
+        for source in sources {
+            let Err(error) = toml::from_str::<LineMarkersDesc>(&source) else {
+                panic!("expected {source:?} to be rejected");
+            };
+            assert!(
+                error.to_string().contains("is reserved by the parser"),
+                "error message should surface the validator's diagnostic \
+                 for {source:?}: {error}",
+            );
+        }
+    }
+}
+
+/// A descriptor that declares no reserved marker still parses, with
+/// each group landing where it belongs.
+#[test]
+fn line_markers_descriptor_accepts_ordinary_markers() {
+    let descriptor: LineMarkersDesc = toml::from_str(
+        r#"
+            markers = ["cre", "ttl", "vca"]
+            credits = ["cre"]
+
+            [voices]
+            vca = { vi = "Voice A" }
+
+            [classes]
+            ttl = "title"
+        "#,
+    )
+    .unwrap();
+    let markers: Vec<&str> = descriptor.markers.iter().map(MarkerName::as_str).collect();
+    assert_eq!(markers, ["cre", "ttl", "vca"]);
+    assert!(descriptor.is_credit("cre"));
+    assert!(!descriptor.is_credit("ttl"));
+    assert!(descriptor.voices.contains_key("vca"));
+    assert_eq!(
+        descriptor.classes.get("ttl").map(CssClassName::as_str),
+        Some("title"),
     );
 }

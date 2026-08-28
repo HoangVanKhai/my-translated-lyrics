@@ -1,5 +1,7 @@
 use super::{RenderSrtError, render_srt};
-use crate::_test_utils::{credits_with_one_role, markers_with_credit_trigger, style_palette};
+use crate::_test_utils::{
+    credits_with_one_role, marker_name, markers_with_credit_trigger, style_palette,
+};
 use crate::parse::{CuePart, SubtitleCue};
 use crate::styles::{MissingStyle, StylePalette};
 use lyrics_core::credits_descriptor::CreditsDesc;
@@ -109,8 +111,8 @@ fn class_declared_without_palette_entry_produces_style_error() {
         .pipe(CssClassName::new)
         .expect("test fixture passes the class-name validator");
     let markers = LineMarkersDesc {
-        markers: vec!["ttl".to_string()],
-        classes: btreemap! { "ttl".to_string() => class_name },
+        markers: vec![marker_name("ttl".to_owned())],
+        classes: btreemap! { marker_name("ttl".to_owned()) => class_name },
         ..Default::default()
     };
     let cues = vec![SubtitleCue {
@@ -143,9 +145,9 @@ fn voice_declared_without_palette_entry_produces_style_error() {
         .pipe(VoiceName::new)
         .expect("test fixture passes the voice-name validator");
     let markers = LineMarkersDesc {
-        markers: vec!["unk".to_string()],
+        markers: vec![marker_name("unk".to_owned())],
         voices: btreemap! {
-            "unk".to_string() => btreemap! { Language::Vietnamese => voice_name },
+            marker_name("unk".to_owned()) => btreemap! { Language::Vietnamese => voice_name },
         },
         ..Default::default()
     };
