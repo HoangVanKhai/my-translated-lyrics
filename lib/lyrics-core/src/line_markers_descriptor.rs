@@ -19,8 +19,8 @@ pub enum ReservedMarker {
     /// produce no visible text of their own.
     #[strum(serialize = "clr")]
     Clear,
-    /// The end-of-video sentinel. It records, for human readers, the
-    /// point at which no further subtitle activity occurs.
+    /// The end-of-video sentinel. It marks the point at which no
+    /// further subtitle activity occurs.
     #[strum(serialize = "eov")]
     EndOfVideo,
     /// An annotation. Lines that start with this marker carry
