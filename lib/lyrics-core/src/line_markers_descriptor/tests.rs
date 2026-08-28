@@ -184,6 +184,7 @@ fn voice_name_toml_rejects_invalid_source() {
 #[test]
 fn marker_name_accepts_ordinary_tokens() {
     for source in ["ttl", "cre", "MKA", "mk-b", "m+n", "名字"] {
+        eprintln!("CASE: {source:?}");
         assert_eq!(
             source.to_string().pipe(MarkerName::new).unwrap().as_str(),
             source,
@@ -197,6 +198,7 @@ fn marker_name_accepts_ordinary_tokens() {
 #[test]
 fn marker_name_rejects_every_reserved_marker() {
     for reserved in ReservedMarker::VARIANTS {
+        eprintln!("CASE: {reserved:?}");
         assert_eq!(
             reserved
                 .as_ref()
@@ -235,6 +237,7 @@ fn line_markers_descriptor_rejects_a_reserved_marker_in_every_group() {
             format!("[classes]\n{marker:?} = \"title\""),
         ];
         for source in sources {
+            eprintln!("CASE: {source:?}");
             let Err(error) = toml::from_str::<LineMarkersDesc>(&source) else {
                 panic!("expected {source:?} to be rejected");
             };
