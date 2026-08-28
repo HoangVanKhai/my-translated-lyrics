@@ -18,16 +18,8 @@ pub enum ReservedMarker {
     /// previously opened cue to end at the marker's timestamp and
     /// produce no visible text of their own.
     Clear,
-    /// The end-of-video sentinel. Lines that start with this marker
-    /// are ignored entirely by the parser: they open no cue and
-    /// close no cue. The marker exists as a convention so that
-    /// source files can record, for human readers, the point at
-    /// which no further subtitle activity occurs. Every cue must
-    /// still be closed by a following cue or by a [`Clear`] marker;
-    /// reaching an end-of-video line with an open cue is not treated
-    /// as a cue boundary.
-    ///
-    /// [`Clear`]: ReservedMarker::Clear
+    /// The end-of-video sentinel. It records, for human readers, the
+    /// point at which no further subtitle activity occurs.
     EndOfVideo,
     /// An annotation. Lines that start with this marker carry
     /// commentary about the cue part above them. They take no
@@ -112,19 +104,8 @@ impl LineMarkersDesc {
 
 /// A marker name that a song declares in its `line-markers.toml`.
 ///
-/// The single rule is that the name must not be a
-/// [`ReservedMarker`]. Those tokens already carry a meaning fixed by
-/// the parser, so a declaration of one is dead at best and
-/// misleading at worst. A `clr` or `eov` entry under `[voices]` or
-/// `[classes]` yields a STYLE rule that no cue can match, because
-/// the parser consumes such lines before they ever become a cue
-/// part. An `ann` entry is worse still: every `ann:` line is taken
-/// as an annotation, so the declared voice never renders and its
-/// lines turn into invisible notes.
-///
-/// No further shape is imposed. Markers are free-form tokens chosen
-/// by each song, and the ones in `sources/*/line-markers.toml` today
-/// mix ASCII letters, digits, and `+`.
+/// The name must not be a [`ReservedMarker`]; no further shape is
+/// imposed.
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(try_from = "String", into = "String")]
 pub struct MarkerName(String);
@@ -158,9 +139,8 @@ impl From<MarkerName> for String {
     }
 }
 
-/// Lets a `BTreeMap` keyed by [`MarkerName`] be looked up with the
-/// plain token that a parsed cue part carries, without allocating a
-/// validated copy of a name that the descriptor already validated.
+// Enables lookups into a map keyed by `MarkerName` with the plain
+// token a parsed cue part carries.
 impl Borrow<str> for MarkerName {
     fn borrow(&self) -> &str {
         &self.0
