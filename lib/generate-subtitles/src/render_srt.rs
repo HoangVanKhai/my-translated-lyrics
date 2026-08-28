@@ -12,9 +12,7 @@
 //! colon rides inside the lead's `<font>` before a single space, and a
 //! colon-free gutter reproduces its ASCII spacing verbatim.
 //!
-//! Annotations attached to a cue part are not rendered. SubRip has no
-//! comment syntax, and the notes are written for readers of the source
-//! files rather than for viewers of the video.
+//! Annotations attached to a cue part are not rendered.
 
 use super::credits_parse::{
     CreditLead, CreditPair, CreditRoles, NameSegment, ParseCreditError, parse_credit_line,

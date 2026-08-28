@@ -10,11 +10,8 @@
 //! A line at the shorthand column whose marker is
 //! [`ANNOTATION_MARKER`] attaches commentary to the cue part above
 //! it. It carries no timestamp, opens no event, and reaches neither
-//! renderer. Each such line opens one annotation, which takes
-//! continuation lines of its own just as a cue part does, so a note
-//! spanning several lines is written the same way a multi-line cue
-//! part is. A continuation line's indent alone decides what it
-//! extends; its text is never inspected for a marker.
+//! renderer. Each line opens one annotation, which takes
+//! continuation lines of its own.
 //!
 //! [`ANNOTATION_MARKER`]: lyrics_core::line_markers_descriptor::ANNOTATION_MARKER
 //! [`CLEAR_MARKER`]: lyrics_core::line_markers_descriptor::CLEAR_MARKER
@@ -66,19 +63,12 @@ pub struct CuePart {
     /// Cue text, with line breaks preserved between the opening line
     /// and any continuation lines.
     pub text: String,
-    /// Commentary attached to this part by [`ANNOTATION_MARKER`]
-    /// lines beneath it, one entry per line, in source order.
-    /// Neither renderer reads this field.
-    ///
-    /// [`ANNOTATION_MARKER`]: lyrics_core::line_markers_descriptor::ANNOTATION_MARKER
+    /// Commentary attached to this part by `ann` lines beneath it,
+    /// one entry per line. Neither renderer reads it.
     pub annotations: Vec<String>,
 }
 
-/// Which text body a continuation line extends. A cue part and an
-/// annotation attached to it both accept continuation lines, and the
-/// marker line most recently opened is the one a continuation
-/// extends, exactly as a shorthand marker line takes over from the
-/// part above it.
+/// Which text body a continuation line extends.
 #[derive(Clone, Copy)]
 enum ContinuationTarget {
     /// The text of the most recently opened cue part.
