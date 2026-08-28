@@ -30,15 +30,13 @@ pub const ANNOTATION_MARKER: &str = "ann";
 /// A _marker_ is the short token (for example `LTY`, `cre`, `ttl`,
 /// `LRC`) at the start of each line in a song's `lyrics.*.txt`
 /// files. This descriptor catalogs every marker the song uses and
-/// groups them by the rendering role they play. The built-in
-/// markers [`CLEAR_MARKER`], [`END_OF_VIDEO_MARKER`], and
-/// [`ANNOTATION_MARKER`] are not declared here; their meaning is
-/// fixed by the parser and none of them names a rendering role. The roles are
-/// voice, named class, credit block, and plain pass-through. The
-/// groups are consumed by the `generate-subtitles` crate and its
-/// submodules; see its `render_vtt` module for how each group is
-/// wrapped in the output, and its `styles` module for the shared
-/// presentation palette.
+/// groups them by the rendering role they play. A marker whose
+/// meaning the parser fixes is not declared here, because it names no
+/// rendering role. The roles are voice, named class, credit block,
+/// and plain pass-through. The groups are consumed by the
+/// `generate-subtitles` crate and its submodules; see its
+/// `render_vtt` module for how each group is wrapped in the output,
+/// and its `styles` module for the shared presentation palette.
 #[derive(Default, Deserialize, Serialize)]
 pub struct LineMarkersDesc {
     /// Exhaustive inventory of markers used by this song, in the
