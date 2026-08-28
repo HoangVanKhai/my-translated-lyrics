@@ -199,7 +199,7 @@ fn marker_name_rejects_every_reserved_marker() {
     for reserved in ReservedMarker::VARIANTS {
         assert_eq!(
             reserved
-                .as_str()
+                .as_ref()
                 .to_string()
                 .pipe(MarkerName::new)
                 .unwrap_err(),
@@ -227,7 +227,7 @@ fn marker_name_round_trips_through_toml() {
 #[test]
 fn line_markers_descriptor_rejects_a_reserved_marker_in_every_group() {
     for reserved in ReservedMarker::VARIANTS {
-        let marker = reserved.as_str();
+        let marker = reserved.as_ref();
         let sources = [
             format!("markers = [{marker:?}]"),
             format!("credits = [{marker:?}]"),

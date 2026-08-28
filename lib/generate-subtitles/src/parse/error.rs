@@ -12,7 +12,7 @@
 use super::TIMESTAMP_PREFIX_WIDTH;
 use core::fmt;
 use derive_more::Display;
-use lyrics_core::line_markers_descriptor::ANNOTATION_MARKER;
+use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::{TakeTimestampError, Timestamp};
 
 /// Payload for [`ParseLyricsError::InvalidTimestamp`]. Wraps the
@@ -73,7 +73,10 @@ pub struct ReservedControlMarker {
 /// Payload for [`ParseLyricsError::EmptyAnnotation`]. Raised when an
 /// annotation line carries no text after its `:` separator.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("line {line_number}: annotation marker `{ANNOTATION_MARKER}` has an empty body")]
+#[display(
+    "line {line_number}: annotation marker `{}` has an empty body",
+    ReservedMarker::Annotation
+)]
 pub struct EmptyAnnotation {
     pub line_number: usize,
 }

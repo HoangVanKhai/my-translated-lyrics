@@ -3,7 +3,7 @@ use derive_more::Display;
 use serde::{Deserialize, Serialize};
 use std::borrow::Borrow;
 use std::collections::BTreeMap;
-use strum::VariantArray;
+use strum::{AsRefStr, EnumString, VariantArray};
 
 pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 
@@ -12,53 +12,23 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 /// A reserved marker names no rendering role, so a song must not
 /// declare it in its `line-markers.toml`; [`MarkerName`] rejects
 /// every one of them at the deserialization boundary.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, VariantArray)]
+#[derive(AsRefStr, Clone, Copy, Debug, strum::Display, EnumString, Eq, PartialEq, VariantArray)]
 pub enum ReservedMarker {
     /// Cue clearing. Lines that start with this marker cause the
     /// previously opened cue to end at the marker's timestamp and
     /// produce no visible text of their own.
+    #[strum(serialize = "clr")]
     Clear,
     /// The end-of-video sentinel. It records, for human readers, the
     /// point at which no further subtitle activity occurs.
+    #[strum(serialize = "eov")]
     EndOfVideo,
     /// An annotation. Lines that start with this marker carry
     /// commentary about the cue part above them. They take no
     /// timestamp of their own and are ignored by both renderers.
+    #[strum(serialize = "ann")]
     Annotation,
 }
-
-impl ReservedMarker {
-    /// The token that names this marker at the start of a line in a
-    /// `lyrics.{lang}.txt` file.
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            ReservedMarker::Clear => "clr",
-            ReservedMarker::EndOfVideo => "eov",
-            ReservedMarker::Annotation => "ann",
-        }
-    }
-
-    /// The reserved marker that `token` names, or `None` when the
-    /// token is free for a song to declare.
-    pub fn from_token(token: &str) -> Option<Self> {
-        ReservedMarker::VARIANTS
-            .iter()
-            .copied()
-            .find(|marker| marker.as_str() == token)
-    }
-}
-
-/// Built-in marker name for cue clearing; the token of
-/// [`ReservedMarker::Clear`].
-pub const CLEAR_MARKER: &str = ReservedMarker::Clear.as_str();
-
-/// Built-in marker name for the end-of-video sentinel; the token of
-/// [`ReservedMarker::EndOfVideo`].
-pub const END_OF_VIDEO_MARKER: &str = ReservedMarker::EndOfVideo.as_str();
-
-/// Built-in marker name for an annotation; the token of
-/// [`ReservedMarker::Annotation`].
-pub const ANNOTATION_MARKER: &str = ReservedMarker::Annotation.as_str();
 
 /// Parsed contents of a `line-markers.toml` file.
 ///
@@ -113,9 +83,9 @@ pub struct MarkerName(String);
 impl MarkerName {
     /// Wraps `source` if and only if it names no [`ReservedMarker`].
     pub fn new(source: String) -> Result<Self, InvalidMarkerName> {
-        match ReservedMarker::from_token(&source) {
-            Some(reserved) => Err(InvalidMarkerName::Reserved(reserved)),
-            None => Ok(MarkerName(source)),
+        match source.parse::<ReservedMarker>() {
+            Ok(reserved) => Err(InvalidMarkerName::Reserved(reserved)),
+            Err(strum::ParseError::VariantNotFound) => Ok(MarkerName(source)),
         }
     }
 
@@ -295,10 +265,7 @@ pub enum InvalidCssClassName {
 #[derive(Clone, Copy, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum InvalidMarkerName {
-    #[display(
-        "marker name {:?} is reserved by the parser and must not be declared",
-        _0.as_str()
-    )]
+    #[display("marker name `{_0}` is reserved by the parser and must not be declared")]
     Reserved(ReservedMarker),
 }
 
