@@ -1,9 +1,8 @@
 use super::{RenderVttError, render_vtt};
 use crate::_test_utils::{
-    color, credits_with_one_role, cue_part, cue_part_with_annotations, markers_with_credit_trigger,
-    style_palette,
+    color, credits_with_one_role, markers_with_credit_trigger, style_palette,
 };
-use crate::parse::SubtitleCue;
+use crate::parse::{CuePart, SubtitleCue};
 use crate::styles::{MissingStyle, Style, StylePalette};
 use lyrics_core::credits_descriptor::CreditsDesc;
 use lyrics_core::line_markers_descriptor::{CssClassName, LineMarkersDesc, VoiceName};
@@ -28,7 +27,11 @@ fn cue_text_html_meta_characters_are_escaped() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![cue_part("plain".to_owned(), "<a> & <b>".to_owned())],
+        parts: vec![CuePart {
+            marker: "plain".to_string(),
+            text: "<a> & <b>".to_string(),
+            annotations: Vec::new(),
+        }],
     }];
     let output = render_vtt(
         &cues,
@@ -56,10 +59,11 @@ fn role_only_header_and_role_less_lines_render() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![cue_part(
-            "cre".to_owned(),
-            "role-a\n[label-a] name-a".to_owned(),
-        )],
+        parts: vec![CuePart {
+            marker: "cre".to_string(),
+            text: "role-a\n[label-a] name-a".to_string(),
+            annotations: Vec::new(),
+        }],
     }];
     let output = render_vtt(
         &cues,
@@ -101,7 +105,11 @@ fn voice_name_containing_ampersand_is_emitted_verbatim_in_cue_tag() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![cue_part("vca".to_owned(), "body".to_owned())],
+        parts: vec![CuePart {
+            marker: "vca".to_string(),
+            text: "body".to_string(),
+            annotations: Vec::new(),
+        }],
     }];
     let output = render_vtt(
         &cues,
@@ -130,7 +138,11 @@ fn unknown_role_in_credit_line_produces_credits_error() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![cue_part("cre".to_owned(), "unknown-role name-a".to_owned())],
+        parts: vec![CuePart {
+            marker: "cre".to_string(),
+            text: "unknown-role name-a".to_string(),
+            annotations: Vec::new(),
+        }],
     }];
     let err = render_vtt(
         &cues,
@@ -162,7 +174,11 @@ fn class_declared_without_palette_entry_produces_style_error() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![cue_part("ttl".to_owned(), "body".to_owned())],
+        parts: vec![CuePart {
+            marker: "ttl".to_string(),
+            text: "body".to_string(),
+            annotations: Vec::new(),
+        }],
     }];
     let err = render_vtt(
         &cues,
@@ -194,7 +210,11 @@ fn voice_declared_without_palette_entry_produces_style_error() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![cue_part("unk".to_owned(), "body".to_owned())],
+        parts: vec![CuePart {
+            marker: "unk".to_string(),
+            text: "body".to_string(),
+            annotations: Vec::new(),
+        }],
     }];
     let err = render_vtt(
         &cues,
@@ -211,19 +231,18 @@ fn voice_declared_without_palette_entry_produces_style_error() {
 }
 
 /// Annotations are written for readers of the source files and must
-/// not reach the video. Attach one to a cue part and assert that no
-/// fragment of it survives into the WebVTT output, neither as cue
-/// text nor as a `NOTE` block.
+/// not reach the video. Assert that no fragment survives into the
+/// WebVTT output, neither as cue text nor as a `NOTE` block.
 #[test]
 fn annotations_are_not_rendered() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![cue_part_with_annotations(
-            "plain".to_owned(),
-            "visible body".to_owned(),
-            vec!["hidden note".to_owned(), "another note".to_owned()],
-        )],
+        parts: vec![CuePart {
+            marker: "plain".to_string(),
+            text: "visible body".to_string(),
+            annotations: vec!["hidden note".to_string(), "another note".to_string()],
+        }],
     }];
     let output = render_vtt(
         &cues,

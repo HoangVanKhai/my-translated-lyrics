@@ -1,14 +1,11 @@
 //! Shared fixtures for the SRT and VTT renderer tests. Both renderers
-//! exercise the same format-agnostic scaffolding: a cue-part
-//! constructor, a credits descriptor, a line-markers descriptor that
-//! triggers credit rendering, a [`Color`] constructor wrapper, and a
-//! [`StylePalette`].
-//!
-//! Each renderer's test module pulls the pieces it needs from here
-//! rather than defining its own copy, so a change to a shared type is
-//! made in one place instead of two that can silently drift apart.
+//! exercise the same format-agnostic scaffolding: a credits descriptor,
+//! a line-markers descriptor that triggers credit rendering, a [`Color`]
+//! constructor wrapper, and a [`StylePalette`]. Each renderer's test
+//! module pulls the pieces it needs from here rather than defining its
+//! own copy, so a change to a shared type is made in one place instead
+//! of two that can silently drift apart.
 
-use crate::parse::CuePart;
 use crate::styles::{Color, CreditPalette, Style, StylePalette};
 use lyrics_core::credits_descriptor::CreditsDesc;
 use lyrics_core::line_markers_descriptor::LineMarkersDesc;
@@ -16,32 +13,6 @@ use lyrics_core::video_descriptor::Language;
 use maplit::btreemap;
 use pipe_trait::Pipe;
 use std::collections::BTreeMap;
-
-/// A cue part carrying no annotations. Annotations are invisible to
-/// both renderers, so every fixture except the ones that assert that
-/// invisibility is built through this constructor rather than naming
-/// the field.
-pub(crate) fn cue_part(marker: String, text: String) -> CuePart {
-    CuePart {
-        marker,
-        text,
-        annotations: Vec::new(),
-    }
-}
-
-/// A cue part carrying annotations, for the two tests that assert
-/// the renderers ignore them.
-pub(crate) fn cue_part_with_annotations(
-    marker: String,
-    text: String,
-    annotations: Vec<String>,
-) -> CuePart {
-    CuePart {
-        marker,
-        text,
-        annotations,
-    }
-}
 
 /// A credits descriptor declaring a single Vietnamese role, `role-a`.
 pub(crate) fn credits_with_one_role() -> CreditsDesc {
