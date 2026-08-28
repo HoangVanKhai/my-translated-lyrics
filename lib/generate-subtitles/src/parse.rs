@@ -463,7 +463,8 @@ fn resolve_cues(events: Vec<Event>) -> Result<Vec<SubtitleCue>, ParseLyricsError
 /// The text of a well-formed annotation line, or `None` when the body
 /// does not carry the marker followed by an ASCII `:`.
 fn annotation_body(body: &str) -> Option<&str> {
-    split_marker(body).and_then(|(marker, text)| (marker == ANNOTATION_MARKER).then_some(text))
+    let (marker, text) = split_marker(body)?;
+    (marker == ANNOTATION_MARKER).then_some(text)
 }
 
 /// Splits a line body like `marker: text` into its two halves. Returns
