@@ -6,6 +6,7 @@ use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use serde::{Deserialize, Serialize};
 use strum::VariantArray;
+use text_block_macros::text_block_fnl;
 
 #[test]
 fn accepts_simple_ascii_names() {
@@ -233,8 +234,8 @@ fn line_markers_descriptor_rejects_a_reserved_marker_in_every_group() {
         let sources = [
             format!("markers = [{marker:?}]"),
             format!("credits = [{marker:?}]"),
-            format!("[voices]\n{marker:?} = {{ vi = \"Voice A\" }}"),
-            format!("[classes]\n{marker:?} = \"title\""),
+            format!(r#"voices = {{ {marker:?} = {{ vi = "Voice A" }} }}"#),
+            format!(r#"classes = {{ {marker:?} = "title" }}"#),
         ];
         for source in sources {
             eprintln!("CASE: {source:?}");
@@ -254,19 +255,17 @@ fn line_markers_descriptor_rejects_a_reserved_marker_in_every_group() {
 /// each group landing where it belongs.
 #[test]
 fn line_markers_descriptor_accepts_ordinary_markers() {
-    let descriptor: LineMarkersDesc = toml::from_str(
-        r#"
-            markers = ["cre", "ttl", "vca"]
-            credits = ["cre"]
-
-            [voices]
-            vca = { vi = "Voice A" }
-
-            [classes]
-            ttl = "title"
-        "#,
-    )
-    .unwrap();
+    let source = text_block_fnl! {
+        r#"markers = ["cre", "ttl", "vca"]"#
+        r#"credits = ["cre"]"#
+        ""
+        "[voices]"
+        r#"vca = { vi = "Voice A" }"#
+        ""
+        "[classes]"
+        r#"ttl = "title""#
+    };
+    let descriptor: LineMarkersDesc = toml::from_str(source).unwrap();
     let markers: Vec<&str> = descriptor.markers.iter().map(MarkerName::as_str).collect();
     assert_eq!(markers, ["cre", "ttl", "vca"]);
     assert!(descriptor.is_credit("cre"));
