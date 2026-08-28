@@ -1,10 +1,12 @@
 //! Shared fixtures for the SRT and VTT renderer tests. Both renderers
-//! exercise the same format-agnostic scaffolding: a credits descriptor,
-//! a line-markers descriptor that triggers credit rendering, a [`Color`]
-//! constructor wrapper, and a [`StylePalette`]. Each renderer's test
-//! module pulls the pieces it needs from here rather than defining its
-//! own copy, so a change to a shared type is made in one place instead
-//! of two that can silently drift apart.
+//! exercise the same format-agnostic scaffolding: a cue-part
+//! constructor, a credits descriptor, a line-markers descriptor that
+//! triggers credit rendering, a [`Color`] constructor wrapper, and a
+//! [`StylePalette`].
+//!
+//! Each renderer's test module pulls the pieces it needs from here
+//! rather than defining its own copy, so a change to a shared type is
+//! made in one place instead of two that can silently drift apart.
 
 use crate::parse::CuePart;
 use crate::styles::{Color, CreditPalette, Style, StylePalette};
@@ -24,6 +26,20 @@ pub(crate) fn cue_part(marker: String, text: String) -> CuePart {
         marker,
         text,
         annotations: Vec::new(),
+    }
+}
+
+/// A cue part carrying annotations, for the two tests that assert
+/// the renderers ignore them.
+pub(crate) fn cue_part_with_annotations(
+    marker: String,
+    text: String,
+    annotations: Vec<String>,
+) -> CuePart {
+    CuePart {
+        marker,
+        text,
+        annotations,
     }
 }
 

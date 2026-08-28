@@ -1,8 +1,9 @@
 use super::{RenderVttError, render_vtt};
 use crate::_test_utils::{
-    color, credits_with_one_role, cue_part, markers_with_credit_trigger, style_palette,
+    color, credits_with_one_role, cue_part, cue_part_with_annotations, markers_with_credit_trigger,
+    style_palette,
 };
-use crate::parse::{CuePart, SubtitleCue};
+use crate::parse::SubtitleCue;
 use crate::styles::{MissingStyle, Style, StylePalette};
 use lyrics_core::credits_descriptor::CreditsDesc;
 use lyrics_core::line_markers_descriptor::{CssClassName, LineMarkersDesc, VoiceName};
@@ -218,11 +219,11 @@ fn annotations_are_not_rendered() {
     let cues = vec![SubtitleCue {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
-        parts: vec![CuePart {
-            marker: "plain".to_string(),
-            text: "visible body".to_string(),
-            annotations: vec!["hidden note".to_string(), "another note".to_string()],
-        }],
+        parts: vec![cue_part_with_annotations(
+            "plain".to_owned(),
+            "visible body".to_owned(),
+            vec!["hidden note".to_owned(), "another note".to_owned()],
+        )],
     }];
     let output = render_vtt(
         &cues,
