@@ -12,13 +12,6 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 /// A reserved marker names no rendering role, so a song must not
 /// declare it in its `line-markers.toml`; [`MarkerName`] rejects
 /// every one of them at the deserialization boundary.
-///
-/// The variants are the single definition of the built-in marker
-/// set. The `*_MARKER` constants below are derived from them, and
-/// the [`VariantArray`] derive supplies the whole list to
-/// [`ReservedMarker::from_token`], so a new built-in marker is one
-/// variant away from being honored by every check. There is no
-/// second list to remember.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, VariantArray)]
 pub enum ReservedMarker {
     /// Cue clearing. Lines that start with this marker cause the
@@ -87,14 +80,6 @@ pub const ANNOTATION_MARKER: &str = ReservedMarker::Annotation.as_str();
 /// `generate-subtitles` crate and its submodules; see its
 /// `render_vtt` module for how each group is wrapped in the output,
 /// and its `styles` module for the shared presentation palette.
-///
-/// Every group below spells its marker names as [`MarkerName`]
-/// rather than `String`, and that type is what keeps a
-/// [`ReservedMarker`] out of the file. The rule therefore rides on
-/// the field types instead of on a separate pass over the groups: a
-/// group added later inherits the rule by naming its markers with
-/// the same type, and there is no list of groups that can fall out
-/// of step with the struct.
 #[derive(Default, Deserialize, Serialize)]
 pub struct LineMarkersDesc {
     /// Exhaustive inventory of markers used by this song, in the
