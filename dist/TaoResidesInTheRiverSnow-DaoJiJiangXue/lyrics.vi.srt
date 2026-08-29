@@ -211,7 +211,7 @@ Ta muốn ngủ rồi, người hãy về, sớm mai có hứng thì ôm đàn t
 
 53
 00:03:26,300 --> 00:03:26,933
-<i><font color="#CCCCCC">Nên nói: ‘kia’ sinh từ ‘này’, ‘này’ cũng nhân ‘kia’.</font></i>
+<i><font color="#CCCCCC">Nên nói: ‘kia’ xuất từ ‘này’, ‘này’ cũng nhân ‘kia’.</font></i>
 
 54
 00:03:26,933 --> 00:03:27,400
@@ -223,7 +223,7 @@ Ta muốn ngủ rồi, người hãy về, sớm mai có hứng thì ôm đàn t
 
 56
 00:03:28,133 --> 00:03:28,867
-<i><font color="#CCCCCC">vừa khả đã bất khả, vừa bất khả đã khả;</font></i>
+<i><font color="#CCCCCC">vừa khả vừa bất khả, vừa bất khả vừa khả;</font></i>
 
 57
 00:03:28,867 --> 00:03:29,330
