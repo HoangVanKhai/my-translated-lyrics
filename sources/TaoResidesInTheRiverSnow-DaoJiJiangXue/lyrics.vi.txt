@@ -43,7 +43,7 @@
 01:12.067 LRC: Đi qua nhân gian thăm thẳm, tiêu dao phù sinh tự tại
 01:15.833 LRC: Ta có trường kiếm ba thước, quyết không lấy nợ sinh sát
           ann: Lữ Động Tân, Tuyệt Cú: “Tiên sinh tiên sinh chớ cầu bên ngoài, đạo cần người truyền, kiếm cần thu lại.”
-01:19.533 LRC: Rạch mở tám nghìn năm, vương hầu khanh tướng mấy độ hưng vong
+01:19.533 LRC: Xẻ toang tám nghìn năm, vương hầu khanh tướng mấy độ hưng vong
           ann: Trang Chu, Trang Tử – Tiêu Dao Du: “Thuở thượng cổ có cây đại xuân, lấy tám nghìn năm làm một mùa xuân, tám nghìn năm làm một mùa thu.”
 01:23.030 clr
 
@@ -98,7 +98,7 @@
 02:53.567 LRC: Ta có gió sông trăng nước, hà hơi vào tuyết pha thành một chén
 02:57.433 LRC: Đi qua nhân gian thăm thẳm, tiêu dao phù sinh tự tại
 03:01.033 LRC: Ta có trường kiếm ba thước, quyết không lấy nợ sinh sát
-03:04.733 LRC: Rạch mở tám nghìn năm, vương hầu khanh tướng mấy độ hưng vong
+03:04.733 LRC: Xẻ toang tám nghìn năm, vương hầu khanh tướng mấy độ hưng vong
 03:08.755 clr
 
 03:08.833 LRC: Ta có chuyện truyền kỳ, ở giữa mười trượng hồng trần
