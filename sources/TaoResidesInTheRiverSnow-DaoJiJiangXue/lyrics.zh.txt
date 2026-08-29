@@ -1,6 +1,7 @@
 # alb: Album's title
 # clr: Clear of Text
 # LRC: Lyric
+# pfm: Performer
 # rap: Rap Section
 # ttl: Song's Title
 # txt: Expository Text
