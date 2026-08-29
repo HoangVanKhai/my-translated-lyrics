@@ -12,7 +12,7 @@
 00:08.550 ttl: Đạo Ký Giang Tuyết
           pfm: Yuezheng Ling
           alb: Chư Tử Bách Gia
-00:15.700 txt: “Chỉ bởi không tranh, nên thiên hạ chẳng ai tranh nổi với mình.”
+00:15.700 txt: “Chỉ bởi không tranh, nên thiên hạ chẳng ai tranh nổi.”
                — Đạo Đức Kinh
 00:19.367 clr
 
