@@ -110,8 +110,8 @@
 03:24.333 txt: “Vật nào cũng là ‘kia’, vật nào cũng là ‘này’.
 03:25.567 txt: Nhìn từ ‘kia’ thì chẳng thấy, tự biết thì mới hay.
 03:26.300 txt: Nên nói: ‘kia’ sinh từ ‘này’, ‘này’ cũng nhân ‘kia’.
-03:26.933 txt: Đó là thuyết ‘kia’ và ‘này’ cùng sinh vậy.
-03:27.400 txt: Tuy vậy, vừa sinh đã tử, vừa tử đã sinh;
+03:26.933 txt: Ấy gọi là ‘kia’ và ‘này’ cùng sinh.
+03:27.400 txt: Tuy vậy, vừa sinh vừa tử, vừa tử vừa sinh;
 03:28.133 txt: vừa khả đã bất khả, vừa bất khả đã khả;
 03:28.867 txt: nhân thị mà có phi, nhân phi mà có thị.
 03:29.330 txt: Cho nên thánh nhân chẳng theo lối ấy mà soi vào lẽ trời,
