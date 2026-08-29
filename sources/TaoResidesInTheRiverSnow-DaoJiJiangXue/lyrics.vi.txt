@@ -108,14 +108,14 @@
 03:22.768 clr
 
 03:24.333 txt: “Vật nào cũng là ‘kia’, vật nào cũng là ‘này’.
-03:25.567 txt: Nhìn từ ‘kia’ thì chẳng thấy, tự biết thì mới hay.
+          txt: Nhìn từ ‘kia’ thì chẳng thấy, tự biết thì mới hay.
 03:26.300 txt: Nên nói: ‘kia’ xuất từ ‘này’, ‘này’ cũng nhân ‘kia’.
-03:26.933 txt: Ấy gọi là ‘kia’ và ‘này’ cùng sinh.
+          txt: Ấy gọi là ‘kia’ và ‘này’ cùng sinh.
 03:27.400 txt: Tuy vậy, vừa sinh vừa tử, vừa tử vừa sinh;
-03:28.133 txt: vừa khả vừa bất khả, vừa bất khả vừa khả;
-03:28.867 txt: nhân thị mà có phi, nhân phi mà có thị.
+          txt: vừa khả vừa bất khả, vừa bất khả vừa khả;
+          txt: nhân thị mà có phi, nhân phi mà có thị.
 03:29.330 txt: Cho nên thánh nhân chẳng theo lối ấy mà soi vào lẽ trời,
-03:30.067 txt: cũng là nhân thị vậy.”
+          txt: cũng là nhân thị vậy.”
 03:31.267 txt: — Trang Tử – Tề Vật Luận
 03:35.000 clr
 
