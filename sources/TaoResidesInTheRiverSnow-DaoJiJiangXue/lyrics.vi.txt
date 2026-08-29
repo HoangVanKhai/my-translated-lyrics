@@ -24,14 +24,14 @@
 
 00:37.833 LRC: Chút hư danh cũng chẳng nhặt, mặc miếu đường vinh hoa tới mời
 00:41.367 LRC: Chắp tay cười gọi tiếng đồng liêu, lòng ta chẳng phải đá, mời người ngó xem
-          ann: Trang Chu, Trang Tử · Thu Thủy: “Về đi! Ta muốn lê đuôi trong vũng bùn.”
+          ann: Trang Chu, Trang Tử – Thu Thủy: “Về đi! Ta muốn lê đuôi trong vũng bùn.”
 00:45.300 LRC: Bệnh cuồng thấm tận xương, thanh cao ngạo nghễ, vỗ mây cưỡi gió lên trời
 00:48.500 LRC: Nam Minh cũng đi một chuyến, chỉ còn thiếu ngọn gió lành chưa tới
-          ann: Trang Chu, Trang Tử · Tiêu Dao Du: “Chim bằng dời về Nam Minh, đập nước ba nghìn dặm, vỗ cánh cưỡi gió lốc lên chín vạn dặm, nương hơi gió tháng sáu mà đi.”
+          ann: Trang Chu, Trang Tử – Tiêu Dao Du: “Chim bằng dời về Nam Minh, đập nước ba nghìn dặm, vỗ cánh cưỡi gió lốc lên chín vạn dặm, nương hơi gió tháng sáu mà đi.”
 00:53.233 clr
 
 00:53.600 LRC: Ta có giấc mộng hóa bướm còn vương, phấp phới đảo lộn sông biển
-          ann: Trang Chu, Trang Tử · Tề Vật Luận: “Chẳng biết Chu mộng thành bướm, hay bướm mộng thành Chu?”
+          ann: Trang Chu, Trang Tử – Tề Vật Luận: “Chẳng biết Chu mộng thành bướm, hay bướm mộng thành Chu?”
 00:57.300 LRC: Mới khiến Bồng Lai mờ ảo nước cạn trong, phủi sạch bụi trần
 01:00.967 LRC: Ta có hươu trắng nơi vách núi xanh, thăm danh sơn tuyết trắng trên đỉnh
           ann: Lý Bạch, Mộng Du Thiên Mỗ Ngâm Lưu Biệt: “Hãy thả hươu trắng giữa vách núi xanh, cần đi thì cưỡi mà thăm danh sơn.”
@@ -44,7 +44,7 @@
 01:15.833 LRC: Ta có trường kiếm ba thước, lại chẳng đòi món nợ sinh sát
           ann: Lữ Động Tân, Tuyệt Cú: “Tiên sinh tiên sinh chớ cầu bên ngoài, đạo cần người truyền, kiếm cần thu lại.”
 01:19.533 LRC: Rạch mở tám nghìn năm, vương hầu khanh tướng mấy độ hưng vong
-          ann: Trang Chu, Trang Tử · Tiêu Dao Du: “Thuở thượng cổ có cây đại xuân, lấy tám nghìn năm làm một mùa xuân, tám nghìn năm làm một mùa thu.”
+          ann: Trang Chu, Trang Tử – Tiêu Dao Du: “Thuở thượng cổ có cây đại xuân, lấy tám nghìn năm làm một mùa xuân, tám nghìn năm làm một mùa thu.”
 01:23.030 clr
 
 01:23.033 rap: Tiên nhân có chờ mà cưỡi hạc vàng, khách biển vô tâm đi theo âu trắng
@@ -75,16 +75,16 @@
 
 02:09.367 LRC: Ta có thuyền nhẹ vạn dặm, thấy được bóng hồng trong sương khói
 02:12.867 LRC: Cưỡi vật mà rong chơi tâm, riêng cùng trời đất qua lại
-          ann: Trang Chu, Trang Tử · Nhân Gian Thế: “Cưỡi vật mà rong chơi tâm.” Trang Tử · Thiên Hạ: “Riêng cùng tinh thần trời đất qua lại, mà chẳng khinh mạn muôn vật.”
+          ann: Trang Chu, Trang Tử – Nhân Gian Thế: “Cưỡi vật mà rong chơi tâm.” Trang Tử – Thiên Hạ: “Riêng cùng tinh thần trời đất qua lại, mà chẳng khinh mạn muôn vật.”
 02:16.500 LRC: Ta biết lấy bọt thấm nhau chẳng bằng quên nhau nơi sông biển
-          ann: Trang Chu, Trang Tử · Đại Tông Sư: “Lấy bọt thấm nhau, lấy hơi ẩm nhau, chẳng bằng quên nhau nơi sông hồ.”
+          ann: Trang Chu, Trang Tử – Đại Tông Sư: “Lấy bọt thấm nhau, lấy hơi ẩm nhau, chẳng bằng quên nhau nơi sông hồ.”
 02:20.367 LRC: Bạc đầu một giấc mộng, cả đời mấy nét từ văn sửa vội
 02:24.000 clr
 
 02:24.800 LRC: Ta có chuyện truyền kỳ, ở giữa mười trượng hồng trần
 02:27.700 LRC: Chẳng cần kinh đường mộc gõ xuống mới tô đậm màu
 02:31.333 LRC: Ta biết bóng câu qua khe cửa, nay có rượu ngon thì chớ chôn
-          ann: Trang Chu, Trang Tử · Tri Bắc Du: “Người ta sống giữa trời đất, như bóng ngựa trắng vụt qua khe cửa, chỉ trong chớp mắt mà thôi.”
+          ann: Trang Chu, Trang Tử – Tri Bắc Du: “Người ta sống giữa trời đất, như bóng ngựa trắng vụt qua khe cửa, chỉ trong chớp mắt mà thôi.”
 02:35.200 LRC: Ta muốn ngủ rồi, người hãy về, sớm mai có hứng thì ôm đàn tới
           ann: Lý Bạch, Sơn Trung Dữ U Nhân Đối Chước: “Ta say muốn ngủ, người hãy về, sớm mai có hứng thì ôm đàn tới.”
 02:38.567 clr
@@ -116,7 +116,7 @@
 03:28.867 txt: nhân phải mà có trái, nhân trái mà có phải.
 03:29.330 txt: Cho nên thánh nhân chẳng theo lối ấy mà soi vào lẽ trời,
 03:30.067 txt: cũng là nhân lẽ tự nhiên vậy.”
-03:31.267 txt: — Trang Tử · Tề Vật Luận
+03:31.267 txt: — Trang Tử – Tề Vật Luận
 03:35.000 clr
 
 03:38.567 cre: Soạn nhạc: 无刃妖影
