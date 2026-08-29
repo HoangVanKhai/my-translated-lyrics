@@ -1,0 +1,135 @@
+# alb: Tên album
+# clr: Xóa chữ trên màn hình
+# LRC: Lời bài hát
+# pfm: Người trình bày
+# rap: Đoạn rap
+# ttl: Tiêu đề ca khúc
+# txt: Chữ dẫn giải
+# ann: Chú thích
+# cre: Thông tin sản xuất
+# eov: Kết thúc MV
+
+00:08.550 ttl: Đạo Ký Giang Tuyết
+          pfm: Yuezheng Ling
+          alb: Chư Tử Bách Gia
+00:15.700 txt: “Chỉ bởi không tranh, nên thiên hạ chẳng ai tranh nổi.”
+               — Đạo Đức Kinh
+00:19.367 clr
+
+00:23.167 LRC: Tuyết phủ khắp đường Trường An, khẽ vén góc tay áo mỏng
+00:26.433 LRC: Chẳng xa là khói bếp bên cầu nhỏ, chim sẻ rảo bước, ngại bị quấy rầy
+00:30.233 LRC: Bản tâm liệu có chi quấy nhiễu, giữa trời đất bao nỗi quạnh hiu
+00:33.933 LRC: Rũ hết giá lạnh trên mình, mới nghe kẻ bất tài bàn chuyện tiêu dao
+00:37.433 clr
+
+00:37.833 LRC: Chút hư danh cũng chẳng nhặt, mặc miếu đường vinh hoa tới mời
+00:41.367 LRC: Chắp tay cười gọi tiếng đồng liêu, lòng ta chẳng phải đá, mời người ngó xem
+          ann: Trang Chu, Trang Tử – Thu Thủy: “Về đi! Ta muốn lê đuôi trong vũng bùn.”
+00:45.300 LRC: Bệnh cuồng thấm tận xương, thanh cao ngạo nghễ, vỗ mây cưỡi gió lên trời
+00:48.500 LRC: Nam Minh cũng đi một chuyến, chỉ còn thiếu ngọn gió lành chưa tới
+          ann: Trang Chu, Trang Tử – Tiêu Dao Du: “Chim bằng dời về Nam Minh, đập nước ba nghìn dặm, vỗ cánh cưỡi gió lốc lên chín vạn dặm, nương hơi gió tháng sáu mà đi.”
+00:53.233 clr
+
+00:53.600 LRC: Ta có giấc mộng hóa bướm còn vương, phấp phới đảo lộn sông biển
+          ann: Trang Chu, Trang Tử – Tề Vật Luận: “Chẳng biết Chu mộng thành bướm, hay bướm mộng thành Chu?”
+00:57.300 LRC: Mới khiến Bồng Lai mờ ảo nước cạn trong, phủi sạch bụi trần
+01:00.967 LRC: Ta có hươu trắng nơi vách núi xanh, thăm danh sơn tuyết trắng trên đỉnh
+          ann: Lý Bạch, Mộng Du Thiên Mỗ Ngâm Lưu Biệt: “Hãy thả hươu trắng giữa vách núi xanh, cần đi thì cưỡi mà thăm danh sơn.”
+01:04.833 LRC: Khói sóng mịt mờ, tiên nhân lưu lại nơi đây một mạch phong lưu
+          ann: Lý Bạch, Mộng Du Thiên Mỗ Ngâm Lưu Biệt: “Khách biển kể chuyện Doanh Châu, khói sóng mịt mờ thật khó tìm.”
+01:08.267 clr
+
+01:09.167 LRC: Ta có gió sông trăng nước, hà hơi vào tuyết pha trà
+01:12.067 LRC: Đi qua nhân gian thăm thẳm, tiêu dao phù sinh tự tại
+01:15.833 LRC: Ta có trường kiếm ba thước, quyết không lấy nợ sinh sát
+          ann: Lữ Động Tân, Tuyệt Cú: “Tiên sinh tiên sinh chớ cầu bên ngoài, đạo cần người truyền, kiếm cần thu lại.”
+01:19.533 LRC: Xẻ toang tám nghìn năm, vương hầu khanh tướng mấy độ hưng vong
+          ann: Trang Chu, Trang Tử – Tiêu Dao Du: “Thuở thượng cổ có cây đại xuân, lấy tám nghìn năm làm một mùa xuân, tám nghìn năm làm một mùa thu.”
+01:23.030 clr
+
+01:23.033 rap: Tiên nhân có chờ mà cưỡi hạc vàng, khách biển vô tâm đi theo âu trắng
+          ann: Lý Bạch, Giang Thượng Ngâm: “Tiên nhân có chờ mà cưỡi hạc vàng, khách biển vô tâm đi theo âu trắng.”
+01:26.567 rap: Bảo rằng ta say thì say thật, chẳng biết sầu là sầu thế nào
+          ann: Lữ Động Tân¹: “Bảo rằng ta say thì say thật, chẳng biết sầu là sầu thế nào. Gặp nhau cớ sao không nhận nhau, lại cưỡi mây trắng quay về thôi.”
+          ann: ¹ Trích từ Chân Nhân Hành Ba Lăng Thị Thái Thú Nộ Kỳ Bất Tị Sử Án Lại Cụ Kỳ Tội Chân Nhân.
+01:30.333 rap: Đắc đạo đến nay tám trăm thu, cõi trần một giấc mộng, khuyên người hãy thôi
+          ann: Lữ Động Tân, Đề Phượng Tường Phủ Thiên Khánh Quán: “Đắc đạo đến nay tám trăm thu, chưa từng phóng kiếm lấy đầu người.”²
+          ann: ² Cùng hai câu của Trần Hy Di, Thạch Khắc Thi Tịnh Tự: “Nhân nghe lời huyền lẽ mịt mờ, chợt hay trần thế một giấc mơ.” và Lữ Động Tân, Tuyệt Cú: “Hôm nay gặp nhau bên sông biển, một chén rượu quê khuyên người thôi.”
+01:34.267 rap: Giáp tý thế gian chẳng quản nổi, càn khôn trong bầu chỉ có tự do
+          ann: Lữ Động Tân, Tặng La Phù Đạo Sĩ: “Giáp tý thế gian chẳng quản nổi, càn khôn trong bầu chỉ có tự do.”
+01:38.533 clr
+
+01:38.833 LRC: Nào quản sóng cùng triều, đầu bạc rốt cuộc đổi lấy thuở thiếu niên
+01:42.200 LRC: Ân oán năm nào rồi cũng dứt, ta thấy giang hồ lắm nỗi phiền hà
+01:45.833 LRC: Tiếng người sôi sục huyên náo, chư quân được mấy tri giao
+01:49.500 LRC: Uổng chê hồng trần tiêu điều, vị nhàn tĩnh này có thể làm thuốc
+          ann: Trang Chu, Tiêu Dao Du: “Thánh nhân không màng danh.”
+01:53.200 clr
+
+01:53.300 LRC: Sắc trăng như rượu rót, tự thiếp cũ càng thêm nguệch ngoạc
+01:56.933 LRC: Văn chương pho sách bao nhiêu, say rồi cuối câu lười gọt giũa
+02:00.433 LRC: Đại đạo chẳng cần tranh cao, sông lớn muôn đời soi chẳng dứt
+          ann: Đỗ Phủ, Hí Vi Lục Tuyệt Cú: “Thân và danh các ngươi rồi cùng mất, chẳng ngăn được sông lớn muôn đời trôi.”
+02:04.200 LRC: Ta tính lúc này vừa hay, cõi tục mịt mờ đã rạng đông
+02:08.933 clr
+
+02:09.367 LRC: Ta có thuyền nhẹ vạn dặm, thấy được bóng hồng trong sương khói
+02:12.867 LRC: Cưỡi vật mà rong chơi tâm, riêng cùng trời đất qua lại
+          ann: Trang Chu, Trang Tử – Nhân Gian Thế: “Cưỡi vật mà rong chơi tâm.” Trang Tử – Thiên Hạ: “Riêng cùng tinh thần trời đất qua lại, mà chẳng khinh mạn muôn vật.”
+02:16.500 LRC: Ta biết lấy bọt thấm nhau chẳng bằng quên nhau nơi sông biển
+          ann: Trang Chu, Trang Tử – Đại Tông Sư: “Lấy bọt thấm nhau, lấy hơi ẩm nhau, chẳng bằng quên nhau nơi sông hồ.”
+02:20.367 LRC: Bạc đầu một giấc mộng, cả đời mấy nét từ văn sửa vội
+02:24.000 clr
+
+02:24.800 LRC: Ta có chuyện truyền kỳ, ở giữa mười trượng hồng trần
+02:27.700 LRC: Chẳng cần kinh đường mộc gõ xuống mới tô đậm màu
+02:31.333 LRC: Ta biết bóng câu qua khe cửa, nay có rượu ngon thì chớ chôn
+          ann: Trang Chu, Trang Tử – Tri Bắc Du: “Người ta sống giữa trời đất, như bóng ngựa trắng vụt qua khe cửa, chỉ trong chớp mắt mà thôi.”
+02:35.200 LRC: Ta muốn ngủ rồi, người hãy về, sớm mai có hứng thì ôm đàn tới
+          ann: Lý Bạch, Sơn Trung Dữ U Nhân Đối Chước: “Ta say muốn ngủ, người hãy về, sớm mai có hứng thì ôm đàn tới.”
+02:38.567 clr
+
+02:39.500 LRC: Thiên thu vạn tải, ta khuyên một chén khảng khái
+02:43.000 LRC: Say khướt ngoài quán rượu, say luôn cả quan san
+02:46.733 LRC: Việc gì đáng vấn vương, ta hát một tiếng khoái thay
+02:50.400 LRC: Mấy đấu rượu, nghìn trăm bài thơ, đem gọt
+02:53.550 clr
+
+02:53.567 LRC: Ta có gió sông trăng nước, hà hơi vào tuyết pha thành một chén
+02:57.433 LRC: Đi qua nhân gian thăm thẳm, tiêu dao phù sinh tự tại
+03:01.033 LRC: Ta có trường kiếm ba thước, quyết không lấy nợ sinh sát
+03:04.733 LRC: Xẻ toang tám nghìn năm, vương hầu khanh tướng mấy độ hưng vong
+03:08.755 clr
+
+03:08.833 LRC: Ta có chuyện truyền kỳ, ở giữa mười trượng hồng trần
+03:11.600 LRC: Chẳng cần kinh đường mộc gõ xuống mới tô đậm màu
+03:15.400 LRC: Ta biết bóng câu qua khe cửa, nay có rượu ngon thì chớ chôn
+03:19.267 LRC: Ta muốn ngủ rồi, người hãy về, sớm mai có hứng thì ôm đàn tới
+03:22.768 clr
+
+03:24.333 txt: “Vật nào cũng là ‘kia’, vật nào cũng là ‘này’.
+          txt: Nhìn từ ‘kia’ thì chẳng thấy, tự biết thì mới hay.
+03:26.300 txt: Nên nói: ‘kia’ xuất từ ‘này’, ‘này’ cũng nhân ‘kia’.
+          txt: Ấy gọi là ‘kia’ và ‘này’ cùng sinh.
+03:27.400 txt: Tuy vậy, vừa sinh vừa tử, vừa tử vừa sinh;
+          txt: vừa khả vừa bất khả, vừa bất khả vừa khả;
+          txt: nhân thị mà có phi, nhân phi mà có thị.
+03:29.330 txt: Cho nên thánh nhân chẳng theo lối ấy mà soi vào lẽ trời,
+          txt: cũng là nhân thị vậy.”
+03:31.267 txt: — Trang Tử – Tề Vật Luận
+03:35.000 clr
+
+03:38.567 cre: Soạn nhạc: 无刃妖影
+               Tác từ: 安陵影钦
+03:42.333 cre: Phối khí: 阿落
+               Mix: URUUT
+03:46.267 cre: Điều giáo: 流绪
+               Video: 流绪
+03:49.800 cre: Minh họa: 良人落
+               Thiết kế logo: 慧_Sophie/綄风
+03:53.567 ttl: Đạo Ký Giang Tuyết
+          pfm: Yuezheng Ling
+          alb: Chư Tử Bách Gia
+03:56.867 clr
+
+04:00.000 eov
