@@ -5,6 +5,7 @@ use super::error::{
     ParseLyricsError, RepeatedTimestamp, ReservedControlMarker, TabIndentation, UnclosedCue,
 };
 use super::parse_lyrics;
+use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::{SecondsOutOfRange, TakeTimestampError, Timestamp};
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
@@ -77,7 +78,7 @@ fn control_markers_reject_trailing_text() {
         parse_lyrics(clr_input).unwrap_err(),
         ParseLyricsError::ExtraTextAfterControlMarker(ExtraTextAfterControlMarker {
             line_number: 2,
-            marker: "clr".to_string(),
+            marker: ReservedMarker::Clear,
             trailing: "some trailing text".to_string(),
         }),
     );
@@ -91,7 +92,7 @@ fn control_markers_reject_trailing_text() {
         parse_lyrics(eov_input).unwrap_err(),
         ParseLyricsError::ExtraTextAfterControlMarker(ExtraTextAfterControlMarker {
             line_number: 3,
-            marker: "eov".to_string(),
+            marker: ReservedMarker::EndOfVideo,
             trailing: "end of video".to_string(),
         }),
     );
@@ -208,7 +209,7 @@ fn rejects_cue_marker_that_collides_with_control_token() {
         parse_lyrics(clr_input).unwrap_err(),
         ParseLyricsError::ReservedControlMarker(ReservedControlMarker {
             line_number: 1,
-            marker: "clr".to_string(),
+            marker: ReservedMarker::Clear,
         }),
     );
 
@@ -220,7 +221,7 @@ fn rejects_cue_marker_that_collides_with_control_token() {
         parse_lyrics(eov_input).unwrap_err(),
         ParseLyricsError::ReservedControlMarker(ReservedControlMarker {
             line_number: 1,
-            marker: "eov".to_string(),
+            marker: ReservedMarker::EndOfVideo,
         }),
     );
 }
@@ -749,7 +750,7 @@ fn annotation_marker_cannot_name_a_cue() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::ReservedControlMarker(ReservedControlMarker {
             line_number: 2,
-            marker: "ann".to_string(),
+            marker: ReservedMarker::Annotation,
         }),
     );
 }

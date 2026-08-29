@@ -12,7 +12,7 @@
 use super::TIMESTAMP_PREFIX_WIDTH;
 use core::fmt;
 use derive_more::Display;
-use lyrics_core::line_markers_descriptor::ANNOTATION_MARKER;
+use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::{TakeTimestampError, Timestamp};
 
 /// Payload for [`ParseLyricsError::InvalidTimestamp`]. Wraps the
@@ -46,11 +46,11 @@ pub struct MissingSeparatorAfterTimestamp {
 /// Payload for [`ParseLyricsError::ExtraTextAfterControlMarker`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "line {line_number}: control marker {marker:?} must stand alone but is followed by {trailing:?}"
+    "line {line_number}: control marker `{marker}` must stand alone but is followed by {trailing:?}"
 )]
 pub struct ExtraTextAfterControlMarker {
     pub line_number: usize,
-    pub marker: String,
+    pub marker: ReservedMarker,
     pub trailing: String,
 }
 
@@ -64,16 +64,19 @@ pub struct OutOfOrder {
 
 /// Payload for [`ParseLyricsError::ReservedControlMarker`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("line {line_number}: marker {marker:?} is reserved by the parser and cannot name a cue")]
+#[display("line {line_number}: marker `{marker}` is reserved by the parser and cannot name a cue")]
 pub struct ReservedControlMarker {
     pub line_number: usize,
-    pub marker: String,
+    pub marker: ReservedMarker,
 }
 
 /// Payload for [`ParseLyricsError::EmptyAnnotation`]. Raised when an
 /// annotation line carries no text after its `:` separator.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("line {line_number}: annotation marker `{ANNOTATION_MARKER}` has an empty body")]
+#[display(
+    "line {line_number}: annotation marker `{}` has an empty body",
+    ReservedMarker::Annotation
+)]
 pub struct EmptyAnnotation {
     pub line_number: usize,
 }

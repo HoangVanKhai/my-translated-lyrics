@@ -2,20 +2,17 @@
 //!
 //! Each file is a sequence of timestamped events. A line that starts
 //! with `MM:SS.mmm` opens an event. If the event's first non-whitespace
-//! token is [`CLEAR_MARKER`], the currently open cue is closed at that
-//! timestamp; if it is [`END_OF_VIDEO_MARKER`], the line is ignored.
-//! Any other event opens a new cue; continuation lines that lack a
-//! leading timestamp are appended to the most recently opened cue.
+//! token is [`ReservedMarker::Clear`], the currently open cue is closed
+//! at that timestamp; if it is [`ReservedMarker::EndOfVideo`], the line
+//! is ignored. Any other event opens a new cue; continuation lines that
+//! lack a leading timestamp are appended to the most recently opened
+//! cue.
 //!
 //! A line at the shorthand column whose marker is
-//! [`ANNOTATION_MARKER`] attaches commentary to the cue part above
-//! it. It carries no timestamp, opens no event, and reaches neither
-//! renderer. Each line opens one annotation, which takes
+//! [`ReservedMarker::Annotation`] attaches commentary to the cue part
+//! above it. It carries no timestamp, opens no event, and reaches
+//! neither renderer. Each line opens one annotation, which takes
 //! continuation lines of its own.
-//!
-//! [`ANNOTATION_MARKER`]: lyrics_core::line_markers_descriptor::ANNOTATION_MARKER
-//! [`CLEAR_MARKER`]: lyrics_core::line_markers_descriptor::CLEAR_MARKER
-//! [`END_OF_VIDEO_MARKER`]: lyrics_core::line_markers_descriptor::END_OF_VIDEO_MARKER
 
 pub mod error;
 
@@ -25,7 +22,7 @@ use error::{
     MissingSeparatorAfterTimestamp, OrphanedAnnotation, OrphanedShorthandMarker, OutOfOrder,
     ParseLyricsError, RepeatedTimestamp, ReservedControlMarker, TabIndentation, UnclosedCue,
 };
-use lyrics_core::line_markers_descriptor::{ANNOTATION_MARKER, CLEAR_MARKER, END_OF_VIDEO_MARKER};
+use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
 
 /// Indent width of a line that opens a new marker at the same start
@@ -218,18 +215,22 @@ fn handle_header_line(
     }
 
     let first_token = cue_body.split_whitespace().next().unwrap_or("");
-    if first_token == END_OF_VIDEO_MARKER || first_token == CLEAR_MARKER {
+    let control_marker = first_token
+        .parse::<ReservedMarker>()
+        .ok()
+        .filter(|marker| matches!(marker, ReservedMarker::Clear | ReservedMarker::EndOfVideo));
+    if let Some(control_marker) = control_marker {
         let trailing = cue_body[first_token.len()..].trim();
         if !trailing.is_empty() {
             return Err(ParseLyricsError::ExtraTextAfterControlMarker(
                 ExtraTextAfterControlMarker {
                     line_number,
-                    marker: first_token.to_string(),
+                    marker: control_marker,
                     trailing: trailing.to_string(),
                 },
             ));
         }
-        if first_token == CLEAR_MARKER {
+        if control_marker == ReservedMarker::Clear {
             check_event_order(start, line_number, events)?;
             events.push(Event::Clear(start));
             *last_cue_index = None;
@@ -324,7 +325,7 @@ fn handle_annotation_line(
         .annotations
         .push(text.to_string());
     *open_marker_line = Some(OpenMarkerLine {
-        marker_prefix_width: marker_prefix_width(ANNOTATION_MARKER),
+        marker_prefix_width: marker_prefix_width(ReservedMarker::Annotation.as_ref()),
         target: ContinuationTarget::AnnotationText,
     });
     Ok(())
@@ -384,11 +385,11 @@ fn parse_marker_part(body: &str, line_number: usize) -> Result<(&str, &str), Par
             content: body.to_string(),
         })
     })?;
-    if marker == CLEAR_MARKER || marker == END_OF_VIDEO_MARKER || marker == ANNOTATION_MARKER {
+    if let Ok(reserved) = marker.parse::<ReservedMarker>() {
         return Err(ParseLyricsError::ReservedControlMarker(
             ReservedControlMarker {
                 line_number,
-                marker: marker.to_string(),
+                marker: reserved,
             },
         ));
     }
@@ -464,7 +465,7 @@ fn resolve_cues(events: Vec<Event>) -> Result<Vec<SubtitleCue>, ParseLyricsError
 /// does not carry the marker followed by an ASCII `:`.
 fn annotation_body(body: &str) -> Option<&str> {
     let (marker, text) = split_marker(body)?;
-    (marker == ANNOTATION_MARKER).then_some(text)
+    matches!(marker.parse(), Ok(ReservedMarker::Annotation)).then_some(text)
 }
 
 /// Splits a line body like `marker: text` into its two halves. Returns

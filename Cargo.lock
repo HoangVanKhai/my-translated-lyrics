@@ -553,6 +553,7 @@ dependencies = [
  "strsim",
  "strum",
  "test-utils",
+ "text-block-macros",
  "toml",
 ]
 

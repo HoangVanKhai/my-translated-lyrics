@@ -1,6 +1,6 @@
 use super::{RenderVttError, render_vtt};
 use crate::_test_utils::{
-    color, credits_with_one_role, markers_with_credit_trigger, style_palette,
+    color, credits_with_one_role, marker_name, markers_with_credit_trigger, style_palette,
 };
 use crate::parse::{CuePart, SubtitleCue};
 use crate::styles::{MissingStyle, Style, StylePalette};
@@ -96,9 +96,9 @@ fn voice_name_containing_ampersand_is_emitted_verbatim_in_cue_tag() {
         .pipe(VoiceName::new)
         .expect("test fixture passes the voice-name validator");
     let markers = LineMarkersDesc {
-        markers: vec!["vca".to_string()],
+        markers: vec![marker_name("vca")],
         voices: btreemap! {
-            "vca".to_string() => btreemap! { Language::Vietnamese => voice_name },
+            marker_name("vca") => btreemap! { Language::Vietnamese => voice_name },
         },
         ..Default::default()
     };
@@ -167,8 +167,8 @@ fn class_declared_without_palette_entry_produces_style_error() {
         .pipe(CssClassName::new)
         .expect("test fixture passes the class-name validator");
     let markers = LineMarkersDesc {
-        markers: vec!["ttl".to_string()],
-        classes: btreemap! { "ttl".to_string() => class_name },
+        markers: vec![marker_name("ttl")],
+        classes: btreemap! { marker_name("ttl") => class_name },
         ..Default::default()
     };
     let cues = vec![SubtitleCue {
@@ -201,9 +201,9 @@ fn voice_declared_without_palette_entry_produces_style_error() {
         .pipe(VoiceName::new)
         .expect("test fixture passes the voice-name validator");
     let markers = LineMarkersDesc {
-        markers: vec!["unk".to_string()],
+        markers: vec![marker_name("unk")],
         voices: btreemap! {
-            "unk".to_string() => btreemap! { Language::Vietnamese => voice_name },
+            marker_name("unk") => btreemap! { Language::Vietnamese => voice_name },
         },
         ..Default::default()
     };

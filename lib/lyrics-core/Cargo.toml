@@ -17,6 +17,7 @@ into-sorted.workspace = true
 pretty_assertions.workspace = true
 serde-saphyr.workspace = true
 test-utils.workspace = true
+text-block-macros.workspace = true
 toml.workspace = true
 
 [lints]
