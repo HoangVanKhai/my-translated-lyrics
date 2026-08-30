@@ -14,29 +14,13 @@
 //! neither renderer. Each line opens one annotation, which takes
 //! continuation lines of its own.
 //!
-//! # Additive regions
-//!
-//! A column-zero `<additive>` tag line opens a region in which cues
-//! accumulate instead of replacing one another. Each cue inside the
-//! region renders the parts of every cue above it in the same region,
-//! followed by its own, so a verse builds up a line at a time. A
-//! `</additive>` tag line closes the region, and the cue it leaves
-//! open ends at the next event after the tag in the ordinary way.
-//!
-//! A tag line is matched literally. `<additive>` and `</additive>`
-//! are the only two spellings the parser accepts, with no whitespace
-//! anywhere inside or beside them, because a tag carries no
-//! attributes for whitespace to separate. Every other column-zero
-//! line that begins with `<` is rejected.
-//!
-//! Three rules keep a region simple to read. Regions do not nest.
-//! Neither [`ReservedMarker::Clear`] nor [`ReservedMarker::EndOfVideo`]
-//! may appear inside one, because both contradict the accumulation the
-//! region exists to express. A region encloses at least one cue.
-//!
-//! Each tag also ends the scope of the cue above it, exactly as
-//! [`ReservedMarker::Clear`] does, so no continuation or shorthand
-//! marker line reaches across a region boundary.
+//! Between a column-zero `<additive>` line and a `</additive>` line,
+//! cues accumulate rather than replace: each renders the parts of
+//! every cue above it in the region, then its own. Both spellings are
+//! matched literally, so no whitespace may sit inside or beside them.
+//! Regions do not nest, enclose at least one cue, and admit neither
+//! [`ReservedMarker::Clear`] nor [`ReservedMarker::EndOfVideo`]. Each
+//! tag ends the scope of the cue above it, as `clr` does.
 
 pub mod error;
 
