@@ -84,13 +84,6 @@ pub struct EmptyAnnotation {
 /// Payload for [`ParseLyricsError::MalformedTagLine`]. Raised when a
 /// column-zero line begins with `<` without being one of the two tag
 /// lines the parser defines.
-///
-/// A tag carries no attributes, so the two spellings are matched
-/// literally and every near miss lands here: an unrecognized name, a
-/// missing `>`, whitespace anywhere inside the delimiters, and any
-/// text sharing the line with the tag. Naming both spellings in full
-/// tells the author what to write, which one message can do for all
-/// of those cases.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "line {line_number}: {content:?} is not a tag line; a tag line reads exactly \
@@ -148,11 +141,6 @@ pub struct EmptyRegion {
 }
 
 /// Payload for [`AdditiveRegionError::ControlMarker`].
-///
-/// Both control markers contradict an additive region. `clr` ends the
-/// open cue, which is the replacement behavior the region exists to
-/// suspend, and `eov` marks the end of the video, which no region
-/// should still be open across.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "line {line_number}: control marker `{marker}` appears inside the additive region opened \
@@ -297,15 +285,6 @@ pub struct UnclosedCue {
 }
 
 /// The ways an `<additive>` region can be malformed.
-///
-/// These failures share one subject, the region itself, and none of
-/// them can arise in a source file that opens no region. Grouping
-/// them lets [`ParseLyricsError`] carry a single region entry and
-/// lets a caller match the whole family in one arm.
-///
-/// A misspelled tag line is not one of these. It is reported as
-/// [`MalformedTagLine`] before any region bookkeeping runs, because
-/// a line that is not a tag opens and closes nothing.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum AdditiveRegionError {
