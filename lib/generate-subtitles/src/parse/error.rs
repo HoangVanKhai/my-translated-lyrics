@@ -127,8 +127,6 @@ pub struct ExtraTextAfterTag {
 )]
 pub struct NestedAdditiveRegion {
     pub line_number: usize,
-    /// Line number of the `<additive>` that opened the enclosing
-    /// region.
     pub opened_at: usize,
 }
 
@@ -161,7 +159,6 @@ pub struct UnclosedAdditiveRegion {
 #[display("line {line_number}: the additive region opened on line {opened_at} encloses no cue")]
 pub struct EmptyAdditiveRegion {
     pub line_number: usize,
-    /// Line number of the `<additive>` that opened the region.
     pub opened_at: usize,
 }
 
@@ -179,7 +176,6 @@ pub struct EmptyAdditiveRegion {
 pub struct ControlMarkerInAdditiveRegion {
     pub line_number: usize,
     pub marker: ReservedMarker,
-    /// Line number of the `<additive>` that opened the region.
     pub opened_at: usize,
 }
 
