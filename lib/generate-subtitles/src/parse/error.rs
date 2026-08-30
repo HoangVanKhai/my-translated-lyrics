@@ -81,9 +81,7 @@ pub struct EmptyAnnotation {
     pub line_number: usize,
 }
 
-/// Payload for [`ParseLyricsError::MalformedTagLine`]. Raised when a
-/// column-zero line begins with `<` without being one of the two tag
-/// lines the parser defines.
+/// Payload for [`ParseLyricsError::MalformedTagLine`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "line {line_number}: {content:?} is not a tag line; a tag line reads exactly \
