@@ -1193,13 +1193,18 @@ fn rejects_every_near_miss_of_a_tag_line() {
              07:11.111 LRC: first line\n\
              07:22.222 clr\n",
         );
+        // `unwrap_err` would panic without naming the case, so the
+        // accepted-by-mistake path reports the near miss itself.
+        let Err(error) = parse_lyrics(&input) else {
+            panic!("{content:?} was accepted as a tag line");
+        };
         assert_eq!(
-            parse_lyrics(&input).unwrap_err(),
+            error,
             ParseLyricsError::MalformedTagLine(MalformedTagLine {
                 line_number: 1,
                 content: content.to_string(),
             }),
-            "{content:?} must not be accepted as a tag line",
+            "{content:?} was rejected by the wrong diagnostic",
         );
     }
 }
