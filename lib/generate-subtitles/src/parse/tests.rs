@@ -1,10 +1,10 @@
 use super::error::{
-    ControlMarkerInAdditiveRegion, CueTextReservedCharacter, EmptyAdditiveRegion, EmptyAnnotation,
-    EmptyCueBody, ExtraTextAfterControlMarker, InvalidTimestamp, MalformedHeader,
+    AdditiveRegionError, ControlMarkerInRegion, CueTextReservedCharacter, EmptyAnnotation,
+    EmptyCueBody, EmptyRegion, ExtraTextAfterControlMarker, InvalidTimestamp, MalformedHeader,
     MalformedIndentation, MalformedTagLine, MissingMarker, MissingSeparatorAfterTimestamp,
-    NestedAdditiveRegion, OrphanedAnnotation, OrphanedShorthandMarker, OutOfOrder,
-    ParseLyricsError, RepeatedTimestamp, ReservedControlMarker, TabIndentation,
-    UnclosedAdditiveRegion, UnclosedCue, UnopenedAdditiveRegion,
+    NestedRegion, OrphanedAnnotation, OrphanedShorthandMarker, OutOfOrder, ParseLyricsError,
+    RepeatedTimestamp, ReservedControlMarker, TabIndentation, UnclosedCue, UnclosedRegion,
+    UnopenedRegion,
 };
 use super::parse_lyrics;
 use lyrics_core::line_markers_descriptor::ReservedMarker;
@@ -1046,10 +1046,10 @@ fn rejects_a_region_opened_inside_another_region() {
     };
     assert_eq!(
         parse_lyrics(doubled_tags).unwrap_err(),
-        ParseLyricsError::NestedAdditiveRegion(NestedAdditiveRegion {
+        ParseLyricsError::AdditiveRegion(AdditiveRegionError::Nested(NestedRegion {
             line_number: 2,
             opened_at: 1,
-        }),
+        })),
     );
 
     let inner_region = text_block_fnl! {
@@ -1064,10 +1064,10 @@ fn rejects_a_region_opened_inside_another_region() {
     };
     assert_eq!(
         parse_lyrics(inner_region).unwrap_err(),
-        ParseLyricsError::NestedAdditiveRegion(NestedAdditiveRegion {
+        ParseLyricsError::AdditiveRegion(AdditiveRegionError::Nested(NestedRegion {
             line_number: 3,
             opened_at: 1,
-        }),
+        })),
     );
 }
 
@@ -1081,11 +1081,13 @@ fn rejects_a_control_marker_inside_a_region() {
     };
     assert_eq!(
         parse_lyrics(clear_input).unwrap_err(),
-        ParseLyricsError::ControlMarkerInAdditiveRegion(ControlMarkerInAdditiveRegion {
-            line_number: 3,
-            marker: ReservedMarker::Clear,
-            opened_at: 1,
-        }),
+        ParseLyricsError::AdditiveRegion(AdditiveRegionError::ControlMarker(
+            ControlMarkerInRegion {
+                line_number: 3,
+                marker: ReservedMarker::Clear,
+                opened_at: 1,
+            }
+        )),
     );
 
     let end_of_video_input = text_block_fnl! {
@@ -1096,11 +1098,13 @@ fn rejects_a_control_marker_inside_a_region() {
     };
     assert_eq!(
         parse_lyrics(end_of_video_input).unwrap_err(),
-        ParseLyricsError::ControlMarkerInAdditiveRegion(ControlMarkerInAdditiveRegion {
-            line_number: 3,
-            marker: ReservedMarker::EndOfVideo,
-            opened_at: 1,
-        }),
+        ParseLyricsError::AdditiveRegion(AdditiveRegionError::ControlMarker(
+            ControlMarkerInRegion {
+                line_number: 3,
+                marker: ReservedMarker::EndOfVideo,
+                opened_at: 1,
+            }
+        )),
     );
 }
 
@@ -1117,7 +1121,9 @@ fn rejects_a_region_that_is_never_closed() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::UnclosedAdditiveRegion(UnclosedAdditiveRegion { line_number: 2 }),
+        ParseLyricsError::AdditiveRegion(AdditiveRegionError::Unclosed(UnclosedRegion {
+            line_number: 2
+        })),
     );
 }
 
@@ -1130,7 +1136,9 @@ fn rejects_a_closing_tag_without_an_opening_one() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::UnopenedAdditiveRegion(UnopenedAdditiveRegion { line_number: 2 }),
+        ParseLyricsError::AdditiveRegion(AdditiveRegionError::Unopened(UnopenedRegion {
+            line_number: 2
+        })),
     );
 }
 
@@ -1149,10 +1157,10 @@ fn rejects_a_region_that_encloses_no_cue() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::EmptyAdditiveRegion(EmptyAdditiveRegion {
+        ParseLyricsError::AdditiveRegion(AdditiveRegionError::Empty(EmptyRegion {
             line_number: 4,
             opened_at: 1,
-        }),
+        })),
     );
 }
 

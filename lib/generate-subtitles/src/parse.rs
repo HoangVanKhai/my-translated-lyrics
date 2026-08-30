@@ -41,12 +41,12 @@
 pub mod error;
 
 use error::{
-    ControlMarkerInAdditiveRegion, CueTextReservedCharacter, EmptyAdditiveRegion, EmptyAnnotation,
-    EmptyCueBody, ExtraTextAfterControlMarker, InvalidTimestamp, MalformedHeader,
+    AdditiveRegionError, ControlMarkerInRegion, CueTextReservedCharacter, EmptyAnnotation,
+    EmptyCueBody, EmptyRegion, ExtraTextAfterControlMarker, InvalidTimestamp, MalformedHeader,
     MalformedIndentation, MalformedTagLine, MissingMarker, MissingSeparatorAfterTimestamp,
-    NestedAdditiveRegion, OrphanedAnnotation, OrphanedShorthandMarker, OutOfOrder,
-    ParseLyricsError, RepeatedTimestamp, ReservedControlMarker, TabIndentation,
-    UnclosedAdditiveRegion, UnclosedCue, UnopenedAdditiveRegion,
+    NestedRegion, OrphanedAnnotation, OrphanedShorthandMarker, OutOfOrder, ParseLyricsError,
+    RepeatedTimestamp, ReservedControlMarker, TabIndentation, UnclosedCue, UnclosedRegion,
+    UnopenedRegion,
 };
 use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
@@ -283,11 +283,10 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
     }
 
     if let Some(open) = regions.open {
-        return Err(ParseLyricsError::UnclosedAdditiveRegion(
-            UnclosedAdditiveRegion {
-                line_number: open.line_number,
-            },
-        ));
+        return Err(AdditiveRegionError::Unclosed(UnclosedRegion {
+            line_number: open.line_number,
+        })
+        .into());
     }
 
     Ok(events)
@@ -310,12 +309,11 @@ fn handle_tag_line(
     match kind {
         TagKind::Opening => {
             if let Some(open) = &regions.open {
-                return Err(ParseLyricsError::NestedAdditiveRegion(
-                    NestedAdditiveRegion {
-                        line_number,
-                        opened_at: open.line_number,
-                    },
-                ));
+                return Err(AdditiveRegionError::Nested(NestedRegion {
+                    line_number,
+                    opened_at: open.line_number,
+                })
+                .into());
             }
             regions.open = Some(OpenRegion {
                 index: AdditiveRegion(regions.opened),
@@ -326,15 +324,14 @@ fn handle_tag_line(
         }
         TagKind::Closing => {
             let Some(open) = regions.open.take() else {
-                return Err(ParseLyricsError::UnopenedAdditiveRegion(
-                    UnopenedAdditiveRegion { line_number },
-                ));
+                return Err(AdditiveRegionError::Unopened(UnopenedRegion { line_number }).into());
             };
             if open.cue_count == 0 {
-                return Err(ParseLyricsError::EmptyAdditiveRegion(EmptyAdditiveRegion {
+                return Err(AdditiveRegionError::Empty(EmptyRegion {
                     line_number,
                     opened_at: open.line_number,
-                }));
+                })
+                .into());
             }
         }
     }
@@ -395,13 +392,12 @@ fn handle_header_line(
             ));
         }
         if let Some(open) = &regions.open {
-            return Err(ParseLyricsError::ControlMarkerInAdditiveRegion(
-                ControlMarkerInAdditiveRegion {
-                    line_number,
-                    marker: control_marker,
-                    opened_at: open.line_number,
-                },
-            ));
+            return Err(AdditiveRegionError::ControlMarker(ControlMarkerInRegion {
+                line_number,
+                marker: control_marker,
+                opened_at: open.line_number,
+            })
+            .into());
         }
         if control_marker == ReservedMarker::Clear {
             check_event_order(start, line_number, events)?;

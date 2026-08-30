@@ -101,7 +101,7 @@ pub struct MalformedTagLine {
     pub content: String,
 }
 
-/// Payload for [`ParseLyricsError::NestedAdditiveRegion`]. Additive
+/// Payload for [`AdditiveRegionError::Nested`]. Additive
 /// regions are flat by design: a cue accumulates the parts of the
 /// cues above it in one region, and a nested region would leave the
 /// accumulation of the outer one ambiguous.
@@ -110,22 +110,22 @@ pub struct MalformedTagLine {
     "line {line_number}: `{ADDITIVE_OPENING_TAG}` opens an additive region inside the one \
     opened on line {opened_at}; additive regions do not nest"
 )]
-pub struct NestedAdditiveRegion {
+pub struct NestedRegion {
     pub line_number: usize,
     pub opened_at: usize,
 }
 
-/// Payload for [`ParseLyricsError::UnopenedAdditiveRegion`].
+/// Payload for [`AdditiveRegionError::Unopened`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "line {line_number}: `{ADDITIVE_CLOSING_TAG}` closes an additive region that no \
     `{ADDITIVE_OPENING_TAG}` opened"
 )]
-pub struct UnopenedAdditiveRegion {
+pub struct UnopenedRegion {
     pub line_number: usize,
 }
 
-/// Payload for [`ParseLyricsError::UnclosedAdditiveRegion`]. Carries
+/// Payload for [`AdditiveRegionError::Unclosed`]. Carries
 /// the line of the opening tag rather than the end of the file,
 /// because that is the line the author has to revisit.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
@@ -133,21 +133,21 @@ pub struct UnopenedAdditiveRegion {
     "line {line_number}: `{ADDITIVE_OPENING_TAG}` opens an additive region that no \
     `{ADDITIVE_CLOSING_TAG}` closes"
 )]
-pub struct UnclosedAdditiveRegion {
+pub struct UnclosedRegion {
     pub line_number: usize,
 }
 
-/// Payload for [`ParseLyricsError::EmptyAdditiveRegion`]. A region
+/// Payload for [`AdditiveRegionError::Empty`]. A region
 /// exists to make its cues accumulate, so one that encloses no cue
 /// says nothing that deleting both tags would not say.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: the additive region opened on line {opened_at} encloses no cue")]
-pub struct EmptyAdditiveRegion {
+pub struct EmptyRegion {
     pub line_number: usize,
     pub opened_at: usize,
 }
 
-/// Payload for [`ParseLyricsError::ControlMarkerInAdditiveRegion`].
+/// Payload for [`AdditiveRegionError::ControlMarker`].
 ///
 /// Both control markers contradict an additive region. `clr` ends the
 /// open cue, which is the replacement behavior the region exists to
@@ -158,7 +158,7 @@ pub struct EmptyAdditiveRegion {
     "line {line_number}: control marker `{marker}` appears inside the additive region opened \
     on line {opened_at}; close the region before the marker"
 )]
-pub struct ControlMarkerInAdditiveRegion {
+pub struct ControlMarkerInRegion {
     pub line_number: usize,
     pub marker: ReservedMarker,
     pub opened_at: usize,
@@ -296,6 +296,26 @@ pub struct UnclosedCue {
     pub start: Timestamp,
 }
 
+/// The ways an `<additive>` region can be malformed.
+///
+/// These failures share one subject, the region itself, and none of
+/// them can arise in a source file that opens no region. Grouping
+/// them lets [`ParseLyricsError`] carry a single region entry and
+/// lets a caller match the whole family in one arm.
+///
+/// A misspelled tag line is not one of these. It is reported as
+/// [`MalformedTagLine`] before any region bookkeeping runs, because
+/// a line that is not a tag opens and closes nothing.
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[non_exhaustive]
+pub enum AdditiveRegionError {
+    Nested(NestedRegion),
+    Unopened(UnopenedRegion),
+    Unclosed(UnclosedRegion),
+    Empty(EmptyRegion),
+    ControlMarker(ControlMarkerInRegion),
+}
+
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum ParseLyricsError {
@@ -303,11 +323,7 @@ pub enum ParseLyricsError {
     MalformedIndentation(MalformedIndentation),
     MalformedHeader(MalformedHeader),
     MalformedTagLine(MalformedTagLine),
-    NestedAdditiveRegion(NestedAdditiveRegion),
-    UnopenedAdditiveRegion(UnopenedAdditiveRegion),
-    UnclosedAdditiveRegion(UnclosedAdditiveRegion),
-    EmptyAdditiveRegion(EmptyAdditiveRegion),
-    ControlMarkerInAdditiveRegion(ControlMarkerInAdditiveRegion),
+    AdditiveRegion(AdditiveRegionError),
     InvalidTimestamp(InvalidTimestamp),
     MissingSeparatorAfterTimestamp(MissingSeparatorAfterTimestamp),
     ExtraTextAfterControlMarker(ExtraTextAfterControlMarker),
@@ -321,4 +337,10 @@ pub enum ParseLyricsError {
     OrphanedShorthandMarker(OrphanedShorthandMarker),
     OrphanedAnnotation(OrphanedAnnotation),
     UnclosedCue(UnclosedCue),
+}
+
+impl From<AdditiveRegionError> for ParseLyricsError {
+    fn from(error: AdditiveRegionError) -> Self {
+        ParseLyricsError::AdditiveRegion(error)
+    }
 }
