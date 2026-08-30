@@ -94,10 +94,7 @@ pub struct MalformedTagLine {
     pub content: String,
 }
 
-/// Payload for [`AdditiveRegionError::Nested`]. Additive
-/// regions are flat by design: a cue accumulates the parts of the
-/// cues above it in one region, and a nested region would leave the
-/// accumulation of the outer one ambiguous.
+/// Payload for [`AdditiveRegionError::Nested`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "line {line_number}: `{ADDITIVE_OPENING_TAG}` opens an additive region inside the one \
@@ -118,9 +115,7 @@ pub struct UnopenedRegion {
     pub line_number: usize,
 }
 
-/// Payload for [`AdditiveRegionError::Unclosed`]. Carries
-/// the line of the opening tag rather than the end of the file,
-/// because that is the line the author has to revisit.
+/// Payload for [`AdditiveRegionError::Unclosed`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "line {line_number}: `{ADDITIVE_OPENING_TAG}` opens an additive region that no \
@@ -130,9 +125,7 @@ pub struct UnclosedRegion {
     pub line_number: usize,
 }
 
-/// Payload for [`AdditiveRegionError::Empty`]. A region
-/// exists to make its cues accumulate, so one that encloses no cue
-/// says nothing that deleting both tags would not say.
+/// Payload for [`AdditiveRegionError::Empty`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: the additive region opened on line {opened_at} encloses no cue")]
 pub struct EmptyRegion {
