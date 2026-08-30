@@ -102,7 +102,6 @@ pub struct MalformedTag {
 )]
 pub struct UnknownTag {
     pub line_number: usize,
-    /// The tag as it was written, for example `<verse>`.
     pub tag: String,
 }
 
@@ -113,7 +112,6 @@ pub struct UnknownTag {
 #[display("line {line_number}: tag `{tag}` must stand alone but is followed by {trailing:?}")]
 pub struct ExtraTextAfterTag {
     pub line_number: usize,
-    /// The tag as it was written, for example `<additive>`.
     pub tag: String,
     pub trailing: String,
 }
