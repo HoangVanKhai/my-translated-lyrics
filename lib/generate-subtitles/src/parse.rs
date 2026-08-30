@@ -155,9 +155,6 @@ struct RegionState {
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct CueGroup {
     start: Timestamp,
-    /// The `<additive>` region this group sits in, or `None` when it
-    /// stands outside every region and therefore renders its own
-    /// parts alone.
     region: Option<AdditiveRegion>,
     parts: Vec<CuePart>,
 }
