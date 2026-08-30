@@ -9,8 +9,7 @@
 //!
 //! [`parse_lyrics`]: super::parse_lyrics
 
-use super::tag::TakeTagError;
-use super::{ADDITIVE_TAG_NAME, TIMESTAMP_PREFIX_WIDTH};
+use super::{ADDITIVE_CLOSING_TAG, ADDITIVE_OPENING_TAG, TIMESTAMP_PREFIX_WIDTH};
 use core::fmt;
 use derive_more::Display;
 use lyrics_core::line_markers_descriptor::ReservedMarker;
@@ -82,38 +81,24 @@ pub struct EmptyAnnotation {
     pub line_number: usize,
 }
 
-/// Payload for [`ParseLyricsError::MalformedTag`]. Raised when a
-/// column-zero line opens a tag with `<` but the rest of the line
-/// does not complete one.
-#[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("line {line_number}: tag line {content:?} is malformed: {cause}")]
-pub struct MalformedTag {
-    pub line_number: usize,
-    pub content: String,
-    pub cause: TakeTagError,
-}
-
-/// Payload for [`ParseLyricsError::UnknownTag`]. Raised when a
-/// well-formed tag names something the parser does not define.
+/// Payload for [`ParseLyricsError::MalformedTagLine`]. Raised when a
+/// column-zero line begins with `<` without being one of the two tag
+/// lines the parser defines.
+///
+/// A tag carries no attributes, so the two spellings are matched
+/// literally and every near miss lands here: an unrecognized name, a
+/// missing `>`, whitespace anywhere inside the delimiters, and any
+/// text sharing the line with the tag. Naming both spellings in full
+/// tells the author what to write, which one message can do for all
+/// of those cases.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "line {line_number}: `{tag}` names no tag the parser recognizes; \
-    the only tag name is `{ADDITIVE_TAG_NAME}`"
+    "line {line_number}: {content:?} is not a tag line; a tag line reads exactly \
+    `{ADDITIVE_OPENING_TAG}` or `{ADDITIVE_CLOSING_TAG}`"
 )]
-pub struct UnknownTag {
+pub struct MalformedTagLine {
     pub line_number: usize,
-    pub tag: String,
-}
-
-/// Payload for [`ParseLyricsError::ExtraTextAfterTag`]. A tag line
-/// carries the tag and nothing else, so that the region boundary it
-/// draws is visible at a glance.
-#[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("line {line_number}: tag `{tag}` must stand alone but is followed by {trailing:?}")]
-pub struct ExtraTextAfterTag {
-    pub line_number: usize,
-    pub tag: String,
-    pub trailing: String,
+    pub content: String,
 }
 
 /// Payload for [`ParseLyricsError::NestedAdditiveRegion`]. Additive
@@ -122,8 +107,8 @@ pub struct ExtraTextAfterTag {
 /// accumulation of the outer one ambiguous.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "line {line_number}: `<{ADDITIVE_TAG_NAME}>` opens an additive region inside the one opened \
-    on line {opened_at}; additive regions do not nest"
+    "line {line_number}: `{ADDITIVE_OPENING_TAG}` opens an additive region inside the one \
+    opened on line {opened_at}; additive regions do not nest"
 )]
 pub struct NestedAdditiveRegion {
     pub line_number: usize,
@@ -133,8 +118,8 @@ pub struct NestedAdditiveRegion {
 /// Payload for [`ParseLyricsError::UnopenedAdditiveRegion`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "line {line_number}: `</{ADDITIVE_TAG_NAME}>` closes an additive region that no \
-    `<{ADDITIVE_TAG_NAME}>` opened"
+    "line {line_number}: `{ADDITIVE_CLOSING_TAG}` closes an additive region that no \
+    `{ADDITIVE_OPENING_TAG}` opened"
 )]
 pub struct UnopenedAdditiveRegion {
     pub line_number: usize,
@@ -145,8 +130,8 @@ pub struct UnopenedAdditiveRegion {
 /// because that is the line the author has to revisit.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "line {line_number}: `<{ADDITIVE_TAG_NAME}>` opens an additive region that no \
-    `</{ADDITIVE_TAG_NAME}>` closes"
+    "line {line_number}: `{ADDITIVE_OPENING_TAG}` opens an additive region that no \
+    `{ADDITIVE_CLOSING_TAG}` closes"
 )]
 pub struct UnclosedAdditiveRegion {
     pub line_number: usize,
@@ -317,9 +302,7 @@ pub enum ParseLyricsError {
     TabIndentation(TabIndentation),
     MalformedIndentation(MalformedIndentation),
     MalformedHeader(MalformedHeader),
-    MalformedTag(MalformedTag),
-    UnknownTag(UnknownTag),
-    ExtraTextAfterTag(ExtraTextAfterTag),
+    MalformedTagLine(MalformedTagLine),
     NestedAdditiveRegion(NestedAdditiveRegion),
     UnopenedAdditiveRegion(UnopenedAdditiveRegion),
     UnclosedAdditiveRegion(UnclosedAdditiveRegion),

@@ -23,6 +23,12 @@
 //! `</additive>` tag line closes the region, and the cue it leaves
 //! open ends at the next event after the tag in the ordinary way.
 //!
+//! A tag line is matched literally. `<additive>` and `</additive>`
+//! are the only two spellings the parser accepts, with no whitespace
+//! anywhere inside or beside them, because a tag carries no
+//! attributes for whitespace to separate. Every other column-zero
+//! line that begins with `<` is rejected.
+//!
 //! Three rules keep a region simple to read. Regions do not nest.
 //! Neither [`ReservedMarker::Clear`] nor [`ReservedMarker::EndOfVideo`]
 //! may appear inside one, because both contradict the accumulation the
@@ -33,29 +39,30 @@
 //! marker line reaches across a region boundary.
 
 pub mod error;
-pub mod tag;
 
 use error::{
     ControlMarkerInAdditiveRegion, CueTextReservedCharacter, EmptyAdditiveRegion, EmptyAnnotation,
-    EmptyCueBody, ExtraTextAfterControlMarker, ExtraTextAfterTag, InvalidTimestamp,
-    MalformedHeader, MalformedIndentation, MalformedTag, MissingMarker,
-    MissingSeparatorAfterTimestamp, NestedAdditiveRegion, OrphanedAnnotation,
-    OrphanedShorthandMarker, OutOfOrder, ParseLyricsError, RepeatedTimestamp,
-    ReservedControlMarker, TabIndentation, UnclosedAdditiveRegion, UnclosedCue, UnknownTag,
-    UnopenedAdditiveRegion,
+    EmptyCueBody, ExtraTextAfterControlMarker, InvalidTimestamp, MalformedHeader,
+    MalformedIndentation, MalformedTagLine, MissingMarker, MissingSeparatorAfterTimestamp,
+    NestedAdditiveRegion, OrphanedAnnotation, OrphanedShorthandMarker, OutOfOrder,
+    ParseLyricsError, RepeatedTimestamp, ReservedControlMarker, TabIndentation,
+    UnclosedAdditiveRegion, UnclosedCue, UnopenedAdditiveRegion,
 };
 use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
-use tag::{Tag, TagKind, TakeTagError};
 
 /// Indent width of a line that opens a new marker at the same start
 /// time as the cue immediately above. Equals the byte length of an
 /// `MM:SS.mmm` timestamp plus one ASCII space.
 const TIMESTAMP_PREFIX_WIDTH: usize = TIMESTAMP_STR_LEN + 1;
 
-/// Name of the only tag the parser defines. `<additive>` opens a
-/// region whose cues accumulate and `</additive>` closes it.
-const ADDITIVE_TAG_NAME: &str = "additive";
+/// The tag line that opens a region whose cues accumulate. A tag
+/// carries no attributes, so the parser recognizes this one spelling
+/// and nothing that merely resembles it.
+const ADDITIVE_OPENING_TAG: &str = "<additive>";
+
+/// The tag line that closes a region opened by [`ADDITIVE_OPENING_TAG`].
+const ADDITIVE_CLOSING_TAG: &str = "</additive>";
 
 /// A subtitle cue with a resolved end time, ready for rendering.
 ///
@@ -110,6 +117,13 @@ struct OpenMarkerLine {
     marker_prefix_width: usize,
     /// Where that continuation's text is appended.
     target: ContinuationTarget,
+}
+
+/// Which side of an additive region a tag line names.
+#[derive(Clone, Copy)]
+enum TagKind {
+    Opening,
+    Closing,
 }
 
 /// Identifies one `<additive>` region within a source file.
@@ -209,19 +223,32 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
 
         if indent == 0 {
             // A tag line is the one column-zero shape that carries no
-            // timestamp, so it is recognized before the header parser
-            // sees the line. A shape mismatch means the line is not a
-            // tag at all and belongs to the header parser after all.
-            match Tag::take(body) {
-                Ok((tag, tail)) => handle_tag_line(
-                    tag,
-                    tail,
+            // timestamp, so the two spellings are matched before the
+            // header parser sees the line. Nothing else in the format
+            // opens with `<`, so any other line that does is a
+            // misspelled tag rather than a header.
+            match body {
+                ADDITIVE_OPENING_TAG => handle_tag_line(
+                    TagKind::Opening,
                     line_number,
                     &mut regions,
                     &mut last_cue_index,
                     &mut open_marker_line,
                 )?,
-                Err(TakeTagError::ShapeMismatch) => handle_header_line(
+                ADDITIVE_CLOSING_TAG => handle_tag_line(
+                    TagKind::Closing,
+                    line_number,
+                    &mut regions,
+                    &mut last_cue_index,
+                    &mut open_marker_line,
+                )?,
+                _ if body.starts_with('<') => {
+                    return Err(ParseLyricsError::MalformedTagLine(MalformedTagLine {
+                        line_number,
+                        content: body.to_string(),
+                    }));
+                }
+                _ => handle_header_line(
                     body,
                     line_number,
                     &mut events,
@@ -229,13 +256,6 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                     &mut open_marker_line,
                     &mut regions,
                 )?,
-                Err(cause) => {
-                    return Err(ParseLyricsError::MalformedTag(MalformedTag {
-                        line_number,
-                        content: body.to_string(),
-                        cause,
-                    }));
-                }
             }
         } else if indent == TIMESTAMP_PREFIX_WIDTH {
             handle_shorthand_marker_line(
@@ -273,38 +293,21 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
     Ok(events)
 }
 
-/// Applies a tag line to the region state.
+/// Moves the region state across the boundary a tag line draws.
 ///
-/// A tag line names a region boundary and nothing else, so an
-/// unrecognized name and any trailing text are both rejected before
-/// the boundary takes effect. The boundary then ends the scope of the
-/// cue above it, exactly as [`ReservedMarker::Clear`] does, so that
-/// no continuation or shorthand marker line reaches across the tag.
+/// The caller matched the line against one of the two tag spellings,
+/// so the shape is settled by the time this runs and only the region
+/// bookkeeping is left. The boundary ends the scope of the cue above
+/// it, exactly as [`ReservedMarker::Clear`] does, so that no
+/// continuation or shorthand marker line reaches across the tag.
 fn handle_tag_line(
-    tag: Tag<'_>,
-    tail: &str,
+    kind: TagKind,
     line_number: usize,
     regions: &mut RegionState,
     last_cue_index: &mut Option<usize>,
     open_marker_line: &mut Option<OpenMarkerLine>,
 ) -> Result<(), ParseLyricsError> {
-    if tag.name != ADDITIVE_TAG_NAME {
-        return Err(ParseLyricsError::UnknownTag(UnknownTag {
-            line_number,
-            tag: tag.to_string(),
-        }));
-    }
-
-    let trailing = tail.trim();
-    if !trailing.is_empty() {
-        return Err(ParseLyricsError::ExtraTextAfterTag(ExtraTextAfterTag {
-            line_number,
-            tag: tag.to_string(),
-            trailing: trailing.to_string(),
-        }));
-    }
-
-    match tag.kind {
+    match kind {
         TagKind::Opening => {
             if let Some(open) = &regions.open {
                 return Err(ParseLyricsError::NestedAdditiveRegion(

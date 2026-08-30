@@ -1,14 +1,12 @@
 use super::error::{
     ControlMarkerInAdditiveRegion, CueTextReservedCharacter, EmptyAdditiveRegion, EmptyAnnotation,
-    EmptyCueBody, ExtraTextAfterControlMarker, ExtraTextAfterTag, InvalidTimestamp,
-    MalformedHeader, MalformedIndentation, MalformedTag, MissingMarker,
-    MissingSeparatorAfterTimestamp, NestedAdditiveRegion, OrphanedAnnotation,
-    OrphanedShorthandMarker, OutOfOrder, ParseLyricsError, RepeatedTimestamp,
-    ReservedControlMarker, TabIndentation, UnclosedAdditiveRegion, UnclosedCue, UnknownTag,
-    UnopenedAdditiveRegion,
+    EmptyCueBody, ExtraTextAfterControlMarker, InvalidTimestamp, MalformedHeader,
+    MalformedIndentation, MalformedTagLine, MissingMarker, MissingSeparatorAfterTimestamp,
+    NestedAdditiveRegion, OrphanedAnnotation, OrphanedShorthandMarker, OutOfOrder,
+    ParseLyricsError, RepeatedTimestamp, ReservedControlMarker, TabIndentation,
+    UnclosedAdditiveRegion, UnclosedCue, UnopenedAdditiveRegion,
 };
 use super::parse_lyrics;
-use crate::parse::tag::TakeTagError;
 use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::{SecondsOutOfRange, TakeTimestampError, Timestamp};
 use pretty_assertions::assert_eq;
@@ -1158,76 +1156,60 @@ fn rejects_a_region_that_encloses_no_cue() {
     );
 }
 
-/// `additive` is the only tag name the parser defines, so any other
-/// well-formed tag is reported with the text the author wrote.
+/// A tag carries no attributes, so the two spellings are matched
+/// literally and every near miss draws the same diagnostic, which
+/// names both spellings in full rather than describing a grammar.
+/// Whitespace inside the delimiters is a near miss like any other:
+/// `<additive >` would otherwise have to read as an empty attribute
+/// list, and the format has no attributes to read.
 #[test]
-fn rejects_a_tag_the_parser_does_not_define() {
-    let input = text_block_fnl! {
-        "<verse>"
-        "07:11.111 LRC: first line"
-        "07:22.222 clr"
-    };
-    assert_eq!(
-        parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::UnknownTag(UnknownTag {
-            line_number: 1,
-            tag: "<verse>".to_string(),
-        }),
-    );
+fn rejects_every_near_miss_of_a_tag_line() {
+    let near_misses = [
+        "<verse>",
+        "<additive",
+        "</additive",
+        "<>",
+        "</>",
+        "< additive>",
+        "<additive >",
+        "</ additive>",
+        "</additive >",
+        "< /additive>",
+        "<additive> and some trailing text",
+        "<additive> ",
+        "<additive></additive>",
+    ];
+    for content in near_misses {
+        let input = format!(
+            "{content}\n\
+             07:11.111 LRC: first line\n\
+             07:22.222 clr\n",
+        );
+        assert_eq!(
+            parse_lyrics(&input).unwrap_err(),
+            ParseLyricsError::MalformedTagLine(MalformedTagLine {
+                line_number: 1,
+                content: content.to_string(),
+            }),
+            "{content:?} must not be accepted as a tag line",
+        );
+    }
 }
 
-/// A column-zero line that opens a tag but never completes one draws
-/// the tag diagnostic rather than the header one, because the `<`
-/// shows what the author was reaching for.
+/// The other half of the literal match: both spellings are accepted
+/// exactly as written.
 #[test]
-fn rejects_a_malformed_tag_line() {
-    let unterminated = text_block_fnl! {
-        "<additive"
-        "07:11.111 LRC: first line"
-        "07:22.222 clr"
-    };
-    assert_eq!(
-        parse_lyrics(unterminated).unwrap_err(),
-        ParseLyricsError::MalformedTag(MalformedTag {
-            line_number: 1,
-            content: "<additive".to_string(),
-            cause: TakeTagError::Unterminated,
-        }),
-    );
-
-    let empty_name = text_block_fnl! {
-        "<>"
-        "07:11.111 LRC: first line"
-        "07:22.222 clr"
-    };
-    assert_eq!(
-        parse_lyrics(empty_name).unwrap_err(),
-        ParseLyricsError::MalformedTag(MalformedTag {
-            line_number: 1,
-            content: "<>".to_string(),
-            cause: TakeTagError::EmptyName,
-        }),
-    );
-}
-
-/// A tag line names a region boundary and nothing else, so trailing
-/// text is rejected the way it is after a control marker.
-#[test]
-fn rejects_text_after_a_tag() {
+fn accepts_both_tag_spellings_exactly_as_written() {
     let input = text_block_fnl! {
-        "<additive> and some trailing text"
+        "<additive>"
         "07:11.111 LRC: first line"
+        "07:22.222 LRC: second line"
         "</additive>"
-        "07:22.222 clr"
+        "07:33.333 clr"
     };
-    assert_eq!(
-        parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::ExtraTextAfterTag(ExtraTextAfterTag {
-            line_number: 1,
-            tag: "<additive>".to_string(),
-            trailing: "and some trailing text".to_string(),
-        }),
-    );
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(cues.len(), 2);
+    assert_eq!(cues[1].parts.len(), 2);
 }
 
 /// A tag ends the scope of the cue above it, exactly as `clr` does,
