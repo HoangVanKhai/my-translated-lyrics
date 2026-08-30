@@ -9,7 +9,8 @@
 //!
 //! [`parse_lyrics`]: super::parse_lyrics
 
-use super::TIMESTAMP_PREFIX_WIDTH;
+use super::tag::TakeTagError;
+use super::{ADDITIVE_TAG_NAME, TIMESTAMP_PREFIX_WIDTH};
 use core::fmt;
 use derive_more::Display;
 use lyrics_core::line_markers_descriptor::ReservedMarker;
@@ -79,6 +80,109 @@ pub struct ReservedControlMarker {
 )]
 pub struct EmptyAnnotation {
     pub line_number: usize,
+}
+
+/// Payload for [`ParseLyricsError::MalformedTag`]. Raised when a
+/// column-zero line opens a tag with `<` but the rest of the line
+/// does not complete one.
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display("line {line_number}: tag line {content:?} is malformed: {cause}")]
+pub struct MalformedTag {
+    pub line_number: usize,
+    pub content: String,
+    pub cause: TakeTagError,
+}
+
+/// Payload for [`ParseLyricsError::UnknownTag`]. Raised when a
+/// well-formed tag names something the parser does not define.
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display(
+    "line {line_number}: `{tag}` names no tag the parser recognizes; \
+    the only tag name is `{ADDITIVE_TAG_NAME}`"
+)]
+pub struct UnknownTag {
+    pub line_number: usize,
+    /// The tag as it was written, for example `<verse>`.
+    pub tag: String,
+}
+
+/// Payload for [`ParseLyricsError::ExtraTextAfterTag`]. A tag line
+/// carries the tag and nothing else, so that the region boundary it
+/// draws is visible at a glance.
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display("line {line_number}: tag `{tag}` must stand alone but is followed by {trailing:?}")]
+pub struct ExtraTextAfterTag {
+    pub line_number: usize,
+    /// The tag as it was written, for example `<additive>`.
+    pub tag: String,
+    pub trailing: String,
+}
+
+/// Payload for [`ParseLyricsError::NestedAdditiveRegion`]. Additive
+/// regions are flat by design: a cue accumulates the parts of the
+/// cues above it in one region, and a nested region would leave the
+/// accumulation of the outer one ambiguous.
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display(
+    "line {line_number}: `<{ADDITIVE_TAG_NAME}>` opens an additive region inside the one opened \
+    on line {opened_at}; additive regions do not nest"
+)]
+pub struct NestedAdditiveRegion {
+    pub line_number: usize,
+    /// Line number of the `<additive>` that opened the enclosing
+    /// region.
+    pub opened_at: usize,
+}
+
+/// Payload for [`ParseLyricsError::UnopenedAdditiveRegion`].
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display(
+    "line {line_number}: `</{ADDITIVE_TAG_NAME}>` closes an additive region that no \
+    `<{ADDITIVE_TAG_NAME}>` opened"
+)]
+pub struct UnopenedAdditiveRegion {
+    pub line_number: usize,
+}
+
+/// Payload for [`ParseLyricsError::UnclosedAdditiveRegion`]. Carries
+/// the line of the opening tag rather than the end of the file,
+/// because that is the line the author has to revisit.
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display(
+    "line {line_number}: `<{ADDITIVE_TAG_NAME}>` opens an additive region that no \
+    `</{ADDITIVE_TAG_NAME}>` closes"
+)]
+pub struct UnclosedAdditiveRegion {
+    pub line_number: usize,
+}
+
+/// Payload for [`ParseLyricsError::EmptyAdditiveRegion`]. A region
+/// exists to make its cues accumulate, so one that encloses no cue
+/// says nothing that deleting both tags would not say.
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display("line {line_number}: the additive region opened on line {opened_at} encloses no cue")]
+pub struct EmptyAdditiveRegion {
+    pub line_number: usize,
+    /// Line number of the `<additive>` that opened the region.
+    pub opened_at: usize,
+}
+
+/// Payload for [`ParseLyricsError::ControlMarkerInAdditiveRegion`].
+///
+/// Both control markers contradict an additive region. `clr` ends the
+/// open cue, which is the replacement behavior the region exists to
+/// suspend, and `eov` marks the end of the video, which no region
+/// should still be open across.
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display(
+    "line {line_number}: control marker `{marker}` appears inside the additive region opened \
+    on line {opened_at}; close the region before the marker"
+)]
+pub struct ControlMarkerInAdditiveRegion {
+    pub line_number: usize,
+    pub marker: ReservedMarker,
+    /// Line number of the `<additive>` that opened the region.
+    pub opened_at: usize,
 }
 
 /// Payload for [`ParseLyricsError::EmptyCueBody`].
@@ -219,6 +323,14 @@ pub enum ParseLyricsError {
     TabIndentation(TabIndentation),
     MalformedIndentation(MalformedIndentation),
     MalformedHeader(MalformedHeader),
+    MalformedTag(MalformedTag),
+    UnknownTag(UnknownTag),
+    ExtraTextAfterTag(ExtraTextAfterTag),
+    NestedAdditiveRegion(NestedAdditiveRegion),
+    UnopenedAdditiveRegion(UnopenedAdditiveRegion),
+    UnclosedAdditiveRegion(UnclosedAdditiveRegion),
+    EmptyAdditiveRegion(EmptyAdditiveRegion),
+    ControlMarkerInAdditiveRegion(ControlMarkerInAdditiveRegion),
     InvalidTimestamp(InvalidTimestamp),
     MissingSeparatorAfterTimestamp(MissingSeparatorAfterTimestamp),
     ExtraTextAfterControlMarker(ExtraTextAfterControlMarker),
