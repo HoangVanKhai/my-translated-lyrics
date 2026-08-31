@@ -165,13 +165,13 @@ impl ClosingTag {
 /// The index counts regions in the order they open, which keeps two
 /// adjacent regions distinct even though no event separates them.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-struct AdditiveRegion(usize);
+struct AdditiveRegionIndex(usize);
 
 /// The `<additive>` region the parser is currently inside.
 #[derive(Clone, Copy)]
 struct OpenRegion {
     /// The index the region's cue groups carry.
-    index: AdditiveRegion,
+    index: AdditiveRegionIndex,
     /// Line number of the `<additive>` that opened the region. Every
     /// diagnostic that names the region points back at this line,
     /// because that is where the author has to act.
@@ -203,7 +203,7 @@ impl RegionState {
             .pipe(Err);
         }
         self.open = Some(OpenRegion {
-            index: AdditiveRegion(self.opened),
+            index: AdditiveRegionIndex(self.opened),
             line_number,
             cue_count: 0,
         });
@@ -243,7 +243,7 @@ impl RegionState {
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct CueGroup {
     start: Timestamp,
-    region: Option<AdditiveRegion>,
+    region: Option<AdditiveRegionIndex>,
     parts: Vec<CuePart>,
 }
 
@@ -690,7 +690,7 @@ fn resolve_cues(events: Vec<Event>) -> Result<Vec<SubtitleCue>, ParseLyricsError
     // group in that same region renders them above its own; a group
     // anywhere else resets both, which is what keeps two adjacent
     // regions from bleeding into each other.
-    let mut carried_region: Option<AdditiveRegion> = None;
+    let mut carried_region: Option<AdditiveRegionIndex> = None;
     let mut carried = Vec::<CuePart>::new();
 
     for (index, event) in events.iter().enumerate() {
