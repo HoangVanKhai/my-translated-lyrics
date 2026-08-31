@@ -308,9 +308,3 @@ pub enum ParseLyricsError {
     OrphanedAnnotation(OrphanedAnnotation),
     UnclosedCue(UnclosedCue),
 }
-
-impl From<AdditiveRegionError> for ParseLyricsError {
-    fn from(error: AdditiveRegionError) -> Self {
-        ParseLyricsError::AdditiveRegion(error)
-    }
-}

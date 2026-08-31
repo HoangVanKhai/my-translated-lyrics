@@ -34,6 +34,7 @@ use error::{
 };
 use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
+use pipe_trait::Pipe;
 
 /// Indent width of a line that opens a new marker at the same start
 /// time as the cue immediately above. Equals the byte length of an
@@ -266,11 +267,11 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
         }
     }
 
-    if let Some(open) = regions.open {
-        return Err(AdditiveRegionError::Unclosed(UnclosedRegion {
-            line_number: open.line_number,
-        })
-        .into());
+    if let Some(OpenRegion { line_number, .. }) = regions.open {
+        return UnclosedRegion { line_number }
+            .pipe(AdditiveRegionError::Unclosed)
+            .pipe(ParseLyricsError::AdditiveRegion)
+            .pipe(Err);
     }
 
     Ok(events)
@@ -293,11 +294,14 @@ fn handle_tag_line(
     match kind {
         TagKind::Opening => {
             if let Some(open) = &regions.open {
-                return Err(AdditiveRegionError::Nested(NestedRegion {
+                let payload = NestedRegion {
                     line_number,
                     opened_at: open.line_number,
-                })
-                .into());
+                };
+                return payload
+                    .pipe(AdditiveRegionError::Nested)
+                    .pipe(ParseLyricsError::AdditiveRegion)
+                    .pipe(Err);
             }
             regions.open = Some(OpenRegion {
                 index: AdditiveRegion(regions.opened),
@@ -308,14 +312,20 @@ fn handle_tag_line(
         }
         TagKind::Closing => {
             let Some(open) = regions.open.take() else {
-                return Err(AdditiveRegionError::Unopened(UnopenedRegion { line_number }).into());
+                return UnopenedRegion { line_number }
+                    .pipe(AdditiveRegionError::Unopened)
+                    .pipe(ParseLyricsError::AdditiveRegion)
+                    .pipe(Err);
             };
             if open.cue_count == 0 {
-                return Err(AdditiveRegionError::Empty(EmptyRegion {
+                let payload = EmptyRegion {
                     line_number,
                     opened_at: open.line_number,
-                })
-                .into());
+                };
+                return payload
+                    .pipe(AdditiveRegionError::Empty)
+                    .pipe(ParseLyricsError::AdditiveRegion)
+                    .pipe(Err);
             }
         }
     }
@@ -376,12 +386,15 @@ fn handle_header_line(
             ));
         }
         if let Some(open) = &regions.open {
-            return Err(AdditiveRegionError::ControlMarker(ControlMarkerInRegion {
+            let payload = ControlMarkerInRegion {
                 line_number,
                 marker: control_marker,
                 opened_at: open.line_number,
-            })
-            .into());
+            };
+            return payload
+                .pipe(AdditiveRegionError::ControlMarker)
+                .pipe(ParseLyricsError::AdditiveRegion)
+                .pipe(Err);
         }
         if control_marker == ReservedMarker::Clear {
             check_event_order(start, line_number, events)?;
