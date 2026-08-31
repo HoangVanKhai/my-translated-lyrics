@@ -18,7 +18,7 @@ use std::collections::BTreeMap;
 /// A credits descriptor declaring a single Vietnamese role, `role-a`.
 pub(crate) fn credits_with_one_role() -> CreditsDesc {
     CreditsDesc {
-        credit_roles: vec![btreemap! { Language::Vietnamese => "role-a".to_string() }],
+        credit_roles: vec![btreemap! { Language::Vietnamese => "role-a".to_string().into() }],
         ..Default::default()
     }
 }

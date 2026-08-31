@@ -26,7 +26,7 @@
 use derive_more::Display;
 use into_deduped::IntoDeduped;
 use into_sorted::IntoSorted;
-use lyrics_core::credits_descriptor::CreditsDesc;
+use lyrics_core::credits_descriptor::{CreditRole, CreditsDesc};
 use lyrics_core::video_descriptor::Language;
 use pipe_trait::Pipe;
 
@@ -290,7 +290,7 @@ impl<'a> CreditRoles<'a> {
         descriptor
             .credit_roles
             .iter()
-            .filter_map(|entry| entry.get(language).map(String::as_str))
+            .filter_map(|entry| entry.get(language).map(CreditRole::as_str))
             .collect::<Vec<_>>()
             .into_sorted_by(|a, b| b.len().cmp(&a.len()).then_with(|| a.cmp(b)))
             .into_deduped()

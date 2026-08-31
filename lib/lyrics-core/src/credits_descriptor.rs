@@ -15,10 +15,55 @@ pub struct CreditsDesc {
     /// Ordered list of credit role entries. Each entry maps one or more
     /// language codes to the label used in the credit block for that role.
     #[serde(default)]
-    pub credit_roles: Vec<BTreeMap<Language, String>>,
+    pub credit_roles: Vec<BTreeMap<Language, CreditRole>>,
     /// Ordered list of credited person or studio name entries. Each entry
     /// maps one or more language codes to the name as it appears in the
     /// credit block.
     #[serde(default)]
-    pub credit_names: Vec<BTreeMap<Language, String>>,
+    pub credit_names: Vec<BTreeMap<Language, CreditName>>,
+}
+
+/// The label of a credit role, such as the word a credit line opens with
+/// before its names.
+///
+/// A role imposes no shape of its own, so this type exists to keep the
+/// two lists of a `credits.yaml` apart: the role parser reads
+/// `credit-roles` and only `credit-roles`, and reading the companion
+/// list by mistake would otherwise compile and quietly split every
+/// credit line on the wrong tokens.
+#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(transparent)]
+pub struct CreditRole(String);
+
+impl CreditRole {
+    /// The underlying role text.
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl From<String> for CreditRole {
+    fn from(source: String) -> Self {
+        CreditRole(source)
+    }
+}
+
+/// The name of a credited person or studio, as it appears in the credit
+/// block. It is the counterpart of [`CreditRole`] and, like it, imposes
+/// no shape of its own.
+#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[serde(transparent)]
+pub struct CreditName(String);
+
+impl CreditName {
+    /// The underlying name text.
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl From<String> for CreditName {
+    fn from(source: String) -> Self {
+        CreditName(source)
+    }
 }
