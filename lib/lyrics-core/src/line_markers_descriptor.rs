@@ -34,9 +34,9 @@ impl ReservedMarker {
     /// Whether the reserved marker is a control marker.
     pub fn is_control(self) -> bool {
         match self {
+            ReservedMarker::Annotation => false,
             ReservedMarker::Clear => true,
             ReservedMarker::EndOfVideo => true,
-            ReservedMarker::Annotation => false,
         }
     }
 }
