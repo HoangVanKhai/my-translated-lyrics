@@ -9,7 +9,7 @@
 //!
 //! [`parse_lyrics`]: super::parse_lyrics
 
-use super::{ADDITIVE_CLOSING_TAG, ADDITIVE_OPENING_TAG, TIMESTAMP_PREFIX_WIDTH};
+use super::{ADDITIVE_TAG_NAME, TIMESTAMP_PREFIX_WIDTH};
 use core::fmt;
 use derive_more::Display;
 use lyrics_core::line_markers_descriptor::ReservedMarker;
@@ -85,7 +85,7 @@ pub struct EmptyAnnotation {
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "line {line_number}: {content:?} is not a tag line; a tag line reads exactly \
-    `{ADDITIVE_OPENING_TAG}` or `{ADDITIVE_CLOSING_TAG}`"
+    `<{ADDITIVE_TAG_NAME}>` or `</{ADDITIVE_TAG_NAME}>`"
 )]
 pub struct MalformedTagLine {
     pub line_number: usize,
@@ -95,7 +95,7 @@ pub struct MalformedTagLine {
 /// Payload for [`AdditiveRegionError::Nested`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "line {line_number}: `{ADDITIVE_OPENING_TAG}` opens an additive region inside the one \
+    "line {line_number}: `<{ADDITIVE_TAG_NAME}>` opens an additive region inside the one \
     opened on line {opened_at}; additive regions do not nest"
 )]
 pub struct NestedRegion {
@@ -106,8 +106,8 @@ pub struct NestedRegion {
 /// Payload for [`AdditiveRegionError::Unopened`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "line {line_number}: `{ADDITIVE_CLOSING_TAG}` closes an additive region that no \
-    `{ADDITIVE_OPENING_TAG}` opened"
+    "line {line_number}: `</{ADDITIVE_TAG_NAME}>` closes an additive region that no \
+    `<{ADDITIVE_TAG_NAME}>` opened"
 )]
 pub struct UnopenedRegion {
     pub line_number: usize,
@@ -116,8 +116,8 @@ pub struct UnopenedRegion {
 /// Payload for [`AdditiveRegionError::Unclosed`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "line {line_number}: `{ADDITIVE_OPENING_TAG}` opens an additive region that no \
-    `{ADDITIVE_CLOSING_TAG}` closes"
+    "line {line_number}: `<{ADDITIVE_TAG_NAME}>` opens an additive region that no \
+    `</{ADDITIVE_TAG_NAME}>` closes"
 )]
 pub struct UnclosedRegion {
     pub line_number: usize,

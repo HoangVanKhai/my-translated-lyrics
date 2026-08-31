@@ -42,13 +42,9 @@ use pipe_trait::Pipe;
 /// `MM:SS.mmm` timestamp plus one ASCII space.
 const TIMESTAMP_PREFIX_WIDTH: usize = TIMESTAMP_STR_LEN + 1;
 
-/// The tag line that opens a region whose cues accumulate. A tag
-/// carries no attributes, so the parser recognizes this one spelling
-/// and nothing that merely resembles it.
-const ADDITIVE_OPENING_TAG: &str = "<additive>";
-
-/// The tag line that closes a region opened by [`ADDITIVE_OPENING_TAG`].
-const ADDITIVE_CLOSING_TAG: &str = "</additive>";
+/// Name of the only tag the parser defines. `<additive>` opens a
+/// region whose cues accumulate and `</additive>` closes it.
+const ADDITIVE_TAG_NAME: &str = "additive";
 
 /// A subtitle cue with a resolved end time, ready for rendering.
 ///
@@ -105,11 +101,80 @@ struct OpenMarkerLine {
     target: ContinuationTarget,
 }
 
-/// Whether `body` is the tag line for `tag`. Only whitespace may
-/// follow the tag, which is the allowance a control marker line has.
-fn is_tag_line(body: &str, tag: &str) -> bool {
-    body.strip_prefix(tag)
-        .is_some_and(|tail| tail.trim().is_empty())
+/// The name inside a tag, `additive` in `<additive>`.
+///
+/// The permitted shape is `[a-z][a-z0-9-]*`. The set excludes the `<`,
+/// `/` and `>` delimiters and every whitespace character, so a name
+/// cannot run past its tag and a tag cannot pad its name.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct TagName<'a>(&'a str);
+
+impl<'a> TagName<'a> {
+    /// Consumes a leading tag name and returns it with the unconsumed
+    /// tail.
+    fn take(source: &'a str) -> Option<(Self, &'a str)> {
+        let mut chars = source.char_indices();
+        let (_, first) = chars.next()?;
+        if !first.is_ascii_lowercase() {
+            return None;
+        }
+        let end = chars
+            .find(|&(_, char)| !is_tag_name_char(char))
+            .map_or(source.len(), |(index, _)| index);
+        Some((TagName(&source[..end]), &source[end..]))
+    }
+
+    /// Whether the name is the one tag the parser defines.
+    fn is_additive(self) -> bool {
+        self.0 == ADDITIVE_TAG_NAME
+    }
+}
+
+/// Whether `char` may continue a [`TagName`].
+fn is_tag_name_char(char: char) -> bool {
+    char.is_ascii_lowercase() || char.is_ascii_digit() || char == '-'
+}
+
+/// An opening tag: `<`, a [`TagName`], and `>`, with nothing between
+/// the three.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct OpeningTag<'a>(TagName<'a>);
+
+impl<'a> OpeningTag<'a> {
+    /// Consumes a leading opening tag and returns it with the
+    /// unconsumed tail.
+    fn take(source: &'a str) -> Option<(Self, &'a str)> {
+        let after_delimiter = source.strip_prefix('<')?;
+        let (name, after_name) = TagName::take(after_delimiter)?;
+        let tail = after_name.strip_prefix('>')?;
+        Some((OpeningTag(name), tail))
+    }
+
+    /// The name between the delimiters.
+    fn name(self) -> TagName<'a> {
+        self.0
+    }
+}
+
+/// A closing tag: `</`, a [`TagName`], and `>`, with nothing between
+/// the three.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct ClosingTag<'a>(TagName<'a>);
+
+impl<'a> ClosingTag<'a> {
+    /// Consumes a leading closing tag and returns it with the
+    /// unconsumed tail.
+    fn take(source: &'a str) -> Option<(Self, &'a str)> {
+        let after_delimiter = source.strip_prefix("</")?;
+        let (name, after_name) = TagName::take(after_delimiter)?;
+        let tail = after_name.strip_prefix('>')?;
+        Some((ClosingTag(name), tail))
+    }
+
+    /// The name between the delimiters.
+    fn name(self) -> TagName<'a> {
+        self.0
+    }
 }
 
 /// Identifies one `<additive>` region within a source file.
@@ -257,14 +322,20 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
             // misspelled tag rather than a header.
             // Nothing but a tag line opens with `<`, so any other
             // line that does is a misspelled tag rather than a header.
-            if is_tag_line(body, ADDITIVE_OPENING_TAG) {
+            if let Some((tag, tail)) = OpeningTag::take(body)
+                && tag.name().is_additive()
+                && tail.trim().is_empty()
+            {
                 handle_additive_opening_tag_line(
                     line_number,
                     &mut regions,
                     &mut last_cue_index,
                     &mut open_marker_line,
                 )?;
-            } else if is_tag_line(body, ADDITIVE_CLOSING_TAG) {
+            } else if let Some((tag, tail)) = ClosingTag::take(body)
+                && tag.name().is_additive()
+                && tail.trim().is_empty()
+            {
                 handle_additive_closing_tag_line(
                     line_number,
                     &mut regions,
