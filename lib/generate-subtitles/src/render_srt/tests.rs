@@ -133,7 +133,7 @@ fn class_declared_without_palette_entry_produces_style_error() {
     )
     .unwrap_err();
     match err {
-        RenderSrtError::Style(MissingStyle::Class(name)) => assert_eq!(name, "title"),
+        RenderSrtError::Style(MissingStyle::Class(name)) => assert_eq!(name.as_str(), "title"),
         other => panic!("expected a missing-class-style error, got {other:?}"),
     }
 }
@@ -169,7 +169,7 @@ fn voice_declared_without_palette_entry_produces_style_error() {
     )
     .unwrap_err();
     match err {
-        RenderSrtError::Style(MissingStyle::Voice(name)) => assert_eq!(name, "unk"),
+        RenderSrtError::Style(MissingStyle::Voice(name)) => assert_eq!(name.as_str(), "unk"),
         other => panic!("expected a missing-voice-style error, got {other:?}"),
     }
 }

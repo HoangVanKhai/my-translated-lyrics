@@ -287,7 +287,7 @@ fn write_style_block(
         // Every declared voice marker must resolve to a palette style,
         // even when this particular language omits its voice name, so a
         // missing entry surfaces regardless of which language renders.
-        let style = palette.voice_style(marker_name.as_str())?;
+        let style = palette.voice_style(marker_name)?;
         let Some(voice_name) = by_language.get(language) else {
             continue;
         };

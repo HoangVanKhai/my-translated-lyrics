@@ -9,8 +9,8 @@ use strum::VariantArray;
 use text_block_macros::text_block_fnl;
 
 /// Wraps a marker token that the fixtures know to be declarable.
-fn marker_name(name: &str) -> MarkerName {
-    name.to_string()
+fn marker_name(name: impl Into<String>) -> MarkerName {
+    name.into()
         .pipe(MarkerName::new)
         .expect("test fixture passes the marker-name validator")
 }

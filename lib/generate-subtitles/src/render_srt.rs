@@ -113,7 +113,7 @@ fn resolve_style<'a>(
 ) -> Result<Option<&'a Style>, RenderSrtError> {
     if markers.voices.contains_key(marker_name) {
         return palette
-            .voice_style(marker_name.as_str())
+            .voice_style(marker_name)
             .map(Some)
             .map_err(Into::into);
     }

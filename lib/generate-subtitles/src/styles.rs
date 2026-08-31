@@ -13,7 +13,7 @@
 //! time.
 
 use derive_more::Display;
-use lyrics_core::line_markers_descriptor::CssClassName;
+use lyrics_core::line_markers_descriptor::{CssClassName, MarkerName};
 use serde::Deserialize;
 use std::collections::BTreeMap;
 
@@ -26,11 +26,13 @@ pub const STYLE_PALETTE_FILE_NAME: &str = "styles.toml";
 pub struct StylePalette {
     /// Colors for the three built-in credit classes.
     pub credit: CreditPalette,
-    /// Style for each voice marker, keyed by the marker token used in
+    /// Style for each voice marker, keyed by the marker name used in
     /// the `[voices]` section of a song's `line-markers.toml`, such as
-    /// `LTY`, `lty`, or `Y+L`.
+    /// `LTY`, `lty`, or `Y+L`. The key is the type that section is
+    /// keyed by, so the palette and the descriptor agree on what names
+    /// a voice.
     #[serde(default)]
-    pub voices: BTreeMap<String, Style>,
+    pub voices: BTreeMap<MarkerName, Style>,
     /// Style for each named class, keyed by the class name used in the
     /// `[classes]` section of a song's `line-markers.toml`, such as
     /// `title` or `expo`.
@@ -42,10 +44,10 @@ impl StylePalette {
     /// Looks up the style for a voice marker. The marker is expected to
     /// be declared in a song's `[voices]` section; an absent entry is a
     /// configuration error rather than a plain render.
-    pub fn voice_style(&self, marker: &str) -> Result<&Style, MissingStyle> {
+    pub fn voice_style(&self, marker: &MarkerName) -> Result<&Style, MissingStyle> {
         self.voices
             .get(marker)
-            .ok_or_else(|| MissingStyle::Voice(marker.to_string()))
+            .ok_or_else(|| MissingStyle::Voice(marker.clone()))
     }
 
     /// Looks up the style for a named class. The class is expected to be
@@ -54,7 +56,7 @@ impl StylePalette {
     pub fn class_style(&self, class_name: &CssClassName) -> Result<&Style, MissingStyle> {
         self.classes
             .get(class_name)
-            .ok_or_else(|| MissingStyle::Class(class_name.as_str().to_string()))
+            .ok_or_else(|| MissingStyle::Class(class_name.clone()))
     }
 }
 
@@ -166,10 +168,10 @@ pub enum InvalidColor {
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum MissingStyle {
-    #[display("no style is defined for voice marker {_0:?} in the palette")]
-    Voice(String),
-    #[display("no style is defined for class {_0:?} in the palette")]
-    Class(String),
+    #[display("no style is defined for voice marker {:?} in the palette", _0.as_str())]
+    Voice(MarkerName),
+    #[display("no style is defined for class {:?} in the palette", _0.as_str())]
+    Class(CssClassName),
 }
 
 #[cfg(test)]

@@ -14,7 +14,7 @@ use pretty_assertions::assert_eq;
 
 fn test_palette() -> StylePalette {
     style_palette(btreemap! {
-        "vca".to_string() => Style {
+        marker_name("vca") => Style {
             color: Some(color("#66CCFF".to_owned())),
             italic: false,
             bold: false,
@@ -189,7 +189,7 @@ fn class_declared_without_palette_entry_produces_style_error() {
     )
     .unwrap_err();
     match err {
-        RenderVttError::Style(MissingStyle::Class(name)) => assert_eq!(name, "title"),
+        RenderVttError::Style(MissingStyle::Class(name)) => assert_eq!(name.as_str(), "title"),
         other => panic!("expected a missing-class-style error, got {other:?}"),
     }
 }
@@ -225,7 +225,7 @@ fn voice_declared_without_palette_entry_produces_style_error() {
     )
     .unwrap_err();
     match err {
-        RenderVttError::Style(MissingStyle::Voice(name)) => assert_eq!(name, "unk"),
+        RenderVttError::Style(MissingStyle::Voice(name)) => assert_eq!(name.as_str(), "unk"),
         other => panic!("expected a missing-voice-style error, got {other:?}"),
     }
 }
