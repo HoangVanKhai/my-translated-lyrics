@@ -104,23 +104,31 @@ struct OpenMarkerLine {
     target: ContinuationTarget,
 }
 
-/// Which side of an additive region a tag line names.
-#[derive(Clone, Copy)]
-enum TagKind {
-    Opening,
-    Closing,
+/// The `<additive>` tag, which opens a region whose cues accumulate.
+struct OpeningTag;
+
+/// The `</additive>` tag, which closes the region an [`OpeningTag`]
+/// opened.
+struct ClosingTag;
+
+impl OpeningTag {
+    /// Consumes a leading `<additive>` and returns it with the
+    /// unconsumed tail. A tag carries no attributes, so the spelling
+    /// is matched whole and there is nothing inside it to parse.
+    fn take(source: &str) -> Option<(Self, &str)> {
+        source
+            .strip_prefix(ADDITIVE_OPENING_TAG)
+            .map(|tail| (OpeningTag, tail))
+    }
 }
 
-impl TagKind {
-    /// The tag a column-zero line names, or `None` when it names
-    /// none. A tag carries no attributes, so the whole line is
-    /// matched against the two spellings rather than parsed.
-    fn of_line(body: &str) -> Option<Self> {
-        match body {
-            ADDITIVE_OPENING_TAG => Some(TagKind::Opening),
-            ADDITIVE_CLOSING_TAG => Some(TagKind::Closing),
-            _ => None,
-        }
+impl ClosingTag {
+    /// Consumes a leading `</additive>` and returns it with the
+    /// unconsumed tail. See [`OpeningTag::take`].
+    fn take(source: &str) -> Option<(Self, &str)> {
+        source
+            .strip_prefix(ADDITIVE_CLOSING_TAG)
+            .map(|tail| (ClosingTag, tail))
     }
 }
 
@@ -267,17 +275,32 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
             // header parser sees the line. Nothing else in the format
             // opens with `<`, so any other line that does is a
             // misspelled tag rather than a header.
-            // Nothing but a tag line opens with `<`, so that one
-            // character routes the line; which tag it is, and whether
-            // it is one at all, is the tag handler's own business.
-            if body.starts_with('<') {
-                handle_tag_line(
-                    body,
+            // Each tag is consumed by its own parser, and its tail
+            // must be empty because a tag line carries the tag and
+            // nothing else. Nothing but a tag line opens with `<`, so
+            // any other line that does is a misspelled tag rather
+            // than a header.
+            if let Some((OpeningTag, "")) = OpeningTag::take(body) {
+                handle_opening_tag_line(
                     line_number,
                     &mut regions,
                     &mut last_cue_index,
                     &mut open_marker_line,
                 )?;
+            } else if let Some((ClosingTag, "")) = ClosingTag::take(body) {
+                handle_closing_tag_line(
+                    line_number,
+                    &mut regions,
+                    &mut last_cue_index,
+                    &mut open_marker_line,
+                )?;
+            } else if body.starts_with('<') {
+                return MalformedTagLine {
+                    line_number,
+                    content: body.to_string(),
+                }
+                .pipe(ParseLyricsError::MalformedTagLine)
+                .pipe(Err);
             } else {
                 handle_header_line(
                     body,
@@ -323,40 +346,43 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
     Ok(events)
 }
 
-/// Applies a column-zero tag line, which the caller has identified
-/// only by its leading `<`.
-///
-/// The line is recognized once, into a [`TagKind`] that selects the
-/// region transition; [`RegionState`] enforces the rules of that
-/// transition and reports them. The boundary then ends the scope of
-/// the cue above it, exactly as [`ReservedMarker::Clear`] does, so
-/// that no continuation or shorthand marker line reaches across the
-/// tag.
-fn handle_tag_line(
-    body: &str,
+/// Opens an additive region at an `<additive>` line.
+fn handle_opening_tag_line(
     line_number: usize,
     regions: &mut RegionState,
     last_cue_index: &mut Option<usize>,
     open_marker_line: &mut Option<OpenMarkerLine>,
 ) -> Result<(), ParseLyricsError> {
-    let Some(kind) = TagKind::of_line(body) else {
-        return MalformedTagLine {
-            line_number,
-            content: body.to_string(),
-        }
-        .pipe(ParseLyricsError::MalformedTagLine)
-        .pipe(Err);
-    };
+    regions
+        .open_region(line_number)
+        .map_err(ParseLyricsError::AdditiveRegion)?;
+    end_cue_scope(last_cue_index, open_marker_line);
+    Ok(())
+}
 
-    match kind {
-        TagKind::Opening => regions.open_region(line_number),
-        TagKind::Closing => regions.close_region(line_number),
-    }
-    .map_err(ParseLyricsError::AdditiveRegion)?;
+/// Closes the additive region at a `</additive>` line.
+fn handle_closing_tag_line(
+    line_number: usize,
+    regions: &mut RegionState,
+    last_cue_index: &mut Option<usize>,
+    open_marker_line: &mut Option<OpenMarkerLine>,
+) -> Result<(), ParseLyricsError> {
+    regions
+        .close_region(line_number)
+        .map_err(ParseLyricsError::AdditiveRegion)?;
+    end_cue_scope(last_cue_index, open_marker_line);
+    Ok(())
+}
 
+/// Ends the scope of the cue above a region boundary, exactly as
+/// [`ReservedMarker::Clear`] does, so that no continuation or
+/// shorthand marker line reaches across the tag.
+fn end_cue_scope(
+    last_cue_index: &mut Option<usize>,
+    open_marker_line: &mut Option<OpenMarkerLine>,
+) {
     *last_cue_index = None;
     *open_marker_line = None;
-    Ok(())
 }
 
 fn handle_header_line(
