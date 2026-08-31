@@ -1191,7 +1191,6 @@ fn rejects_every_near_miss_of_a_tag_line() {
         "</additive >",
         "< /additive>",
         "<additive> and some trailing text",
-        "<additive> ",
         "<additive></additive>",
     ];
     for content in near_misses {
@@ -1209,6 +1208,24 @@ fn rejects_every_near_miss_of_a_tag_line() {
             }),
         );
     }
+}
+
+/// A tag line accepts trailing whitespace, the same allowance
+/// [`control_markers_accept_trailing_whitespace_only`] locks in for
+/// `clr` and `eov`. Whitespace inside the delimiters stays rejected,
+/// since a tag has no attributes for it to separate.
+#[test]
+fn tag_lines_accept_trailing_whitespace_only() {
+    let input = text_block_fnl! {
+        "<additive> \t "
+        "07:11.111 LRC: first line"
+        "07:22.222 LRC: second line"
+        "</additive>\t"
+        "07:33.333 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(cues.len(), 2);
+    assert_eq!(cues[1].parts.len(), 2);
 }
 
 /// The other half of the literal match: both spellings are accepted

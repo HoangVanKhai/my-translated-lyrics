@@ -17,7 +17,8 @@
 //! Between a column-zero `<additive>` line and a `</additive>` line,
 //! cues accumulate rather than replace: each renders the parts of
 //! every cue above it in the region, then its own. Both spellings are
-//! matched literally, so no whitespace may sit inside or beside them.
+//! matched literally, so no whitespace may sit inside them, though
+//! trailing whitespace is allowed as it is after `clr`.
 //! Regions do not nest, enclose at least one cue, and admit neither
 //! [`ReservedMarker::Clear`] nor [`ReservedMarker::EndOfVideo`]. Each
 //! tag ends the scope of the cue above it, as `clr` does.
@@ -104,28 +105,11 @@ struct OpenMarkerLine {
     target: ContinuationTarget,
 }
 
-/// The `<additive>` tag, which opens an additive region.
-struct AdditiveOpeningTag;
-
-/// The `</additive>` tag, which closes an additive region.
-struct AdditiveClosingTag;
-
-impl AdditiveOpeningTag {
-    /// Consumes a leading `<additive>` and returns it with the
-    /// unconsumed tail.
-    fn take(source: &str) -> Option<(Self, &str)> {
-        let tail = source.strip_prefix(ADDITIVE_OPENING_TAG)?;
-        Some((AdditiveOpeningTag, tail))
-    }
-}
-
-impl AdditiveClosingTag {
-    /// Consumes a leading `</additive>` and returns it with the
-    /// unconsumed tail.
-    fn take(source: &str) -> Option<(Self, &str)> {
-        let tail = source.strip_prefix(ADDITIVE_CLOSING_TAG)?;
-        Some((AdditiveClosingTag, tail))
-    }
+/// Whether `body` is the tag line for `tag`. Only whitespace may
+/// follow the tag, which is the allowance a control marker line has.
+fn is_tag_line(body: &str, tag: &str) -> bool {
+    body.strip_prefix(tag)
+        .is_some_and(|tail| tail.trim().is_empty())
 }
 
 /// Identifies one `<additive>` region within a source file.
@@ -271,19 +255,16 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
             // header parser sees the line. Nothing else in the format
             // opens with `<`, so any other line that does is a
             // misspelled tag rather than a header.
-            // Each tag is consumed by its own parser, and its tail
-            // must be empty because a tag line carries the tag and
-            // nothing else. Nothing but a tag line opens with `<`, so
-            // any other line that does is a misspelled tag rather
-            // than a header.
-            if let Some((AdditiveOpeningTag, "")) = AdditiveOpeningTag::take(body) {
+            // Nothing but a tag line opens with `<`, so any other
+            // line that does is a misspelled tag rather than a header.
+            if is_tag_line(body, ADDITIVE_OPENING_TAG) {
                 handle_additive_opening_tag_line(
                     line_number,
                     &mut regions,
                     &mut last_cue_index,
                     &mut open_marker_line,
                 )?;
-            } else if let Some((AdditiveClosingTag, "")) = AdditiveClosingTag::take(body) {
+            } else if is_tag_line(body, ADDITIVE_CLOSING_TAG) {
                 handle_additive_closing_tag_line(
                     line_number,
                     &mut regions,
