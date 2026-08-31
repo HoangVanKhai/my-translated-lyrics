@@ -9,7 +9,7 @@
 //!
 //! [`parse_lyrics`]: super::parse_lyrics
 
-use super::{ADDITIVE_TAG_NAME, TIMESTAMP_PREFIX_WIDTH};
+use super::{KnownTagName, TIMESTAMP_PREFIX_WIDTH};
 use core::fmt;
 use derive_more::Display;
 use lyrics_core::line_markers_descriptor::ReservedMarker;
@@ -85,7 +85,8 @@ pub struct EmptyAnnotation {
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "line {line_number}: {content:?} is not a tag line; a tag line reads exactly \
-    `<{ADDITIVE_TAG_NAME}>` or `</{ADDITIVE_TAG_NAME}>`"
+    `<{tag}>` or `</{tag}>`",
+    tag = KnownTagName::Additive
 )]
 pub struct MalformedTagLine {
     pub line_number: usize,
@@ -95,8 +96,9 @@ pub struct MalformedTagLine {
 /// Payload for [`AdditiveRegionError::Nested`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "line {line_number}: `<{ADDITIVE_TAG_NAME}>` opens an additive region inside the one \
-    opened on line {opened_at}; additive regions do not nest"
+    "line {line_number}: `<{tag}>` opens an additive region inside the one \
+    opened on line {opened_at}; additive regions do not nest",
+    tag = KnownTagName::Additive
 )]
 pub struct NestedRegion {
     pub line_number: usize,
@@ -106,8 +108,9 @@ pub struct NestedRegion {
 /// Payload for [`AdditiveRegionError::Unopened`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "line {line_number}: `</{ADDITIVE_TAG_NAME}>` closes an additive region that no \
-    `<{ADDITIVE_TAG_NAME}>` opened"
+    "line {line_number}: `</{tag}>` closes an additive region that no \
+    `<{tag}>` opened",
+    tag = KnownTagName::Additive
 )]
 pub struct UnopenedRegion {
     pub line_number: usize,
@@ -116,8 +119,9 @@ pub struct UnopenedRegion {
 /// Payload for [`AdditiveRegionError::Unclosed`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "line {line_number}: `<{ADDITIVE_TAG_NAME}>` opens an additive region that no \
-    `</{ADDITIVE_TAG_NAME}>` closes"
+    "line {line_number}: `<{tag}>` opens an additive region that no \
+    `</{tag}>` closes",
+    tag = KnownTagName::Additive
 )]
 pub struct UnclosedRegion {
     pub line_number: usize,

@@ -36,15 +36,20 @@ use error::{
 use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
 use pipe_trait::Pipe;
+use strum::EnumString;
 
 /// Indent width of a line that opens a new marker at the same start
 /// time as the cue immediately above. Equals the byte length of an
 /// `MM:SS.mmm` timestamp plus one ASCII space.
 const TIMESTAMP_PREFIX_WIDTH: usize = TIMESTAMP_STR_LEN + 1;
 
-/// Name of the only tag the parser defines. `<additive>` opens a
-/// region whose cues accumulate and `</additive>` closes it.
-const ADDITIVE_TAG_NAME: &str = "additive";
+/// A tag name the parser defines.
+#[derive(Clone, Copy, Debug, strum::Display, EnumString, Eq, PartialEq)]
+enum KnownTagName {
+    /// Opens a region whose cues accumulate.
+    #[strum(serialize = "additive")]
+    Additive,
+}
 
 /// A subtitle cue with a resolved end time, ready for rendering.
 ///
@@ -120,9 +125,9 @@ impl<'a> TagName<'a> {
         Some((TagName(&source[..end]), &source[end..]))
     }
 
-    /// Whether the name is the one tag the parser defines.
-    fn is_additive(self) -> bool {
-        self.0 == ADDITIVE_TAG_NAME
+    /// The underlying text.
+    fn as_str(self) -> &'a str {
+        self.0
     }
 }
 
@@ -317,7 +322,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
             // Nothing but a tag line opens with `<`, so any other
             // line that does is a misspelled tag rather than a header.
             if let Some((tag, tail)) = OpeningTag::take(body)
-                && tag.name().is_additive()
+                && let Ok(KnownTagName::Additive) = tag.name().as_str().parse()
                 && tail.trim().is_empty()
             {
                 handle_additive_opening_tag_line(
@@ -327,7 +332,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                     &mut open_marker_line,
                 )?;
             } else if let Some((tag, tail)) = ClosingTag::take(body)
-                && tag.name().is_additive()
+                && let Ok(KnownTagName::Additive) = tag.name().as_str().parse()
                 && tail.trim().is_empty()
             {
                 handle_additive_closing_tag_line(

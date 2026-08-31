@@ -6,7 +6,7 @@ use super::error::{
     RepeatedTimestamp, ReservedControlMarker, TabIndentation, UnclosedCue, UnclosedRegion,
     UnopenedRegion,
 };
-use super::{ClosingTag, OpeningTag, TagName, parse_lyrics};
+use super::{ClosingTag, KnownTagName, OpeningTag, TagName, parse_lyrics};
 use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::{SecondsOutOfRange, TakeTimestampError, Timestamp};
 use pipe_trait::Pipe;
@@ -1450,15 +1450,15 @@ fn closing_tag_rejects_anything_but_the_three_components_flush() {
     }
 }
 
-/// Only one name is defined, so a well-formed tag naming anything
-/// else parses and is then declined.
+/// A name the parser defines resolves to its variant; a well-formed
+/// tag naming anything else parses and is then declined.
 #[test]
-fn only_the_additive_name_is_recognized() {
+fn only_a_defined_name_resolves_to_a_known_tag() {
     let (additive, _) = OpeningTag::take("<additive>").unwrap();
-    assert!(additive.name().is_additive());
+    assert_eq!(additive.name().as_str().parse(), Ok(KnownTagName::Additive));
     for source in ["<verse>", "<additives>", "<a>"] {
         eprintln!("CASE: {source:?}");
         let (tag, _) = OpeningTag::take(source).unwrap();
-        assert!(!tag.name().is_additive());
+        assert!(tag.name().as_str().parse::<KnownTagName>().is_err());
     }
 }
