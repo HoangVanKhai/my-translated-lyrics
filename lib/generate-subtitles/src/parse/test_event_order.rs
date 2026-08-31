@@ -4,7 +4,9 @@
 //! application of the same rules to the cues inside an `<additive>`
 //! region.
 
-use crate::parse::error::{InvalidTimestamp, OutOfOrder, ParseLyricsError, RepeatedTimestamp};
+use crate::parse::error::{
+    InvalidTimestamp, OutOfOrder, ParseLyricsError, ParseLyricsErrorKind, RepeatedTimestamp,
+};
 use crate::parse::parse_lyrics;
 use lyrics_core::timestamp::{SecondsOutOfRange, TakeTimestampError, Timestamp};
 use pretty_assertions::assert_eq;
@@ -19,10 +21,13 @@ fn rejects_out_of_order_events() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::OutOfOrder(OutOfOrder {
-            previous: Timestamp::new(0, 2, 0).unwrap(),
-            next: Timestamp::new(0, 1, 0).unwrap(),
-        }),
+        ParseLyricsError {
+            line_number: 2,
+            kind: ParseLyricsErrorKind::OutOfOrder(OutOfOrder {
+                previous: Timestamp::new(0, 2, 0).unwrap(),
+                next: Timestamp::new(0, 1, 0).unwrap(),
+            }),
+        },
     );
 }
 
@@ -35,10 +40,12 @@ fn rejects_repeated_timestamp_for_consecutive_cue_lines() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::RepeatedTimestamp(RepeatedTimestamp {
+        ParseLyricsError {
             line_number: 2,
-            start: Timestamp::new(0, 10, 80).unwrap(),
-        }),
+            kind: ParseLyricsErrorKind::RepeatedTimestamp(RepeatedTimestamp {
+                start: Timestamp::new(0, 10, 80).unwrap(),
+            }),
+        },
     );
 }
 
@@ -49,13 +56,15 @@ fn invalid_timestamp_preserves_line_and_cause() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::InvalidTimestamp(InvalidTimestamp {
+        ParseLyricsError {
             line_number: 1,
-            cause: TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
-                raw: "00:60.000".to_string(),
-                value: 60,
+            kind: ParseLyricsErrorKind::InvalidTimestamp(InvalidTimestamp {
+                cause: TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
+                    raw: "00:60.000".to_string(),
+                    value: 60,
+                }),
             }),
-        }),
+        },
     );
 }
 
@@ -72,10 +81,13 @@ fn ordering_rules_still_apply_inside_a_region() {
     };
     assert_eq!(
         parse_lyrics(out_of_order).unwrap_err(),
-        ParseLyricsError::OutOfOrder(OutOfOrder {
-            previous: Timestamp::new(7, 22, 222).unwrap(),
-            next: Timestamp::new(7, 11, 111).unwrap(),
-        }),
+        ParseLyricsError {
+            line_number: 3,
+            kind: ParseLyricsErrorKind::OutOfOrder(OutOfOrder {
+                previous: Timestamp::new(7, 22, 222).unwrap(),
+                next: Timestamp::new(7, 11, 111).unwrap(),
+            }),
+        },
     );
 
     let repeated = text_block_fnl! {
@@ -87,9 +99,11 @@ fn ordering_rules_still_apply_inside_a_region() {
     };
     assert_eq!(
         parse_lyrics(repeated).unwrap_err(),
-        ParseLyricsError::RepeatedTimestamp(RepeatedTimestamp {
+        ParseLyricsError {
             line_number: 3,
-            start: Timestamp::new(7, 11, 111).unwrap(),
-        }),
+            kind: ParseLyricsErrorKind::RepeatedTimestamp(RepeatedTimestamp {
+                start: Timestamp::new(7, 11, 111).unwrap(),
+            }),
+        },
     );
 }

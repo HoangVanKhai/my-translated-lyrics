@@ -2,7 +2,9 @@
 //! text each one accepts, the events each one does and does not push, and
 //! the rejection of a cue whose marker names either of them.
 
-use crate::parse::error::{ExtraTextAfterControlMarker, ParseLyricsError, ReservedControlMarker};
+use crate::parse::error::{
+    ExtraTextAfterControlMarker, ParseLyricsError, ParseLyricsErrorKind, ReservedControlMarker,
+};
 use crate::parse::parse_lyrics;
 use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::Timestamp;
@@ -29,11 +31,13 @@ fn control_markers_reject_trailing_text() {
     };
     assert_eq!(
         parse_lyrics(clr_input).unwrap_err(),
-        ParseLyricsError::ExtraTextAfterControlMarker(ExtraTextAfterControlMarker {
+        ParseLyricsError {
             line_number: 2,
-            marker: ReservedMarker::Clear,
-            trailing: "some trailing text".to_string(),
-        }),
+            kind: ParseLyricsErrorKind::ExtraTextAfterControlMarker(ExtraTextAfterControlMarker {
+                marker: ReservedMarker::Clear,
+                trailing: "some trailing text".to_string(),
+            }),
+        },
     );
 
     let eov_input = text_block_fnl! {
@@ -43,11 +47,13 @@ fn control_markers_reject_trailing_text() {
     };
     assert_eq!(
         parse_lyrics(eov_input).unwrap_err(),
-        ParseLyricsError::ExtraTextAfterControlMarker(ExtraTextAfterControlMarker {
+        ParseLyricsError {
             line_number: 3,
-            marker: ReservedMarker::EndOfVideo,
-            trailing: "end of video".to_string(),
-        }),
+            kind: ParseLyricsErrorKind::ExtraTextAfterControlMarker(ExtraTextAfterControlMarker {
+                marker: ReservedMarker::EndOfVideo,
+                trailing: "end of video".to_string(),
+            }),
+        },
     );
 }
 
@@ -107,10 +113,12 @@ fn rejects_cue_marker_that_collides_with_control_token() {
     };
     assert_eq!(
         parse_lyrics(clr_input).unwrap_err(),
-        ParseLyricsError::ReservedControlMarker(ReservedControlMarker {
+        ParseLyricsError {
             line_number: 1,
-            marker: ReservedMarker::Clear,
-        }),
+            kind: ParseLyricsErrorKind::ReservedControlMarker(ReservedControlMarker {
+                marker: ReservedMarker::Clear,
+            }),
+        },
     );
 
     let eov_input = text_block_fnl! {
@@ -119,9 +127,11 @@ fn rejects_cue_marker_that_collides_with_control_token() {
     };
     assert_eq!(
         parse_lyrics(eov_input).unwrap_err(),
-        ParseLyricsError::ReservedControlMarker(ReservedControlMarker {
+        ParseLyricsError {
             line_number: 1,
-            marker: ReservedMarker::EndOfVideo,
-        }),
+            kind: ParseLyricsErrorKind::ReservedControlMarker(ReservedControlMarker {
+                marker: ReservedMarker::EndOfVideo,
+            }),
+        },
     );
 }

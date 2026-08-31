@@ -5,7 +5,7 @@
 
 use crate::parse::error::{
     EmptyCueBody, MalformedHeader, MalformedIndentation, MissingMarker,
-    MissingSeparatorAfterTimestamp, ParseLyricsError, TabIndentation,
+    MissingSeparatorAfterTimestamp, ParseLyricsError, ParseLyricsErrorKind, TabIndentation,
 };
 use crate::parse::parse_lyrics;
 use pretty_assertions::assert_eq;
@@ -20,10 +20,12 @@ fn rejects_malformed_header_when_column_zero_line_has_no_timestamp() {
     let input = "no timestamp here\n";
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::MalformedHeader(MalformedHeader {
+        ParseLyricsError {
             line_number: 1,
-            content: "no timestamp here".to_string(),
-        }),
+            kind: ParseLyricsErrorKind::MalformedHeader(MalformedHeader {
+                content: "no timestamp here".to_string(),
+            }),
+        },
     );
 }
 
@@ -36,10 +38,14 @@ fn rejects_timestamp_without_separator_after_prefix() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::MissingSeparatorAfterTimestamp(MissingSeparatorAfterTimestamp {
+        ParseLyricsError {
             line_number: 2,
-            content: "00:02.000ttl: no space after timestamp".to_string(),
-        }),
+            kind: ParseLyricsErrorKind::MissingSeparatorAfterTimestamp(
+                MissingSeparatorAfterTimestamp {
+                    content: "00:02.000ttl: no space after timestamp".to_string(),
+                },
+            ),
+        },
     );
 }
 
@@ -51,10 +57,12 @@ fn rejects_cue_line_without_marker() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::MissingMarker(MissingMarker {
+        ParseLyricsError {
             line_number: 1,
-            content: "Plain text without marker".to_string(),
-        }),
+            kind: ParseLyricsErrorKind::MissingMarker(MissingMarker {
+                content: "Plain text without marker".to_string(),
+            }),
+        },
     );
 }
 
@@ -66,10 +74,12 @@ fn rejects_cue_with_empty_body() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::EmptyCueBody(EmptyCueBody {
+        ParseLyricsError {
             line_number: 1,
-            marker: "ttl".to_string(),
-        }),
+            kind: ParseLyricsErrorKind::EmptyCueBody(EmptyCueBody {
+                marker: "ttl".to_string(),
+            }),
+        },
     );
 }
 
@@ -92,10 +102,12 @@ fn whitespace_only_cue_body_falls_through_to_missing_marker() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::MissingMarker(MissingMarker {
+        ParseLyricsError {
             line_number: 1,
-            content: String::new(),
-        }),
+            kind: ParseLyricsErrorKind::MissingMarker(MissingMarker {
+                content: String::new(),
+            }),
+        },
     );
 }
 
@@ -113,7 +125,10 @@ fn rejects_tab_in_leading_whitespace() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::TabIndentation(TabIndentation { line_number: 2 }),
+        ParseLyricsError {
+            line_number: 2,
+            kind: ParseLyricsErrorKind::TabIndentation(TabIndentation),
+        },
     );
 }
 
@@ -130,11 +145,13 @@ fn rejects_malformed_indentation_between_recognized_widths() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::MalformedIndentation(MalformedIndentation {
+        ParseLyricsError {
             line_number: 2,
-            actual: 12,
-            shorthand_indent: 10,
-            continuation_indent: Some(15),
-        }),
+            kind: ParseLyricsErrorKind::MalformedIndentation(MalformedIndentation {
+                actual: 12,
+                shorthand_indent: 10,
+                continuation_indent: Some(15),
+            }),
+        },
     );
 }
