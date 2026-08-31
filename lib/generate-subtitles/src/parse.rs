@@ -370,11 +370,9 @@ fn handle_header_line(
     }
 
     let first_token = cue_body.split_whitespace().next().unwrap_or("");
-    let marker = first_token
-        .parse::<ReservedMarker>()
-        .ok()
-        .filter(|marker| matches!(marker, ReservedMarker::Clear | ReservedMarker::EndOfVideo));
-    if let Some(marker) = marker {
+    if let Ok(marker) = first_token.parse::<ReservedMarker>()
+        && matches!(marker, ReservedMarker::Clear | ReservedMarker::EndOfVideo)
+    {
         let trailing = cue_body[first_token.len()..].trim();
         if !trailing.is_empty() {
             return Err(ParseLyricsError::ExtraTextAfterControlMarker(
