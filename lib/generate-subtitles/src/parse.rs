@@ -91,14 +91,14 @@ struct Line<'a> {
     /// selects which construct the line opens or extends.
     indent: usize,
     /// The line with its indent removed. Never blank, and never a
-    /// comment, because [`Cursor::take_content_line`] passes over both.
+    /// comment, because [`Input::take_content_line`] passes over both.
     body: &'a str,
 }
 
 /// The unread remainder of a source file: what is left to parse, the
 /// line it stands at, and the region enclosing it.
 #[derive(Clone, Copy)]
-struct Cursor<'a> {
+struct Input<'a> {
     /// The unread text, always positioned at the start of a line.
     text: &'a str,
     /// The number the next line carries.
@@ -108,10 +108,11 @@ struct Cursor<'a> {
     region: Option<usize>,
 }
 
-impl<'a> Cursor<'a> {
-    /// A cursor over the whole of `content`, outside any region.
+impl<'a> Input<'a> {
+    /// The whole of `content`, read from its first line and outside
+    /// any region.
     fn new(content: &'a str) -> Self {
-        Cursor {
+        Input {
             text: content,
             number: 1,
             region: None,
@@ -121,7 +122,7 @@ impl<'a> Cursor<'a> {
     /// The same position, read as the inside of the region opened at
     /// `opened_at`.
     fn inside(self, opened_at: usize) -> Self {
-        Cursor {
+        Input {
             region: Some(opened_at),
             ..self
         }
@@ -131,7 +132,7 @@ impl<'a> Cursor<'a> {
     /// nest, so what encloses the text after a `</additive>` is
     /// always nothing.
     fn outside(self) -> Self {
-        Cursor {
+        Input {
             region: None,
             ..self
         }
@@ -148,7 +149,7 @@ impl<'a> Cursor<'a> {
                 None => (rest.text, ""),
             };
             let number = rest.number;
-            rest = Cursor {
+            rest = Input {
                 text: tail,
                 number: number + 1,
                 ..rest
@@ -379,15 +380,15 @@ pub fn parse_lyrics(content: &str) -> Result<Vec<SubtitleCue>, ParseLyricsError>
 /// Reads `content` as a sequence of top-level elements.
 fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
     let mut events = Vec::<Event>::new();
-    let mut cursor = Cursor::new(content);
+    let mut input = Input::new(content);
 
-    while let Some((line, rest)) = cursor.take_line()? {
+    while let Some((line, rest)) = input.take_line()? {
         let previous_start = events.last().map(Event::last_start);
         let (event, tail) = take_element(line, rest, previous_start)?;
         if let Some(event) = event {
             events.push(event);
         }
-        cursor = tail;
+        input = tail;
     }
 
     Ok(events)
@@ -401,9 +402,9 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
 /// contributes no event when the line is ignored entirely.
 fn take_element<'a>(
     line: Line<'a>,
-    rest: Cursor<'a>,
+    rest: Input<'a>,
     previous_start: Option<Timestamp>,
-) -> Result<(Option<Event>, Cursor<'a>), ParseLyricsError> {
+) -> Result<(Option<Event>, Input<'a>), ParseLyricsError> {
     match parse_element_line(line)? {
         ElementLine::OpeningTag => {
             let (region, tail) = take_additive_region(rest, line.number, previous_start)?;
@@ -421,7 +422,7 @@ fn take_element<'a>(
             check_event_order(start, line.number, previous_start)?;
             Ok((Some(Event::Clear(start)), rest))
         }
-        // The only other control marker is `eov`, which the cursor
+        // The only other control marker is `eov`, which `take_line`
         // passes over outside a region and which a region rejects, so
         // no line reaches here. Were one to, ignoring it entirely is
         // what the format asks for.
@@ -479,20 +480,20 @@ fn parse_element_line(line: Line<'_>) -> Result<ElementLine<'_>, ParseLyricsErro
 /// unconsumed tail.
 ///
 /// The opening tag has already been consumed; `opened_at` is the line
-/// it stood on, and `cursor` the tail that follows it. Nesting is not
+/// it stood on, and `input` the tail that follows it. Nesting is not
 /// part of the grammar this parser reads, so the region it returns is
 /// flat by construction and an `<additive>` met on the way is
 /// reported where it stands.
 fn take_additive_region<'a>(
-    cursor: Cursor<'a>,
+    input: Input<'a>,
     opened_at: usize,
     previous_start: Option<Timestamp>,
-) -> Result<(AdditiveRegion, Cursor<'a>), ParseLyricsError> {
+) -> Result<(AdditiveRegion, Input<'a>), ParseLyricsError> {
     let mut groups = Vec::<CueGroup>::new();
-    let mut cursor = cursor.inside(opened_at);
+    let mut input = input.inside(opened_at);
 
     loop {
-        let Some((line, rest)) = cursor.take_line()? else {
+        let Some((line, rest)) = input.take_line()? else {
             return UnclosedRegion {
                 line_number: opened_at,
             }
@@ -538,7 +539,7 @@ fn take_additive_region<'a>(
                 let header = PartHeader::parse(body, line.number)?;
                 let (group, tail) = take_cue_group(start, header, rest)?;
                 groups.push(group);
-                cursor = tail;
+                input = tail;
             }
         }
     }
@@ -555,17 +556,17 @@ fn take_additive_region<'a>(
 fn take_cue_group<'a>(
     start: Timestamp,
     header: PartHeader<'a>,
-    cursor: Cursor<'a>,
-) -> Result<(CueGroup, Cursor<'a>), ParseLyricsError> {
+    input: Input<'a>,
+) -> Result<(CueGroup, Input<'a>), ParseLyricsError> {
     // The part the shorthand column is currently writing into is held
     // aside from the parts a later shorthand line has already closed.
     // That is what lets an annotation reach the open part without the
     // group having to prove that a part exists.
-    let (mut open, mut cursor) = take_cue_part(header, cursor)?;
+    let (mut open, mut input) = take_cue_part(header, input)?;
     let mut parts = Vec::<CuePart>::new();
     let annotation_indent = continuation_indent(ReservedMarker::Annotation.as_ref());
 
-    while let Some((line, rest)) = cursor.take_line()? {
+    while let Some((line, rest)) = input.take_line()? {
         // A part accepts every line indented at its continuation width
         // and rejects every other width, so the line reached here
         // stands at column zero or at the shorthand column.
@@ -577,19 +578,19 @@ fn take_cue_group<'a>(
                 let (continuations, tail) =
                     take_continuation_lines(rest, annotation_indent, Continued::AnnotationText)?;
                 open.annotations.push(join_lines(text, &continuations));
-                cursor = tail;
+                input = tail;
             }
             ShorthandLine::Part(header) => {
                 let (part, tail) = take_cue_part(header, rest)?;
                 parts.push(open);
                 open = part;
-                cursor = tail;
+                input = tail;
             }
         }
     }
 
     parts.push(open);
-    Ok((CueGroup { start, parts }, cursor))
+    Ok((CueGroup { start, parts }, input))
 }
 
 /// Consumes the continuation lines that extend the text of the part
@@ -598,17 +599,17 @@ fn take_cue_group<'a>(
 /// since each attaches to whichever part is open when it appears.
 fn take_cue_part<'a>(
     header: PartHeader<'a>,
-    cursor: Cursor<'a>,
-) -> Result<(CuePart, Cursor<'a>), ParseLyricsError> {
+    input: Input<'a>,
+) -> Result<(CuePart, Input<'a>), ParseLyricsError> {
     let PartHeader { marker, text } = header;
     let indent = continuation_indent(marker);
-    let (continuations, cursor) = take_continuation_lines(cursor, indent, Continued::CueText)?;
+    let (continuations, input) = take_continuation_lines(input, indent, Continued::CueText)?;
     let part = CuePart {
         marker: marker.to_string(),
         text: join_lines(text, &continuations),
         annotations: Vec::new(),
     };
-    Ok((part, cursor))
+    Ok((part, input))
 }
 
 /// Which body a run of continuation lines extends. Only cue text is
@@ -630,20 +631,20 @@ enum Continued {
 /// other indent names nothing the grammar admits here and is reported
 /// against the two widths that were in force.
 fn take_continuation_lines<'a>(
-    cursor: Cursor<'a>,
+    input: Input<'a>,
     indent: usize,
     continued: Continued,
-) -> Result<(Vec<Line<'a>>, Cursor<'a>), ParseLyricsError> {
+) -> Result<(Vec<Line<'a>>, Input<'a>), ParseLyricsError> {
     let mut continuations = Vec::<Line>::new();
-    let mut cursor = cursor;
+    let mut input = input;
 
-    while let Some((line, rest)) = cursor.take_line()? {
+    while let Some((line, rest)) = input.take_line()? {
         if line.indent == indent {
             if continued == Continued::CueText {
                 reject_reserved_cue_text_characters(line.body, line.number)?;
             }
             continuations.push(line);
-            cursor = rest;
+            input = rest;
             continue;
         }
         if line.indent != 0 && line.indent != TIMESTAMP_PREFIX_WIDTH {
@@ -652,7 +653,7 @@ fn take_continuation_lines<'a>(
         break;
     }
 
-    Ok((continuations, cursor))
+    Ok((continuations, input))
 }
 
 /// What a line at the shorthand column declares.
