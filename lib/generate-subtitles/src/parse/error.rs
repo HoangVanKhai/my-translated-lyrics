@@ -9,7 +9,7 @@
 //!
 //! [`parse_lyrics`]: super::parse_lyrics
 
-use super::TIMESTAMP_PREFIX_WIDTH;
+use super::{TIMESTAMP_PREFIX_WIDTH, TagName};
 use core::fmt;
 use derive_more::Display;
 use lyrics_core::line_markers_descriptor::ReservedMarker;
@@ -79,6 +79,64 @@ pub struct ReservedControlMarker {
 )]
 pub struct EmptyAnnotation {
     pub line_number: usize,
+}
+
+/// Payload for [`ParseLyricsError::MalformedTagLine`].
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display(
+    "line {line_number}: {content:?} is not a tag line; a tag line reads exactly \
+    `<{tag}>` or `</{tag}>`",
+    tag = TagName::Additive
+)]
+pub struct MalformedTagLine {
+    pub line_number: usize,
+    pub content: String,
+}
+
+/// Payload for [`AdditiveRegionError::Nested`].
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display(
+    "line {line_number}: `<{tag}>` opens an additive region inside the one opened on line \
+    {opened_at}",
+    tag = TagName::Additive
+)]
+pub struct NestedRegion {
+    pub line_number: usize,
+    pub opened_at: usize,
+}
+
+/// Payload for [`AdditiveRegionError::Unopened`].
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display("line {line_number}: stray `</{tag}>`", tag = TagName::Additive)]
+pub struct UnopenedRegion {
+    pub line_number: usize,
+}
+
+/// Payload for [`AdditiveRegionError::Unclosed`].
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display("line {line_number}: unclosed `<{tag}>`", tag = TagName::Additive)]
+pub struct UnclosedRegion {
+    pub line_number: usize,
+}
+
+/// Payload for [`AdditiveRegionError::Empty`].
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display("line {line_number}: the additive region opened on line {opened_at} encloses no cue")]
+pub struct EmptyRegion {
+    pub line_number: usize,
+    pub opened_at: usize,
+}
+
+/// Payload for [`AdditiveRegionError::ControlMarker`].
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[display(
+    "line {line_number}: control marker `{marker}` appears inside the additive region opened \
+    on line {opened_at}; close the region before the marker"
+)]
+pub struct ControlMarkerInRegion {
+    pub line_number: usize,
+    pub marker: ReservedMarker,
+    pub opened_at: usize,
 }
 
 /// Payload for [`ParseLyricsError::EmptyCueBody`].
@@ -213,12 +271,25 @@ pub struct UnclosedCue {
     pub start: Timestamp,
 }
 
+/// The ways an `<additive>` region can be malformed.
+#[derive(Clone, Debug, Display, Eq, PartialEq)]
+#[non_exhaustive]
+pub enum AdditiveRegionError {
+    Nested(NestedRegion),
+    Unopened(UnopenedRegion),
+    Unclosed(UnclosedRegion),
+    Empty(EmptyRegion),
+    ControlMarker(ControlMarkerInRegion),
+}
+
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum ParseLyricsError {
     TabIndentation(TabIndentation),
     MalformedIndentation(MalformedIndentation),
     MalformedHeader(MalformedHeader),
+    MalformedTagLine(MalformedTagLine),
+    AdditiveRegion(AdditiveRegionError),
     InvalidTimestamp(InvalidTimestamp),
     MissingSeparatorAfterTimestamp(MissingSeparatorAfterTimestamp),
     ExtraTextAfterControlMarker(ExtraTextAfterControlMarker),

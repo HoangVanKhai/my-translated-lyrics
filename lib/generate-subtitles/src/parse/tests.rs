@@ -1,12 +1,15 @@
 use super::error::{
-    CueTextReservedCharacter, EmptyAnnotation, EmptyCueBody, ExtraTextAfterControlMarker,
-    InvalidTimestamp, MalformedHeader, MalformedIndentation, MissingMarker,
-    MissingSeparatorAfterTimestamp, OrphanedAnnotation, OrphanedShorthandMarker, OutOfOrder,
-    ParseLyricsError, RepeatedTimestamp, ReservedControlMarker, TabIndentation, UnclosedCue,
+    AdditiveRegionError, ControlMarkerInRegion, CueTextReservedCharacter, EmptyAnnotation,
+    EmptyCueBody, EmptyRegion, ExtraTextAfterControlMarker, InvalidTimestamp, MalformedHeader,
+    MalformedIndentation, MalformedTagLine, MissingMarker, MissingSeparatorAfterTimestamp,
+    NestedRegion, OrphanedAnnotation, OrphanedShorthandMarker, OutOfOrder, ParseLyricsError,
+    RepeatedTimestamp, ReservedControlMarker, TabIndentation, UnclosedCue, UnclosedRegion,
+    UnopenedRegion,
 };
-use super::parse_lyrics;
+use super::{ClosingTag, OpeningTag, TagName, parse_lyrics};
 use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::{SecondsOutOfRange, TakeTimestampError, Timestamp};
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
 
@@ -819,4 +822,614 @@ fn annotations_on_one_part_may_differ_in_length() {
             "first line of second annotation\nsecond line of second annotation",
         ],
     );
+}
+
+/// The defining behavior of an additive region: a cue does not
+/// replace the one above it but renders below it, so the region
+/// builds up a line at a time. The final cue ends at the event that
+/// follows the closing tag, which is the `clr` here.
+#[test]
+fn additive_region_accumulates_each_cue_onto_the_ones_above_it() {
+    let input = text_block_fnl! {
+        "<additive>"
+        "07:11.111 LRC: first line"
+        "07:22.222 LRC: second line"
+        "07:33.333 LRC: third line"
+        "07:44.444 LRC: fourth line"
+        "</additive>"
+        ""
+        "07:55.555 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    let bodies: Vec<Vec<&str>> = cues
+        .iter()
+        .map(|cue| cue.parts.iter().map(|part| part.text.as_str()).collect())
+        .collect();
+    assert_eq!(
+        bodies,
+        vec![
+            vec!["first line"],
+            vec!["first line", "second line"],
+            vec!["first line", "second line", "third line"],
+            vec!["first line", "second line", "third line", "fourth line"],
+        ],
+    );
+    assert_eq!(cues[0].start, Timestamp::new(7, 11, 111).unwrap());
+    assert_eq!(cues[0].end, Timestamp::new(7, 22, 222).unwrap());
+    assert_eq!(cues[3].start, Timestamp::new(7, 44, 444).unwrap());
+    assert_eq!(cues[3].end, Timestamp::new(7, 55, 555).unwrap());
+}
+
+/// Every carried part keeps the marker of the line that wrote it,
+/// so a region may mix markers and each accumulated line still
+/// renders under its own presentation rules.
+#[test]
+fn carried_parts_keep_their_own_markers() {
+    let input = text_block_fnl! {
+        "<additive>"
+        "07:11.111 ttl: title body"
+        "07:22.222 LRC: lyric body"
+        "</additive>"
+        "07:33.333 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    let markers: Vec<&str> = cues[1]
+        .parts
+        .iter()
+        .map(|part| part.marker.as_str())
+        .collect();
+    assert_eq!(markers, ["ttl", "LRC"]);
+}
+
+/// A cue group inside a region may carry several parts of its own
+/// through the shorthand column, and all of them carry forward
+/// together.
+#[test]
+fn a_multi_part_cue_group_carries_all_of_its_parts_forward() {
+    let input = text_block_fnl! {
+        "<additive>"
+        "07:11.111 ttl: title body"
+        "          cre: credit body"
+        "07:22.222 LRC: lyric body"
+        "</additive>"
+        "07:33.333 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    let bodies: Vec<&str> = cues[1]
+        .parts
+        .iter()
+        .map(|part| part.text.as_str())
+        .collect();
+    assert_eq!(bodies, ["title body", "credit body", "lyric body"]);
+}
+
+/// Continuation lines belong to the part that opened them, so a
+/// multi-line part carries forward as one part with its line breaks
+/// intact rather than as several.
+#[test]
+fn a_carried_part_keeps_its_continuation_lines() {
+    let input = text_block_fnl! {
+        "<additive>"
+        "07:11.111 cre: first body line"
+        "               second body line"
+        "07:22.222 LRC: lyric body"
+        "</additive>"
+        "07:33.333 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(cues[1].parts.len(), 2);
+    assert_eq!(cues[1].parts[0].text, "first body line\nsecond body line");
+    assert_eq!(cues[1].parts[1].text, "lyric body");
+}
+
+/// A cue after the closing tag is an ordinary cue again: it replaces
+/// what the region left on screen instead of extending it.
+#[test]
+fn a_cue_after_the_region_does_not_accumulate() {
+    let input = text_block_fnl! {
+        "<additive>"
+        "07:11.111 LRC: first line"
+        "07:22.222 LRC: second line"
+        "</additive>"
+        "07:33.333 LRC: after the region"
+        "07:44.444 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(cues.len(), 3);
+    assert_eq!(cues[2].parts.len(), 1);
+    assert_eq!(cues[2].parts[0].text, "after the region");
+}
+
+/// A cue before the opening tag is likewise untouched, and the
+/// region starts its accumulation from nothing rather than from
+/// whatever preceded it.
+#[test]
+fn a_cue_before_the_region_is_not_carried_into_it() {
+    let input = text_block_fnl! {
+        "07:11.111 LRC: before the region"
+        "<additive>"
+        "07:22.222 LRC: first line"
+        "</additive>"
+        "07:33.333 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(cues.len(), 2);
+    assert_eq!(cues[0].parts[0].text, "before the region");
+    assert_eq!(cues[1].parts.len(), 1);
+    assert_eq!(cues[1].parts[0].text, "first line");
+}
+
+/// Two regions may sit back to back with no event between them. Each
+/// accumulates on its own, so the second starts empty rather than
+/// continuing the first.
+#[test]
+fn adjacent_regions_accumulate_independently() {
+    let input = text_block_fnl! {
+        "<additive>"
+        "07:11.111 LRC: first line"
+        "07:22.222 LRC: second line"
+        "</additive>"
+        "<additive>"
+        "07:33.333 LRC: third line"
+        "07:44.444 LRC: fourth line"
+        "</additive>"
+        "07:55.555 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    let bodies: Vec<Vec<&str>> = cues
+        .iter()
+        .map(|cue| cue.parts.iter().map(|part| part.text.as_str()).collect())
+        .collect();
+    assert_eq!(
+        bodies,
+        vec![
+            vec!["first line"],
+            vec!["first line", "second line"],
+            vec!["third line"],
+            vec!["third line", "fourth line"],
+        ],
+    );
+}
+
+/// A region of one cue is legal and renders exactly as the same cue
+/// would without the tags, because there is nothing above it to
+/// accumulate.
+#[test]
+fn a_region_of_one_cue_renders_that_cue_alone() {
+    let input = text_block_fnl! {
+        "<additive>"
+        "07:11.111 LRC: only line"
+        "</additive>"
+        "07:22.222 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(cues.len(), 1);
+    assert_eq!(cues[0].parts.len(), 1);
+    assert_eq!(cues[0].parts[0].text, "only line");
+    assert_eq!(cues[0].end, Timestamp::new(7, 22, 222).unwrap());
+}
+
+/// An annotation documents the line its author wrote it under, so it
+/// stays on that cue rather than repeating on every cue below it in
+/// the region.
+#[test]
+fn annotations_do_not_carry_forward_within_a_region() {
+    let input = text_block_fnl! {
+        "<additive>"
+        "07:11.111 LRC: first line"
+        "          ann: a note about the first line"
+        "07:22.222 LRC: second line"
+        "</additive>"
+        "07:33.333 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(
+        cues[0].parts[0].annotations,
+        ["a note about the first line"],
+    );
+    assert_eq!(cues[1].parts.len(), 2);
+    assert_eq!(cues[1].parts[0].annotations, Vec::<String>::new());
+    assert_eq!(cues[1].parts[1].annotations, Vec::<String>::new());
+}
+
+/// A region encloses cues, not the boundary events that end them, so
+/// the two nesting shapes and the two control markers are all
+/// rejected.
+#[test]
+fn rejects_a_region_opened_inside_another_region() {
+    let doubled_tags = text_block_fnl! {
+        "<additive>"
+        "<additive>"
+        "07:11.111 LRC: first line"
+        "</additive>"
+        "</additive>"
+        "07:22.222 clr"
+    };
+    assert_eq!(
+        parse_lyrics(doubled_tags).unwrap_err(),
+        NestedRegion {
+            line_number: 2,
+            opened_at: 1,
+        }
+        .pipe(AdditiveRegionError::Nested)
+        .pipe(ParseLyricsError::AdditiveRegion),
+    );
+
+    let inner_region = text_block_fnl! {
+        "<additive>"
+        "07:11.111 LRC: first line"
+        "<additive>"
+        "07:22.222 LRC: second line"
+        "</additive>"
+        "07:33.333 LRC: third line"
+        "</additive>"
+        "07:44.444 clr"
+    };
+    assert_eq!(
+        parse_lyrics(inner_region).unwrap_err(),
+        NestedRegion {
+            line_number: 3,
+            opened_at: 1,
+        }
+        .pipe(AdditiveRegionError::Nested)
+        .pipe(ParseLyricsError::AdditiveRegion),
+    );
+}
+
+#[test]
+fn rejects_a_control_marker_inside_a_region() {
+    let clear_input = text_block_fnl! {
+        "<additive>"
+        "07:11.111 LRC: first line"
+        "07:22.222 clr"
+        "</additive>"
+    };
+    assert_eq!(
+        parse_lyrics(clear_input).unwrap_err(),
+        ControlMarkerInRegion {
+            line_number: 3,
+            marker: ReservedMarker::Clear,
+            opened_at: 1,
+        }
+        .pipe(AdditiveRegionError::ControlMarker)
+        .pipe(ParseLyricsError::AdditiveRegion),
+    );
+
+    let end_of_video_input = text_block_fnl! {
+        "<additive>"
+        "07:11.111 LRC: first line"
+        "07:22.222 eov"
+        "</additive>"
+    };
+    assert_eq!(
+        parse_lyrics(end_of_video_input).unwrap_err(),
+        ControlMarkerInRegion {
+            line_number: 3,
+            marker: ReservedMarker::EndOfVideo,
+            opened_at: 1,
+        }
+        .pipe(AdditiveRegionError::ControlMarker)
+        .pipe(ParseLyricsError::AdditiveRegion),
+    );
+}
+
+/// The diagnostic for an unclosed region names the opening tag
+/// rather than the end of the file, because that is the line the
+/// author has to revisit.
+#[test]
+fn rejects_a_region_that_is_never_closed() {
+    let input = text_block_fnl! {
+        "07:11.111 LRC: before the region"
+        "<additive>"
+        "07:22.222 LRC: first line"
+        "07:33.333 LRC: second line"
+    };
+    assert_eq!(
+        parse_lyrics(input).unwrap_err(),
+        UnclosedRegion { line_number: 2 }
+            .pipe(AdditiveRegionError::Unclosed)
+            .pipe(ParseLyricsError::AdditiveRegion),
+    );
+}
+
+#[test]
+fn rejects_a_closing_tag_without_an_opening_one() {
+    let input = text_block_fnl! {
+        "07:11.111 LRC: first line"
+        "</additive>"
+        "07:22.222 clr"
+    };
+    assert_eq!(
+        parse_lyrics(input).unwrap_err(),
+        UnopenedRegion { line_number: 2 }
+            .pipe(AdditiveRegionError::Unopened)
+            .pipe(ParseLyricsError::AdditiveRegion),
+    );
+}
+
+/// A region exists to accumulate cues, so one that encloses none is
+/// an authoring mistake rather than a silent no-op. Comments and
+/// blank lines do not count as content.
+#[test]
+fn rejects_a_region_that_encloses_no_cue() {
+    let input = text_block_fnl! {
+        "<additive>"
+        "# a comment is not a cue"
+        ""
+        "</additive>"
+        "07:11.111 LRC: first line"
+        "07:22.222 clr"
+    };
+    assert_eq!(
+        parse_lyrics(input).unwrap_err(),
+        EmptyRegion {
+            line_number: 4,
+            opened_at: 1,
+        }
+        .pipe(AdditiveRegionError::Empty)
+        .pipe(ParseLyricsError::AdditiveRegion),
+    );
+}
+
+/// A tag carries no attributes, so the two spellings are matched
+/// literally and every near miss draws the same diagnostic, which
+/// names both spellings in full rather than describing a grammar.
+/// Whitespace inside the delimiters is a near miss like any other:
+/// `<additive >` would otherwise have to read as an empty attribute
+/// list, and the format has no attributes to read.
+#[test]
+fn rejects_every_near_miss_of_a_tag_line() {
+    let near_misses = [
+        "<verse>",
+        "<additive",
+        "</additive",
+        "<>",
+        "</>",
+        "< additive>",
+        "<additive >",
+        "</ additive>",
+        "</additive >",
+        "< /additive>",
+        "<additive> and some trailing text",
+        "<additive></additive>",
+    ];
+    for content in near_misses {
+        eprintln!("CASE: {content:?}");
+        let input = format!(
+            "{content}\n\
+             07:11.111 LRC: first line\n\
+             07:22.222 clr\n",
+        );
+        assert_eq!(
+            parse_lyrics(&input).unwrap_err(),
+            ParseLyricsError::MalformedTagLine(MalformedTagLine {
+                line_number: 1,
+                content: content.to_string(),
+            }),
+        );
+    }
+}
+
+/// A tag line accepts trailing whitespace, the same allowance
+/// [`control_markers_accept_trailing_whitespace_only`] locks in for
+/// `clr` and `eov`. Whitespace inside the delimiters stays rejected,
+/// since a tag has no attributes for it to separate.
+#[test]
+fn tag_lines_accept_trailing_whitespace_only() {
+    let input = text_block_fnl! {
+        "<additive> \t "
+        "07:11.111 LRC: first line"
+        "07:22.222 LRC: second line"
+        "</additive>\t"
+        "07:33.333 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(cues.len(), 2);
+    assert_eq!(cues[1].parts.len(), 2);
+}
+
+/// The other half of the literal match: both spellings are accepted
+/// exactly as written.
+#[test]
+fn accepts_both_tag_spellings_exactly_as_written() {
+    let input = text_block_fnl! {
+        "<additive>"
+        "07:11.111 LRC: first line"
+        "07:22.222 LRC: second line"
+        "</additive>"
+        "07:33.333 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(cues.len(), 2);
+    assert_eq!(cues[1].parts.len(), 2);
+}
+
+/// A tag ends the scope of the cue above it, exactly as `clr` does,
+/// so a shorthand marker line below the tag has no cue to attach to.
+#[test]
+fn a_tag_ends_the_scope_of_the_cue_above_it() {
+    let after_opening_tag = text_block_fnl! {
+        "07:11.111 ttl: title body"
+        "<additive>"
+        "          cre: credit body"
+        "</additive>"
+        "07:22.222 clr"
+    };
+    assert_eq!(
+        parse_lyrics(after_opening_tag).unwrap_err(),
+        ParseLyricsError::OrphanedShorthandMarker(OrphanedShorthandMarker {
+            line_number: 3,
+            content: "cre: credit body".to_string(),
+        }),
+    );
+
+    let after_closing_tag = text_block_fnl! {
+        "<additive>"
+        "07:11.111 ttl: title body"
+        "</additive>"
+        "          cre: credit body"
+        "07:22.222 clr"
+    };
+    assert_eq!(
+        parse_lyrics(after_closing_tag).unwrap_err(),
+        ParseLyricsError::OrphanedShorthandMarker(OrphanedShorthandMarker {
+            line_number: 4,
+            content: "cre: credit body".to_string(),
+        }),
+    );
+}
+
+/// Angle brackets stay reserved inside cue text. A tag is recognized
+/// only at column zero, so writing one in a cue body reports the
+/// reserved character rather than opening a region.
+#[test]
+fn a_tag_written_inside_cue_text_is_still_a_reserved_character() {
+    let input = text_block_fnl! {
+        "07:11.111 LRC: <additive>"
+        "07:22.222 clr"
+    };
+    assert_eq!(
+        parse_lyrics(input).unwrap_err(),
+        ParseLyricsError::CueTextReservedCharacter(CueTextReservedCharacter {
+            line_number: 1,
+            character: '<',
+        }),
+    );
+}
+
+/// Cues inside a region are ordinary events for the ordering rules,
+/// so the checks that guard the rest of the file still apply.
+#[test]
+fn ordering_rules_still_apply_inside_a_region() {
+    let out_of_order = text_block_fnl! {
+        "<additive>"
+        "07:22.222 LRC: first line"
+        "07:11.111 LRC: second line"
+        "</additive>"
+        "07:33.333 clr"
+    };
+    assert_eq!(
+        parse_lyrics(out_of_order).unwrap_err(),
+        ParseLyricsError::OutOfOrder(OutOfOrder {
+            previous: Timestamp::new(7, 22, 222).unwrap(),
+            next: Timestamp::new(7, 11, 111).unwrap(),
+        }),
+    );
+
+    let repeated = text_block_fnl! {
+        "<additive>"
+        "07:11.111 LRC: first line"
+        "07:11.111 LRC: second line"
+        "</additive>"
+        "07:22.222 clr"
+    };
+    assert_eq!(
+        parse_lyrics(repeated).unwrap_err(),
+        ParseLyricsError::RepeatedTimestamp(RepeatedTimestamp {
+            line_number: 3,
+            start: Timestamp::new(7, 11, 111).unwrap(),
+        }),
+    );
+}
+
+/// A name stops at the first character it does not admit, and the
+/// rest comes back for the next layer to interpret.
+#[test]
+fn tag_name_takes_a_name_and_returns_the_tail() {
+    for (source, tail) in [
+        ("additive", ""),
+        ("additive>", ">"),
+        ("additive> trailing", "> trailing"),
+        ("additive >", " >"),
+        ("additive/>", "/>"),
+        ("additive<", "<"),
+        ("additive.b>", ".b>"),
+    ] {
+        eprintln!("CASE: {source:?}");
+        assert_eq!(TagName::take(source), Some((TagName::Additive, tail)));
+    }
+}
+
+/// The format defines the names, so a run of name characters that
+/// denotes none of them is not a name at all.
+#[test]
+fn tag_name_rejects_a_run_that_names_nothing() {
+    for source in [
+        "",
+        "verse>",
+        "additives>",
+        "a>",
+        "append-only>",
+        "verse2>",
+        ">",
+        "/additive>",
+        "-additive>",
+        "2additive>",
+        "Additive>",
+        " additive>",
+    ] {
+        eprintln!("CASE: {source:?}");
+        assert_eq!(TagName::take(source), None);
+    }
+}
+
+#[test]
+fn opening_tag_takes_a_tag_and_returns_the_tail() {
+    for (source, tail) in [("<additive>", ""), ("<additive> trailing", " trailing")] {
+        eprintln!("CASE: {source:?}");
+        assert_eq!(
+            OpeningTag::take(source),
+            Some((OpeningTag(TagName::Additive), tail)),
+        );
+    }
+}
+
+/// The three components sit flush against each other. Whitespace
+/// between any two of them is what makes an attribute list possible,
+/// and the format has no attributes.
+#[test]
+fn opening_tag_rejects_anything_but_the_three_components_flush() {
+    for source in [
+        "</additive>",
+        "< additive>",
+        "<additive >",
+        "<additive",
+        "<>",
+        "<verse>",
+        "additive>",
+        "",
+    ] {
+        eprintln!("CASE: {source:?}");
+        assert_eq!(OpeningTag::take(source), None);
+    }
+}
+
+#[test]
+fn closing_tag_takes_a_tag_and_returns_the_tail() {
+    for (source, tail) in [("</additive>", ""), ("</additive> trailing", " trailing")] {
+        eprintln!("CASE: {source:?}");
+        assert_eq!(
+            ClosingTag::take(source),
+            Some((ClosingTag(TagName::Additive), tail)),
+        );
+    }
+}
+
+/// An opening tag is not a closing one, so the two parsers cannot
+/// both match a line and the caller may try them in either order.
+#[test]
+fn closing_tag_rejects_anything_but_the_three_components_flush() {
+    for source in [
+        "<additive>",
+        "</ additive>",
+        "</additive >",
+        "< /additive>",
+        "</additive",
+        "</>",
+        "</verse>",
+        "",
+    ] {
+        eprintln!("CASE: {source:?}");
+        assert_eq!(ClosingTag::take(source), None);
+    }
 }
