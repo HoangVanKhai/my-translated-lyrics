@@ -96,8 +96,8 @@ pub struct MalformedTagLine {
 /// Payload for [`AdditiveRegionError::Nested`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "line {line_number}: `<{tag}>` opens an additive region inside the one \
-    opened on line {opened_at}; additive regions do not nest",
+    "line {line_number}: `<{tag}>` opens an additive region inside the one opened on line \
+    {opened_at}",
     tag = TagName::Additive
 )]
 pub struct NestedRegion {
@@ -107,22 +107,14 @@ pub struct NestedRegion {
 
 /// Payload for [`AdditiveRegionError::Unopened`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display(
-    "line {line_number}: `</{tag}>` closes an additive region that no \
-    `<{tag}>` opened",
-    tag = TagName::Additive
-)]
+#[display("line {line_number}: stray `</{tag}>`", tag = TagName::Additive)]
 pub struct UnopenedRegion {
     pub line_number: usize,
 }
 
 /// Payload for [`AdditiveRegionError::Unclosed`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display(
-    "line {line_number}: `<{tag}>` opens an additive region that no \
-    `</{tag}>` closes",
-    tag = TagName::Additive
-)]
+#[display("line {line_number}: unclosed `<{tag}>`", tag = TagName::Additive)]
 pub struct UnclosedRegion {
     pub line_number: usize,
 }
