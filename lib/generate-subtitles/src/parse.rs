@@ -105,30 +105,30 @@ struct OpenMarkerLine {
 }
 
 /// The `<additive>` tag, which opens a region whose cues accumulate.
-struct OpeningTag;
+struct AdditiveOpeningTag;
 
-/// The `</additive>` tag, which closes the region an [`OpeningTag`]
+/// The `</additive>` tag, which closes the region an [`AdditiveOpeningTag`]
 /// opened.
-struct ClosingTag;
+struct AdditiveClosingTag;
 
-impl OpeningTag {
+impl AdditiveOpeningTag {
     /// Consumes a leading `<additive>` and returns it with the
     /// unconsumed tail. A tag carries no attributes, so the spelling
     /// is matched whole and there is nothing inside it to parse.
     fn take(source: &str) -> Option<(Self, &str)> {
         source
             .strip_prefix(ADDITIVE_OPENING_TAG)
-            .map(|tail| (OpeningTag, tail))
+            .map(|tail| (AdditiveOpeningTag, tail))
     }
 }
 
-impl ClosingTag {
+impl AdditiveClosingTag {
     /// Consumes a leading `</additive>` and returns it with the
-    /// unconsumed tail. See [`OpeningTag::take`].
+    /// unconsumed tail. See [`AdditiveOpeningTag::take`].
     fn take(source: &str) -> Option<(Self, &str)> {
         source
             .strip_prefix(ADDITIVE_CLOSING_TAG)
-            .map(|tail| (ClosingTag, tail))
+            .map(|tail| (AdditiveClosingTag, tail))
     }
 }
 
@@ -280,15 +280,15 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
             // nothing else. Nothing but a tag line opens with `<`, so
             // any other line that does is a misspelled tag rather
             // than a header.
-            if let Some((OpeningTag, "")) = OpeningTag::take(body) {
-                handle_opening_tag_line(
+            if let Some((AdditiveOpeningTag, "")) = AdditiveOpeningTag::take(body) {
+                handle_additive_opening_tag_line(
                     line_number,
                     &mut regions,
                     &mut last_cue_index,
                     &mut open_marker_line,
                 )?;
-            } else if let Some((ClosingTag, "")) = ClosingTag::take(body) {
-                handle_closing_tag_line(
+            } else if let Some((AdditiveClosingTag, "")) = AdditiveClosingTag::take(body) {
+                handle_additive_closing_tag_line(
                     line_number,
                     &mut regions,
                     &mut last_cue_index,
@@ -347,7 +347,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
 }
 
 /// Opens an additive region at an `<additive>` line.
-fn handle_opening_tag_line(
+fn handle_additive_opening_tag_line(
     line_number: usize,
     regions: &mut RegionState,
     last_cue_index: &mut Option<usize>,
@@ -361,7 +361,7 @@ fn handle_opening_tag_line(
 }
 
 /// Closes the additive region at a `</additive>` line.
-fn handle_closing_tag_line(
+fn handle_additive_closing_tag_line(
     line_number: usize,
     regions: &mut RegionState,
     last_cue_index: &mut Option<usize>,
