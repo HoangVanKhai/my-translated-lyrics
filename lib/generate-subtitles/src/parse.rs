@@ -20,15 +20,9 @@
 //! nest, enclose at least one cue, and admit neither
 //! [`ReservedMarker::Clear`] nor [`ReservedMarker::EndOfVideo`].
 //!
-//! That grammar is read by prefix parsers over the lines of the file.
-//! A `Cursor` carries the unread text, the number of the line it
-//! stands at, and the region enclosing it, and every `take_*` function
-//! consumes one construct from a cursor and hands back the tail. A
-//! construct that encloses others is therefore parsed as one value by
-//! one parser: `take_additive_region` owns everything between its two
-//! tags, and `take_cue_group` owns the shorthand marker lines, the
-//! annotations and the continuation lines written beneath a header
-//! line.
+//! Every parser here consumes a prefix of the unread lines and hands
+//! back the tail, so a construct that encloses others is parsed as one
+//! value by one parser.
 
 pub mod error;
 
@@ -103,11 +97,6 @@ struct Line<'a> {
 
 /// The unread remainder of a source file: what is left to parse, the
 /// line it stands at, and the region enclosing it.
-///
-/// Every parser in this module consumes a prefix of one of these and
-/// hands back the tail, so a line number travels with the text it
-/// belongs to rather than being recovered by counting, and a parser
-/// reading the inside of a region needs no flag of its own to know it.
 #[derive(Clone, Copy)]
 struct Cursor<'a> {
     /// The unread text, always positioned at the start of a line.
@@ -148,14 +137,9 @@ impl<'a> Cursor<'a> {
         }
     }
 
-    /// Consumes the next line that carries content, returning it with
-    /// the unconsumed tail. Blank lines and comment lines take part in
-    /// no construct at any position, so they are passed over here
-    /// rather than at each of the places one may appear.
-    ///
-    /// The line splitting matches [`str::lines`]: a `\r` before the
-    /// terminator is dropped with it, and a trailing newline ends the
-    /// input rather than opening an empty final line.
+    /// Consumes the next line that carries content, passing over the
+    /// blank and comment lines above it. Lines are split as
+    /// [`str::lines`] splits them.
     fn take_content_line(self) -> Result<Option<(Line<'a>, Self)>, ParseLyricsError> {
         let mut rest = self;
         while !rest.text.is_empty() {
@@ -190,15 +174,13 @@ impl<'a> Cursor<'a> {
         Ok(None)
     }
 
-    /// Consumes the next line that any parser here reads, returning it
-    /// with the unconsumed tail.
+    /// Consumes the next line that any parser here reads.
     ///
-    /// Outside a region this passes over an `eov` line as well, which
-    /// the format documents as ignored entirely: it opens no cue,
-    /// pushes no event, and leaves the cue above it open, so a
+    /// Outside a region an `eov` line is passed over too. The format
+    /// ignores it entirely, so it leaves the cue above it open and a
     /// continuation line beneath one still extends that cue. Inside a
-    /// region the line is handed back instead, so that
-    /// [`take_additive_region`] rejects it.
+    /// region the line is handed back, for [`take_additive_region`] to
+    /// reject.
     fn take_line(self) -> Result<Option<(Line<'a>, Self)>, ParseLyricsError> {
         let mut rest = self;
         while let Some((line, tail)) = rest.take_content_line()? {
