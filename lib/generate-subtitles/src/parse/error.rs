@@ -248,9 +248,7 @@ pub enum AdditiveRegionError {
     ControlMarker(ControlMarkerInRegion),
 }
 
-/// What the parser rejected, with no statement of where. The line at
-/// which the failure was detected lives in the enclosing
-/// [`ParseLyricsError`].
+/// What the parser rejected.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum ParseLyricsErrorKind {
