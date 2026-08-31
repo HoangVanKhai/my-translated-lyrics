@@ -370,17 +370,17 @@ fn handle_header_line(
     }
 
     let first_token = cue_body.split_whitespace().next().unwrap_or("");
-    let control_marker = first_token
+    let marker = first_token
         .parse::<ReservedMarker>()
         .ok()
         .filter(|marker| matches!(marker, ReservedMarker::Clear | ReservedMarker::EndOfVideo));
-    if let Some(control_marker) = control_marker {
+    if let Some(marker) = marker {
         let trailing = cue_body[first_token.len()..].trim();
         if !trailing.is_empty() {
             return Err(ParseLyricsError::ExtraTextAfterControlMarker(
                 ExtraTextAfterControlMarker {
                     line_number,
-                    marker: control_marker,
+                    marker,
                     trailing: trailing.to_string(),
                 },
             ));
@@ -388,7 +388,7 @@ fn handle_header_line(
         if let Some(open) = &regions.open {
             let payload = ControlMarkerInRegion {
                 line_number,
-                marker: control_marker,
+                marker,
                 opened_at: open.line_number,
             };
             return payload
@@ -396,7 +396,7 @@ fn handle_header_line(
                 .pipe(ParseLyricsError::AdditiveRegion)
                 .pipe(Err);
         }
-        if control_marker == ReservedMarker::Clear {
+        if marker == ReservedMarker::Clear {
             check_event_order(start, line_number, events)?;
             events.push(Event::Clear(start));
             *last_cue_index = None;
