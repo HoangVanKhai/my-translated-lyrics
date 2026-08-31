@@ -65,12 +65,19 @@ fn rejects_cue_with_empty_body() {
         "00:00.000 ttl:"
         "00:02.000 clr"
     };
+    let error = parse_lyrics(input).unwrap_err();
     assert_eq!(
-        parse_lyrics(input).unwrap_err(),
+        error,
         ParseLyricsError::EmptyCueBody(EmptyCueBody {
             line_number: 1,
             marker: marker_name("ttl"),
         }),
+    );
+    // The marker is quoted as the source spells it, rather than as the
+    // `Debug` form of the type that carries it.
+    assert_eq!(
+        error.to_string(),
+        r#"line 1: cue with marker "ttl" has an empty body"#,
     );
 }
 
