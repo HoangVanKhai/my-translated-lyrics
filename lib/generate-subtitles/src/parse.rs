@@ -784,4 +784,20 @@ fn reject_reserved_cue_text_characters(
 }
 
 #[cfg(test)]
-mod tests;
+mod test_additive_regions;
+#[cfg(test)]
+mod test_annotations;
+#[cfg(test)]
+mod test_control_markers;
+#[cfg(test)]
+mod test_cues;
+#[cfg(test)]
+mod test_event_order;
+#[cfg(test)]
+mod test_line_shape;
+#[cfg(test)]
+mod test_region_diagnostics;
+#[cfg(test)]
+mod test_reserved_characters;
+#[cfg(test)]
+mod test_tags;
