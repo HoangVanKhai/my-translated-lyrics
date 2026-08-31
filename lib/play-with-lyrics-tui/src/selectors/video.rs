@@ -20,7 +20,7 @@ use play_with_lyrics::catalog::{Video, language_label};
 use std::cmp::Ordering;
 use std::io::{self, Write};
 use std::time::SystemTime;
-use terminal_screen::{Buffer, Screen, Style};
+use terminal_screen::{Buffer, Column, Height, Row, Screen, Style, Width};
 
 /// Presents the fuzzy table of titles and reports the chosen row, a request
 /// to go back, or a request to quit. This is the first page, so going back
@@ -58,7 +58,7 @@ where
         selector.focus(index);
     }
     let mut last_click: Option<(SystemTime, usize)> = None;
-    let mut hover: Option<(u16, u16)> = None;
+    let mut hover: Option<(Column, Row)> = None;
     let mut screen = Screen::new();
     // Draw once up front, then redraw after any event that changes what is
     // shown, including a mouse movement that changes the hover highlight. The
@@ -98,7 +98,7 @@ where
             Event::Mouse(mouse) => {
                 // Track the pointer so the hovered button and row are highlighted
                 // on the redraw that follows.
-                hover = Some((mouse.column, mouse.row));
+                hover = Some((Column::new(mouse.column), Row::new(mouse.row)));
                 match mouse.kind {
                     MouseEventKind::ScrollUp => selector.move_up(),
                     MouseEventKind::ScrollDown => selector.move_down(),
@@ -119,7 +119,7 @@ where
                                     }
                                 }
                             }
-                        } else if mouse.row == HEADER_ROW {
+                        } else if Row::new(mouse.row) == HEADER_ROW {
                             // A click on a column header re-sorts the table by
                             // that column.
                             if let Some(column) = column_at(columns as usize, mouse.column as usize)
@@ -187,7 +187,7 @@ fn video_order(sort: ColumnSort<Language>) -> impl Fn(&Video, &Video) -> Orderin
 pub(super) fn render_search_bar(buffer: &mut Buffer, columns: usize, query: &str) {
     // Chain off each segment's end column so the layout matches the buffer's own
     // widths; measuring separately would disagree on the magnifier's width.
-    let after_magnifier = buffer.set_string(0, SEARCH_ROW, "🔍︎", Style::DIM);
+    let after_magnifier = buffer.set_string(Column::LEFT, SEARCH_ROW, "🔍︎", Style::DIM);
     let after_label = buffer.set_string(after_magnifier, SEARCH_ROW, " Search: ", Style::ITALIC);
     let shown = fit(query, columns.saturating_sub(after_label.into()));
     buffer.set_string(after_label, SEARCH_ROW, &shown, Style::BOLD);
@@ -200,7 +200,7 @@ pub(super) fn render_header(
     buffer: &mut Buffer,
     columns: usize,
     sort: &ColumnSort<Language>,
-    hover: Option<(u16, u16)>,
+    hover: Option<(Column, Row)>,
 ) {
     let primary = sort.order().first().copied();
     let label = |language: Language| -> String {
@@ -220,19 +220,34 @@ pub(super) fn render_header(
     let header = columns_line(&labels[0], &labels[1], &labels[2], columns);
     let spans = column_spans(columns);
     // The headers are bold and dimmed.
-    buffer.set_string(0, HEADER_ROW, &header, Style::BOLD.with(Style::DIM));
+    buffer.set_string(
+        Column::LEFT,
+        HEADER_ROW,
+        &header,
+        Style::BOLD.with(Style::DIM),
+    );
     // The separators between the headers are bold but not dimmed.
     for span in &spans[..2] {
-        buffer.set_string(span.end as u16, HEADER_ROW, COLUMN_SEPARATOR, Style::BOLD);
+        buffer.set_string(
+            Column::new(span.end as u16),
+            HEADER_ROW,
+            COLUMN_SEPARATOR,
+            Style::BOLD,
+        );
     }
     // The column under the pointer drops the dim.
     if let Some((hover_column, hover_row)) = hover
         && hover_row == HEADER_ROW
-        && let Some(index) = column_at(columns, hover_column as usize)
+        && let Some(index) = column_at(columns, hover_column.into())
     {
         let span = &spans[index];
         let fitted = fit(&labels[index], span.len());
-        buffer.set_string(span.start as u16, HEADER_ROW, &fitted, Style::BOLD);
+        buffer.set_string(
+            Column::new(span.start as u16),
+            HEADER_ROW,
+            &fitted,
+            Style::BOLD,
+        );
     }
 }
 
@@ -242,13 +257,13 @@ fn render_table<Sys>(
     selector: &Selector<Video>,
     videos: &[Video],
     sort: &ColumnSort<Language>,
-    hover: Option<(u16, u16)>,
+    hover: Option<(Column, Row)>,
 ) -> io::Result<()>
 where
     Sys: WindowSize,
 {
     let (width, height) = Sys::window_size().unwrap_or((80, 24));
-    let buffer = screen.begin(width, height, output)?;
+    let buffer = screen.begin(Width::new(width), Height::new(height), output)?;
     let columns = width as usize;
     let rows = height as usize;
 
@@ -281,13 +296,18 @@ where
             ],
             columns,
         );
-        let screen_y = (screen_index + DATA_ROW_OFFSET) as u16;
+        let screen_y = Row::new((screen_index + DATA_ROW_OFFSET) as u16);
         let base = row_style(filtered_position == cursor, hover, screen_y);
         draw_highlighted_line(buffer, screen_y, &line, base);
     }
 
     let help = "↑/↓ move · type to search · ⌫ delete · ^⌫ back · ⏎ select · Esc/^Q quit";
-    buffer.set_string(0, height.saturating_sub(1), &fit(help, columns), Style::DIM);
+    buffer.set_string(
+        Column::LEFT,
+        Row::new(height.saturating_sub(1)),
+        &fit(help, columns),
+        Style::DIM,
+    );
 
     screen.flush(output)
 }

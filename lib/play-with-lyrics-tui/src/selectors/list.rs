@@ -11,7 +11,7 @@ use crate::terminal::TerminalGuard;
 use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers, MouseButton, MouseEventKind};
 use std::io::{self, Write};
 use std::time::SystemTime;
-use terminal_screen::{Screen, Style};
+use terminal_screen::{Column, Height, Row, Screen, Style, Width};
 
 /// Presents a simple single-column list of `labels` and reports the chosen
 /// item, a request to go back to the previous page, or a request to quit. The
@@ -36,7 +36,7 @@ where
 {
     let mut cursor = start.min(labels.len().saturating_sub(1));
     let mut last_click: Option<(SystemTime, usize)> = None;
-    let mut hover: Option<(u16, u16)> = None;
+    let mut hover: Option<(Column, Row)> = None;
     let mut screen = Screen::new();
     // Draw once up front, then redraw after any event that changes what is
     // shown, including a mouse movement that changes the hover highlight. The
@@ -77,7 +77,7 @@ where
             Event::Mouse(mouse) => {
                 // Track the pointer so the hovered button and label are
                 // highlighted on the redraw that follows.
-                hover = Some((mouse.column, mouse.row));
+                hover = Some((Column::new(mouse.column), Row::new(mouse.row)));
                 match mouse.kind {
                     MouseEventKind::ScrollUp => cursor = cursor.saturating_sub(1),
                     MouseEventKind::ScrollDown => {
@@ -135,13 +135,13 @@ fn render_list<Sys>(
     title: &str,
     labels: &[String],
     cursor: usize,
-    hover: Option<(u16, u16)>,
+    hover: Option<(Column, Row)>,
 ) -> io::Result<()>
 where
     Sys: WindowSize,
 {
     let (width, height) = Sys::window_size().unwrap_or((80, 24));
-    let buffer = screen.begin(width, height, output)?;
+    let buffer = screen.begin(Width::new(width), Height::new(height), output)?;
     let columns = width as usize;
 
     // The top bar names the page; a list page always follows an earlier page,
@@ -149,14 +149,19 @@ where
     render_top_bar(buffer, columns, title, true, hover);
 
     for (index, label) in labels.iter().enumerate() {
-        let screen_y = (index + LIST_ROW_OFFSET) as u16;
+        let screen_y = Row::new((index + LIST_ROW_OFFSET) as u16);
         let line = fit(label, columns);
         let style = row_style(index == cursor, hover, screen_y);
-        buffer.set_string(0, screen_y, &line, style);
+        buffer.set_string(Column::LEFT, screen_y, &line, style);
     }
 
     let help = "↑/↓ move · ⌫/Esc back · ⏎/␣ select · ^Q quit";
-    buffer.set_string(0, height.saturating_sub(1), &fit(help, columns), Style::DIM);
+    buffer.set_string(
+        Column::LEFT,
+        Row::new(height.saturating_sub(1)),
+        &fit(help, columns),
+        Style::DIM,
+    );
 
     screen.flush(output)
 }

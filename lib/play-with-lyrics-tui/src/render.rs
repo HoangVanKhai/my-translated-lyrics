@@ -6,16 +6,16 @@
 use pipe_trait::Pipe;
 use std::ops::Range;
 use std::time::{Duration, SystemTime};
-use terminal_screen::{Buffer, Style};
+use terminal_screen::{Buffer, Column, Row, Style};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 /// The screen row of the search bar, below the top bar.
-pub(crate) const SEARCH_ROW: u16 = 1;
+pub(crate) const SEARCH_ROW: Row = Row::new(1);
 
 /// The screen row of the column header, below the top bar and the search
 /// prompt. The header is clickable, so the renderer and the click handling
 /// share this.
-pub(crate) const HEADER_ROW: u16 = 2;
+pub(crate) const HEADER_ROW: Row = Row::new(2);
 
 /// The screen row of the first title in the table, below the top bar, the
 /// search prompt, and the column header. Shared by the renderer and the click
@@ -168,11 +168,11 @@ pub(crate) fn visible_rows(rows: usize) -> usize {
 /// under the pointer; the underline composes with either.
 pub(crate) fn draw_highlighted_line(
     buffer: &mut Buffer,
-    row: u16,
+    row: Row,
     line: &[(char, bool)],
     base: Style,
 ) {
-    let mut col = 0;
+    let mut col = Column::LEFT;
     for &(character, highlight) in line {
         let style = if highlight {
             base.with(Style::UNDERLINE)
@@ -256,12 +256,13 @@ pub(crate) fn render_top_bar(
     width: usize,
     title: &str,
     back_enabled: bool,
-    hover: Option<(u16, u16)>,
+    hover: Option<(Column, Row)>,
 ) {
     let columns = button_columns(width);
     for (button, range) in &columns {
         let disabled = matches!(button, Button::Back) && !back_enabled;
-        let hovered = hover.is_some_and(|(col, row)| row == 0 && range.contains(&usize::from(col)));
+        let hovered =
+            hover.is_some_and(|(col, row)| row == Row::TOP && range.contains(&usize::from(col)));
         let style = if disabled {
             Style::DIM
         } else if hovered {
@@ -269,7 +270,12 @@ pub(crate) fn render_top_bar(
         } else {
             Style::PLAIN
         };
-        buffer.set_string(range.start as u16, 0, &button.draw(), style);
+        buffer.set_string(
+            Column::new(range.start as u16),
+            Row::TOP,
+            &button.draw(),
+            style,
+        );
     }
     // Center the title in the space between the Forward and Exit buttons,
     // truncating it there if it does not fit.
@@ -283,7 +289,7 @@ pub(crate) fn render_top_bar(
         } else {
             (gap_start + (region - title_width) / 2, title.to_string())
         };
-        buffer.set_string(column as u16, 0, &text, Style::PLAIN);
+        buffer.set_string(Column::new(column as u16), Row::TOP, &text, Style::PLAIN);
     }
 }
 
