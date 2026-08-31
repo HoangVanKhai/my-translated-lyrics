@@ -9,7 +9,7 @@
 //!
 //! [`parse_lyrics`]: super::parse_lyrics
 
-use super::{DefinedTagName, TIMESTAMP_PREFIX_WIDTH};
+use super::{TIMESTAMP_PREFIX_WIDTH, TagName};
 use core::fmt;
 use derive_more::Display;
 use lyrics_core::line_markers_descriptor::ReservedMarker;
@@ -86,7 +86,7 @@ pub struct EmptyAnnotation {
 #[display(
     "line {line_number}: {content:?} is not a tag line; a tag line reads exactly \
     `<{tag}>` or `</{tag}>`",
-    tag = DefinedTagName::Additive
+    tag = TagName::Additive
 )]
 pub struct MalformedTagLine {
     pub line_number: usize,
@@ -98,7 +98,7 @@ pub struct MalformedTagLine {
 #[display(
     "line {line_number}: `<{tag}>` opens an additive region inside the one \
     opened on line {opened_at}; additive regions do not nest",
-    tag = DefinedTagName::Additive
+    tag = TagName::Additive
 )]
 pub struct NestedRegion {
     pub line_number: usize,
@@ -110,7 +110,7 @@ pub struct NestedRegion {
 #[display(
     "line {line_number}: `</{tag}>` closes an additive region that no \
     `<{tag}>` opened",
-    tag = DefinedTagName::Additive
+    tag = TagName::Additive
 )]
 pub struct UnopenedRegion {
     pub line_number: usize,
@@ -121,7 +121,7 @@ pub struct UnopenedRegion {
 #[display(
     "line {line_number}: `<{tag}>` opens an additive region that no \
     `</{tag}>` closes",
-    tag = DefinedTagName::Additive
+    tag = TagName::Additive
 )]
 pub struct UnclosedRegion {
     pub line_number: usize,

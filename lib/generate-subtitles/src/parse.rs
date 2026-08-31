@@ -43,15 +43,6 @@ use strum::EnumString;
 /// `MM:SS.mmm` timestamp plus one ASCII space.
 const TIMESTAMP_PREFIX_WIDTH: usize = TIMESTAMP_STR_LEN + 1;
 
-/// A tag name this format defines. The format is defined here, so
-/// the set is closed: a name outside it names no tag at all.
-#[derive(Clone, Copy, Debug, strum::Display, EnumString, Eq, PartialEq)]
-enum DefinedTagName {
-    /// Opens a region whose cues accumulate.
-    #[strum(serialize = "additive")]
-    Additive,
-}
-
 /// A subtitle cue with a resolved end time, ready for rendering.
 ///
 /// A cue groups one or more [`CuePart`]s that share a start time.
@@ -107,28 +98,23 @@ struct OpenMarkerLine {
     target: ContinuationTarget,
 }
 
-/// The name inside a tag.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-struct TagName<'a>(&'a str);
+/// A tag name.
+#[derive(Clone, Copy, Debug, strum::Display, EnumString, Eq, PartialEq)]
+enum TagName {
+    /// Opens a region whose cues accumulate.
+    #[strum(serialize = "additive")]
+    Additive,
+}
 
-impl<'a> TagName<'a> {
+impl TagName {
     /// Consumes a leading tag name and returns it with the unconsumed
     /// tail.
-    fn take(source: &'a str) -> Option<(Self, &'a str)> {
-        let mut chars = source.char_indices();
-        let (_, first) = chars.next()?;
-        if !first.is_ascii_lowercase() {
-            return None;
-        }
-        let end = chars
+    fn take(source: &str) -> Option<(Self, &str)> {
+        let end = source
+            .char_indices()
             .find(|&(_, char)| !is_tag_name_char(char))
             .map_or(source.len(), |(index, _)| index);
-        Some((TagName(&source[..end]), &source[end..]))
-    }
-
-    /// The underlying text.
-    fn as_str(self) -> &'a str {
-        self.0
+        Some((source[..end].parse().ok()?, &source[end..]))
     }
 }
 
@@ -139,12 +125,12 @@ fn is_tag_name_char(char: char) -> bool {
 
 /// An opening tag. Takes the form of `<tag>`.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-struct OpeningTag<'a>(TagName<'a>);
+struct OpeningTag(TagName);
 
-impl<'a> OpeningTag<'a> {
+impl OpeningTag {
     /// Consumes a leading opening tag and returns it with the
     /// unconsumed tail.
-    fn take(source: &'a str) -> Option<(Self, &'a str)> {
+    fn take(source: &str) -> Option<(Self, &str)> {
         let after_delimiter = source.strip_prefix('<')?;
         let (name, after_name) = TagName::take(after_delimiter)?;
         let tail = after_name.strip_prefix('>')?;
@@ -152,19 +138,19 @@ impl<'a> OpeningTag<'a> {
     }
 
     /// The name between the delimiters.
-    fn name(self) -> TagName<'a> {
+    fn name(self) -> TagName {
         self.0
     }
 }
 
 /// A closing tag. Takes the form of `</tag>`.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-struct ClosingTag<'a>(TagName<'a>);
+struct ClosingTag(TagName);
 
-impl<'a> ClosingTag<'a> {
+impl ClosingTag {
     /// Consumes a leading closing tag and returns it with the
     /// unconsumed tail.
-    fn take(source: &'a str) -> Option<(Self, &'a str)> {
+    fn take(source: &str) -> Option<(Self, &str)> {
         let after_delimiter = source.strip_prefix("</")?;
         let (name, after_name) = TagName::take(after_delimiter)?;
         let tail = after_name.strip_prefix('>')?;
@@ -172,7 +158,7 @@ impl<'a> ClosingTag<'a> {
     }
 
     /// The name between the delimiters.
-    fn name(self) -> TagName<'a> {
+    fn name(self) -> TagName {
         self.0
     }
 }
@@ -323,7 +309,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
             // Nothing but a tag line opens with `<`, so any other
             // line that does is a misspelled tag rather than a header.
             if let Some((tag, tail)) = OpeningTag::take(body)
-                && let Ok(DefinedTagName::Additive) = tag.name().as_str().parse()
+                && tag.name() == TagName::Additive
                 && tail.trim().is_empty()
             {
                 handle_additive_opening_tag_line(
@@ -333,7 +319,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                     &mut open_marker_line,
                 )?;
             } else if let Some((tag, tail)) = ClosingTag::take(body)
-                && let Ok(DefinedTagName::Additive) = tag.name().as_str().parse()
+                && tag.name() == TagName::Additive
                 && tail.trim().is_empty()
             {
                 handle_additive_closing_tag_line(

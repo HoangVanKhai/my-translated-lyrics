@@ -6,7 +6,7 @@ use super::error::{
     RepeatedTimestamp, ReservedControlMarker, TabIndentation, UnclosedCue, UnclosedRegion,
     UnopenedRegion,
 };
-use super::{ClosingTag, DefinedTagName, OpeningTag, TagName, parse_lyrics};
+use super::{ClosingTag, OpeningTag, TagName, parse_lyrics};
 use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::{SecondsOutOfRange, TakeTimestampError, Timestamp};
 use pipe_trait::Pipe;
@@ -1336,41 +1336,31 @@ fn ordering_rules_still_apply_inside_a_region() {
 /// rest comes back for the next layer to interpret.
 #[test]
 fn tag_name_takes_a_name_and_returns_the_tail() {
-    for (source, name, tail) in [
-        ("additive>", "additive", ">"),
-        ("additive", "additive", ""),
-        ("additive> trailing", "additive", "> trailing"),
-        ("append-only>", "append-only", ">"),
-        ("verse2>", "verse2", ">"),
-        ("a>", "a", ">"),
+    for (source, tail) in [
+        ("additive", ""),
+        ("additive>", ">"),
+        ("additive> trailing", "> trailing"),
+        ("additive >", " >"),
+        ("additive/>", "/>"),
+        ("additive<", "<"),
+        ("additive.b>", ".b>"),
     ] {
         eprintln!("CASE: {source:?}");
-        assert_eq!(TagName::take(source), Some((TagName(name), tail)));
+        assert_eq!(TagName::take(source), Some((TagName::Additive, tail)));
     }
 }
 
-/// The admitted set excludes whitespace, so a name cannot pad itself
-/// and the layer above sees the space where it expects `>`.
+/// The format defines the names, so a run of name characters that
+/// denotes none of them is not a name at all.
 #[test]
-fn tag_name_stops_at_a_character_it_does_not_admit() {
-    for (source, name, tail) in [
-        ("additive >", "additive", " >"),
-        ("additive/>", "additive", "/>"),
-        ("additive<", "additive", "<"),
-        ("additive.b>", "additive", ".b>"),
-    ] {
-        eprintln!("CASE: {source:?}");
-        assert_eq!(TagName::take(source), Some((TagName(name), tail)));
-    }
-}
-
-/// A name begins with an ASCII lowercase letter. Everything else is
-/// not a name at all, which is what lets the caller route the line
-/// elsewhere rather than report a malformed name.
-#[test]
-fn tag_name_rejects_a_source_that_does_not_open_with_a_lowercase_letter() {
+fn tag_name_rejects_a_run_that_names_nothing() {
     for source in [
         "",
+        "verse>",
+        "additives>",
+        "a>",
+        "append-only>",
+        "verse2>",
         ">",
         "/additive>",
         "-additive>",
@@ -1385,15 +1375,11 @@ fn tag_name_rejects_a_source_that_does_not_open_with_a_lowercase_letter() {
 
 #[test]
 fn opening_tag_takes_a_tag_and_returns_the_tail() {
-    for (source, name, tail) in [
-        ("<additive>", "additive", ""),
-        ("<additive> trailing", "additive", " trailing"),
-        ("<verse>", "verse", ""),
-    ] {
+    for (source, tail) in [("<additive>", ""), ("<additive> trailing", " trailing")] {
         eprintln!("CASE: {source:?}");
         assert_eq!(
             OpeningTag::take(source),
-            Some((OpeningTag(TagName(name)), tail)),
+            Some((OpeningTag(TagName::Additive), tail)),
         );
     }
 }
@@ -1409,6 +1395,7 @@ fn opening_tag_rejects_anything_but_the_three_components_flush() {
         "<additive >",
         "<additive",
         "<>",
+        "<verse>",
         "additive>",
         "",
     ] {
@@ -1419,15 +1406,11 @@ fn opening_tag_rejects_anything_but_the_three_components_flush() {
 
 #[test]
 fn closing_tag_takes_a_tag_and_returns_the_tail() {
-    for (source, name, tail) in [
-        ("</additive>", "additive", ""),
-        ("</additive> trailing", "additive", " trailing"),
-        ("</verse>", "verse", ""),
-    ] {
+    for (source, tail) in [("</additive>", ""), ("</additive> trailing", " trailing")] {
         eprintln!("CASE: {source:?}");
         assert_eq!(
             ClosingTag::take(source),
-            Some((ClosingTag(TagName(name)), tail)),
+            Some((ClosingTag(TagName::Additive), tail)),
         );
     }
 }
@@ -1443,25 +1426,10 @@ fn closing_tag_rejects_anything_but_the_three_components_flush() {
         "< /additive>",
         "</additive",
         "</>",
+        "</verse>",
         "",
     ] {
         eprintln!("CASE: {source:?}");
         assert_eq!(ClosingTag::take(source), None);
-    }
-}
-
-/// A name the parser defines resolves to its variant; a well-formed
-/// tag naming anything else parses and is then declined.
-#[test]
-fn only_a_defined_name_resolves_to_a_known_tag() {
-    let (additive, _) = OpeningTag::take("<additive>").unwrap();
-    assert_eq!(
-        additive.name().as_str().parse(),
-        Ok(DefinedTagName::Additive),
-    );
-    for source in ["<verse>", "<additives>", "<a>"] {
-        eprintln!("CASE: {source:?}");
-        let (tag, _) = OpeningTag::take(source).unwrap();
-        assert!(tag.name().as_str().parse::<DefinedTagName>().is_err());
     }
 }
