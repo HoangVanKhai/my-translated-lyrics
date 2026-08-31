@@ -4,6 +4,11 @@
 //! it, and the cursor position. It contains no terminal handling, so its
 //! behavior can be unit tested without a TTY. A terminal front-end drives
 //! one of these while rendering and reading key events.
+//!
+//! Two index spaces meet here, and they are kept apart by [`FilteredIndex`]
+//! and [`ItemIndex`]. A filtered index names a visible row; an item index
+//! names an entry of the borrowed slice. [`Selector::item_at`] is the one
+//! place that turns one into the other.
 
 use crate::fuzzy::contains_substring;
 use std::cmp::Ordering;
@@ -11,6 +16,55 @@ use std::cmp::Ordering;
 /// A comparator that orders two items, held as a boxed closure so the selector
 /// can carry any ordering.
 type Comparator<'a, Item> = Box<dyn Fn(&Item, &Item) -> Ordering + 'a>;
+
+/// A position within the filtered view: which visible row is meant, counting
+/// from the top of what the query currently shows.
+///
+/// A filtered index is not an index into the borrowed slice of items. The two
+/// spaces coincide only while the query is empty and no order is set, and any
+/// filtering or sorting moves them apart. Passing one where the other belongs
+/// would silently name the wrong row, so they are separate types and
+/// [`Selector::item_at`] is the only conversion between them.
+#[derive(Clone, Copy, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
+pub struct FilteredIndex(usize);
+
+impl FilteredIndex {
+    /// The topmost visible row, where the cursor lands after every refilter.
+    pub const FIRST: FilteredIndex = FilteredIndex(0);
+
+    /// The visible row `position` rows from the top of the filtered view.
+    pub const fn new(position: usize) -> FilteredIndex {
+        FilteredIndex(position)
+    }
+
+    /// The row's distance from the top of the filtered view.
+    pub const fn get(self) -> usize {
+        self.0
+    }
+
+    /// The row `rows` further down, which is how a scrolled window turns the
+    /// row a click landed on into the filtered row shown there.
+    pub const fn down_by(self, rows: usize) -> FilteredIndex {
+        FilteredIndex(self.0.saturating_add(rows))
+    }
+}
+
+/// An index into the borrowed slice of items, which neither a query nor an
+/// ordering renumbers.
+#[derive(Clone, Copy, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
+pub struct ItemIndex(usize);
+
+impl ItemIndex {
+    /// The item `index` places into the borrowed slice.
+    pub const fn new(index: usize) -> ItemIndex {
+        ItemIndex(index)
+    }
+
+    /// The item's position in the borrowed slice.
+    pub const fn get(self) -> usize {
+        self.0
+    }
+}
 
 /// An item that an interactive selector can filter by a typed query.
 pub trait Searchable {
@@ -25,9 +79,9 @@ pub struct Selector<'a, Item> {
     query: String,
     /// Indices into `items` that currently match `query`, in display order:
     /// the order `order` imposes, or the original order when none is set.
-    filtered: Vec<usize>,
+    filtered: Vec<ItemIndex>,
     /// Position of the highlighted row within `filtered`.
-    cursor: usize,
+    cursor: FilteredIndex,
     /// The comparator that sorts the visible items, when one is set.
     order: Option<Comparator<'a, Item>>,
 }
@@ -38,12 +92,12 @@ where
 {
     /// Creates a selector with an empty query, so every item is visible.
     pub fn new(items: &'a [Item]) -> Self {
-        let filtered = (0..items.len()).collect();
+        let filtered = (0..items.len()).map(ItemIndex::new).collect();
         Selector {
             items,
             query: String::new(),
             filtered,
-            cursor: 0,
+            cursor: FilteredIndex::FIRST,
             order: None,
         }
     }
@@ -71,7 +125,7 @@ where
         if let Some(order) = order {
             let items = *items;
             let compare = &**order;
-            filtered.sort_by(|&left, &right| compare(&items[left], &items[right]));
+            filtered.sort_by(|&left, &right| compare(&items[left.get()], &items[right.get()]));
         }
     }
 
@@ -101,43 +155,49 @@ where
 
     /// Moves the highlight one row towards the top.
     pub fn move_up(&mut self) {
-        self.cursor = self.cursor.saturating_sub(1);
+        self.cursor = FilteredIndex(self.cursor.0.saturating_sub(1));
     }
 
     /// Moves the highlight one row towards the bottom, never past the last
     /// visible row.
     pub fn move_down(&mut self) {
-        if self.cursor + 1 < self.filtered.len() {
-            self.cursor += 1;
+        if self.cursor.0 + 1 < self.filtered.len() {
+            self.cursor = FilteredIndex(self.cursor.0 + 1);
         }
     }
 
-    /// The indices of the currently visible items, in display order.
-    pub fn filtered(&self) -> &[usize] {
+    /// The currently visible items, in display order.
+    pub fn filtered(&self) -> &[ItemIndex] {
         &self.filtered
     }
 
     /// The cursor position within the visible items.
-    pub fn cursor(&self) -> usize {
+    pub fn cursor(&self) -> FilteredIndex {
         self.cursor
     }
 
-    /// The index, into the original slice, of the item under the cursor,
-    /// if any item is visible.
-    pub fn selected_index(&self) -> Option<usize> {
-        self.filtered.get(self.cursor).copied()
+    /// The item shown on the visible row `position`, if the filtered view
+    /// reaches that far. This is the one crossing between the two index
+    /// spaces, so every other caller stays in the space it started in.
+    pub fn item_at(&self, position: FilteredIndex) -> Option<ItemIndex> {
+        self.filtered.get(position.get()).copied()
     }
 
-    /// Moves the highlight to the row showing the item at `index` in the
-    /// original slice, when that item is currently visible. Used to restore a
-    /// previous selection; an item that is filtered out leaves the cursor put.
-    pub fn focus(&mut self, index: usize) {
+    /// The item under the cursor, if any item is visible.
+    pub fn selected_index(&self) -> Option<ItemIndex> {
+        self.item_at(self.cursor)
+    }
+
+    /// Moves the highlight to the row showing `index`, when that item is
+    /// currently visible. Used to restore a previous selection; an item that
+    /// is filtered out leaves the cursor put.
+    pub fn focus(&mut self, index: ItemIndex) {
         let position = self
             .filtered
             .iter()
             .position(|&candidate| candidate == index);
         if let Some(position) = position {
-            self.cursor = position;
+            self.cursor = FilteredIndex::new(position);
         }
     }
 
@@ -146,15 +206,16 @@ where
     /// shortened list.
     fn refilter(&mut self) {
         self.filtered = (0..self.items.len())
-            .filter(|&index| {
-                self.items[index]
+            .map(ItemIndex::new)
+            .filter(|index| {
+                self.items[index.get()]
                     .search_keys()
                     .iter()
                     .any(|key| contains_substring(key, &self.query))
             })
             .collect();
         self.sort_filtered();
-        self.cursor = 0;
+        self.cursor = FilteredIndex::FIRST;
     }
 }
 

@@ -14,7 +14,7 @@ use crate::terminal::TerminalGuard;
 use column_sort::{ColumnSort, Direction};
 use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers, MouseButton, MouseEventKind};
 use fuzzy_select::fuzzy::match_mask;
-use fuzzy_select::selection::Selector;
+use fuzzy_select::selection::{ItemIndex, Selector};
 use lyrics_core::video_descriptor::Language;
 use play_with_lyrics::catalog::{Video, language_label};
 use std::cmp::Ordering;
@@ -55,7 +55,7 @@ where
     let mut sort = ColumnSort::new([Language::English, Language::Vietnamese, Language::Chinese]);
     selector.set_order(video_order(sort.clone()));
     if let Some(index) = selected {
-        selector.focus(index);
+        selector.focus(ItemIndex::new(index));
     }
     let mut last_click: Option<(SystemTime, usize)> = None;
     let mut hover: Option<(Column, Row)> = None;
@@ -90,7 +90,7 @@ where
                 KeyCode::Backspace => selector.pop_char(),
                 KeyCode::Char(char) => selector.push_char(char),
                 KeyCode::Enter => match selector.selected_index() {
-                    Some(index) => break Navigation::Selected(index),
+                    Some(index) => break Navigation::Selected(index.get()),
                     None => continue,
                 },
                 _ => continue,
@@ -115,7 +115,7 @@ where
                                 Some(Button::Back) | None => {}
                                 Some(Button::Forward) => {
                                     if let Some(index) = selector.selected_index() {
-                                        break Navigation::Selected(index);
+                                        break Navigation::Selected(index.get());
                                     }
                                 }
                             }
@@ -138,15 +138,15 @@ where
                                 .checked_sub(DATA_ROW_OFFSET)
                                 .filter(|&screen_index| screen_index < visible)
                                 .and_then(|screen_index| {
-                                    selector.filtered().get(offset + screen_index).copied()
+                                    selector.item_at(offset.down_by(screen_index))
                                 });
                             if let Some(index) = clicked {
                                 let now = Sys::now();
-                                let confirm = is_double_click(last_click, now, index);
-                                last_click = Some((now, index));
+                                let confirm = is_double_click(last_click, now, index.get());
+                                last_click = Some((now, index.get()));
                                 selector.focus(index);
                                 if confirm {
-                                    break Navigation::Selected(index);
+                                    break Navigation::Selected(index.get());
                                 }
                             }
                         }
@@ -275,16 +275,19 @@ where
 
     render_header(buffer, columns, sort, hover);
 
-    let filtered = selector.filtered();
-    let cursor = selector.cursor();
+    let selected = selector.selected_index();
     let visible = visible_rows(rows);
-    let offset = scroll_offset(cursor, visible);
+    let offset = scroll_offset(selector.cursor(), visible);
 
     let query = selector.query();
-    for (screen_index, filtered_position) in
-        (offset..filtered.len().min(offset + visible)).enumerate()
-    {
-        let video = &videos[filtered[filtered_position]];
+    let window = selector
+        .filtered()
+        .iter()
+        .skip(offset.get())
+        .take(visible)
+        .enumerate();
+    for (screen_index, &item) in window {
+        let video = &videos[item.get()];
         let english = video.title(Language::English).unwrap_or("");
         let vietnamese = video.title(Language::Vietnamese).unwrap_or("");
         let chinese = video.title(Language::Chinese).unwrap_or("");
@@ -297,7 +300,9 @@ where
             columns,
         );
         let screen_y = Row::new((screen_index + DATA_ROW_OFFSET) as u16);
-        let base = row_style(filtered_position == cursor, hover, screen_y);
+        // The highlighted row is the one showing the selected item, which
+        // stays correct however the window is scrolled or the table sorted.
+        let base = row_style(Some(item) == selected, hover, screen_y);
         draw_highlighted_line(buffer, screen_y, &line, base);
     }
 

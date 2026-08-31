@@ -3,6 +3,7 @@
 //! line into the frame buffer, and the small geometry helpers the pages share
 //! with the click handling.
 
+use fuzzy_select::selection::FilteredIndex;
 use pipe_trait::Pipe;
 use std::ops::Range;
 use std::time::{Duration, SystemTime};
@@ -149,9 +150,13 @@ pub(crate) fn is_double_click(
     })
 }
 
-/// The first row offset that keeps `cursor` visible within `visible` rows.
-pub(crate) fn scroll_offset(cursor: usize, visible: usize) -> usize {
-    cursor.saturating_sub(visible.saturating_sub(1))
+/// The topmost filtered row to draw so that `cursor` stays visible within a
+/// window `visible` rows tall.
+pub(crate) fn scroll_offset(cursor: FilteredIndex, visible: usize) -> FilteredIndex {
+    cursor
+        .get()
+        .saturating_sub(visible.saturating_sub(1))
+        .pipe(FilteredIndex::new)
 }
 
 /// The number of title rows that fit in a terminal `rows` rows tall, after

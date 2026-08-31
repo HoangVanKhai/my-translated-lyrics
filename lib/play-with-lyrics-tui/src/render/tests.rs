@@ -2,6 +2,7 @@ use super::{
     Button, button_at, columns_line, columns_line_highlighted, fit, fit_chars, is_double_click,
     render_top_bar, scroll_offset, visible_rows,
 };
+use fuzzy_select::selection::FilteredIndex;
 use pretty_assertions::assert_eq;
 use std::time::{Duration, SystemTime};
 use terminal_screen::{Buffer, Column, Height, Row, Style, Width};
@@ -91,9 +92,15 @@ fn columns_line_aligns_wide_characters() {
 #[test]
 fn scroll_offset_keeps_the_cursor_on_screen() {
     // The cursor fits within the first page, so no scrolling.
-    assert_eq!(scroll_offset(2, 5), 0);
+    assert_eq!(
+        scroll_offset(FilteredIndex::new(2), 5),
+        FilteredIndex::FIRST,
+    );
     // The cursor sits past the page, so the window scrolls to show it.
-    assert_eq!(scroll_offset(7, 5), 3);
+    assert_eq!(
+        scroll_offset(FilteredIndex::new(7), 5),
+        FilteredIndex::new(3),
+    );
 }
 
 /// Each output character carries its highlight flag; the padding does not.
