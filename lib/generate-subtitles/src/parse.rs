@@ -142,37 +142,36 @@ impl<'a> Input<'a> {
     /// blank and comment lines above it. Lines are split as
     /// [`str::lines`] splits them.
     fn take_content_line(self) -> Result<Option<(Line<'a>, Self)>, ParseLyricsError> {
-        let mut rest = self;
-        while !rest.text.is_empty() {
-            let (raw, tail) = match rest.text.split_once('\n') {
-                Some((raw, tail)) => (raw.strip_suffix('\r').unwrap_or(raw), tail),
-                None => (rest.text, ""),
-            };
-            let number = rest.number;
-            rest = Input {
-                text: tail,
-                number: number + 1,
-                ..rest
-            };
-            if raw.trim().is_empty() || raw.trim_start().starts_with('#') {
-                continue;
-            }
-            if raw.trim_start_matches(' ').starts_with('\t') {
-                return TabIndentation {
-                    line_number: number,
-                }
-                .pipe(ParseLyricsError::TabIndentation)
-                .pipe(Err);
-            }
-            let indent = raw.bytes().take_while(|&byte| byte == b' ').count();
-            let line = Line {
-                number,
-                indent,
-                body: &raw[indent..],
-            };
-            return Ok(Some((line, rest)));
+        if self.text.is_empty() {
+            return Ok(None);
         }
-        Ok(None)
+        let (raw, tail) = match self.text.split_once('\n') {
+            Some((raw, tail)) => (raw.strip_suffix('\r').unwrap_or(raw), tail),
+            None => (self.text, ""),
+        };
+        let number = self.number;
+        let rest = Input {
+            text: tail,
+            number: number + 1,
+            ..self
+        };
+        if raw.trim().is_empty() || raw.trim_start().starts_with('#') {
+            return rest.take_content_line();
+        }
+        if raw.trim_start_matches(' ').starts_with('\t') {
+            return TabIndentation {
+                line_number: number,
+            }
+            .pipe(ParseLyricsError::TabIndentation)
+            .pipe(Err);
+        }
+        let indent = raw.bytes().take_while(|&byte| byte == b' ').count();
+        let line = Line {
+            number,
+            indent,
+            body: &raw[indent..],
+        };
+        Ok(Some((line, rest)))
     }
 
     /// Consumes the next line that any parser here reads.
@@ -183,15 +182,13 @@ impl<'a> Input<'a> {
     /// region the line is handed back, for [`take_additive_region`] to
     /// reject.
     fn take_line(self) -> Result<Option<(Line<'a>, Self)>, ParseLyricsError> {
-        let mut rest = self;
-        while let Some((line, tail)) = rest.take_content_line()? {
-            if rest.region.is_none() && line.indent == 0 && is_end_of_video(line) {
-                rest = tail;
-                continue;
-            }
-            return Ok(Some((line, tail)));
+        let Some((line, rest)) = self.take_content_line()? else {
+            return Ok(None);
+        };
+        if self.region.is_none() && line.indent == 0 && is_end_of_video(line) {
+            return rest.take_line();
         }
-        Ok(None)
+        Ok(Some((line, rest)))
     }
 }
 
