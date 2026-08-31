@@ -48,13 +48,13 @@ impl CollectionsDesc {
     /// Checks that `name` is one of the declared separated collections.
     /// A video descriptor may only name a collection the manifest
     /// declares, so a misspelled name fails the run.
-    pub fn check_separated(&self, name: &str) -> Result<(), UndeclaredCollection> {
-        if self.separated.iter().any(|declared| &**declared == name) {
+    pub fn check_separated(&self, name: &CollectionName) -> Result<(), UndeclaredCollection> {
+        if self.separated.contains(name) {
             return Ok(());
         }
         Err(UndeclaredCollection {
-            name: name.to_string(),
-            closest: self.closest_separated(name).map(ToString::to_string),
+            name: name.clone(),
+            closest: self.closest_separated(name).cloned(),
         })
     }
 
@@ -70,7 +70,7 @@ impl CollectionsDesc {
     /// each comparison is negligible, and because the mistakes it
     /// measures, a dropped letter or a swapped pair, are the mistakes a
     /// hand-written descriptor makes.
-    fn closest_separated(&self, name: &str) -> Option<&CollectionName> {
+    fn closest_separated(&self, name: &CollectionName) -> Option<&CollectionName> {
         let tolerance = (name.chars().count() / 3).max(1);
         self.separated
             .iter()
@@ -86,18 +86,20 @@ impl CollectionsDesc {
 #[derive(Debug)]
 pub struct UndeclaredCollection {
     /// The name that was looked up.
-    name: String,
+    name: CollectionName,
     /// The declared name closest to it, when one is close enough to be
     /// worth suggesting.
-    closest: Option<String>,
+    closest: Option<CollectionName>,
 }
 
 impl fmt::Display for UndeclaredCollection {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Both names are quoted through the text they wrap, so the
+        // message reads as the manifest spells them.
         let UndeclaredCollection { name, closest } = self;
-        write!(formatter, "unknown collection: {name:?}")?;
+        write!(formatter, "unknown collection: {:?}", &**name)?;
         match closest {
-            Some(closest) => write!(formatter, ", did you mean {closest:?}?"),
+            Some(closest) => write!(formatter, ", did you mean {:?}?", &**closest),
             None => Ok(()),
         }
     }
@@ -112,7 +114,7 @@ impl fmt::Display for UndeclaredCollection {
 ///
 /// Whether a name of an acceptable shape is declared anywhere is a
 /// question for [`CollectionsDesc`], not for this type.
-#[derive(AsRef, Clone, Deref, Deserialize, Display, Into, Serialize)]
+#[derive(AsRef, Clone, Debug, Deref, Deserialize, Display, Eq, Into, PartialEq, Serialize)]
 #[as_ref(forward)]
 #[deref(forward)]
 #[serde(try_from = "String", into = "String")]

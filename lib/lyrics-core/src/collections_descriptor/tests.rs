@@ -2,6 +2,13 @@ use super::{CollectionName, CollectionsDesc, ParseCollectionNameError};
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 
+/// Wraps a collection name that the fixtures know to be of a valid shape.
+fn collection_name(name: impl Into<String>) -> CollectionName {
+    name.into()
+        .pipe(CollectionName::try_from)
+        .expect("test fixture passes the collection-name validator")
+}
+
 /// A manifest in the shape of a real `collections.toml`, with a nested
 /// separated collection alongside a plain one.
 const MANIFEST: &str = r#"
@@ -90,7 +97,7 @@ fn check_separated_accepts_a_declared_collection() {
         "Example Group/Another Example Collection",
     ] {
         eprintln!("CASE: {name:?}");
-        desc.check_separated(name).unwrap();
+        desc.check_separated(&collection_name(name)).unwrap();
     }
 }
 
@@ -104,7 +111,7 @@ fn check_separated_rejects_an_undeclared_collection() {
         "Example Unified Collection",
     ] {
         eprintln!("CASE: {name:?}");
-        let error = desc.check_separated(name).unwrap_err();
+        let error = desc.check_separated(&collection_name(name)).unwrap_err();
         assert!(
             error
                 .to_string()
@@ -129,7 +136,7 @@ fn check_separated_hints_the_closest_declared_collection() {
     ];
     for (name, closest) in cases {
         eprintln!("CASE: {name:?}");
-        let error = desc.check_separated(name).unwrap_err();
+        let error = desc.check_separated(&collection_name(name)).unwrap_err();
         assert_eq!(
             error.to_string(),
             format!("unknown collection: {name:?}, did you mean {closest:?}?"),
@@ -143,7 +150,7 @@ fn check_separated_hints_the_closest_declared_collection() {
 fn check_separated_omits_the_hint_when_nothing_is_close() {
     let desc = manifest();
     let error = desc
-        .check_separated("Undeclared Example Collection")
+        .check_separated(&collection_name("Undeclared Example Collection"))
         .unwrap_err();
     assert_eq!(
         error.to_string(),
