@@ -193,9 +193,6 @@ struct RegionState {
 
 impl RegionState {
     /// Opens a region whose `<additive>` sits on line `opened_at`.
-    /// That line is recorded rather than merely reported, because a
-    /// region is named by the line that opened it long after the
-    /// parser has moved past it.
     fn open_region(&mut self, opened_at: usize) -> Result<(), AdditiveRegionError> {
         if let Some(open) = self.open {
             return NestedRegion {
@@ -275,12 +272,6 @@ pub fn parse_lyrics(content: &str) -> Result<Vec<SubtitleCue>, ParseLyricsError>
 }
 
 /// Locates a [`ParseLyricsErrorKind`] at `line_number`.
-///
-/// Every function below reports what it rejected and says nothing
-/// about where, so a line number never has to travel down the happy
-/// path to be available on the error path. The loop that owns the
-/// position attaches it on the way back up, through the closure this
-/// returns.
 fn at_line(line_number: usize) -> impl Fn(ParseLyricsErrorKind) -> ParseLyricsError {
     move |kind| ParseLyricsError { line_number, kind }
 }

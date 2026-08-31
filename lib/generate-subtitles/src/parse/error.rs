@@ -1,21 +1,11 @@
 //! Error types produced by [`parse_lyrics`].
 //!
-//! [`ParseLyricsError`] is the single error returned by the parser. It
-//! pairs the source line at which the failure was detected with a
-//! [`ParseLyricsErrorKind`], whose variants each wrap a dedicated
-//! payload struct carrying whatever context the diagnostic needs.
-//!
-//! A payload states what went wrong and not where. The line loop in
-//! [`super`] owns the position and attaches it as the error passes
-//! back up, so no payload has to be handed a line number on the way
-//! down. A line that names somewhere *else* is different: the
-//! `opened_at` an additive-region diagnostic carries is part of the
-//! message rather than the error's own location, and stays in the
-//! payload.
-//!
-//! The payloads are split out from the parsing engine in [`super`] so
-//! the engine reads as one algorithm and the vocabulary of failures
-//! sits on its own.
+//! [`ParseLyricsError`] is the single error returned by the parser; it
+//! pairs the source line with a [`ParseLyricsErrorKind`], whose
+//! variants each wrap a dedicated payload struct that carries whatever
+//! context the diagnostic needs beyond that line. The payloads are
+//! split out from the parsing engine in [`super`] so the engine reads
+//! as one algorithm and the vocabulary of failures sits on its own.
 //!
 //! [`parse_lyrics`]: super::parse_lyrics
 
