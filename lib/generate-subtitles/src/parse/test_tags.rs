@@ -4,7 +4,7 @@
 //! and each of the two tag forms.
 
 use crate::parse::error::{MalformedTagLine, OrphanedShorthandMarker, ParseLyricsError};
-use crate::parse::{ClosingTag, OpeningTag, TagName, parse_lyrics};
+use crate::parse::{ClosingTag, LineNumber, OpeningTag, TagName, parse_lyrics};
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
 
@@ -40,7 +40,7 @@ fn rejects_every_near_miss_of_a_tag_line() {
         assert_eq!(
             parse_lyrics(&input).unwrap_err(),
             ParseLyricsError::MalformedTagLine(MalformedTagLine {
-                line_number: 1,
+                line_number: LineNumber::new(1),
                 content: content.to_string(),
             }),
         );
@@ -96,7 +96,7 @@ fn a_tag_ends_the_scope_of_the_cue_above_it() {
     assert_eq!(
         parse_lyrics(after_opening_tag).unwrap_err(),
         ParseLyricsError::OrphanedShorthandMarker(OrphanedShorthandMarker {
-            line_number: 3,
+            line_number: LineNumber::new(3),
             content: "cre: credit body".to_string(),
         }),
     );
@@ -111,7 +111,7 @@ fn a_tag_ends_the_scope_of_the_cue_above_it() {
     assert_eq!(
         parse_lyrics(after_closing_tag).unwrap_err(),
         ParseLyricsError::OrphanedShorthandMarker(OrphanedShorthandMarker {
-            line_number: 4,
+            line_number: LineNumber::new(4),
             content: "cre: credit body".to_string(),
         }),
     );

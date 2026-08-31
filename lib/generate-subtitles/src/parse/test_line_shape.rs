@@ -8,7 +8,7 @@ use crate::parse::error::{
     EmptyCueBody, MalformedHeader, MalformedIndentation, MissingMarker,
     MissingSeparatorAfterTimestamp, ParseLyricsError, TabIndentation,
 };
-use crate::parse::parse_lyrics;
+use crate::parse::{LineNumber, parse_lyrics};
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
 
@@ -22,7 +22,7 @@ fn rejects_malformed_header_when_column_zero_line_has_no_timestamp() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::MalformedHeader(MalformedHeader {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             content: "no timestamp here".to_string(),
         }),
     );
@@ -38,7 +38,7 @@ fn rejects_timestamp_without_separator_after_prefix() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::MissingSeparatorAfterTimestamp(MissingSeparatorAfterTimestamp {
-            line_number: 2,
+            line_number: LineNumber::new(2),
             content: "00:02.000ttl: no space after timestamp".to_string(),
         }),
     );
@@ -53,7 +53,7 @@ fn rejects_cue_line_without_marker() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::MissingMarker(MissingMarker {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             content: "Plain text without marker".to_string(),
         }),
     );
@@ -69,7 +69,7 @@ fn rejects_cue_with_empty_body() {
     assert_eq!(
         error,
         ParseLyricsError::EmptyCueBody(EmptyCueBody {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             marker: marker_name("ttl"),
         }),
     );
@@ -101,7 +101,7 @@ fn whitespace_only_cue_body_falls_through_to_missing_marker() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::MissingMarker(MissingMarker {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             content: String::new(),
         }),
     );
@@ -121,7 +121,9 @@ fn rejects_tab_in_leading_whitespace() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::TabIndentation(TabIndentation { line_number: 2 }),
+        ParseLyricsError::TabIndentation(TabIndentation {
+            line_number: LineNumber::new(2)
+        }),
     );
 }
 
@@ -139,7 +141,7 @@ fn rejects_malformed_indentation_between_recognized_widths() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::MalformedIndentation(MalformedIndentation {
-            line_number: 2,
+            line_number: LineNumber::new(2),
             actual: 12,
             shorthand_indent: 10,
             continuation_indent: Some(15),

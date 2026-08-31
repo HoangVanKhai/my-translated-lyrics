@@ -9,7 +9,7 @@
 //!
 //! [`parse_lyrics`]: super::parse_lyrics
 
-use super::{TIMESTAMP_PREFIX_WIDTH, TagName};
+use super::{LineNumber, TIMESTAMP_PREFIX_WIDTH, TagName};
 use core::fmt;
 use derive_more::Display;
 use lyrics_core::line_markers_descriptor::{MarkerName, ReservedMarker};
@@ -21,7 +21,7 @@ use lyrics_core::timestamp::{TakeTimestampError, Timestamp};
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: {cause}")]
 pub struct InvalidTimestamp {
-    pub line_number: usize,
+    pub line_number: LineNumber,
     pub cause: TakeTimestampError,
 }
 
@@ -31,7 +31,7 @@ pub struct InvalidTimestamp {
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: cue body {content:?} carries no marker before the `:` separator")]
 pub struct MissingMarker {
-    pub line_number: usize,
+    pub line_number: LineNumber,
     pub content: String,
 }
 
@@ -39,7 +39,7 @@ pub struct MissingMarker {
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: timestamp in {content:?} is not followed by whitespace")]
 pub struct MissingSeparatorAfterTimestamp {
-    pub line_number: usize,
+    pub line_number: LineNumber,
     pub content: String,
 }
 
@@ -49,7 +49,7 @@ pub struct MissingSeparatorAfterTimestamp {
     "line {line_number}: control marker `{marker}` must stand alone but is followed by {trailing:?}"
 )]
 pub struct ExtraTextAfterControlMarker {
-    pub line_number: usize,
+    pub line_number: LineNumber,
     pub marker: ReservedMarker,
     pub trailing: String,
 }
@@ -66,7 +66,7 @@ pub struct OutOfOrder {
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: marker `{marker}` is reserved by the parser and cannot name a cue")]
 pub struct ReservedControlMarker {
-    pub line_number: usize,
+    pub line_number: LineNumber,
     pub marker: ReservedMarker,
 }
 
@@ -78,7 +78,7 @@ pub struct ReservedControlMarker {
     ReservedMarker::Annotation
 )]
 pub struct EmptyAnnotation {
-    pub line_number: usize,
+    pub line_number: LineNumber,
 }
 
 /// Payload for [`ParseLyricsError::MalformedTagLine`].
@@ -89,7 +89,7 @@ pub struct EmptyAnnotation {
     tag = TagName::Additive
 )]
 pub struct MalformedTagLine {
-    pub line_number: usize,
+    pub line_number: LineNumber,
     pub content: String,
 }
 
@@ -101,30 +101,30 @@ pub struct MalformedTagLine {
     tag = TagName::Additive
 )]
 pub struct NestedRegion {
-    pub line_number: usize,
-    pub opened_at: usize,
+    pub line_number: LineNumber,
+    pub opened_at: LineNumber,
 }
 
 /// Payload for [`AdditiveRegionError::Unopened`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: stray `</{tag}>`", tag = TagName::Additive)]
 pub struct UnopenedRegion {
-    pub line_number: usize,
+    pub line_number: LineNumber,
 }
 
 /// Payload for [`AdditiveRegionError::Unclosed`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: unclosed `<{tag}>`", tag = TagName::Additive)]
 pub struct UnclosedRegion {
-    pub line_number: usize,
+    pub line_number: LineNumber,
 }
 
 /// Payload for [`AdditiveRegionError::Empty`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: the additive region opened on line {opened_at} encloses no cue")]
 pub struct EmptyRegion {
-    pub line_number: usize,
-    pub opened_at: usize,
+    pub line_number: LineNumber,
+    pub opened_at: LineNumber,
 }
 
 /// Payload for [`AdditiveRegionError::ControlMarker`].
@@ -134,9 +134,9 @@ pub struct EmptyRegion {
     on line {opened_at}; close the region before the marker"
 )]
 pub struct ControlMarkerInRegion {
-    pub line_number: usize,
+    pub line_number: LineNumber,
     pub marker: ReservedMarker,
-    pub opened_at: usize,
+    pub opened_at: LineNumber,
 }
 
 /// Payload for [`ParseLyricsError::EmptyCueBody`].
@@ -146,7 +146,7 @@ pub struct ControlMarkerInRegion {
     marker.as_str(),
 )]
 pub struct EmptyCueBody {
-    pub line_number: usize,
+    pub line_number: LineNumber,
     pub marker: MarkerName,
 }
 
@@ -159,7 +159,7 @@ pub struct EmptyCueBody {
     "line {line_number}: header line {content:?} does not begin with an `MM:SS.mmm` timestamp"
 )]
 pub struct MalformedHeader {
-    pub line_number: usize,
+    pub line_number: LineNumber,
     pub content: String,
 }
 
@@ -172,7 +172,7 @@ pub struct MalformedHeader {
     "line {line_number}: shorthand marker line {content:?} appears before any timestamp opens a cue"
 )]
 pub struct OrphanedShorthandMarker {
-    pub line_number: usize,
+    pub line_number: LineNumber,
     pub content: String,
 }
 
@@ -182,7 +182,7 @@ pub struct OrphanedShorthandMarker {
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: annotation line {content:?} appears where no cue is open")]
 pub struct OrphanedAnnotation {
-    pub line_number: usize,
+    pub line_number: LineNumber,
     pub content: String,
 }
 
@@ -193,7 +193,7 @@ pub struct OrphanedAnnotation {
 /// not be valid here regardless of indent).
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct MalformedIndentation {
-    pub line_number: usize,
+    pub line_number: LineNumber,
     pub actual: usize,
     pub shorthand_indent: usize,
     pub continuation_indent: Option<usize>,
@@ -227,7 +227,7 @@ impl fmt::Display for MalformedIndentation {
     use the column-{TIMESTAMP_PREFIX_WIDTH} shorthand to attach a second marker to the same timestamp"
 )]
 pub struct RepeatedTimestamp {
-    pub line_number: usize,
+    pub line_number: LineNumber,
     pub start: Timestamp,
 }
 
@@ -244,7 +244,7 @@ pub struct RepeatedTimestamp {
     "line {line_number}: indentation contains a tab; only ASCII spaces are allowed in leading whitespace"
 )]
 pub struct TabIndentation {
-    pub line_number: usize,
+    pub line_number: LineNumber,
 }
 
 /// Payload for [`ParseLyricsError::CueTextReservedCharacter`].
@@ -261,7 +261,7 @@ pub struct TabIndentation {
     "line {line_number}: cue text contains {character:?}, which the WebVTT cue-tag grammar reserves for tag delimiters"
 )]
 pub struct CueTextReservedCharacter {
-    pub line_number: usize,
+    pub line_number: LineNumber,
     pub character: char,
 }
 

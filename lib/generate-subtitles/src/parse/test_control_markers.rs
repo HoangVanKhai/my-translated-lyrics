@@ -3,7 +3,7 @@
 //! the rejection of a cue whose marker names either of them.
 
 use crate::parse::error::{ExtraTextAfterControlMarker, ParseLyricsError, ReservedControlMarker};
-use crate::parse::parse_lyrics;
+use crate::parse::{LineNumber, parse_lyrics};
 use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::Timestamp;
 use pretty_assertions::assert_eq;
@@ -30,7 +30,7 @@ fn control_markers_reject_trailing_text() {
     assert_eq!(
         parse_lyrics(clr_input).unwrap_err(),
         ParseLyricsError::ExtraTextAfterControlMarker(ExtraTextAfterControlMarker {
-            line_number: 2,
+            line_number: LineNumber::new(2),
             marker: ReservedMarker::Clear,
             trailing: "some trailing text".to_string(),
         }),
@@ -44,7 +44,7 @@ fn control_markers_reject_trailing_text() {
     assert_eq!(
         parse_lyrics(eov_input).unwrap_err(),
         ParseLyricsError::ExtraTextAfterControlMarker(ExtraTextAfterControlMarker {
-            line_number: 3,
+            line_number: LineNumber::new(3),
             marker: ReservedMarker::EndOfVideo,
             trailing: "end of video".to_string(),
         }),
@@ -108,7 +108,7 @@ fn rejects_cue_marker_that_collides_with_control_token() {
     assert_eq!(
         parse_lyrics(clr_input).unwrap_err(),
         ParseLyricsError::ReservedControlMarker(ReservedControlMarker {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             marker: ReservedMarker::Clear,
         }),
     );
@@ -120,7 +120,7 @@ fn rejects_cue_marker_that_collides_with_control_token() {
     assert_eq!(
         parse_lyrics(eov_input).unwrap_err(),
         ParseLyricsError::ReservedControlMarker(ReservedControlMarker {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             marker: ReservedMarker::EndOfVideo,
         }),
     );

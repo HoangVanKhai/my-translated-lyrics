@@ -4,7 +4,7 @@
 //! follows it.
 
 use crate::parse::error::{OrphanedShorthandMarker, ParseLyricsError, UnclosedCue};
-use crate::parse::parse_lyrics;
+use crate::parse::{LineNumber, parse_lyrics};
 use lyrics_core::timestamp::Timestamp;
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
@@ -133,7 +133,7 @@ fn rejects_shorthand_marker_before_any_cue_is_open() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::OrphanedShorthandMarker(OrphanedShorthandMarker {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             content: "ttl: orphan".to_string(),
         }),
     );

@@ -22,6 +22,7 @@
 
 pub mod error;
 
+use derive_more::Display;
 use error::{
     AdditiveRegionError, ControlMarkerInRegion, CueTextReservedCharacter, EmptyAnnotation,
     EmptyCueBody, EmptyRegion, ExtraTextAfterControlMarker, InvalidTimestamp, MalformedHeader,
@@ -39,6 +40,25 @@ use strum::EnumString;
 /// time as the cue immediately above. Equals the byte length of an
 /// `MM:SS.mmm` timestamp plus one ASCII space.
 const TIMESTAMP_PREFIX_WIDTH: usize = TIMESTAMP_STR_LEN + 1;
+
+/// A one-based line number in a source file. It counts lines rather than
+/// characters, so it is not one of the indents or column widths the parser's
+/// diagnostics carry beside it.
+#[derive(Clone, Copy, Debug, Display, Eq, PartialEq)]
+pub struct LineNumber(usize);
+
+impl LineNumber {
+    /// The `number`-th line of a file, counting the first line as line one.
+    pub const fn new(number: usize) -> LineNumber {
+        LineNumber(number)
+    }
+
+    /// The line `index` lines from the start of a file, counting the first
+    /// line as index zero.
+    pub const fn from_index(index: usize) -> LineNumber {
+        LineNumber(index + 1)
+    }
+}
 
 /// A subtitle cue with a resolved end time, ready for rendering.
 ///
@@ -175,7 +195,7 @@ struct OpenRegion {
     /// Line number of the `<additive>` that opened the region. Every
     /// diagnostic that names the region points back at this line,
     /// because that is where the author has to act.
-    line_number: usize,
+    line_number: LineNumber,
     /// How many cue groups the region has collected so far. A region
     /// that closes having collected none is rejected.
     cue_count: usize,
@@ -193,7 +213,7 @@ struct RegionState {
 
 impl RegionState {
     /// Opens a region at `line_number`.
-    fn open_region(&mut self, line_number: usize) -> Result<(), AdditiveRegionError> {
+    fn open_region(&mut self, line_number: LineNumber) -> Result<(), AdditiveRegionError> {
         if let Some(open) = self.open {
             return NestedRegion {
                 line_number,
@@ -214,7 +234,7 @@ impl RegionState {
     /// Closes the region open at `line_number`. Both rules are
     /// checked before the region is released, so a rejected tag
     /// leaves the state as it was rather than half closed.
-    fn close_region(&mut self, line_number: usize) -> Result<(), AdditiveRegionError> {
+    fn close_region(&mut self, line_number: LineNumber) -> Result<(), AdditiveRegionError> {
         let Some(open) = self.open else {
             return UnopenedRegion { line_number }
                 .pipe(AdditiveRegionError::Unopened)
@@ -281,7 +301,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
     let mut regions = RegionState::default();
 
     for (line_index, raw_line) in content.lines().enumerate() {
-        let line_number = line_index + 1;
+        let line_number = LineNumber::from_index(line_index);
         if raw_line.trim().is_empty() || raw_line.trim_start().starts_with('#') {
             continue;
         }
@@ -375,7 +395,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
 
 /// Opens an additive region at an `<additive>` line.
 fn handle_additive_opening_tag_line(
-    line_number: usize,
+    line_number: LineNumber,
     regions: &mut RegionState,
     last_cue_index: &mut Option<usize>,
     open_marker_line: &mut Option<OpenMarkerLine>,
@@ -389,7 +409,7 @@ fn handle_additive_opening_tag_line(
 
 /// Closes the additive region at a `</additive>` line.
 fn handle_additive_closing_tag_line(
-    line_number: usize,
+    line_number: LineNumber,
     regions: &mut RegionState,
     last_cue_index: &mut Option<usize>,
     open_marker_line: &mut Option<OpenMarkerLine>,
@@ -414,7 +434,7 @@ fn end_cue_scope(
 
 fn handle_header_line(
     body: &str,
-    line_number: usize,
+    line_number: LineNumber,
     events: &mut Vec<Event>,
     last_cue_index: &mut Option<usize>,
     open_marker_line: &mut Option<OpenMarkerLine>,
@@ -512,7 +532,7 @@ fn handle_header_line(
 
 fn handle_shorthand_marker_line(
     body: &str,
-    line_number: usize,
+    line_number: LineNumber,
     events: &mut [Event],
     last_cue_index: Option<usize>,
     open_marker_line: &mut Option<OpenMarkerLine>,
@@ -559,7 +579,7 @@ fn handle_shorthand_marker_line(
 /// cue group at `cue_index`.
 fn handle_annotation_line(
     text: &str,
-    line_number: usize,
+    line_number: LineNumber,
     cue_index: usize,
     events: &mut [Event],
     open_marker_line: &mut Option<OpenMarkerLine>,
@@ -599,7 +619,7 @@ fn last_part_mut(events: &mut [Event], cue_index: usize) -> &mut CuePart {
 
 fn handle_continuation_line(
     body: &str,
-    line_number: usize,
+    line_number: LineNumber,
     events: &mut [Event],
     last_cue_index: Option<usize>,
     target: ContinuationTarget,
@@ -627,7 +647,7 @@ fn handle_continuation_line(
 
 fn parse_marker_part(
     body: &str,
-    line_number: usize,
+    line_number: LineNumber,
 ) -> Result<(MarkerName, &str), ParseLyricsError> {
     reject_reserved_cue_text_characters(body, line_number)?;
     let (marker, text) = split_marker(body).ok_or_else(|| {
@@ -673,7 +693,7 @@ fn marker_prefix_width(marker: &str) -> usize {
 /// for the same start-time slot as a real cue or `clr`.
 fn check_event_order(
     start: Timestamp,
-    line_number: usize,
+    line_number: LineNumber,
     events: &[Event],
 ) -> Result<(), ParseLyricsError> {
     let Some(previous_start) = events.last().map(Event::start) else {
@@ -780,7 +800,7 @@ fn split_marker(body: &str) -> Option<(&str, &str)> {
 /// first offender only.
 fn reject_reserved_cue_text_characters(
     text: &str,
-    line_number: usize,
+    line_number: LineNumber,
 ) -> Result<(), ParseLyricsError> {
     if let Some(character) = text.chars().find(|&c| matches!(c, '<' | '>')) {
         return Err(ParseLyricsError::CueTextReservedCharacter(
@@ -803,6 +823,8 @@ mod test_control_markers;
 mod test_cues;
 #[cfg(test)]
 mod test_event_order;
+#[cfg(test)]
+mod test_line_number;
 #[cfg(test)]
 mod test_line_shape;
 #[cfg(test)]

@@ -6,7 +6,7 @@
 use crate::parse::error::{
     EmptyAnnotation, MissingMarker, OrphanedAnnotation, ParseLyricsError, ReservedControlMarker,
 };
-use crate::parse::parse_lyrics;
+use crate::parse::{LineNumber, parse_lyrics};
 use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::Timestamp;
 use pretty_assertions::assert_eq;
@@ -220,7 +220,9 @@ fn rejects_annotation_without_a_body() {
     };
     assert_eq!(
         parse_lyrics(empty_body).unwrap_err(),
-        ParseLyricsError::EmptyAnnotation(EmptyAnnotation { line_number: 2 }),
+        ParseLyricsError::EmptyAnnotation(EmptyAnnotation {
+            line_number: LineNumber::new(2)
+        }),
     );
 
     // Without a `:` the line names no marker at all, so it draws the
@@ -235,7 +237,7 @@ fn rejects_annotation_without_a_body() {
     assert_eq!(
         parse_lyrics(no_separator).unwrap_err(),
         ParseLyricsError::MissingMarker(MissingMarker {
-            line_number: 2,
+            line_number: LineNumber::new(2),
             content: "ann".to_string(),
         }),
     );
@@ -253,7 +255,7 @@ fn rejects_annotation_before_any_cue_is_open() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::OrphanedAnnotation(OrphanedAnnotation {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             content: "ann: orphan note".to_string(),
         }),
     );
@@ -273,7 +275,7 @@ fn rejects_annotation_after_a_clear() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::OrphanedAnnotation(OrphanedAnnotation {
-            line_number: 3,
+            line_number: LineNumber::new(3),
             content: "ann: stray note".to_string(),
         }),
     );
@@ -292,7 +294,7 @@ fn annotation_marker_cannot_name_a_cue() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::ReservedControlMarker(ReservedControlMarker {
-            line_number: 2,
+            line_number: LineNumber::new(2),
             marker: ReservedMarker::Annotation,
         }),
     );

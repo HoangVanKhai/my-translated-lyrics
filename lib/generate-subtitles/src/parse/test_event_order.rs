@@ -5,7 +5,7 @@
 //! region.
 
 use crate::parse::error::{InvalidTimestamp, OutOfOrder, ParseLyricsError, RepeatedTimestamp};
-use crate::parse::parse_lyrics;
+use crate::parse::{LineNumber, parse_lyrics};
 use lyrics_core::timestamp::{SecondsOutOfRange, TakeTimestampError, Timestamp};
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
@@ -36,7 +36,7 @@ fn rejects_repeated_timestamp_for_consecutive_cue_lines() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::RepeatedTimestamp(RepeatedTimestamp {
-            line_number: 2,
+            line_number: LineNumber::new(2),
             start: Timestamp::new(0, 10, 80).unwrap(),
         }),
     );
@@ -50,7 +50,7 @@ fn invalid_timestamp_preserves_line_and_cause() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::InvalidTimestamp(InvalidTimestamp {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             cause: TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
                 raw: "00:60.000".to_string(),
                 value: 60,
@@ -88,7 +88,7 @@ fn ordering_rules_still_apply_inside_a_region() {
     assert_eq!(
         parse_lyrics(repeated).unwrap_err(),
         ParseLyricsError::RepeatedTimestamp(RepeatedTimestamp {
-            line_number: 3,
+            line_number: LineNumber::new(3),
             start: Timestamp::new(7, 11, 111).unwrap(),
         }),
     );

@@ -4,7 +4,7 @@
 //! such as the ampersand, reaches the cue unchanged.
 
 use crate::parse::error::{CueTextReservedCharacter, ParseLyricsError};
-use crate::parse::parse_lyrics;
+use crate::parse::{LineNumber, parse_lyrics};
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
 
@@ -22,7 +22,7 @@ fn rejects_angle_bracket_in_cue_opening_body() {
     assert_eq!(
         parse_lyrics(lt_input).unwrap_err(),
         ParseLyricsError::CueTextReservedCharacter(CueTextReservedCharacter {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             character: '<',
         }),
     );
@@ -34,7 +34,7 @@ fn rejects_angle_bracket_in_cue_opening_body() {
     assert_eq!(
         parse_lyrics(gt_input).unwrap_err(),
         ParseLyricsError::CueTextReservedCharacter(CueTextReservedCharacter {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             character: '>',
         }),
     );
@@ -55,7 +55,7 @@ fn rejects_angle_bracket_in_continuation_line() {
     assert_eq!(
         parse_lyrics(lt_input).unwrap_err(),
         ParseLyricsError::CueTextReservedCharacter(CueTextReservedCharacter {
-            line_number: 2,
+            line_number: LineNumber::new(2),
             character: '<',
         }),
     );
@@ -68,7 +68,7 @@ fn rejects_angle_bracket_in_continuation_line() {
     assert_eq!(
         parse_lyrics(gt_input).unwrap_err(),
         ParseLyricsError::CueTextReservedCharacter(CueTextReservedCharacter {
-            line_number: 2,
+            line_number: LineNumber::new(2),
             character: '>',
         }),
     );
@@ -89,7 +89,7 @@ fn marker_less_body_with_reserved_character_reports_reserved_character() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::CueTextReservedCharacter(CueTextReservedCharacter {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             character: '<',
         }),
     );
@@ -107,7 +107,7 @@ fn a_tag_written_inside_cue_text_is_still_a_reserved_character() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::CueTextReservedCharacter(CueTextReservedCharacter {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             character: '<',
         }),
     );
