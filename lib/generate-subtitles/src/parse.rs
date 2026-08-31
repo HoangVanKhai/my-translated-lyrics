@@ -162,10 +162,8 @@ impl ClosingTag {
 
 /// Identifies one `<additive>` region within a source file.
 ///
-/// Cue groups carrying the same index accumulate: each renders the
-/// parts of every earlier group in the region above its own. The index
-/// counts regions in the order they open, which keeps two adjacent
-/// regions distinct even though no event separates them.
+/// The index counts regions in the order they open, which keeps two
+/// adjacent regions distinct even though no event separates them.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct AdditiveRegion(usize);
 
