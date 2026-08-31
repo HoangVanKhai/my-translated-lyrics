@@ -24,6 +24,7 @@ pub mod styles;
 
 mod driver;
 mod escape;
+mod take;
 
 #[cfg(test)]
 mod _test_utils;

@@ -82,6 +82,26 @@ fn eov_between_a_cue_and_its_continuation_leaves_the_cue_open() {
     assert_eq!(cues[0].end, Timestamp::new(0, 5, 0).unwrap());
 }
 
+/// The same rule seen from the shorthand column rather than from a
+/// continuation line: an `eov` between a cue and a shorthand marker
+/// line leaves the cue open, so the marker still attaches a second
+/// part to the cue above the `eov`.
+#[test]
+fn eov_between_a_cue_and_a_shorthand_marker_leaves_the_cue_open() {
+    let input = text_block_fnl! {
+        "00:00.000 ttl: title body"
+        "00:03.000 eov"
+        "          cre: credit body"
+        "00:05.000 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(cues.len(), 1);
+    assert_eq!(cues[0].parts.len(), 2);
+    assert_eq!(cues[0].parts[1].marker, "cre");
+    assert_eq!(cues[0].parts[1].text, "credit body");
+    assert_eq!(cues[0].end, Timestamp::new(0, 5, 0).unwrap());
+}
+
 /// `eov` is documented as "ignored entirely" and pushes no
 /// event of its own; it therefore does not compete with the
 /// preceding `clr` for the same timestamp slot. This is the
