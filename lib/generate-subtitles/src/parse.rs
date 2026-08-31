@@ -116,9 +116,8 @@ impl AdditiveOpeningTag {
     /// unconsumed tail. A tag carries no attributes, so the spelling
     /// is matched whole and there is nothing inside it to parse.
     fn take(source: &str) -> Option<(Self, &str)> {
-        source
-            .strip_prefix(ADDITIVE_OPENING_TAG)
-            .map(|tail| (AdditiveOpeningTag, tail))
+        let tail = source.strip_prefix(ADDITIVE_OPENING_TAG)?;
+        Some((AdditiveOpeningTag, tail))
     }
 }
 
@@ -126,9 +125,8 @@ impl AdditiveClosingTag {
     /// Consumes a leading `</additive>` and returns it with the
     /// unconsumed tail. See [`AdditiveOpeningTag::take`].
     fn take(source: &str) -> Option<(Self, &str)> {
-        source
-            .strip_prefix(ADDITIVE_CLOSING_TAG)
-            .map(|tail| (AdditiveClosingTag, tail))
+        let tail = source.strip_prefix(ADDITIVE_CLOSING_TAG)?;
+        Some((AdditiveClosingTag, tail))
     }
 }
 
