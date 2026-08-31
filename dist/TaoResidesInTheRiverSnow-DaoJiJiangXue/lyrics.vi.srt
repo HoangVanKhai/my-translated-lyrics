@@ -202,51 +202,111 @@ Ta biết bóng câu qua khe cửa, nay có rượu ngon thì chớ chôn
 Ta muốn ngủ rồi, người hãy về, sớm mai có hứng thì ôm đàn tới
 
 51
-00:03:24,333 --> 00:03:26,300
+00:03:24,333 --> 00:03:25,567
+<i><font color="#CCCCCC">“Vật nào cũng là ‘kia’, vật nào cũng là ‘này’.</font></i>
+
+52
+00:03:25,567 --> 00:03:26,300
 <i><font color="#CCCCCC">“Vật nào cũng là ‘kia’, vật nào cũng là ‘này’.</font></i>
 <i><font color="#CCCCCC">Nhìn từ ‘kia’ thì chẳng thấy, tự biết thì mới hay.</font></i>
 
-52
-00:03:26,300 --> 00:03:27,400
+53
+00:03:26,300 --> 00:03:26,933
+<i><font color="#CCCCCC">“Vật nào cũng là ‘kia’, vật nào cũng là ‘này’.</font></i>
+<i><font color="#CCCCCC">Nhìn từ ‘kia’ thì chẳng thấy, tự biết thì mới hay.</font></i>
+<i><font color="#CCCCCC">Nên nói: ‘kia’ xuất từ ‘này’, ‘này’ cũng nhân ‘kia’.</font></i>
+
+54
+00:03:26,933 --> 00:03:27,400
+<i><font color="#CCCCCC">“Vật nào cũng là ‘kia’, vật nào cũng là ‘này’.</font></i>
+<i><font color="#CCCCCC">Nhìn từ ‘kia’ thì chẳng thấy, tự biết thì mới hay.</font></i>
 <i><font color="#CCCCCC">Nên nói: ‘kia’ xuất từ ‘này’, ‘này’ cũng nhân ‘kia’.</font></i>
 <i><font color="#CCCCCC">Ấy gọi là ‘kia’ và ‘này’ cùng sinh.</font></i>
 
-53
-00:03:27,400 --> 00:03:29,330
+55
+00:03:27,400 --> 00:03:28,133
+<i><font color="#CCCCCC">“Vật nào cũng là ‘kia’, vật nào cũng là ‘này’.</font></i>
+<i><font color="#CCCCCC">Nhìn từ ‘kia’ thì chẳng thấy, tự biết thì mới hay.</font></i>
+<i><font color="#CCCCCC">Nên nói: ‘kia’ xuất từ ‘này’, ‘này’ cũng nhân ‘kia’.</font></i>
+<i><font color="#CCCCCC">Ấy gọi là ‘kia’ và ‘này’ cùng sinh.</font></i>
+<i><font color="#CCCCCC">Tuy vậy, vừa sinh vừa tử, vừa tử vừa sinh;</font></i>
+
+56
+00:03:28,133 --> 00:03:28,867
+<i><font color="#CCCCCC">“Vật nào cũng là ‘kia’, vật nào cũng là ‘này’.</font></i>
+<i><font color="#CCCCCC">Nhìn từ ‘kia’ thì chẳng thấy, tự biết thì mới hay.</font></i>
+<i><font color="#CCCCCC">Nên nói: ‘kia’ xuất từ ‘này’, ‘này’ cũng nhân ‘kia’.</font></i>
+<i><font color="#CCCCCC">Ấy gọi là ‘kia’ và ‘này’ cùng sinh.</font></i>
+<i><font color="#CCCCCC">Tuy vậy, vừa sinh vừa tử, vừa tử vừa sinh;</font></i>
+<i><font color="#CCCCCC">vừa khả vừa bất khả, vừa bất khả vừa khả;</font></i>
+
+57
+00:03:28,867 --> 00:03:29,330
+<i><font color="#CCCCCC">“Vật nào cũng là ‘kia’, vật nào cũng là ‘này’.</font></i>
+<i><font color="#CCCCCC">Nhìn từ ‘kia’ thì chẳng thấy, tự biết thì mới hay.</font></i>
+<i><font color="#CCCCCC">Nên nói: ‘kia’ xuất từ ‘này’, ‘này’ cũng nhân ‘kia’.</font></i>
+<i><font color="#CCCCCC">Ấy gọi là ‘kia’ và ‘này’ cùng sinh.</font></i>
 <i><font color="#CCCCCC">Tuy vậy, vừa sinh vừa tử, vừa tử vừa sinh;</font></i>
 <i><font color="#CCCCCC">vừa khả vừa bất khả, vừa bất khả vừa khả;</font></i>
 <i><font color="#CCCCCC">nhân thị mà có phi, nhân phi mà có thị.</font></i>
 
-54
-00:03:29,330 --> 00:03:31,267
+58
+00:03:29,330 --> 00:03:30,067
+<i><font color="#CCCCCC">“Vật nào cũng là ‘kia’, vật nào cũng là ‘này’.</font></i>
+<i><font color="#CCCCCC">Nhìn từ ‘kia’ thì chẳng thấy, tự biết thì mới hay.</font></i>
+<i><font color="#CCCCCC">Nên nói: ‘kia’ xuất từ ‘này’, ‘này’ cũng nhân ‘kia’.</font></i>
+<i><font color="#CCCCCC">Ấy gọi là ‘kia’ và ‘này’ cùng sinh.</font></i>
+<i><font color="#CCCCCC">Tuy vậy, vừa sinh vừa tử, vừa tử vừa sinh;</font></i>
+<i><font color="#CCCCCC">vừa khả vừa bất khả, vừa bất khả vừa khả;</font></i>
+<i><font color="#CCCCCC">nhân thị mà có phi, nhân phi mà có thị.</font></i>
+<i><font color="#CCCCCC">Cho nên thánh nhân chẳng theo lối ấy mà soi vào lẽ trời,</font></i>
+
+59
+00:03:30,067 --> 00:03:31,267
+<i><font color="#CCCCCC">“Vật nào cũng là ‘kia’, vật nào cũng là ‘này’.</font></i>
+<i><font color="#CCCCCC">Nhìn từ ‘kia’ thì chẳng thấy, tự biết thì mới hay.</font></i>
+<i><font color="#CCCCCC">Nên nói: ‘kia’ xuất từ ‘này’, ‘này’ cũng nhân ‘kia’.</font></i>
+<i><font color="#CCCCCC">Ấy gọi là ‘kia’ và ‘này’ cùng sinh.</font></i>
+<i><font color="#CCCCCC">Tuy vậy, vừa sinh vừa tử, vừa tử vừa sinh;</font></i>
+<i><font color="#CCCCCC">vừa khả vừa bất khả, vừa bất khả vừa khả;</font></i>
+<i><font color="#CCCCCC">nhân thị mà có phi, nhân phi mà có thị.</font></i>
 <i><font color="#CCCCCC">Cho nên thánh nhân chẳng theo lối ấy mà soi vào lẽ trời,</font></i>
 <i><font color="#CCCCCC">cũng là nhân thị vậy.”</font></i>
 
-55
+60
 00:03:31,267 --> 00:03:35,000
+<i><font color="#CCCCCC">“Vật nào cũng là ‘kia’, vật nào cũng là ‘này’.</font></i>
+<i><font color="#CCCCCC">Nhìn từ ‘kia’ thì chẳng thấy, tự biết thì mới hay.</font></i>
+<i><font color="#CCCCCC">Nên nói: ‘kia’ xuất từ ‘này’, ‘này’ cũng nhân ‘kia’.</font></i>
+<i><font color="#CCCCCC">Ấy gọi là ‘kia’ và ‘này’ cùng sinh.</font></i>
+<i><font color="#CCCCCC">Tuy vậy, vừa sinh vừa tử, vừa tử vừa sinh;</font></i>
+<i><font color="#CCCCCC">vừa khả vừa bất khả, vừa bất khả vừa khả;</font></i>
+<i><font color="#CCCCCC">nhân thị mà có phi, nhân phi mà có thị.</font></i>
+<i><font color="#CCCCCC">Cho nên thánh nhân chẳng theo lối ấy mà soi vào lẽ trời,</font></i>
+<i><font color="#CCCCCC">cũng là nhân thị vậy.”</font></i>
 <i><font color="#CCCCCC">— Trang Tử – Tề Vật Luận</font></i>
 
-56
+61
 00:03:38,567 --> 00:03:42,333
 <font color="#AAAA22">Soạn nhạc:</font> <font color="#AAAAAA">无刃妖影</font>
 <font color="#AAAA22">Tác từ:</font> <font color="#AAAAAA">安陵影钦</font>
 
-57
+62
 00:03:42,333 --> 00:03:46,267
 <font color="#AAAA22">Phối khí:</font> <font color="#AAAAAA">阿落</font>
 <font color="#AAAA22">Mix:</font> <font color="#AAAAAA">URUUT</font>
 
-58
+63
 00:03:46,267 --> 00:03:49,800
 <font color="#AAAA22">Điều giáo:</font> <font color="#AAAAAA">流绪</font>
 <font color="#AAAA22">Video:</font> <font color="#AAAAAA">流绪</font>
 
-59
+64
 00:03:49,800 --> 00:03:53,567
 <font color="#AAAA22">Minh họa:</font> <font color="#AAAAAA">良人落</font>
 <font color="#AAAA22">Thiết kế logo:</font> <font color="#AAAAAA">慧_Sophie/綄风</font>
 
-60
+65
 00:03:53,567 --> 00:03:56,867
 <b><font color="#FFD966">Đạo Ký Giang Tuyết</font></b>
 Yuezheng Ling

@@ -202,51 +202,111 @@
 欲眠卿且去明朝有意抱琴来
 
 51
-00:03:24,333 --> 00:03:26,300
+00:03:24,333 --> 00:03:25,567
+<i><font color="#CCCCCC">「物无非彼，物无非是。</font></i>
+
+52
+00:03:25,567 --> 00:03:26,300
 <i><font color="#CCCCCC">「物无非彼，物无非是。</font></i>
 <i><font color="#CCCCCC">自彼则不见，自知则知之。</font></i>
 
-52
-00:03:26,300 --> 00:03:27,400
+53
+00:03:26,300 --> 00:03:26,933
+<i><font color="#CCCCCC">「物无非彼，物无非是。</font></i>
+<i><font color="#CCCCCC">自彼则不见，自知则知之。</font></i>
+<i><font color="#CCCCCC">故曰：彼出于是，是亦因彼。</font></i>
+
+54
+00:03:26,933 --> 00:03:27,400
+<i><font color="#CCCCCC">「物无非彼，物无非是。</font></i>
+<i><font color="#CCCCCC">自彼则不见，自知则知之。</font></i>
 <i><font color="#CCCCCC">故曰：彼出于是，是亦因彼。</font></i>
 <i><font color="#CCCCCC">彼是方生之说也。</font></i>
 
-53
-00:03:27,400 --> 00:03:29,330
+55
+00:03:27,400 --> 00:03:28,133
+<i><font color="#CCCCCC">「物无非彼，物无非是。</font></i>
+<i><font color="#CCCCCC">自彼则不见，自知则知之。</font></i>
+<i><font color="#CCCCCC">故曰：彼出于是，是亦因彼。</font></i>
+<i><font color="#CCCCCC">彼是方生之说也。</font></i>
+<i><font color="#CCCCCC">虽然，方生方死，方死方生；</font></i>
+
+56
+00:03:28,133 --> 00:03:28,867
+<i><font color="#CCCCCC">「物无非彼，物无非是。</font></i>
+<i><font color="#CCCCCC">自彼则不见，自知则知之。</font></i>
+<i><font color="#CCCCCC">故曰：彼出于是，是亦因彼。</font></i>
+<i><font color="#CCCCCC">彼是方生之说也。</font></i>
+<i><font color="#CCCCCC">虽然，方生方死，方死方生；</font></i>
+<i><font color="#CCCCCC">方可方不可，方不可方可；</font></i>
+
+57
+00:03:28,867 --> 00:03:29,330
+<i><font color="#CCCCCC">「物无非彼，物无非是。</font></i>
+<i><font color="#CCCCCC">自彼则不见，自知则知之。</font></i>
+<i><font color="#CCCCCC">故曰：彼出于是，是亦因彼。</font></i>
+<i><font color="#CCCCCC">彼是方生之说也。</font></i>
 <i><font color="#CCCCCC">虽然，方生方死，方死方生；</font></i>
 <i><font color="#CCCCCC">方可方不可，方不可方可；</font></i>
 <i><font color="#CCCCCC">因是因非，因非因是。</font></i>
 
-54
-00:03:29,330 --> 00:03:31,267
+58
+00:03:29,330 --> 00:03:30,067
+<i><font color="#CCCCCC">「物无非彼，物无非是。</font></i>
+<i><font color="#CCCCCC">自彼则不见，自知则知之。</font></i>
+<i><font color="#CCCCCC">故曰：彼出于是，是亦因彼。</font></i>
+<i><font color="#CCCCCC">彼是方生之说也。</font></i>
+<i><font color="#CCCCCC">虽然，方生方死，方死方生；</font></i>
+<i><font color="#CCCCCC">方可方不可，方不可方可；</font></i>
+<i><font color="#CCCCCC">因是因非，因非因是。</font></i>
+<i><font color="#CCCCCC">是以圣人不由而照之于天，</font></i>
+
+59
+00:03:30,067 --> 00:03:31,267
+<i><font color="#CCCCCC">「物无非彼，物无非是。</font></i>
+<i><font color="#CCCCCC">自彼则不见，自知则知之。</font></i>
+<i><font color="#CCCCCC">故曰：彼出于是，是亦因彼。</font></i>
+<i><font color="#CCCCCC">彼是方生之说也。</font></i>
+<i><font color="#CCCCCC">虽然，方生方死，方死方生；</font></i>
+<i><font color="#CCCCCC">方可方不可，方不可方可；</font></i>
+<i><font color="#CCCCCC">因是因非，因非因是。</font></i>
 <i><font color="#CCCCCC">是以圣人不由而照之于天，</font></i>
 <i><font color="#CCCCCC">亦因是也。」</font></i>
 
-55
+60
 00:03:31,267 --> 00:03:35,000
+<i><font color="#CCCCCC">「物无非彼，物无非是。</font></i>
+<i><font color="#CCCCCC">自彼则不见，自知则知之。</font></i>
+<i><font color="#CCCCCC">故曰：彼出于是，是亦因彼。</font></i>
+<i><font color="#CCCCCC">彼是方生之说也。</font></i>
+<i><font color="#CCCCCC">虽然，方生方死，方死方生；</font></i>
+<i><font color="#CCCCCC">方可方不可，方不可方可；</font></i>
+<i><font color="#CCCCCC">因是因非，因非因是。</font></i>
+<i><font color="#CCCCCC">是以圣人不由而照之于天，</font></i>
+<i><font color="#CCCCCC">亦因是也。」</font></i>
 <i><font color="#CCCCCC">————《庄子·齐物论》</font></i>
 
-56
+61
 00:03:38,567 --> 00:03:42,333
 <font color="#AAAA22">作曲</font>：<font color="#AAAAAA">无刃妖影</font>
 <font color="#AAAA22">作词</font>：<font color="#AAAAAA">安陵影钦</font>
 
-57
+62
 00:03:42,333 --> 00:03:46,267
 <font color="#AAAA22">编曲</font>：<font color="#AAAAAA">阿落</font>
 <font color="#AAAA22">混音</font>：<font color="#AAAAAA">URUUT</font>
 
-58
+63
 00:03:46,267 --> 00:03:49,800
 <font color="#AAAA22">调教</font>：<font color="#AAAAAA">流绪</font>
 <font color="#AAAA22">视频</font>：<font color="#AAAAAA">流绪</font>
 
-59
+64
 00:03:49,800 --> 00:03:53,567
 <font color="#AAAA22">曲绘</font>：<font color="#AAAAAA">良人落</font>
 <font color="#AAAA22">徽标设计</font>：<font color="#AAAAAA">慧_Sophie/綄风</font>
 
-60
+65
 00:03:53,567 --> 00:03:56,867
 <b><font color="#FFD966">道寄江雪</font></b>
 乐正绫
