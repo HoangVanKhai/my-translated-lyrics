@@ -239,7 +239,6 @@ impl RegionState {
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct CueGroup {
     start: Timestamp,
-    /// Line of the header that opened the group.
     opened_at: usize,
     region: Option<AdditiveRegionIndex>,
     parts: Vec<CuePart>,
