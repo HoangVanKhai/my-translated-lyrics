@@ -302,28 +302,19 @@ struct AdditiveRegion {
 }
 
 impl AdditiveRegion {
-    /// Builds a region from the groups collected between its tags.
-    /// `closed_at` is the line of the `</additive>` that closes it,
-    /// and `opened_at` the line of the `<additive>` that opened it.
-    fn new(
-        groups: Vec<CueGroup>,
-        closed_at: usize,
-        opened_at: usize,
-    ) -> Result<Self, ParseLyricsError> {
-        let mut groups = groups.into_iter();
-        let Some(first) = groups.next() else {
-            return EmptyRegion {
-                line_number: closed_at,
-                opened_at,
+    /// The region `region` with `group` written beneath it, or the
+    /// region that `group` opens when it is the first one enclosed.
+    fn extended(region: Option<Self>, group: CueGroup) -> Self {
+        match region {
+            None => AdditiveRegion {
+                first: group,
+                rest: Vec::new(),
+            },
+            Some(mut region) => {
+                region.rest.push(group);
+                region
             }
-            .pipe(AdditiveRegionError::Empty)
-            .pipe(ParseLyricsError::AdditiveRegion)
-            .pipe(Err);
-        };
-        Ok(AdditiveRegion {
-            first,
-            rest: groups.collect(),
-        })
+        }
     }
 
     /// The region's cue groups, in the order they were written.
@@ -486,7 +477,11 @@ fn take_additive_region<'a>(
     opened_at: usize,
     previous_start: Option<Timestamp>,
 ) -> Result<(AdditiveRegion, Input<'a>), ParseLyricsError> {
-    let mut groups = Vec::<CueGroup>::new();
+    // The region built so far, which is `None` until its first cue
+    // group opens it. The groups accumulate in the region itself, so
+    // none of them is moved out of one vector and into another when
+    // the closing tag arrives.
+    let mut region: Option<AdditiveRegion> = None;
     let mut input = input.inside(opened_at);
 
     loop {
@@ -500,8 +495,19 @@ fn take_additive_region<'a>(
         };
 
         match parse_element_line(line)? {
+            // A region exists to accumulate cues, so one that closes
+            // having enclosed none is an authoring mistake rather than
+            // a silent no-op.
             ElementLine::ClosingTag => {
-                let region = AdditiveRegion::new(groups, line.number, opened_at)?;
+                let Some(region) = region else {
+                    return EmptyRegion {
+                        line_number: line.number,
+                        opened_at,
+                    }
+                    .pipe(AdditiveRegionError::Empty)
+                    .pipe(ParseLyricsError::AdditiveRegion)
+                    .pipe(Err);
+                };
                 return Ok((region, rest.outside()));
             }
             // The cues a region encloses are read by a parser that
@@ -531,11 +537,14 @@ fn take_additive_region<'a>(
                 .pipe(Err);
             }
             ElementLine::Header(start, Header::Cue(body)) => {
-                let previous = groups.last().map(|group| group.start).or(previous_start);
+                let previous = region
+                    .as_ref()
+                    .map(|region| region.last().start)
+                    .or(previous_start);
                 check_event_order(start, line.number, previous)?;
                 let header = PartHeader::parse(body, line.number)?;
                 let (group, tail) = take_cue_group(start, header, rest)?;
-                groups.push(group);
+                region = Some(AdditiveRegion::extended(region, group));
                 input = tail;
             }
         }
