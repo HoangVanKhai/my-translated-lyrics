@@ -14,6 +14,11 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 /// every one of them at the deserialization boundary.
 #[derive(AsRefStr, Clone, Copy, Debug, strum::Display, EnumString, Eq, PartialEq, VariantArray)]
 pub enum ReservedMarker {
+    /// An annotation. Lines that start with this marker carry
+    /// commentary about the cue part above them. They take no
+    /// timestamp of their own and are ignored by both renderers.
+    #[strum(serialize = "ann")]
+    Annotation,
     /// Cue clearing. Lines that start with this marker cause the
     /// previously opened cue to end at the marker's timestamp and
     /// produce no visible text of their own.
@@ -23,20 +28,15 @@ pub enum ReservedMarker {
     /// further subtitle activity occurs.
     #[strum(serialize = "eov")]
     EndOfVideo,
-    /// An annotation. Lines that start with this marker carry
-    /// commentary about the cue part above them. They take no
-    /// timestamp of their own and are ignored by both renderers.
-    #[strum(serialize = "ann")]
-    Annotation,
 }
 
 impl ReservedMarker {
     /// Whether the reserved marker is a control marker.
     pub fn is_control(self) -> bool {
         match self {
+            ReservedMarker::Annotation => false,
             ReservedMarker::Clear => true,
             ReservedMarker::EndOfVideo => true,
-            ReservedMarker::Annotation => false,
         }
     }
 }
