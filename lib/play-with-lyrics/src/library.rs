@@ -11,7 +11,7 @@ use derive_more::Display;
 use into_deduped::IntoDeduped;
 use into_sorted::IntoSorted;
 use itertools::Itertools;
-use lyrics_core::video_descriptor::Language;
+use lyrics_core::video_descriptor::{Language, VideoTitle};
 use pipe_trait::Pipe;
 use std::fs::read_dir;
 use std::io::ErrorKind;
@@ -31,7 +31,7 @@ pub const VIDEO_EXTENSIONS: &[&str] = &[
 /// not contain that collection yet.
 pub fn available_subtitles(
     collection_dir: &Path,
-    video_title: &str,
+    video_title: &VideoTitle,
 ) -> Vec<(Language, SubtitleFormat)> {
     let entries = match read_dir(collection_dir) {
         Ok(entries) => entries,
@@ -75,7 +75,7 @@ fn parse_subtitle_name(file_name: &str, video_title: &str) -> Option<(Language, 
 /// The path an installed subtitle file would have in the library.
 pub fn subtitle_path(
     collection_dir: &Path,
-    video_title: &str,
+    video_title: &VideoTitle,
     language: Language,
     format: SubtitleFormat,
 ) -> PathBuf {
@@ -87,17 +87,23 @@ pub fn subtitle_path(
 pub enum VideoLookupError {
     /// No file named `{video_title}.{ext}` with a known video extension
     /// exists in the collection directory.
-    #[display("no video file for {video_title:?} was found in {collection_dir:?}")]
+    // The title is quoted through the text it wraps, so the message
+    // shows the name as the descriptor spells it.
+    #[display("no video file for {:?} was found in {collection_dir:?}", &**video_title)]
     NotFound {
         collection_dir: PathBuf,
-        video_title: String,
+        video_title: VideoTitle,
     },
     /// More than one matching video file exists, so the choice would be
     /// ambiguous.
-    #[display("multiple video files match {video_title:?} in {collection_dir:?}: {}", matches.iter().map(|path| format!("{path:?}")).join(", "))]
+    #[display(
+        "multiple video files match {:?} in {collection_dir:?}: {}",
+        &**video_title,
+        matches.iter().map(|path| format!("{path:?}")).join(", "),
+    )]
     Multiple {
         collection_dir: PathBuf,
-        video_title: String,
+        video_title: VideoTitle,
         matches: Vec<PathBuf>,
     },
 }
@@ -111,14 +117,14 @@ pub enum VideoLookupError {
 /// lookup is an error unless exactly one candidate exists.
 pub fn find_video_file(
     collection_dir: &Path,
-    video_title: &str,
+    video_title: &VideoTitle,
 ) -> Result<PathBuf, VideoLookupError> {
     let entries = match read_dir(collection_dir) {
         Ok(entries) => entries,
         Err(error) if error.kind() == ErrorKind::NotFound => {
             return Err(VideoLookupError::NotFound {
                 collection_dir: collection_dir.to_path_buf(),
-                video_title: video_title.to_string(),
+                video_title: video_title.clone(),
             });
         }
         Err(error) => panic!("error: Cannot read directory {collection_dir:?}: {error}"),
@@ -154,12 +160,12 @@ pub fn find_video_file(
     match matches.len() {
         0 => Err(VideoLookupError::NotFound {
             collection_dir: collection_dir.to_path_buf(),
-            video_title: video_title.to_string(),
+            video_title: video_title.clone(),
         }),
         1 => Ok(matches.remove(0)),
         _ => Err(VideoLookupError::Multiple {
             collection_dir: collection_dir.to_path_buf(),
-            video_title: video_title.to_string(),
+            video_title: video_title.clone(),
             matches,
         }),
     }

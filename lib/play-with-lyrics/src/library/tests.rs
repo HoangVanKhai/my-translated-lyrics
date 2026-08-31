@@ -1,12 +1,21 @@
 use crate::library::{VideoLookupError, available_subtitles, find_video_file, subtitle_path};
 use crate::player::SubtitleFormat;
-use lyrics_core::video_descriptor::Language;
+use lyrics_core::video_descriptor::{Language, VideoTitle};
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::fs::write as write_file;
 use std::path::Path;
 use test_utils::Temp;
 
 const TITLE: &str = "Some Title [id]";
+
+/// The fixture title as the descriptor would carry it.
+fn title() -> VideoTitle {
+    TITLE
+        .to_owned()
+        .pipe(VideoTitle::try_from)
+        .expect("test fixture passes the video-title validator")
+}
 
 fn touch(dir: &Path, file_name: &str) {
     write_file(dir.join(file_name), "").unwrap();
@@ -22,7 +31,7 @@ fn lists_available_subtitles_sorted_and_deduplicated() {
     touch(&dir, &format!("{TITLE}.mkv"));
     touch(&dir, "unrelated.txt");
 
-    let available = available_subtitles(&dir, TITLE);
+    let available = available_subtitles(&dir, &title());
     assert_eq!(
         available,
         vec![
@@ -37,7 +46,7 @@ fn lists_available_subtitles_sorted_and_deduplicated() {
 fn missing_collection_directory_has_no_subtitles() {
     let dir = Temp::new_dir();
     let missing = dir.join("does-not-exist");
-    assert_eq!(available_subtitles(&missing, TITLE), Vec::new());
+    assert_eq!(available_subtitles(&missing, &title()), Vec::new());
 }
 
 #[test]
@@ -46,7 +55,7 @@ fn finds_a_single_video_file() {
     touch(&dir, &format!("{TITLE}.mkv"));
     touch(&dir, &format!("{TITLE}.vi.srt"));
 
-    let found = find_video_file(&dir, TITLE).unwrap();
+    let found = find_video_file(&dir, &title()).unwrap();
     assert_eq!(found, dir.join(format!("{TITLE}.mkv")));
 }
 
@@ -55,7 +64,7 @@ fn reports_a_missing_video_file() {
     let dir = Temp::new_dir();
     touch(&dir, &format!("{TITLE}.vi.srt"));
 
-    let error = find_video_file(&dir, TITLE).unwrap_err();
+    let error = find_video_file(&dir, &title()).unwrap_err();
     assert!(matches!(error, VideoLookupError::NotFound { .. }));
 }
 
@@ -64,7 +73,7 @@ fn a_missing_collection_directory_reports_no_video_file() {
     let dir = Temp::new_dir();
     let missing = dir.join("does-not-exist");
 
-    let error = find_video_file(&missing, TITLE).unwrap_err();
+    let error = find_video_file(&missing, &title()).unwrap_err();
     assert!(matches!(error, VideoLookupError::NotFound { .. }));
 }
 
@@ -74,7 +83,7 @@ fn reports_multiple_matching_video_files() {
     touch(&dir, &format!("{TITLE}.mkv"));
     touch(&dir, &format!("{TITLE}.mp4"));
 
-    let error = find_video_file(&dir, TITLE).unwrap_err();
+    let error = find_video_file(&dir, &title()).unwrap_err();
     assert!(matches!(error, VideoLookupError::Multiple { .. }));
 }
 
@@ -83,7 +92,7 @@ fn a_title_that_is_a_prefix_of_another_is_not_matched() {
     let dir = Temp::new_dir();
     touch(&dir, &format!("{TITLE} Extended.mkv"));
 
-    let error = find_video_file(&dir, TITLE).unwrap_err();
+    let error = find_video_file(&dir, &title()).unwrap_err();
     assert!(matches!(error, VideoLookupError::NotFound { .. }));
 }
 
@@ -91,7 +100,7 @@ fn a_title_that_is_a_prefix_of_another_is_not_matched() {
 fn builds_the_subtitle_path() {
     let path = subtitle_path(
         Path::new("/library/Coll"),
-        TITLE,
+        &title(),
         Language::Vietnamese,
         SubtitleFormat::SubRip,
     );
