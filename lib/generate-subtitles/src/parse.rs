@@ -297,12 +297,10 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
 
         if indent == 0 {
             // A tag line is the one column-zero shape that carries no
-            // timestamp, so the two spellings are matched before the
-            // header parser sees the line. Nothing else in the format
-            // opens with `<`, so any other line that does is a
-            // misspelled tag rather than a header.
-            // Nothing but a tag line opens with `<`, so any other
-            // line that does is a misspelled tag rather than a header.
+            // timestamp, so it is parsed before the header parser sees
+            // the line. Nothing else in the format opens with `<`, so
+            // any other line that does is a misspelled tag rather than
+            // a header.
             if let Some((tag, tail)) = OpeningTag::take(body)
                 && tag.name() == TagName::Additive
                 && tail.trim().is_empty()
