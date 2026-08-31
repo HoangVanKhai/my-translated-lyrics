@@ -16,12 +16,9 @@
 //!
 //! Between a column-zero `<additive>` line and a `</additive>` line,
 //! cues accumulate rather than replace: each renders the parts of
-//! every cue above it in the region, then its own. Both spellings are
-//! matched literally, so no whitespace may sit inside them, though
-//! trailing whitespace is allowed as it is after `clr`.
-//! Regions do not nest, enclose at least one cue, and admit neither
-//! [`ReservedMarker::Clear`] nor [`ReservedMarker::EndOfVideo`]. Each
-//! tag ends the scope of the cue above it, as `clr` does.
+//! every cue above it in the region, then its own. Regions do not
+//! nest, enclose at least one cue, and admit neither
+//! [`ReservedMarker::Clear`] nor [`ReservedMarker::EndOfVideo`].
 
 pub mod error;
 
