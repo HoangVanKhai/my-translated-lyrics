@@ -28,9 +28,7 @@ pub struct StylePalette {
     pub credit: CreditPalette,
     /// Style for each voice marker, keyed by the marker name used in
     /// the `[voices]` section of a song's `line-markers.toml`, such as
-    /// `LTY`, `lty`, or `Y+L`. The key is the type that section is
-    /// keyed by, so the palette and the descriptor agree on what names
-    /// a voice.
+    /// `LTY`, `lty`, or `Y+L`.
     #[serde(default)]
     pub voices: BTreeMap<MarkerName, Style>,
     /// Style for each named class, keyed by the class name used in the

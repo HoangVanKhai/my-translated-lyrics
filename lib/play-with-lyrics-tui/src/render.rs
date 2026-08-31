@@ -3,14 +3,10 @@
 //! line into the frame buffer, and the small geometry helpers the pages share
 //! with the click handling.
 //!
-//! Three unrelated counts meet in this module, and none of them is
-//! interchangeable with the others: a display width measured through
-//! `unicode-width`, an index into a collection, and a number of screen rows.
-//! Screen positions and display widths are the `terminal_screen` geometry
-//! types, so they match the buffer a page draws into rather than being
-//! remeasured in a different integer. Indices are [`ItemIndex`],
-//! [`FilteredIndex`], and [`TitleColumn`], each naming the collection it
-//! indexes. Row counts are [`Height`].
+//! Three unrelated counts meet here and none stands in for another. Display
+//! widths and screen positions are the `terminal_screen` geometry types,
+//! indices are [`ItemIndex`], [`FilteredIndex`], and [`TitleColumn`], and row
+//! counts are [`Height`].
 
 use fuzzy_select::selection::{FilteredIndex, ItemIndex};
 use pipe_trait::Pipe;
@@ -39,24 +35,21 @@ pub(crate) const FIRST_LIST_ROW: Row = Row::new(1);
 /// click, which confirms the choice.
 const DOUBLE_CLICK_WINDOW: Duration = Duration::from_millis(500);
 
-/// The display width of `text`, saturating at the widest a `u16` can measure
-/// rather than wrapping around on absurdly long input.
+/// The display width of `text`.
 fn text_width(text: &str) -> Width {
     text.width().pipe(saturating_width)
 }
 
-/// The display width of `character`, counting a character with no column of
-/// its own, such as a combining mark, as no columns at all.
+/// The display width of `character`, which is none for a character with no
+/// column of its own.
 fn char_width(character: char) -> Width {
     character.width().unwrap_or(0).pipe(saturating_width)
 }
 
-/// A column count measured by `unicode-width`, narrowed to the integer the
-/// frame buffer addresses its cells with. Text wider than a `u16` can measure
-/// reads as exactly that wide, so a cell budget of `u16::MAX` would accept it
-/// whole rather than truncating it. No terminal is that wide, and every cell
-/// budget here is a fraction of one.
+/// A column count narrowed to a [`Width`], saturating rather than wrapping.
 fn saturating_width(columns: usize) -> Width {
+    // Text too wide for a `u16` measures as exactly `u16::MAX`, so a cell
+    // budget that wide would accept it whole. No terminal is that wide.
     u16::try_from(columns).unwrap_or(u16::MAX).pipe(Width::new)
 }
 
@@ -121,7 +114,7 @@ fn separator_width() -> Width {
 
 /// The width of each of the three title cells in a line `total` columns wide,
 /// once the two separators have taken their share. A cell always keeps at
-/// least one column, so a very narrow terminal still shows the layout.
+/// least one column.
 fn cell_width(total: Width) -> Width {
     let separator = separator_width();
     let available = total.saturating_sub(separator + separator);
@@ -154,9 +147,7 @@ pub(crate) fn columns_line(english: &str, vietnamese: &str, chinese: &str, total
         .collect()
 }
 
-/// A run of screen columns: where it begins and how wide it is. The layout
-/// helpers report their runs this way so the renderer and the click handling
-/// agree on both ends without either one measuring them again.
+/// A run of screen columns: where it begins and how wide it is.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) struct ColumnSpan {
     start: Column,
@@ -212,16 +203,14 @@ pub(crate) fn column_spans(total: Width) -> [ColumnSpan; 3] {
 /// Which of the three title columns is meant, counting from the left: English,
 /// then Vietnamese, then Chinese.
 ///
-/// This indexes the table's own layout rather than the screen columns that
-/// layout occupies, so it is deliberately not a [`Column`]. Only [`column_at`]
-/// produces one, and only from a screen column that landed inside a cell, so
-/// every value names a real column of the table.
+/// It indexes the table's layout rather than the screen columns that layout
+/// occupies. Only [`column_at`] constructs one, so every value names a real
+/// column of the table.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) struct TitleColumn(usize);
 
 impl TitleColumn {
-    /// The column's place among the three, for indexing a per-column array
-    /// such as the header labels or their spans.
+    /// The column's place among the three.
     pub(crate) fn position(self) -> usize {
         self.0
     }
@@ -271,8 +260,7 @@ pub(crate) fn scroll_offset(cursor: FilteredIndex, visible: Height) -> FilteredI
 const TABLE_CHROME_ROWS: Height = Height::new(4);
 
 /// The number of title rows that fit in a terminal `rows` rows tall, after
-/// reserving the chrome. At least one row is always reported, so the table
-/// never collapses to nothing.
+/// reserving the chrome. At least one row is always reported.
 pub(crate) fn visible_rows(rows: Height) -> Height {
     rows.saturating_sub(TABLE_CHROME_ROWS).max(Height::ONE)
 }
@@ -336,8 +324,7 @@ impl Button {
 }
 
 /// The screen columns each top-bar button spans, for a bar `width` columns
-/// wide. Back and Forward sit on the left; Exit is right-aligned. The renderer
-/// and the click handling share this, so they agree on where each button sits.
+/// wide. Back and Forward sit on the left; Exit is right-aligned.
 pub(crate) fn button_columns(width: Width) -> [(Button, ColumnSpan); 3] {
     let back = ColumnSpan::new(Column::LEFT, Button::Back.width());
     let forward = ColumnSpan::new(back.end() + BUTTON_GAP, Button::Forward.width());

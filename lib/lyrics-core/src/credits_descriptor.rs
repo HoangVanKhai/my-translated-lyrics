@@ -24,13 +24,7 @@ pub struct CreditsDesc {
 }
 
 /// The label of a credit role, such as the word a credit line opens with
-/// before its names.
-///
-/// A role imposes no shape of its own, so this type exists to keep the
-/// two lists of a `credits.yaml` apart: the role parser reads
-/// `credit-roles` and only `credit-roles`, and reading the companion
-/// list by mistake would otherwise compile and quietly split every
-/// credit line on the wrong tokens.
+/// before its names. It imposes no shape of its own.
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(transparent)]
 pub struct CreditRole(String);
@@ -49,8 +43,7 @@ impl From<String> for CreditRole {
 }
 
 /// The name of a credited person or studio, as it appears in the credit
-/// block. It is the counterpart of [`CreditRole`] and, like it, imposes
-/// no shape of its own.
+/// block. Like [`CreditRole`], it imposes no shape of its own.
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(transparent)]
 pub struct CreditName(String);

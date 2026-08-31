@@ -65,8 +65,7 @@ pub struct SubtitleCue {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CuePart {
     /// The marker the cue-opening line declared, for example `ttl` in
-    /// `ttl: 《Song》`. The parser establishes the name once, so a
-    /// renderer looks it up in the descriptor without re-checking it.
+    /// `ttl: 《Song》`.
     pub marker: MarkerName,
     /// Cue text, with line breaks preserved between the opening line
     /// and any continuation lines.

@@ -5,10 +5,9 @@
 //! behavior can be unit tested without a TTY. A terminal front-end drives
 //! one of these while rendering and reading key events.
 //!
-//! Two index spaces meet here, and they are kept apart by [`FilteredIndex`]
-//! and [`ItemIndex`]. A filtered index names a visible row; an item index
-//! names an entry of the borrowed slice. [`Selector::item_at`] is the one
-//! place that turns one into the other.
+//! Two index spaces meet here: [`FilteredIndex`] names a visible row and
+//! [`ItemIndex`] names an entry of the borrowed slice. [`Selector::item_at`]
+//! converts one into the other.
 
 use crate::fuzzy::contains_substring;
 use std::cmp::Ordering;
@@ -20,16 +19,15 @@ type Comparator<'a, Item> = Box<dyn Fn(&Item, &Item) -> Ordering + 'a>;
 /// A position within the filtered view: which visible row is meant, counting
 /// from the top of what the query currently shows.
 ///
-/// A filtered index is not an index into the borrowed slice of items. The two
-/// spaces coincide only while the query is empty and no order is set, and any
-/// filtering or sorting moves them apart. Passing one where the other belongs
-/// would silently name the wrong row, so they are separate types and
-/// [`Selector::item_at`] is the only conversion between them.
+/// It is not an index into the borrowed slice of items. The two spaces
+/// coincide only while the query is empty and no order is set; any filtering
+/// or sorting moves them apart, and [`Selector::item_at`] is the only
+/// conversion between them.
 #[derive(Clone, Copy, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
 pub struct FilteredIndex(usize);
 
 impl FilteredIndex {
-    /// The topmost visible row, where the cursor lands after every refilter.
+    /// The topmost visible row.
     pub const FIRST: FilteredIndex = FilteredIndex(0);
 
     /// The visible row `position` rows from the top of the filtered view.
@@ -42,8 +40,7 @@ impl FilteredIndex {
         self.0
     }
 
-    /// The row `rows` further down, which is how a scrolled window turns the
-    /// row a click landed on into the filtered row shown there.
+    /// The row `rows` further down.
     pub const fn down_by(self, rows: usize) -> FilteredIndex {
         FilteredIndex(self.0.saturating_add(rows))
     }
@@ -66,13 +63,12 @@ impl ItemIndex {
     }
 
     /// The item before this one, or the first item when this is already the
-    /// first, so a cursor moving upwards stops at the top.
+    /// first.
     pub const fn previous(self) -> ItemIndex {
         ItemIndex(self.0.saturating_sub(1))
     }
 
-    /// The item after this one. A caller moving a cursor downwards has to
-    /// check the result against the length of the slice.
+    /// The item after this one, which may be past the end of the slice.
     pub const fn next(self) -> ItemIndex {
         ItemIndex(self.0.saturating_add(1))
     }
@@ -189,8 +185,7 @@ where
     }
 
     /// The item shown on the visible row `position`, if the filtered view
-    /// reaches that far. This is the one crossing between the two index
-    /// spaces, so every other caller stays in the space it started in.
+    /// reaches that far.
     pub fn item_at(&self, position: FilteredIndex) -> Option<ItemIndex> {
         self.filtered.get(position.get()).copied()
     }

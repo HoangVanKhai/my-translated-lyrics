@@ -1,10 +1,8 @@
 //! The coordinates and extents of the terminal grid.
 //!
 //! A cell is located by a [`Column`] and a [`Row`]; a region is measured by a
-//! [`Width`] and a [`Height`]. All four wrap the same `u16`, so while they were
-//! spelled as bare integers the compiler accepted any of them wherever another
-//! belonged. A transposed pair of arguments is now a compile error rather than
-//! a frame drawn into the wrong cells.
+//! [`Width`] and a [`Height`]. The four are distinct types, so none of them
+//! stands in for another.
 
 use std::ops::{Add, AddAssign};
 
@@ -27,18 +25,14 @@ impl Column {
     }
 
     /// How many columns to the right of `origin` this column sits, or `None`
-    /// when it sits to the left of `origin`. This is the inverse of advancing
-    /// a column past a run, and the only way to recover a width from two
-    /// positions.
+    /// when it sits to the left of `origin`.
     pub fn columns_after(self, origin: Column) -> Option<Width> {
         self.0.checked_sub(origin.0).map(Width)
     }
 }
 
-/// Advances past a glyph or a run of text that spans `width` columns, which is
-/// the only arithmetic a column takes part in. The sum saturates at the last
-/// column a `u16` can name, so a caller laying out text past the right edge
-/// keeps moving rightwards rather than wrapping back to the left one.
+/// Advances past a run of `width` columns, saturating at the last column a
+/// `u16` can name rather than wrapping.
 impl Add<Width> for Column {
     type Output = Column;
 
@@ -78,17 +72,13 @@ impl Row {
     }
 
     /// How many rows below `origin` this row sits, or `None` when it sits
-    /// above `origin`. This is the only way to recover a height from two
-    /// positions, and it is what turns the row a click landed on into an
-    /// offset from the first row of a block.
+    /// above `origin`.
     pub fn rows_below(self, origin: Row) -> Option<Height> {
         self.0.checked_sub(origin.0).map(Height)
     }
 
     /// This row and every row below it, ending at the last row a `u16` can
-    /// name. A caller laying out one screen row per item zips against this,
-    /// so a list longer than the grid runs out of rows rather than wrapping
-    /// back to the top.
+    /// name rather than wrapping back to the top.
     pub fn downwards(self) -> impl Iterator<Item = Row> {
         (self.0..=u16::MAX).map(Row)
     }
@@ -106,11 +96,10 @@ impl From<Row> for usize {
 pub struct Width(u16);
 
 impl Width {
-    /// No columns at all, which is what a zero-width glyph spans and what an
-    /// unsized grid starts out as.
+    /// No columns at all.
     pub const ZERO: Width = Width(0);
 
-    /// A single column, the span of an ordinary narrow glyph.
+    /// A single column.
     pub const ONE: Width = Width(1);
 
     /// A span of `columns` columns.
@@ -134,15 +123,13 @@ impl Width {
     }
 
     /// Whether a run that starts at `column` and spans `span` columns ends
-    /// within a grid this wide. The sum is taken in `usize` so a run that would
-    /// overflow a `u16` reads as not fitting rather than wrapping around.
+    /// within a grid this wide.
     pub fn fits(self, column: Column, span: Width) -> bool {
         usize::from(column) + usize::from(span) <= usize::from(self)
     }
 
-    /// How much of a grid this wide is left from `column` rightwards, which is
-    /// the room a caller has for more text after drawing a prefix. A column at
-    /// or past the right edge leaves no room.
+    /// How much of a grid this wide is left from `column` rightwards. A column
+    /// at or past the right edge leaves no room.
     pub fn remaining_from(self, column: Column) -> Width {
         Width(self.0.saturating_sub(column.0))
     }
@@ -154,9 +141,8 @@ impl Width {
     }
 }
 
-/// Lays two runs side by side. The sum saturates at the widest a `u16` can
-/// measure, so an absurdly long run reads as reaching the far edge rather than
-/// wrapping around to a narrow one.
+/// Lays two runs side by side, saturating at the widest a `u16` can measure
+/// rather than wrapping.
 impl Add for Width {
     type Output = Width;
 
@@ -182,7 +168,7 @@ impl From<Width> for usize {
 pub struct Height(u16);
 
 impl Height {
-    /// No rows at all, which is what an unsized grid starts out as.
+    /// No rows at all.
     pub const ZERO: Height = Height(0);
 
     /// A single row.

@@ -7,8 +7,7 @@ use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
 use std::time::SystemTime;
 
-/// The device a file lives on, as the filesystem reports it. It only
-/// identifies an inode's namespace and carries no order or arithmetic.
+/// The device a file lives on, as the filesystem reports it.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct DeviceId(u64);
 
@@ -17,9 +16,7 @@ struct DeviceId(u64);
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct Inode(u64);
 
-/// A file's length in bytes. It measures content rather than naming a
-/// file, so an equal size is a hint that two files may match rather than
-/// proof that they do.
+/// A file's length in bytes.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct FileSize(u64);
 
