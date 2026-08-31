@@ -6,7 +6,7 @@ use super::error::{
     RepeatedTimestamp, ReservedControlMarker, TabIndentation, UnclosedCue, UnclosedRegion,
     UnopenedRegion,
 };
-use super::{ClosingTag, KnownTagName, OpeningTag, TagName, parse_lyrics};
+use super::{ClosingTag, DefinedTagName, OpeningTag, TagName, parse_lyrics};
 use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::{SecondsOutOfRange, TakeTimestampError, Timestamp};
 use pipe_trait::Pipe;
@@ -1455,10 +1455,13 @@ fn closing_tag_rejects_anything_but_the_three_components_flush() {
 #[test]
 fn only_a_defined_name_resolves_to_a_known_tag() {
     let (additive, _) = OpeningTag::take("<additive>").unwrap();
-    assert_eq!(additive.name().as_str().parse(), Ok(KnownTagName::Additive));
+    assert_eq!(
+        additive.name().as_str().parse(),
+        Ok(DefinedTagName::Additive),
+    );
     for source in ["<verse>", "<additives>", "<a>"] {
         eprintln!("CASE: {source:?}");
         let (tag, _) = OpeningTag::take(source).unwrap();
-        assert!(tag.name().as_str().parse::<KnownTagName>().is_err());
+        assert!(tag.name().as_str().parse::<DefinedTagName>().is_err());
     }
 }

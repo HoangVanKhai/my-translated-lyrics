@@ -43,9 +43,10 @@ use strum::EnumString;
 /// `MM:SS.mmm` timestamp plus one ASCII space.
 const TIMESTAMP_PREFIX_WIDTH: usize = TIMESTAMP_STR_LEN + 1;
 
-/// A tag name the parser defines.
+/// A tag name this format defines. The format is defined here, so
+/// the set is closed: a name outside it names no tag at all.
 #[derive(Clone, Copy, Debug, strum::Display, EnumString, Eq, PartialEq)]
-enum KnownTagName {
+enum DefinedTagName {
     /// Opens a region whose cues accumulate.
     #[strum(serialize = "additive")]
     Additive,
@@ -322,7 +323,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
             // Nothing but a tag line opens with `<`, so any other
             // line that does is a misspelled tag rather than a header.
             if let Some((tag, tail)) = OpeningTag::take(body)
-                && let Ok(KnownTagName::Additive) = tag.name().as_str().parse()
+                && let Ok(DefinedTagName::Additive) = tag.name().as_str().parse()
                 && tail.trim().is_empty()
             {
                 handle_additive_opening_tag_line(
@@ -332,7 +333,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                     &mut open_marker_line,
                 )?;
             } else if let Some((tag, tail)) = ClosingTag::take(body)
-                && let Ok(KnownTagName::Additive) = tag.name().as_str().parse()
+                && let Ok(DefinedTagName::Additive) = tag.name().as_str().parse()
                 && tail.trim().is_empty()
             {
                 handle_additive_closing_tag_line(
