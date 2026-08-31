@@ -23,7 +23,7 @@ use super::styles::{MissingStyle, Style, StylePalette};
 use core::fmt::Write;
 use derive_more::Display;
 use lyrics_core::credits_descriptor::CreditsDesc;
-use lyrics_core::line_markers_descriptor::LineMarkersDesc;
+use lyrics_core::line_markers_descriptor::{LineMarkersDesc, MarkerName};
 use lyrics_core::timestamp::{SrtTime, Timestamp};
 use lyrics_core::video_descriptor::Language;
 
@@ -107,13 +107,13 @@ fn render_cue_part(
 /// a class but missing from the palette is a [`MissingStyle`] error;
 /// markers that the descriptor registers as neither render as plain text.
 fn resolve_style<'a>(
-    marker_name: &str,
+    marker_name: &MarkerName,
     markers: &LineMarkersDesc,
     palette: &'a StylePalette,
 ) -> Result<Option<&'a Style>, RenderSrtError> {
     if markers.voices.contains_key(marker_name) {
         return palette
-            .voice_style(marker_name)
+            .voice_style(marker_name.as_str())
             .map(Some)
             .map_err(Into::into);
     }

@@ -1,7 +1,6 @@
 use crate::video_descriptor::Language;
 use derive_more::Display;
 use serde::{Deserialize, Serialize};
-use std::borrow::Borrow;
 use std::collections::BTreeMap;
 use strum::{AsRefStr, EnumString, VariantArray};
 
@@ -77,9 +76,10 @@ pub struct LineMarkersDesc {
 
 impl LineMarkersDesc {
     /// Whether `marker` opens a credit block in this song. The
-    /// argument is the plain token a parsed cue part carries.
-    pub fn is_credit(&self, marker: &str) -> bool {
-        self.credits.iter().any(|credit| credit.as_str() == marker)
+    /// argument is the marker name a parsed cue part carries, which
+    /// the parser established through [`MarkerName::new`].
+    pub fn is_credit(&self, marker: &MarkerName) -> bool {
+        self.credits.contains(marker)
     }
 }
 
@@ -117,14 +117,6 @@ impl TryFrom<String> for MarkerName {
 impl From<MarkerName> for String {
     fn from(value: MarkerName) -> Self {
         value.0
-    }
-}
-
-// Enables lookups into a map keyed by `MarkerName` with the plain
-// token a parsed cue part carries.
-impl Borrow<str> for MarkerName {
-    fn borrow(&self) -> &str {
-        &self.0
     }
 }
 

@@ -163,7 +163,7 @@ fn render_cue_part(
     let marker = &part.marker;
     let voice_name = markers
         .voices
-        .get(marker.as_str())
+        .get(marker)
         .and_then(|by_language| by_language.get(language));
 
     // `VoiceName::new` rejects `<`, `>`, `"`, `\`, `U+2028`,
@@ -191,7 +191,7 @@ fn render_cue_part(
             })?;
             render_credit_line(output, features, &pairs);
         }
-    } else if let Some(class_name) = markers.classes.get(marker.as_str()) {
+    } else if let Some(class_name) = markers.classes.get(marker) {
         write!(output, "<c.{class_name}>{}</c>", Escaped(&part.text)).unwrap();
     } else {
         write!(output, "{}", Escaped(&part.text)).unwrap();

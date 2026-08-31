@@ -22,7 +22,7 @@ fn cue_text_html_meta_characters_are_escaped() {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
         parts: vec![CuePart {
-            marker: "plain".to_string(),
+            marker: marker_name("plain"),
             text: "<a> & <b>".to_string(),
             annotations: Vec::new(),
         }],
@@ -55,7 +55,7 @@ fn role_only_header_and_role_less_lines_render() {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
         parts: vec![CuePart {
-            marker: "cre".to_string(),
+            marker: marker_name("cre"),
             text: "role-a\n[label-a] name-a".to_string(),
             annotations: Vec::new(),
         }],
@@ -83,7 +83,7 @@ fn unknown_role_in_credit_line_produces_credits_error() {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
         parts: vec![CuePart {
-            marker: "cre".to_string(),
+            marker: marker_name("cre"),
             text: "unknown-role name-a".to_string(),
             annotations: Vec::new(),
         }],
@@ -119,7 +119,7 @@ fn class_declared_without_palette_entry_produces_style_error() {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
         parts: vec![CuePart {
-            marker: "ttl".to_string(),
+            marker: marker_name("ttl"),
             text: "body".to_string(),
             annotations: Vec::new(),
         }],
@@ -155,7 +155,7 @@ fn voice_declared_without_palette_entry_produces_style_error() {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
         parts: vec![CuePart {
-            marker: "unk".to_string(),
+            marker: marker_name("unk"),
             text: "body".to_string(),
             annotations: Vec::new(),
         }],
@@ -183,7 +183,7 @@ fn annotations_are_not_rendered() {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
         parts: vec![CuePart {
-            marker: "plain".to_string(),
+            marker: marker_name("plain"),
             text: "visible body".to_string(),
             annotations: vec!["hidden note".to_string(), "another note".to_string()],
         }],

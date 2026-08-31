@@ -12,7 +12,7 @@
 use super::{TIMESTAMP_PREFIX_WIDTH, TagName};
 use core::fmt;
 use derive_more::Display;
-use lyrics_core::line_markers_descriptor::ReservedMarker;
+use lyrics_core::line_markers_descriptor::{MarkerName, ReservedMarker};
 use lyrics_core::timestamp::{TakeTimestampError, Timestamp};
 
 /// Payload for [`ParseLyricsError::InvalidTimestamp`]. Wraps the
@@ -141,10 +141,13 @@ pub struct ControlMarkerInRegion {
 
 /// Payload for [`ParseLyricsError::EmptyCueBody`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("line {line_number}: cue with marker {marker:?} has an empty body")]
+#[display(
+    "line {line_number}: cue with marker {:?} has an empty body",
+    marker.as_str(),
+)]
 pub struct EmptyCueBody {
     pub line_number: usize,
-    pub marker: String,
+    pub marker: MarkerName,
 }
 
 /// Payload for [`ParseLyricsError::MalformedHeader`]. Raised when

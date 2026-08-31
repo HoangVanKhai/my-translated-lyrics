@@ -30,7 +30,7 @@ fn annotation_attaches_to_the_part_above_it() {
     assert_eq!(cues[1].start, Timestamp::new(0, 2, 0).unwrap());
     assert_eq!(cues[1].end, Timestamp::new(0, 6, 0).unwrap());
     assert_eq!(cues[1].parts.len(), 1);
-    assert_eq!(cues[1].parts[0].marker, "LRC");
+    assert_eq!(cues[1].parts[0].marker.as_str(), "LRC");
     assert_eq!(cues[1].parts[0].text, "lyric body");
     assert_eq!(cues[1].parts[0].annotations, ["a note about the lyric"]);
 }
@@ -101,7 +101,7 @@ fn shorthand_marker_after_an_annotation_opens_a_new_part() {
     let cues = parse_lyrics(input).unwrap();
     assert_eq!(cues[0].parts.len(), 2);
     assert_eq!(cues[0].parts[0].annotations, ["a note about the title"]);
-    assert_eq!(cues[0].parts[1].marker, "cre");
+    assert_eq!(cues[0].parts[1].marker.as_str(), "cre");
     assert_eq!(cues[0].parts[1].text, "credit body\ncredit continuation");
     assert_eq!(cues[0].parts[1].annotations, Vec::<String>::new());
 }
@@ -120,7 +120,7 @@ fn annotation_attaches_to_a_shorthand_opened_part() {
     let cues = parse_lyrics(input).unwrap();
     assert_eq!(cues[0].parts.len(), 2);
     assert_eq!(cues[0].parts[0].annotations, Vec::<String>::new());
-    assert_eq!(cues[0].parts[1].marker, "cre");
+    assert_eq!(cues[0].parts[1].marker.as_str(), "cre");
     assert_eq!(cues[0].parts[1].annotations, ["a note about the credit"]);
 }
 

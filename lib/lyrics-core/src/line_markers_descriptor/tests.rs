@@ -8,6 +8,13 @@ use serde::{Deserialize, Serialize};
 use strum::VariantArray;
 use text_block_macros::text_block_fnl;
 
+/// Wraps a marker token that the fixtures know to be declarable.
+fn marker_name(name: &str) -> MarkerName {
+    name.to_string()
+        .pipe(MarkerName::new)
+        .expect("test fixture passes the marker-name validator")
+}
+
 #[test]
 fn accepts_simple_ascii_names() {
     assert_eq!(
@@ -268,11 +275,14 @@ fn line_markers_descriptor_accepts_ordinary_markers() {
     let descriptor: LineMarkersDesc = toml::from_str(source).unwrap();
     let markers: Vec<&str> = descriptor.markers.iter().map(MarkerName::as_str).collect();
     assert_eq!(markers, ["cre", "ttl", "vca"]);
-    assert!(descriptor.is_credit("cre"));
-    assert!(!descriptor.is_credit("ttl"));
-    assert!(descriptor.voices.contains_key("vca"));
+    assert!(descriptor.is_credit(&marker_name("cre")));
+    assert!(!descriptor.is_credit(&marker_name("ttl")));
+    assert!(descriptor.voices.contains_key(&marker_name("vca")));
     assert_eq!(
-        descriptor.classes.get("ttl").map(CssClassName::as_str),
+        descriptor
+            .classes
+            .get(&marker_name("ttl"))
+            .map(CssClassName::as_str),
         Some("title"),
     );
 }

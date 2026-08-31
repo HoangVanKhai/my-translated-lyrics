@@ -30,7 +30,7 @@ use error::{
     RepeatedTimestamp, ReservedControlMarker, TabIndentation, UnclosedCue, UnclosedRegion,
     UnopenedRegion,
 };
-use lyrics_core::line_markers_descriptor::ReservedMarker;
+use lyrics_core::line_markers_descriptor::{MarkerName, ReservedMarker};
 use lyrics_core::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
 use pipe_trait::Pipe;
 use strum::EnumString;
@@ -64,9 +64,10 @@ pub struct SubtitleCue {
 /// One marker-text pair within a [`SubtitleCue`].
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CuePart {
-    /// The leading marker token that the cue-opening line declared, for
-    /// example `ttl` in `ttl: 《Song》`.
-    pub marker: String,
+    /// The marker the cue-opening line declared, for example `ttl` in
+    /// `ttl: 《Song》`. The parser establishes the name once, so a
+    /// renderer looks it up in the descriptor without re-checking it.
+    pub marker: MarkerName,
     /// Cue text, with line breaks preserved between the opening line
     /// and any continuation lines.
     pub text: String,
@@ -492,18 +493,19 @@ fn handle_header_line(
         open.cue_count += 1;
         open.index
     });
+    let prefix_width = marker_prefix_width(marker.as_str());
     events.push(Event::Cue(CueGroup {
         start,
         region,
         parts: vec![CuePart {
-            marker: marker.to_string(),
+            marker,
             text: text.to_string(),
             annotations: Vec::new(),
         }],
     }));
     *last_cue_index = Some(events.len() - 1);
     *open_marker_line = Some(OpenMarkerLine {
-        marker_prefix_width: marker_prefix_width(marker),
+        marker_prefix_width: prefix_width,
         target: ContinuationTarget::PartText,
     });
     Ok(())
@@ -541,13 +543,14 @@ fn handle_shorthand_marker_line(
         ));
     };
     let (marker, text) = parse_marker_part(body, line_number)?;
+    let prefix_width = marker_prefix_width(marker.as_str());
     cue_group_mut(events, cue_index).parts.push(CuePart {
-        marker: marker.to_string(),
+        marker,
         text: text.to_string(),
         annotations: Vec::new(),
     });
     *open_marker_line = Some(OpenMarkerLine {
-        marker_prefix_width: marker_prefix_width(marker),
+        marker_prefix_width: prefix_width,
         target: ContinuationTarget::PartText,
     });
     Ok(())
@@ -623,7 +626,10 @@ fn handle_continuation_line(
     Ok(())
 }
 
-fn parse_marker_part(body: &str, line_number: usize) -> Result<(&str, &str), ParseLyricsError> {
+fn parse_marker_part(
+    body: &str,
+    line_number: usize,
+) -> Result<(MarkerName, &str), ParseLyricsError> {
     reject_reserved_cue_text_characters(body, line_number)?;
     let (marker, text) = split_marker(body).ok_or_else(|| {
         ParseLyricsError::MissingMarker(MissingMarker {
@@ -639,10 +645,17 @@ fn parse_marker_part(body: &str, line_number: usize) -> Result<(&str, &str), Par
             },
         ));
     }
+    // Naming a reserved marker is the only thing `MarkerName` refuses,
+    // and the branch above has already reported that case, so the name
+    // is established here and travels as a `MarkerName` from now on.
+    let marker = marker
+        .to_string()
+        .pipe(MarkerName::new)
+        .expect("the marker names no reserved marker, which is all `MarkerName` rejects");
     if text.is_empty() {
         return Err(ParseLyricsError::EmptyCueBody(EmptyCueBody {
             line_number,
-            marker: marker.to_string(),
+            marker,
         }));
     }
     Ok((marker, text))

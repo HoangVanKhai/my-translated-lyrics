@@ -3,6 +3,7 @@
 //! separator after its timestamp, a body that declares no marker or no
 //! text, and an indent that matches neither of the two recognized widths.
 
+use crate::_test_utils::marker_name;
 use crate::parse::error::{
     EmptyCueBody, MalformedHeader, MalformedIndentation, MissingMarker,
     MissingSeparatorAfterTimestamp, ParseLyricsError, TabIndentation,
@@ -68,7 +69,7 @@ fn rejects_cue_with_empty_body() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError::EmptyCueBody(EmptyCueBody {
             line_number: 1,
-            marker: "ttl".to_string(),
+            marker: marker_name("ttl"),
         }),
     );
 }

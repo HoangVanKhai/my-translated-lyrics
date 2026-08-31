@@ -20,11 +20,11 @@ fn parses_simple_sequence() {
     assert_eq!(cues.len(), 2);
     assert_eq!(cues[0].start, Timestamp::new(0, 0, 0).unwrap());
     assert_eq!(cues[0].end, Timestamp::new(0, 2, 0).unwrap());
-    assert_eq!(cues[0].parts[0].marker, "ttl");
+    assert_eq!(cues[0].parts[0].marker.as_str(), "ttl");
     assert_eq!(cues[0].parts[0].text, "Hello");
     assert_eq!(cues[1].start, Timestamp::new(0, 2, 0).unwrap());
     assert_eq!(cues[1].end, Timestamp::new(0, 4, 0).unwrap());
-    assert_eq!(cues[1].parts[0].marker, "LRC");
+    assert_eq!(cues[1].parts[0].marker.as_str(), "LRC");
     assert_eq!(cues[1].parts[0].text, "world");
 }
 
@@ -94,9 +94,9 @@ fn shorthand_marker_attaches_a_second_part_to_the_same_cue() {
     assert_eq!(cues[0].start, Timestamp::new(0, 10, 80).unwrap());
     assert_eq!(cues[0].end, Timestamp::new(0, 18, 0).unwrap());
     assert_eq!(cues[0].parts.len(), 2);
-    assert_eq!(cues[0].parts[0].marker, "ttl");
+    assert_eq!(cues[0].parts[0].marker.as_str(), "ttl");
     assert_eq!(cues[0].parts[0].text, "title body");
-    assert_eq!(cues[0].parts[1].marker, "cre");
+    assert_eq!(cues[0].parts[1].marker.as_str(), "cre");
     assert_eq!(cues[0].parts[1].text, "credit body");
 }
 
@@ -117,7 +117,7 @@ fn shorthand_marker_part_can_carry_its_own_continuation_lines() {
     };
     let cues = parse_lyrics(input).unwrap();
     assert_eq!(cues[0].parts.len(), 2);
-    assert_eq!(cues[0].parts[1].marker, "chorus");
+    assert_eq!(cues[0].parts[1].marker.as_str(), "chorus");
     assert_eq!(cues[0].parts[1].text, "opener\ncontinuation");
 }
 
