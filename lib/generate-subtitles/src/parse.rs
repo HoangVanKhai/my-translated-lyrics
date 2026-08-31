@@ -746,7 +746,7 @@ fn annotation_body(body: &str) -> Option<&str> {
 
 /// Splits a line body like `marker: text` into its two halves. Returns
 /// `None` when the line has no `:` separator or when the marker half
-/// is empty; the caller reports this as [`ParseLyricsError::MissingMarker`]
+/// is empty; the caller reports this as [`ParseLyricsErrorKind::MissingMarker`]
 /// because every cue-opening line in the source format is expected to
 /// carry a marker.
 fn split_marker(body: &str) -> Option<(&str, &str)> {
