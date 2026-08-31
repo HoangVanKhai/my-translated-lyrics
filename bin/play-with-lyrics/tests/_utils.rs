@@ -9,7 +9,7 @@ use std::fs::{
 use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 use std::process::{Command, Output, Stdio};
-use test_utils::{SEPARATED_COLLECTION, Temp, video_desc};
+use test_utils::{SEPARATED_COLLECTION, Temp, collection_name, video_desc, video_title};
 
 const PLAY_WITH_LYRICS: &str = env!("CARGO_BIN_EXE_play-with-lyrics");
 pub const VIDEO_TITLE: &str = "Example Song [id]";
@@ -42,8 +42,8 @@ impl Env {
         let video_dir = self.source.join("ExampleSong");
         create_dir_all(&video_dir).unwrap();
         let descriptor = video_desc(
-            SEPARATED_COLLECTION.to_owned(),
-            VIDEO_TITLE.to_owned(),
+            collection_name(SEPARATED_COLLECTION),
+            video_title(VIDEO_TITLE),
             Visibility::Visible,
         );
         let contents = toml::to_string(&descriptor).unwrap();
