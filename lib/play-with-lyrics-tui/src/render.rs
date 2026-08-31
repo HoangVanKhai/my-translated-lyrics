@@ -52,7 +52,10 @@ fn char_width(character: char) -> Width {
 }
 
 /// A column count measured by `unicode-width`, narrowed to the integer the
-/// frame buffer addresses its cells with.
+/// frame buffer addresses its cells with. Text wider than a `u16` can measure
+/// reads as exactly that wide, so a cell budget of `u16::MAX` would accept it
+/// whole rather than truncating it. No terminal is that wide, and every cell
+/// budget here is a fraction of one.
 fn saturating_width(columns: usize) -> Width {
     u16::try_from(columns).unwrap_or(u16::MAX).pipe(Width::new)
 }
@@ -111,11 +114,16 @@ pub(crate) fn fit(text: &str, width: Width) -> String {
 /// The separator drawn between the three title cells.
 pub(crate) const COLUMN_SEPARATOR: &str = " │ ";
 
+/// The columns the separator between two title cells occupies.
+fn separator_width() -> Width {
+    text_width(COLUMN_SEPARATOR)
+}
+
 /// The width of each of the three title cells in a line `total` columns wide,
 /// once the two separators have taken their share. A cell always keeps at
 /// least one column, so a very narrow terminal still shows the layout.
 fn cell_width(total: Width) -> Width {
-    let separator = text_width(COLUMN_SEPARATOR);
+    let separator = separator_width();
     let available = total.saturating_sub(separator + separator);
     Width::new((available.get() / 3).max(1))
 }
@@ -193,7 +201,7 @@ impl ColumnSpan {
 /// this so they agree on where each column sits.
 pub(crate) fn column_spans(total: Width) -> [ColumnSpan; 3] {
     let each = cell_width(total);
-    let step = each + text_width(COLUMN_SEPARATOR);
+    let step = each + separator_width();
     [
         ColumnSpan::new(Column::LEFT, each),
         ColumnSpan::new(Column::LEFT + step, each),

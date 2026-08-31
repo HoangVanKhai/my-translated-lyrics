@@ -62,8 +62,9 @@ where
                 KeyCode::Backspace => return Ok(Navigation::Back),
                 KeyCode::Up => cursor = cursor.previous(),
                 KeyCode::Down => {
-                    if cursor.next().get() < labels.len() {
-                        cursor = cursor.next();
+                    let next = cursor.next();
+                    if next.get() < labels.len() {
+                        cursor = next;
                     }
                 }
                 // With no text to type, Space confirms the choice like Enter.
@@ -82,8 +83,9 @@ where
                 match mouse.kind {
                     MouseEventKind::ScrollUp => cursor = cursor.previous(),
                     MouseEventKind::ScrollDown => {
-                        if cursor.next().get() < labels.len() {
-                            cursor = cursor.next();
+                        let next = cursor.next();
+                        if next.get() < labels.len() {
+                            cursor = next;
                         }
                     }
                     // A single click highlights the label on the clicked row; a
