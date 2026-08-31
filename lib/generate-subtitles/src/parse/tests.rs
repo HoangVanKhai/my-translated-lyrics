@@ -9,6 +9,7 @@ use super::error::{
 use super::parse_lyrics;
 use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::{SecondsOutOfRange, TakeTimestampError, Timestamp};
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
 
@@ -1046,10 +1047,12 @@ fn rejects_a_region_opened_inside_another_region() {
     };
     assert_eq!(
         parse_lyrics(doubled_tags).unwrap_err(),
-        ParseLyricsError::AdditiveRegion(AdditiveRegionError::Nested(NestedRegion {
+        NestedRegion {
             line_number: 2,
             opened_at: 1,
-        })),
+        }
+        .pipe(AdditiveRegionError::Nested)
+        .pipe(ParseLyricsError::AdditiveRegion),
     );
 
     let inner_region = text_block_fnl! {
@@ -1064,10 +1067,12 @@ fn rejects_a_region_opened_inside_another_region() {
     };
     assert_eq!(
         parse_lyrics(inner_region).unwrap_err(),
-        ParseLyricsError::AdditiveRegion(AdditiveRegionError::Nested(NestedRegion {
+        NestedRegion {
             line_number: 3,
             opened_at: 1,
-        })),
+        }
+        .pipe(AdditiveRegionError::Nested)
+        .pipe(ParseLyricsError::AdditiveRegion),
     );
 }
 
@@ -1081,13 +1086,13 @@ fn rejects_a_control_marker_inside_a_region() {
     };
     assert_eq!(
         parse_lyrics(clear_input).unwrap_err(),
-        ParseLyricsError::AdditiveRegion(AdditiveRegionError::ControlMarker(
-            ControlMarkerInRegion {
-                line_number: 3,
-                marker: ReservedMarker::Clear,
-                opened_at: 1,
-            }
-        )),
+        ControlMarkerInRegion {
+            line_number: 3,
+            marker: ReservedMarker::Clear,
+            opened_at: 1,
+        }
+        .pipe(AdditiveRegionError::ControlMarker)
+        .pipe(ParseLyricsError::AdditiveRegion),
     );
 
     let end_of_video_input = text_block_fnl! {
@@ -1098,13 +1103,13 @@ fn rejects_a_control_marker_inside_a_region() {
     };
     assert_eq!(
         parse_lyrics(end_of_video_input).unwrap_err(),
-        ParseLyricsError::AdditiveRegion(AdditiveRegionError::ControlMarker(
-            ControlMarkerInRegion {
-                line_number: 3,
-                marker: ReservedMarker::EndOfVideo,
-                opened_at: 1,
-            }
-        )),
+        ControlMarkerInRegion {
+            line_number: 3,
+            marker: ReservedMarker::EndOfVideo,
+            opened_at: 1,
+        }
+        .pipe(AdditiveRegionError::ControlMarker)
+        .pipe(ParseLyricsError::AdditiveRegion),
     );
 }
 
@@ -1121,9 +1126,9 @@ fn rejects_a_region_that_is_never_closed() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::AdditiveRegion(AdditiveRegionError::Unclosed(UnclosedRegion {
-            line_number: 2
-        })),
+        UnclosedRegion { line_number: 2 }
+            .pipe(AdditiveRegionError::Unclosed)
+            .pipe(ParseLyricsError::AdditiveRegion),
     );
 }
 
@@ -1136,9 +1141,9 @@ fn rejects_a_closing_tag_without_an_opening_one() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::AdditiveRegion(AdditiveRegionError::Unopened(UnopenedRegion {
-            line_number: 2
-        })),
+        UnopenedRegion { line_number: 2 }
+            .pipe(AdditiveRegionError::Unopened)
+            .pipe(ParseLyricsError::AdditiveRegion),
     );
 }
 
@@ -1157,10 +1162,12 @@ fn rejects_a_region_that_encloses_no_cue() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::AdditiveRegion(AdditiveRegionError::Empty(EmptyRegion {
+        EmptyRegion {
             line_number: 4,
             opened_at: 1,
-        })),
+        }
+        .pipe(AdditiveRegionError::Empty)
+        .pipe(ParseLyricsError::AdditiveRegion),
     );
 }
 
