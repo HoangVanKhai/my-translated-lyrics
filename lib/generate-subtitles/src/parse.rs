@@ -111,6 +111,19 @@ enum TagKind {
     Closing,
 }
 
+impl TagKind {
+    /// The tag a column-zero line names, or `None` when it names
+    /// none. A tag carries no attributes, so the whole line is
+    /// matched against the two spellings rather than parsed.
+    fn of_line(body: &str) -> Option<Self> {
+        match body {
+            ADDITIVE_OPENING_TAG => Some(TagKind::Opening),
+            ADDITIVE_CLOSING_TAG => Some(TagKind::Closing),
+            _ => None,
+        }
+    }
+}
+
 /// Identifies one `<additive>` region within a source file.
 ///
 /// Cue groups carrying the same index accumulate: each renders the
@@ -142,6 +155,48 @@ struct RegionState {
     open: Option<OpenRegion>,
     /// How many regions have opened so far, which names the next one.
     opened: usize,
+}
+
+impl RegionState {
+    /// Opens a region at `line_number`.
+    fn open_region(&mut self, line_number: usize) -> Result<(), AdditiveRegionError> {
+        if let Some(open) = self.open {
+            return NestedRegion {
+                line_number,
+                opened_at: open.line_number,
+            }
+            .pipe(AdditiveRegionError::Nested)
+            .pipe(Err);
+        }
+        self.open = Some(OpenRegion {
+            index: AdditiveRegion(self.opened),
+            line_number,
+            cue_count: 0,
+        });
+        self.opened += 1;
+        Ok(())
+    }
+
+    /// Closes the region open at `line_number`. Both rules are
+    /// checked before the region is released, so a rejected tag
+    /// leaves the state as it was rather than half closed.
+    fn close_region(&mut self, line_number: usize) -> Result<(), AdditiveRegionError> {
+        let Some(open) = self.open else {
+            return UnopenedRegion { line_number }
+                .pipe(AdditiveRegionError::Unopened)
+                .pipe(Err);
+        };
+        if open.cue_count == 0 {
+            return EmptyRegion {
+                line_number,
+                opened_at: open.line_number,
+            }
+            .pipe(AdditiveRegionError::Empty)
+            .pipe(Err);
+        }
+        self.open = None;
+        Ok(())
+    }
 }
 
 /// Payload of an [`Event::Cue`]. The start time is the one declared
@@ -212,35 +267,26 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
             // header parser sees the line. Nothing else in the format
             // opens with `<`, so any other line that does is a
             // misspelled tag rather than a header.
-            match body {
-                ADDITIVE_OPENING_TAG => handle_tag_line(
-                    TagKind::Opening,
+            // Nothing but a tag line opens with `<`, so that one
+            // character routes the line; which tag it is, and whether
+            // it is one at all, is the tag handler's own business.
+            if body.starts_with('<') {
+                handle_tag_line(
+                    body,
                     line_number,
                     &mut regions,
                     &mut last_cue_index,
                     &mut open_marker_line,
-                )?,
-                ADDITIVE_CLOSING_TAG => handle_tag_line(
-                    TagKind::Closing,
-                    line_number,
-                    &mut regions,
-                    &mut last_cue_index,
-                    &mut open_marker_line,
-                )?,
-                _ if body.starts_with('<') => {
-                    return Err(ParseLyricsError::MalformedTagLine(MalformedTagLine {
-                        line_number,
-                        content: body.to_string(),
-                    }));
-                }
-                _ => handle_header_line(
+                )?;
+            } else {
+                handle_header_line(
                     body,
                     line_number,
                     &mut events,
                     &mut last_cue_index,
                     &mut open_marker_line,
                     &mut regions,
-                )?,
+                )?;
             }
         } else if indent == TIMESTAMP_PREFIX_WIDTH {
             handle_shorthand_marker_line(
@@ -277,58 +323,36 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
     Ok(events)
 }
 
-/// Moves the region state across the boundary a tag line draws.
+/// Applies a column-zero tag line, which the caller has identified
+/// only by its leading `<`.
 ///
-/// The caller matched the line against one of the two tag spellings,
-/// so the shape is settled by the time this runs and only the region
-/// bookkeeping is left. The boundary ends the scope of the cue above
-/// it, exactly as [`ReservedMarker::Clear`] does, so that no
-/// continuation or shorthand marker line reaches across the tag.
+/// The line is recognized once, into a [`TagKind`] that selects the
+/// region transition; [`RegionState`] enforces the rules of that
+/// transition and reports them. The boundary then ends the scope of
+/// the cue above it, exactly as [`ReservedMarker::Clear`] does, so
+/// that no continuation or shorthand marker line reaches across the
+/// tag.
 fn handle_tag_line(
-    kind: TagKind,
+    body: &str,
     line_number: usize,
     regions: &mut RegionState,
     last_cue_index: &mut Option<usize>,
     open_marker_line: &mut Option<OpenMarkerLine>,
 ) -> Result<(), ParseLyricsError> {
+    let Some(kind) = TagKind::of_line(body) else {
+        return MalformedTagLine {
+            line_number,
+            content: body.to_string(),
+        }
+        .pipe(ParseLyricsError::MalformedTagLine)
+        .pipe(Err);
+    };
+
     match kind {
-        TagKind::Opening => {
-            if let Some(open) = &regions.open {
-                let payload = NestedRegion {
-                    line_number,
-                    opened_at: open.line_number,
-                };
-                return payload
-                    .pipe(AdditiveRegionError::Nested)
-                    .pipe(ParseLyricsError::AdditiveRegion)
-                    .pipe(Err);
-            }
-            regions.open = Some(OpenRegion {
-                index: AdditiveRegion(regions.opened),
-                line_number,
-                cue_count: 0,
-            });
-            regions.opened += 1;
-        }
-        TagKind::Closing => {
-            let Some(open) = regions.open.take() else {
-                return UnopenedRegion { line_number }
-                    .pipe(AdditiveRegionError::Unopened)
-                    .pipe(ParseLyricsError::AdditiveRegion)
-                    .pipe(Err);
-            };
-            if open.cue_count == 0 {
-                let payload = EmptyRegion {
-                    line_number,
-                    opened_at: open.line_number,
-                };
-                return payload
-                    .pipe(AdditiveRegionError::Empty)
-                    .pipe(ParseLyricsError::AdditiveRegion)
-                    .pipe(Err);
-            }
-        }
+        TagKind::Opening => regions.open_region(line_number),
+        TagKind::Closing => regions.close_region(line_number),
     }
+    .map_err(ParseLyricsError::AdditiveRegion)?;
 
     *last_cue_index = None;
     *open_marker_line = None;
