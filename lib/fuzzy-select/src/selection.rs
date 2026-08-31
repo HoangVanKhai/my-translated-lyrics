@@ -64,6 +64,18 @@ impl ItemIndex {
     pub const fn get(self) -> usize {
         self.0
     }
+
+    /// The item before this one, or the first item when this is already the
+    /// first, so a cursor moving upwards stops at the top.
+    pub const fn previous(self) -> ItemIndex {
+        ItemIndex(self.0.saturating_sub(1))
+    }
+
+    /// The item after this one. A caller moving a cursor downwards has to
+    /// check the result against the length of the slice.
+    pub const fn next(self) -> ItemIndex {
+        ItemIndex(self.0.saturating_add(1))
+    }
 }
 
 /// An item that an interactive selector can filter by a typed query.

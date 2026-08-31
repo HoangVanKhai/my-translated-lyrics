@@ -25,6 +25,14 @@ impl Column {
     pub const fn get(self) -> u16 {
         self.0
     }
+
+    /// How many columns to the right of `origin` this column sits, or `None`
+    /// when it sits to the left of `origin`. This is the inverse of advancing
+    /// a column past a run, and the only way to recover a width from two
+    /// positions.
+    pub fn columns_after(self, origin: Column) -> Option<Width> {
+        self.0.checked_sub(origin.0).map(Width)
+    }
 }
 
 /// Advances past a glyph or a run of text that spans `width` columns, which is
@@ -67,6 +75,30 @@ impl Row {
     /// The row's distance from the top edge.
     pub const fn get(self) -> u16 {
         self.0
+    }
+
+    /// How many rows below `origin` this row sits, or `None` when it sits
+    /// above `origin`. This is the inverse of advancing a row past a block,
+    /// and the only way to recover a height from two positions.
+    pub fn rows_below(self, origin: Row) -> Option<Height> {
+        self.0.checked_sub(origin.0).map(Height)
+    }
+}
+
+/// Advances past a block of `height` rows, which is the only arithmetic a row
+/// takes part in. The sum saturates at the last row a `u16` can name, matching
+/// how a column advances past a run.
+impl Add<Height> for Row {
+    type Output = Row;
+
+    fn add(self, height: Height) -> Row {
+        Row(self.0.saturating_add(height.0))
+    }
+}
+
+impl AddAssign<Height> for Row {
+    fn add_assign(&mut self, height: Height) {
+        *self = *self + height;
     }
 }
 
@@ -115,6 +147,36 @@ impl Width {
     pub fn fits(self, column: Column, span: Width) -> bool {
         usize::from(column) + usize::from(span) <= usize::from(self)
     }
+
+    /// How much of a grid this wide is left from `column` rightwards, which is
+    /// the room a caller has for more text after drawing a prefix. A column at
+    /// or past the right edge leaves no room.
+    pub fn remaining_from(self, column: Column) -> Width {
+        Width(self.0.saturating_sub(column.0))
+    }
+
+    /// This width less `other`, or no columns at all when `other` is the
+    /// wider of the two.
+    pub fn saturating_sub(self, other: Width) -> Width {
+        Width(self.0.saturating_sub(other.0))
+    }
+}
+
+/// Lays two runs side by side. The sum saturates at the widest a `u16` can
+/// measure, so an absurdly long run reads as reaching the far edge rather than
+/// wrapping around to a narrow one.
+impl Add for Width {
+    type Output = Width;
+
+    fn add(self, other: Width) -> Width {
+        Width(self.0.saturating_add(other.0))
+    }
+}
+
+impl AddAssign for Width {
+    fn add_assign(&mut self, other: Width) {
+        *self = *self + other;
+    }
 }
 
 impl From<Width> for usize {
@@ -130,6 +192,9 @@ pub struct Height(u16);
 impl Height {
     /// No rows at all, which is what an unsized grid starts out as.
     pub const ZERO: Height = Height(0);
+
+    /// A single row.
+    pub const ONE: Height = Height(1);
 
     /// A span of `rows` rows.
     pub const fn new(rows: u16) -> Height {
@@ -149,6 +214,12 @@ impl Height {
     /// Whether `row` lies inside a grid this tall.
     pub fn contains(self, row: Row) -> bool {
         row.0 < self.0
+    }
+
+    /// This height less `other`, or no rows at all when `other` is the taller
+    /// of the two.
+    pub fn saturating_sub(self, other: Height) -> Height {
+        Height(self.0.saturating_sub(other.0))
     }
 }
 

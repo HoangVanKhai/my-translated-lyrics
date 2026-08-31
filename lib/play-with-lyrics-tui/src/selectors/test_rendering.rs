@@ -346,20 +346,25 @@ fn render_header_marks_the_sorted_and_hovered_columns() {
     let sort = ColumnSort::new([Language::English, Language::Vietnamese, Language::Chinese]);
     let mut buffer = Buffer::new(Width::new(80), Height::new(3));
     // Hover the English header, at column 5 on the header row.
-    render_header(&mut buffer, 80, &sort, Some((Column::new(5), HEADER_ROW)));
+    render_header(
+        &mut buffer,
+        Width::new(80),
+        &sort,
+        Some((Column::new(5), HEADER_ROW)),
+    );
     let header = buffer.row_text(HEADER_ROW);
     // English is the default sort column, ascending, so it carries the ▲ arrow.
     assert!(header.contains("English ▲"), "{header}");
     // The hovered English header is bold without the dim.
     assert_eq!(buffer.style_at(Column::LEFT, HEADER_ROW), Style::BOLD);
     // A column the pointer is not over is bold and dimmed.
-    let vietnamese_start = Column::new(column_spans(80)[1].start as u16);
+    let vietnamese_start = column_spans(Width::new(80))[1].start();
     assert_eq!(
         buffer.style_at(vietnamese_start, HEADER_ROW),
         Style::BOLD.with(Style::DIM),
     );
     // The separator bar between the headers is bold but not dimmed.
-    let separator_bar = Column::new(column_spans(80)[0].end as u16 + 1);
+    let separator_bar = column_spans(Width::new(80))[0].end() + Width::ONE;
     assert_eq!(buffer.style_at(separator_bar, HEADER_ROW), Style::BOLD);
 }
 
@@ -368,7 +373,7 @@ fn render_header_marks_the_sorted_and_hovered_columns() {
 #[test]
 fn render_search_bar_styles_the_magnifier_label_and_query() {
     let mut buffer = Buffer::new(Width::new(40), Height::new(2));
-    render_search_bar(&mut buffer, 40, "abc");
+    render_search_bar(&mut buffer, Width::new(40), "abc");
     let row = buffer.row_text(SEARCH_ROW);
     assert!(row.contains("Search:"), "{row}");
     assert!(row.contains("abc"), "{row}");
