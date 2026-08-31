@@ -480,22 +480,10 @@ fn split_marker(body: &str) -> Option<(&str, &str)> {
     Some((marker, tail.trim()))
 }
 
-/// Rejects any cue text (an opening line's body after the marker,
-/// or a continuation line's contents) that contains a character
-/// the WebVTT cue-tag grammar treats as a tag delimiter. The
-/// renderer later HTML-entity-escapes the cue body, so literal
-/// `<` and `>` in the source would not survive to the output as
-/// themselves; they are rejected here to surface the author's
-/// intent early rather than silently dropping it.
-///
-/// Reports the first offending character only. A line that
-/// carries both `<` and `>` (the common `<tag>` shape) would in
-/// principle benefit from a combined diagnostic, but a single
-/// report per line is the convention every other [`ParseLyricsError`]
-/// variant follows, and the author almost always types the two
-/// angle brackets together; seeing the `<` once, fixing the whole
-/// tag, and rerunning is the same workflow as for [`MissingMarker`]
-/// or [`ReservedControlMarker`].
+/// Rejects cue text containing `<` or `>`, which the WebVTT cue-tag
+/// grammar reserves as tag delimiters. The renderer escapes the cue
+/// body, so neither could reach the output as itself. Reports the
+/// first offender only.
 fn reject_reserved_cue_text_characters(
     text: &str,
     line_number: usize,
