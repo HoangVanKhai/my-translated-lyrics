@@ -101,11 +101,7 @@ struct OpenMarkerLine {
     target: ContinuationTarget,
 }
 
-/// The name inside a tag, `additive` in `<additive>`.
-///
-/// The permitted shape is `[a-z][a-z0-9-]*`. The set excludes the `<`,
-/// `/` and `>` delimiters and every whitespace character, so a name
-/// cannot run past its tag and a tag cannot pad its name.
+/// The name inside a tag.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct TagName<'a>(&'a str);
 
@@ -135,8 +131,7 @@ fn is_tag_name_char(char: char) -> bool {
     char.is_ascii_lowercase() || char.is_ascii_digit() || char == '-'
 }
 
-/// An opening tag: `<`, a [`TagName`], and `>`, with nothing between
-/// the three.
+/// An opening tag. Takes the form of `<tag>`.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct OpeningTag<'a>(TagName<'a>);
 
@@ -156,8 +151,7 @@ impl<'a> OpeningTag<'a> {
     }
 }
 
-/// A closing tag: `</`, a [`TagName`], and `>`, with nothing between
-/// the three.
+/// A closing tag. Takes the form of `</tag>`.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct ClosingTag<'a>(TagName<'a>);
 
