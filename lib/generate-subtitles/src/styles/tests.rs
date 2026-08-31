@@ -1,9 +1,9 @@
 use super::{Color, InvalidColor, StylePalette};
 use crate::_test_utils::{marker_name, style_palette};
 use lyrics_core::line_markers_descriptor::CssClassName;
-use maplit::btreemap;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
+use std::collections::BTreeMap;
 use text_block_macros::text_block_fnl;
 
 #[test]
@@ -49,7 +49,8 @@ fn rejects_css_or_html_terminators() {
 /// `Debug` form of the type that carries it.
 #[test]
 fn a_missing_voice_style_names_the_marker() {
-    let error = style_palette(btreemap! {})
+    let error = BTreeMap::new()
+        .pipe(style_palette)
         .voice_style(&marker_name("vca"))
         .expect_err("the fixture palette styles no voice");
     assert_eq!(
@@ -65,7 +66,8 @@ fn a_missing_class_style_names_the_class() {
         .to_owned()
         .pipe(CssClassName::new)
         .expect("test fixture passes the class-name validator");
-    let error = style_palette(btreemap! {})
+    let error = BTreeMap::new()
+        .pipe(style_palette)
         .class_style(&class_name)
         .expect_err("the fixture palette styles no class");
     assert_eq!(

@@ -11,9 +11,10 @@ use lyrics_core::video_descriptor::Language;
 use maplit::btreemap;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
+use std::collections::BTreeMap;
 
 fn test_palette() -> StylePalette {
-    style_palette(btreemap! {})
+    BTreeMap::new().pipe(style_palette)
 }
 
 #[test]
