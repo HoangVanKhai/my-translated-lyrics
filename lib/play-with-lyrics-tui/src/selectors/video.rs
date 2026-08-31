@@ -277,8 +277,7 @@ where
         .iter()
         .skip(offset.get())
         .take(usize::from(visible));
-    let screen_rows = (0u16..).map(|offset| FIRST_DATA_ROW + Height::new(offset));
-    for (screen_y, &item) in screen_rows.zip(window) {
+    for (screen_y, &item) in FIRST_DATA_ROW.downwards().zip(window) {
         let video = &videos[item.get()];
         let english = video.title(Language::English).unwrap_or("");
         let vietnamese = video.title(Language::Vietnamese).unwrap_or("");

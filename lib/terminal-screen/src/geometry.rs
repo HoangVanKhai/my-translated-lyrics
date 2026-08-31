@@ -78,27 +78,19 @@ impl Row {
     }
 
     /// How many rows below `origin` this row sits, or `None` when it sits
-    /// above `origin`. This is the inverse of advancing a row past a block,
-    /// and the only way to recover a height from two positions.
+    /// above `origin`. This is the only way to recover a height from two
+    /// positions, and it is what turns the row a click landed on into an
+    /// offset from the first row of a block.
     pub fn rows_below(self, origin: Row) -> Option<Height> {
         self.0.checked_sub(origin.0).map(Height)
     }
-}
 
-/// Advances past a block of `height` rows, which is the only arithmetic a row
-/// takes part in. The sum saturates at the last row a `u16` can name, matching
-/// how a column advances past a run.
-impl Add<Height> for Row {
-    type Output = Row;
-
-    fn add(self, height: Height) -> Row {
-        Row(self.0.saturating_add(height.0))
-    }
-}
-
-impl AddAssign<Height> for Row {
-    fn add_assign(&mut self, height: Height) {
-        *self = *self + height;
+    /// This row and every row below it, ending at the last row a `u16` can
+    /// name. A caller laying out one screen row per item zips against this,
+    /// so a list longer than the grid runs out of rows rather than wrapping
+    /// back to the top.
+    pub fn downwards(self) -> impl Iterator<Item = Row> {
+        (self.0..=u16::MAX).map(Row)
     }
 }
 
@@ -199,11 +191,6 @@ impl Height {
     /// A span of `rows` rows.
     pub const fn new(rows: u16) -> Height {
         Height(rows)
-    }
-
-    /// The number of rows spanned.
-    pub const fn get(self) -> u16 {
-        self.0
     }
 
     /// Every row of a grid this tall, from top to bottom.

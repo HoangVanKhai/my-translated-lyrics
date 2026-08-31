@@ -59,3 +59,17 @@ fn a_grid_enumerates_its_columns_and_rows_in_order() {
     assert_eq!(Width::ZERO.columns().count(), 0);
     assert_eq!(Height::ZERO.rows().count(), 0);
 }
+
+/// The rows from one downwards end at the last row a `u16` can name rather
+/// than wrapping back to the top, so a caller laying out one row per item
+/// runs out of rows instead of drawing over the rows it already filled.
+#[test]
+fn the_rows_downwards_from_one_end_at_the_last() {
+    let first_three: Vec<Row> = Row::new(2).downwards().take(3).collect();
+    assert_eq!(first_three, [Row::new(2), Row::new(3), Row::new(4)]);
+    assert_eq!(
+        Row::new(u16::MAX - 1).downwards().collect::<Vec<Row>>(),
+        [Row::new(u16::MAX - 1), Row::new(u16::MAX)],
+    );
+    assert_eq!(Row::new(u16::MAX).downwards().count(), 1);
+}

@@ -151,8 +151,7 @@ where
     // so going back is available.
     render_top_bar(buffer, columns, title, true, hover);
 
-    let screen_rows = (0u16..).map(|offset| FIRST_LIST_ROW + Height::new(offset));
-    for ((index, label), screen_y) in labels.iter().enumerate().zip(screen_rows) {
+    for ((index, label), screen_y) in labels.iter().enumerate().zip(FIRST_LIST_ROW.downwards()) {
         let line = fit(label, columns);
         let style = row_style(ItemIndex::new(index) == cursor, hover, screen_y);
         buffer.set_string(Column::LEFT, screen_y, &line, style);
