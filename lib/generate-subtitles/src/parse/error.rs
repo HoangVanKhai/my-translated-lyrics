@@ -279,11 +279,7 @@ pub enum ParseLyricsErrorKind {
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("line {line_number}: {kind}")]
 pub struct ParseLyricsError {
-    /// The line the author has to revisit, counting from 1. For most
-    /// failures this is the line the parser was reading when it gave
-    /// up. For the two that are detected after the input has run out,
-    /// [`UnclosedRegion`] and [`UnclosedCue`], it is the line that
-    /// opened the region or the cue.
+    /// The line the author has to revisit, counting from 1.
     pub line_number: usize,
     /// What the parser rejected.
     pub kind: ParseLyricsErrorKind,

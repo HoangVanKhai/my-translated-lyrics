@@ -239,10 +239,7 @@ impl RegionState {
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct CueGroup {
     start: Timestamp,
-    /// Line of the header that opened the group. A cue whose end time
-    /// no later event supplies is only detected once the line loop is
-    /// over, and the author still has to be pointed at the line that
-    /// opened it.
+    /// Line of the header that opened the group.
     opened_at: usize,
     region: Option<AdditiveRegionIndex>,
     parts: Vec<CuePart>,
