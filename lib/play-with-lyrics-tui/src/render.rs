@@ -57,7 +57,7 @@ fn saturating_width(columns: usize) -> Width {
     u16::try_from(columns).unwrap_or(u16::MAX).pipe(Width::new)
 }
 
-/// Unhighlighted blanks filling `width` columns.
+/// Blanks filling `width` columns, none of them highlighted.
 fn blanks(width: Width) -> impl Iterator<Item = (char, bool)> {
     std::iter::repeat_n((' ', false), usize::from(width))
 }
