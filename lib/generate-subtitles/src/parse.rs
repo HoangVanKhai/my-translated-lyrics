@@ -371,7 +371,7 @@ fn handle_header_line(
 
     let first_token = cue_body.split_whitespace().next().unwrap_or("");
     if let Ok(marker) = first_token.parse::<ReservedMarker>()
-        && marker != ReservedMarker::Annotation
+        && marker.is_control()
     {
         let trailing = cue_body[first_token.len()..].trim();
         if !trailing.is_empty() {
