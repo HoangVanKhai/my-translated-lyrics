@@ -32,7 +32,7 @@ fn a_field_less_kind_renders_with_the_location_prefix() {
 fn a_kind_naming_another_line_keeps_both_numbers() {
     let error = ParseLyricsError {
         line_number: 9,
-        kind: EmptyRegion { opened_at: 4 }
+        kind: EmptyRegion(4)
             .pipe(AdditiveRegionError::Empty)
             .pipe(ParseLyricsErrorKind::AdditiveRegion),
     };

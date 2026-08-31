@@ -42,9 +42,9 @@ fn rejects_repeated_timestamp_for_consecutive_cue_lines() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 2,
-            kind: ParseLyricsErrorKind::RepeatedTimestamp(RepeatedTimestamp {
-                start: Timestamp::new(0, 10, 80).unwrap(),
-            }),
+            kind: ParseLyricsErrorKind::RepeatedTimestamp(RepeatedTimestamp(
+                Timestamp::new(0, 10, 80).unwrap()
+            )),
         },
     );
 }
@@ -58,12 +58,12 @@ fn invalid_timestamp_preserves_line_and_cause() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::InvalidTimestamp(InvalidTimestamp {
-                cause: TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
+            kind: ParseLyricsErrorKind::InvalidTimestamp(InvalidTimestamp(
+                TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
                     raw: "00:60.000".to_string(),
                     value: 60,
-                }),
-            }),
+                })
+            )),
         },
     );
 }
@@ -101,9 +101,9 @@ fn ordering_rules_still_apply_inside_a_region() {
         parse_lyrics(repeated).unwrap_err(),
         ParseLyricsError {
             line_number: 3,
-            kind: ParseLyricsErrorKind::RepeatedTimestamp(RepeatedTimestamp {
-                start: Timestamp::new(7, 11, 111).unwrap(),
-            }),
+            kind: ParseLyricsErrorKind::RepeatedTimestamp(RepeatedTimestamp(
+                Timestamp::new(7, 11, 111).unwrap()
+            )),
         },
     );
 }

@@ -18,26 +18,20 @@ use lyrics_core::timestamp::{TakeTimestampError, Timestamp};
 /// Payload for [`ParseLyricsErrorKind::InvalidTimestamp`]. Wraps the
 /// underlying [`TakeTimestampError`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("{cause}")]
-pub struct InvalidTimestamp {
-    pub cause: TakeTimestampError,
-}
+#[display("{_0}")]
+pub struct InvalidTimestamp(pub TakeTimestampError);
 
 /// Payload for [`ParseLyricsErrorKind::MissingMarker`]. Raised when a
 /// cue body has no `:` separator at all, and also when it has a `:`
 /// but the marker half before it is empty.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("cue body {content:?} carries no marker before the `:` separator")]
-pub struct MissingMarker {
-    pub content: String,
-}
+#[display("cue body {_0:?} carries no marker before the `:` separator")]
+pub struct MissingMarker(pub String);
 
 /// Payload for [`ParseLyricsErrorKind::MissingSeparatorAfterTimestamp`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("timestamp in {content:?} is not followed by whitespace")]
-pub struct MissingSeparatorAfterTimestamp {
-    pub content: String,
-}
+#[display("timestamp in {_0:?} is not followed by whitespace")]
+pub struct MissingSeparatorAfterTimestamp(pub String);
 
 /// Payload for [`ParseLyricsErrorKind::ExtraTextAfterControlMarker`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
@@ -57,10 +51,8 @@ pub struct OutOfOrder {
 
 /// Payload for [`ParseLyricsErrorKind::ReservedControlMarker`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("marker `{marker}` is reserved by the parser and cannot name a cue")]
-pub struct ReservedControlMarker {
-    pub marker: ReservedMarker,
-}
+#[display("marker `{_0}` is reserved by the parser and cannot name a cue")]
+pub struct ReservedControlMarker(pub ReservedMarker);
 
 /// Payload for [`ParseLyricsErrorKind::EmptyAnnotation`]. Raised when
 /// an annotation line carries no text after its `:` separator.
@@ -71,22 +63,18 @@ pub struct EmptyAnnotation;
 /// Payload for [`ParseLyricsErrorKind::MalformedTagLine`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "{content:?} is not a tag line; a tag line reads exactly `<{tag}>` or `</{tag}>`",
+    "{_0:?} is not a tag line; a tag line reads exactly `<{tag}>` or `</{tag}>`",
     tag = TagName::Additive
 )]
-pub struct MalformedTagLine {
-    pub content: String,
-}
+pub struct MalformedTagLine(pub String);
 
 /// Payload for [`AdditiveRegionError::Nested`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "`<{tag}>` opens an additive region inside the one opened on line {opened_at}",
+    "`<{tag}>` opens an additive region inside the one opened on line {_0}",
     tag = TagName::Additive
 )]
-pub struct NestedRegion {
-    pub opened_at: usize,
-}
+pub struct NestedRegion(pub usize);
 
 /// Payload for [`AdditiveRegionError::Unopened`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
@@ -103,10 +91,8 @@ pub struct UnclosedRegion;
 
 /// Payload for [`AdditiveRegionError::Empty`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("the additive region opened on line {opened_at} encloses no cue")]
-pub struct EmptyRegion {
-    pub opened_at: usize,
-}
+#[display("the additive region opened on line {_0} encloses no cue")]
+pub struct EmptyRegion(pub usize);
 
 /// Payload for [`AdditiveRegionError::ControlMarker`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
@@ -121,39 +107,31 @@ pub struct ControlMarkerInRegion {
 
 /// Payload for [`ParseLyricsErrorKind::EmptyCueBody`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("cue with marker {marker:?} has an empty body")]
-pub struct EmptyCueBody {
-    pub marker: String,
-}
+#[display("cue with marker {_0:?} has an empty body")]
+pub struct EmptyCueBody(pub String);
 
 /// Payload for [`ParseLyricsErrorKind::MalformedHeader`]. Raised when
 /// a column-zero line does not begin with an `MM:SS.mmm` timestamp;
 /// every column-zero line in the source format is expected to open
 /// either a fresh cue or a `clr` / `eov` control event.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("header line {content:?} does not begin with an `MM:SS.mmm` timestamp")]
-pub struct MalformedHeader {
-    pub content: String,
-}
+#[display("header line {_0:?} does not begin with an `MM:SS.mmm` timestamp")]
+pub struct MalformedHeader(pub String);
 
 /// Payload for [`ParseLyricsErrorKind::OrphanedShorthandMarker`].
 /// Raised when a column-`TIMESTAMP_PREFIX_WIDTH` line carries a marker
 /// but no cue is open above it for the new marker to share a start
 /// time with.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("shorthand marker line {content:?} appears before any timestamp opens a cue")]
-pub struct OrphanedShorthandMarker {
-    pub content: String,
-}
+#[display("shorthand marker line {_0:?} appears before any timestamp opens a cue")]
+pub struct OrphanedShorthandMarker(pub String);
 
 /// Payload for [`ParseLyricsErrorKind::OrphanedAnnotation`]. Raised
 /// when an annotation line appears where no cue is open, whether
 /// before the first cue or after a `clr` has closed one.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("annotation line {content:?} appears where no cue is open")]
-pub struct OrphanedAnnotation {
-    pub content: String,
-}
+#[display("annotation line {_0:?} appears where no cue is open")]
+pub struct OrphanedAnnotation(pub String);
 
 /// Payload for [`ParseLyricsErrorKind::MalformedIndentation`]. Lists
 /// the observed indent and the two values the parser would have
@@ -190,12 +168,10 @@ impl fmt::Display for MalformedIndentation {
 /// the renderer would emit as overlapping subtitle blocks.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "timestamp {start} repeats the start time of the immediately previous event; \
+    "timestamp {_0} repeats the start time of the immediately previous event; \
     use the column-{TIMESTAMP_PREFIX_WIDTH} shorthand to attach a second marker to the same timestamp"
 )]
-pub struct RepeatedTimestamp {
-    pub start: Timestamp,
-}
+pub struct RepeatedTimestamp(pub Timestamp);
 
 /// Payload for [`ParseLyricsErrorKind::TabIndentation`].
 ///
@@ -219,12 +195,8 @@ pub struct TabIndentation;
 /// markup, which belongs in the renderer's vocabulary (class and
 /// voice markers in `line-markers.toml`), not in the prose.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display(
-    "cue text contains {character:?}, which the WebVTT cue-tag grammar reserves for tag delimiters"
-)]
-pub struct CueTextReservedCharacter {
-    pub character: char,
-}
+#[display("cue text contains {_0:?}, which the WebVTT cue-tag grammar reserves for tag delimiters")]
+pub struct CueTextReservedCharacter(pub char);
 
 /// Payload for [`ParseLyricsErrorKind::UnclosedCue`]. Carries the
 /// start timestamp of the cue that has no following event to
@@ -232,10 +204,8 @@ pub struct CueTextReservedCharacter {
 /// the header line that opened the cue, since the file has already
 /// ended by the time the failure is detected.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("cue at {start} has no following cue or `clr`")]
-pub struct UnclosedCue {
-    pub start: Timestamp,
-}
+#[display("cue at {_0} has no following cue or `clr`")]
+pub struct UnclosedCue(pub Timestamp);
 
 /// The ways an `<additive>` region can be malformed.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]

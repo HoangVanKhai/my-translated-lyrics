@@ -22,9 +22,9 @@ fn rejects_malformed_header_when_column_zero_line_has_no_timestamp() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::MalformedHeader(MalformedHeader {
-                content: "no timestamp here".to_string(),
-            }),
+            kind: ParseLyricsErrorKind::MalformedHeader(MalformedHeader(
+                "no timestamp here".to_string()
+            )),
         },
     );
 }
@@ -41,9 +41,9 @@ fn rejects_timestamp_without_separator_after_prefix() {
         ParseLyricsError {
             line_number: 2,
             kind: ParseLyricsErrorKind::MissingSeparatorAfterTimestamp(
-                MissingSeparatorAfterTimestamp {
-                    content: "00:02.000ttl: no space after timestamp".to_string(),
-                },
+                MissingSeparatorAfterTimestamp(
+                    "00:02.000ttl: no space after timestamp".to_string()
+                ),
             ),
         },
     );
@@ -59,9 +59,9 @@ fn rejects_cue_line_without_marker() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::MissingMarker(MissingMarker {
-                content: "Plain text without marker".to_string(),
-            }),
+            kind: ParseLyricsErrorKind::MissingMarker(MissingMarker(
+                "Plain text without marker".to_string()
+            )),
         },
     );
 }
@@ -76,9 +76,7 @@ fn rejects_cue_with_empty_body() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::EmptyCueBody(EmptyCueBody {
-                marker: "ttl".to_string(),
-            }),
+            kind: ParseLyricsErrorKind::EmptyCueBody(EmptyCueBody("ttl".to_string())),
         },
     );
 }
@@ -89,7 +87,7 @@ fn rejects_cue_with_empty_body() {
 /// yields the empty string. The empty body has no `:` and no
 /// marker, so `parse_marker_part` falls into the
 /// `split_marker(body) -> None` branch and raises
-/// `MissingMarker { content: "" }`. The dedicated [`EmptyCueBody`]
+/// `MissingMarker("")`. The dedicated [`EmptyCueBody`]
 /// variant cannot apply here because it carries the marker
 /// name, and a whitespace-only body has none. Lock the current
 /// outcome so a future reader does not assume the diagnostic
@@ -104,9 +102,7 @@ fn whitespace_only_cue_body_falls_through_to_missing_marker() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::MissingMarker(MissingMarker {
-                content: String::new(),
-            }),
+            kind: ParseLyricsErrorKind::MissingMarker(MissingMarker(String::new())),
         },
     );
 }

@@ -195,11 +195,9 @@ impl RegionState {
     /// Opens a region whose `<additive>` sits on line `opened_at`.
     fn open_region(&mut self, opened_at: usize) -> Result<(), AdditiveRegionError> {
         if let Some(open) = self.open {
-            return NestedRegion {
-                opened_at: open.opened_at,
-            }
-            .pipe(AdditiveRegionError::Nested)
-            .pipe(Err);
+            return NestedRegion(open.opened_at)
+                .pipe(AdditiveRegionError::Nested)
+                .pipe(Err);
         }
         self.open = Some(OpenRegion {
             index: AdditiveRegionIndex(self.opened),
@@ -218,11 +216,9 @@ impl RegionState {
             return UnopenedRegion.pipe(AdditiveRegionError::Unopened).pipe(Err);
         };
         if open.cue_count == 0 {
-            return EmptyRegion {
-                opened_at: open.opened_at,
-            }
-            .pipe(AdditiveRegionError::Empty)
-            .pipe(Err);
+            return EmptyRegion(open.opened_at)
+                .pipe(AdditiveRegionError::Empty)
+                .pipe(Err);
         }
         self.open = None;
         Ok(())
@@ -327,12 +323,10 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
                 )
                 .map_err(locate)?;
             } else if body.starts_with('<') {
-                return MalformedTagLine {
-                    content: body.to_string(),
-                }
-                .pipe(ParseLyricsErrorKind::MalformedTagLine)
-                .pipe(locate)
-                .pipe(Err);
+                return MalformedTagLine(body.to_string())
+                    .pipe(ParseLyricsErrorKind::MalformedTagLine)
+                    .pipe(locate)
+                    .pipe(Err);
             } else {
                 handle_header_line(
                     body,
@@ -431,23 +425,21 @@ fn handle_header_line(
     let (start, after_prefix) = match Timestamp::take(body) {
         Ok(parsed) => parsed,
         Err(TakeTimestampError::ShapeMismatch) => {
-            return Err(ParseLyricsErrorKind::MalformedHeader(MalformedHeader {
-                content: body.to_string(),
-            }));
+            return Err(ParseLyricsErrorKind::MalformedHeader(MalformedHeader(
+                body.to_string(),
+            )));
         }
         Err(cause) => {
-            return Err(ParseLyricsErrorKind::InvalidTimestamp(InvalidTimestamp {
+            return Err(ParseLyricsErrorKind::InvalidTimestamp(InvalidTimestamp(
                 cause,
-            }));
+            )));
         }
     };
 
     let cue_body = after_prefix.trim_start();
     if cue_body.len() == after_prefix.len() {
         return Err(ParseLyricsErrorKind::MissingSeparatorAfterTimestamp(
-            MissingSeparatorAfterTimestamp {
-                content: body.to_string(),
-            },
+            MissingSeparatorAfterTimestamp(body.to_string()),
         ));
     }
 
@@ -522,9 +514,7 @@ fn handle_shorthand_marker_line(
     if let Some(annotation) = annotation_body(body) {
         let Some(cue_index) = last_cue_index else {
             return Err(ParseLyricsErrorKind::OrphanedAnnotation(
-                OrphanedAnnotation {
-                    content: body.to_string(),
-                },
+                OrphanedAnnotation(body.to_string()),
             ));
         };
         return handle_annotation_line(annotation, cue_index, events, open_marker_line);
@@ -532,9 +522,7 @@ fn handle_shorthand_marker_line(
 
     let Some(cue_index) = last_cue_index else {
         return Err(ParseLyricsErrorKind::OrphanedShorthandMarker(
-            OrphanedShorthandMarker {
-                content: body.to_string(),
-            },
+            OrphanedShorthandMarker(body.to_string()),
         ));
     };
     let (marker, text) = parse_marker_part(body)?;
@@ -618,20 +606,17 @@ fn handle_continuation_line(
 
 fn parse_marker_part(body: &str) -> Result<(&str, &str), ParseLyricsErrorKind> {
     reject_reserved_cue_text_characters(body)?;
-    let (marker, text) = split_marker(body).ok_or_else(|| {
-        ParseLyricsErrorKind::MissingMarker(MissingMarker {
-            content: body.to_string(),
-        })
-    })?;
+    let (marker, text) = split_marker(body)
+        .ok_or_else(|| ParseLyricsErrorKind::MissingMarker(MissingMarker(body.to_string())))?;
     if let Ok(reserved) = marker.parse::<ReservedMarker>() {
         return Err(ParseLyricsErrorKind::ReservedControlMarker(
-            ReservedControlMarker { marker: reserved },
+            ReservedControlMarker(reserved),
         ));
     }
     if text.is_empty() {
-        return Err(ParseLyricsErrorKind::EmptyCueBody(EmptyCueBody {
-            marker: marker.to_string(),
-        }));
+        return Err(ParseLyricsErrorKind::EmptyCueBody(EmptyCueBody(
+            marker.to_string(),
+        )));
     }
     Ok((marker, text))
 }
@@ -652,9 +637,9 @@ fn check_event_order(start: Timestamp, events: &[Event]) -> Result<(), ParseLyri
         return Ok(());
     };
     if previous_start == start {
-        return Err(ParseLyricsErrorKind::RepeatedTimestamp(RepeatedTimestamp {
+        return Err(ParseLyricsErrorKind::RepeatedTimestamp(RepeatedTimestamp(
             start,
-        }));
+        )));
     }
     if start < previous_start {
         return Err(ParseLyricsErrorKind::OutOfOrder(OutOfOrder {
@@ -680,7 +665,7 @@ fn resolve_cues(events: Vec<Event>) -> Result<Vec<SubtitleCue>, ParseLyricsError
         };
 
         let Some(end) = events.get(index + 1).map(Event::start) else {
-            return UnclosedCue { start: group.start }
+            return UnclosedCue(group.start)
                 .pipe(ParseLyricsErrorKind::UnclosedCue)
                 .pipe(at_line(group.opened_at))
                 .pipe(Err);
@@ -752,7 +737,7 @@ fn split_marker(body: &str) -> Option<(&str, &str)> {
 fn reject_reserved_cue_text_characters(text: &str) -> Result<(), ParseLyricsErrorKind> {
     if let Some(character) = text.chars().find(|&c| matches!(c, '<' | '>')) {
         return Err(ParseLyricsErrorKind::CueTextReservedCharacter(
-            CueTextReservedCharacter { character },
+            CueTextReservedCharacter(character),
         ));
     }
     Ok(())

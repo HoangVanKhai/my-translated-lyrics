@@ -76,9 +76,7 @@ fn rejects_cue_without_following_event() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::UnclosedCue(UnclosedCue {
-                start: Timestamp::new(0, 0, 0).unwrap(),
-            }),
+            kind: ParseLyricsErrorKind::UnclosedCue(UnclosedCue(Timestamp::new(0, 0, 0).unwrap())),
         },
     );
 }
@@ -102,9 +100,7 @@ fn an_unclosed_cue_names_the_line_that_opened_it() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 4,
-            kind: ParseLyricsErrorKind::UnclosedCue(UnclosedCue {
-                start: Timestamp::new(0, 2, 0).unwrap(),
-            }),
+            kind: ParseLyricsErrorKind::UnclosedCue(UnclosedCue(Timestamp::new(0, 2, 0).unwrap())),
         },
     );
 }
@@ -165,9 +161,9 @@ fn rejects_shorthand_marker_before_any_cue_is_open() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::OrphanedShorthandMarker(OrphanedShorthandMarker {
-                content: "ttl: orphan".to_string(),
-            }),
+            kind: ParseLyricsErrorKind::OrphanedShorthandMarker(OrphanedShorthandMarker(
+                "ttl: orphan".to_string()
+            )),
         },
     );
 }

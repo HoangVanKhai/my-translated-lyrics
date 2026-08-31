@@ -240,9 +240,7 @@ fn rejects_annotation_without_a_body() {
         parse_lyrics(no_separator).unwrap_err(),
         ParseLyricsError {
             line_number: 2,
-            kind: ParseLyricsErrorKind::MissingMarker(MissingMarker {
-                content: "ann".to_string(),
-            }),
+            kind: ParseLyricsErrorKind::MissingMarker(MissingMarker("ann".to_string())),
         },
     );
 }
@@ -260,9 +258,9 @@ fn rejects_annotation_before_any_cue_is_open() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::OrphanedAnnotation(OrphanedAnnotation {
-                content: "ann: orphan note".to_string(),
-            }),
+            kind: ParseLyricsErrorKind::OrphanedAnnotation(OrphanedAnnotation(
+                "ann: orphan note".to_string()
+            )),
         },
     );
 }
@@ -282,9 +280,9 @@ fn rejects_annotation_after_a_clear() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 3,
-            kind: ParseLyricsErrorKind::OrphanedAnnotation(OrphanedAnnotation {
-                content: "ann: stray note".to_string(),
-            }),
+            kind: ParseLyricsErrorKind::OrphanedAnnotation(OrphanedAnnotation(
+                "ann: stray note".to_string()
+            )),
         },
     );
 }
@@ -303,9 +301,9 @@ fn annotation_marker_cannot_name_a_cue() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 2,
-            kind: ParseLyricsErrorKind::ReservedControlMarker(ReservedControlMarker {
-                marker: ReservedMarker::Annotation,
-            }),
+            kind: ParseLyricsErrorKind::ReservedControlMarker(ReservedControlMarker(
+                ReservedMarker::Annotation
+            )),
         },
     );
 }

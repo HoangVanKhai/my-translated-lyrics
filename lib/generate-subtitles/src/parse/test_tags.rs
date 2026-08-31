@@ -43,9 +43,7 @@ fn rejects_every_near_miss_of_a_tag_line() {
             parse_lyrics(&input).unwrap_err(),
             ParseLyricsError {
                 line_number: 1,
-                kind: ParseLyricsErrorKind::MalformedTagLine(MalformedTagLine {
-                    content: content.to_string(),
-                }),
+                kind: ParseLyricsErrorKind::MalformedTagLine(MalformedTagLine(content.to_string())),
             },
         );
     }
@@ -101,9 +99,9 @@ fn a_tag_ends_the_scope_of_the_cue_above_it() {
         parse_lyrics(after_opening_tag).unwrap_err(),
         ParseLyricsError {
             line_number: 3,
-            kind: ParseLyricsErrorKind::OrphanedShorthandMarker(OrphanedShorthandMarker {
-                content: "cre: credit body".to_string(),
-            }),
+            kind: ParseLyricsErrorKind::OrphanedShorthandMarker(OrphanedShorthandMarker(
+                "cre: credit body".to_string()
+            )),
         },
     );
 
@@ -118,9 +116,9 @@ fn a_tag_ends_the_scope_of_the_cue_above_it() {
         parse_lyrics(after_closing_tag).unwrap_err(),
         ParseLyricsError {
             line_number: 4,
-            kind: ParseLyricsErrorKind::OrphanedShorthandMarker(OrphanedShorthandMarker {
-                content: "cre: credit body".to_string(),
-            }),
+            kind: ParseLyricsErrorKind::OrphanedShorthandMarker(OrphanedShorthandMarker(
+                "cre: credit body".to_string()
+            )),
         },
     );
 }

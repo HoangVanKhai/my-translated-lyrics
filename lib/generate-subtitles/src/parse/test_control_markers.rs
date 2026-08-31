@@ -115,9 +115,9 @@ fn rejects_cue_marker_that_collides_with_control_token() {
         parse_lyrics(clr_input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::ReservedControlMarker(ReservedControlMarker {
-                marker: ReservedMarker::Clear,
-            }),
+            kind: ParseLyricsErrorKind::ReservedControlMarker(ReservedControlMarker(
+                ReservedMarker::Clear
+            )),
         },
     );
 
@@ -129,9 +129,9 @@ fn rejects_cue_marker_that_collides_with_control_token() {
         parse_lyrics(eov_input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::ReservedControlMarker(ReservedControlMarker {
-                marker: ReservedMarker::EndOfVideo,
-            }),
+            kind: ParseLyricsErrorKind::ReservedControlMarker(ReservedControlMarker(
+                ReservedMarker::EndOfVideo
+            )),
         },
     );
 }
