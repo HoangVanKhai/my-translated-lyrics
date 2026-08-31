@@ -104,17 +104,15 @@ struct OpenMarkerLine {
     target: ContinuationTarget,
 }
 
-/// The `<additive>` tag, which opens a region whose cues accumulate.
+/// The `<additive>` tag, which opens an additive region.
 struct AdditiveOpeningTag;
 
-/// The `</additive>` tag, which closes the region an [`AdditiveOpeningTag`]
-/// opened.
+/// The `</additive>` tag, which closes an additive region.
 struct AdditiveClosingTag;
 
 impl AdditiveOpeningTag {
     /// Consumes a leading `<additive>` and returns it with the
-    /// unconsumed tail. A tag carries no attributes, so the spelling
-    /// is matched whole and there is nothing inside it to parse.
+    /// unconsumed tail.
     fn take(source: &str) -> Option<(Self, &str)> {
         let tail = source.strip_prefix(ADDITIVE_OPENING_TAG)?;
         Some((AdditiveOpeningTag, tail))
@@ -123,7 +121,7 @@ impl AdditiveOpeningTag {
 
 impl AdditiveClosingTag {
     /// Consumes a leading `</additive>` and returns it with the
-    /// unconsumed tail. See [`AdditiveOpeningTag::take`].
+    /// unconsumed tail.
     fn take(source: &str) -> Option<(Self, &str)> {
         let tail = source.strip_prefix(ADDITIVE_CLOSING_TAG)?;
         Some((AdditiveClosingTag, tail))
