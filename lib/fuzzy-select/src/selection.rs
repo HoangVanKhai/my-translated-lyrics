@@ -77,8 +77,7 @@ impl ItemIndex {
 }
 
 /// Reads the entry an [`ItemIndex`] names, panicking past the end of the
-/// slice as indexing by a number does. A [`FilteredIndex`] does not index a
-/// slice, so the two spaces cannot be confused at a use site.
+/// slice as indexing by a number does.
 impl<Item> Index<ItemIndex> for [Item] {
     type Output = Item;
 
