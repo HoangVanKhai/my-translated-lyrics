@@ -11,16 +11,10 @@ fn collection_name(name: impl Into<String>) -> CollectionName {
 
 /// A manifest in the shape of a real `collections.toml`, with a nested
 /// separated collection alongside a plain one.
-const MANIFEST: &str = r#"
-unified = ["Example Unified Collection"]
-separated = [
-  "Example Collection",
-  "Example Group/Another Example Collection",
-]
-"#;
-
 fn manifest() -> CollectionsDesc {
-    MANIFEST.pipe(toml::from_str::<CollectionsDesc>).unwrap()
+    include_str!("fixtures/collections.toml")
+        .pipe(toml::from_str::<CollectionsDesc>)
+        .unwrap()
 }
 
 #[test]
