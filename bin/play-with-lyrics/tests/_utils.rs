@@ -12,7 +12,6 @@ use std::process::{Command, Output, Stdio};
 use test_utils::{SEPARATED_COLLECTION, Temp, video_desc};
 
 const PLAY_WITH_LYRICS: &str = env!("CARGO_BIN_EXE_play-with-lyrics");
-pub const VIDEO_TITLE: &str = "Example Song [id]";
 
 /// A temporary source directory and media library for one test.
 pub struct Env {
@@ -36,14 +35,14 @@ impl Env {
         }
     }
 
-    /// Writes a `video.toml` serialized from a descriptor built with the
-    /// test collection and title.
-    pub fn add_video(&self) {
-        let video_dir = self.source.join("ExampleSong");
+    /// Writes a `video.toml` for `video_title` in its own subdirectory of the
+    /// source directory.
+    pub fn add_video(&self, dir_name: &str, video_title: impl Into<String>) {
+        let video_dir = self.source.join(dir_name);
         create_dir_all(&video_dir).unwrap();
         let descriptor = video_desc(
             SEPARATED_COLLECTION.to_owned(),
-            VIDEO_TITLE.to_owned(),
+            video_title.into(),
             Visibility::Visible,
         );
         let contents = toml::to_string(&descriptor).unwrap();

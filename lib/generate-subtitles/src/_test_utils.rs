@@ -58,6 +58,6 @@ pub(crate) fn style_palette(voices: BTreeMap<String, Style>) -> StylePalette {
             special: color("#55ABCD".to_owned()),
         },
         voices,
-        classes: btreemap! {},
+        classes: BTreeMap::new(),
     }
 }
