@@ -12,6 +12,7 @@
 use crate::fuzzy::contains_substring;
 use pipe_trait::Pipe;
 use std::cmp::Ordering;
+use std::ops::Index;
 
 /// A comparator that orders two items, held as a boxed closure so the selector
 /// can carry any ordering.
@@ -75,6 +76,17 @@ impl ItemIndex {
     }
 }
 
+/// Reads the entry an [`ItemIndex`] names, panicking past the end of the
+/// slice as indexing by a number does. A [`FilteredIndex`] does not index a
+/// slice, so the two spaces cannot be confused at a use site.
+impl<Item> Index<ItemIndex> for [Item] {
+    type Output = Item;
+
+    fn index(&self, index: ItemIndex) -> &Item {
+        &self[index.get()]
+    }
+}
+
 /// An item that an interactive selector can filter by a typed query.
 pub trait Searchable {
     /// The strings the query is matched against. A row matches when any
@@ -134,7 +146,7 @@ where
         if let Some(order) = order {
             let items = *items;
             let compare = &**order;
-            filtered.sort_by(|&left, &right| compare(&items[left.get()], &items[right.get()]));
+            filtered.sort_by(|&left, &right| compare(&items[left], &items[right]));
         }
     }
 
@@ -216,8 +228,8 @@ where
     fn refilter(&mut self) {
         self.filtered = (0..self.items.len())
             .map(ItemIndex::new)
-            .filter(|index| {
-                self.items[index.get()]
+            .filter(|&index| {
+                self.items[index]
                     .search_keys()
                     .iter()
                     .any(|key| contains_substring(key, &self.query))
