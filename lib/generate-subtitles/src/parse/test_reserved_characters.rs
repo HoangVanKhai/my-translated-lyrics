@@ -5,6 +5,7 @@
 
 use crate::parse::error::{CueTextReservedCharacter, ParseLyricsError, ParseLyricsErrorKind};
 use crate::parse::parse_lyrics;
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
 
@@ -23,7 +24,9 @@ fn rejects_angle_bracket_in_cue_opening_body() {
         parse_lyrics(lt_input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::CueTextReservedCharacter(CueTextReservedCharacter('<')),
+            kind: '<'
+                .pipe(CueTextReservedCharacter)
+                .pipe(ParseLyricsErrorKind::CueTextReservedCharacter),
         },
     );
 
@@ -35,7 +38,9 @@ fn rejects_angle_bracket_in_cue_opening_body() {
         parse_lyrics(gt_input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::CueTextReservedCharacter(CueTextReservedCharacter('>')),
+            kind: '>'
+                .pipe(CueTextReservedCharacter)
+                .pipe(ParseLyricsErrorKind::CueTextReservedCharacter),
         },
     );
 }
@@ -56,7 +61,9 @@ fn rejects_angle_bracket_in_continuation_line() {
         parse_lyrics(lt_input).unwrap_err(),
         ParseLyricsError {
             line_number: 2,
-            kind: ParseLyricsErrorKind::CueTextReservedCharacter(CueTextReservedCharacter('<')),
+            kind: '<'
+                .pipe(CueTextReservedCharacter)
+                .pipe(ParseLyricsErrorKind::CueTextReservedCharacter),
         },
     );
 
@@ -69,7 +76,9 @@ fn rejects_angle_bracket_in_continuation_line() {
         parse_lyrics(gt_input).unwrap_err(),
         ParseLyricsError {
             line_number: 2,
-            kind: ParseLyricsErrorKind::CueTextReservedCharacter(CueTextReservedCharacter('>')),
+            kind: '>'
+                .pipe(CueTextReservedCharacter)
+                .pipe(ParseLyricsErrorKind::CueTextReservedCharacter),
         },
     );
 }
@@ -90,7 +99,9 @@ fn marker_less_body_with_reserved_character_reports_reserved_character() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::CueTextReservedCharacter(CueTextReservedCharacter('<')),
+            kind: '<'
+                .pipe(CueTextReservedCharacter)
+                .pipe(ParseLyricsErrorKind::CueTextReservedCharacter),
         },
     );
 }
@@ -108,7 +119,9 @@ fn a_tag_written_inside_cue_text_is_still_a_reserved_character() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::CueTextReservedCharacter(CueTextReservedCharacter('<')),
+            kind: '<'
+                .pipe(CueTextReservedCharacter)
+                .pipe(ParseLyricsErrorKind::CueTextReservedCharacter),
         },
     );
 }

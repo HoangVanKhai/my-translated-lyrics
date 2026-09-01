@@ -30,7 +30,8 @@ fn rejects_a_region_opened_inside_another_region() {
         parse_lyrics(doubled_tags).unwrap_err(),
         ParseLyricsError {
             line_number: 2,
-            kind: NestedRegion(1)
+            kind: 1
+                .pipe(NestedRegion)
                 .pipe(AdditiveRegionError::Nested)
                 .pipe(ParseLyricsErrorKind::AdditiveRegion),
         },
@@ -50,7 +51,8 @@ fn rejects_a_region_opened_inside_another_region() {
         parse_lyrics(inner_region).unwrap_err(),
         ParseLyricsError {
             line_number: 3,
-            kind: NestedRegion(1)
+            kind: 1
+                .pipe(NestedRegion)
                 .pipe(AdditiveRegionError::Nested)
                 .pipe(ParseLyricsErrorKind::AdditiveRegion),
         },
@@ -155,7 +157,8 @@ fn rejects_a_region_that_encloses_no_cue() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 4,
-            kind: EmptyRegion(1)
+            kind: 1
+                .pipe(EmptyRegion)
                 .pipe(AdditiveRegionError::Empty)
                 .pipe(ParseLyricsErrorKind::AdditiveRegion),
         },

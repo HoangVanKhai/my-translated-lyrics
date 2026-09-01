@@ -8,6 +8,7 @@ use crate::parse::error::{
 };
 use crate::parse::parse_lyrics;
 use lyrics_core::timestamp::Timestamp;
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
 
@@ -76,7 +77,10 @@ fn rejects_cue_without_following_event() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::UnclosedCue(UnclosedCue(Timestamp::new(0, 0, 0).unwrap())),
+            kind: Timestamp::new(0, 0, 0)
+                .unwrap()
+                .pipe(UnclosedCue)
+                .pipe(ParseLyricsErrorKind::UnclosedCue),
         },
     );
 }
@@ -100,7 +104,10 @@ fn an_unclosed_cue_names_the_line_that_opened_it() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 4,
-            kind: ParseLyricsErrorKind::UnclosedCue(UnclosedCue(Timestamp::new(0, 2, 0).unwrap())),
+            kind: Timestamp::new(0, 2, 0)
+                .unwrap()
+                .pipe(UnclosedCue)
+                .pipe(ParseLyricsErrorKind::UnclosedCue),
         },
     );
 }
@@ -161,9 +168,10 @@ fn rejects_shorthand_marker_before_any_cue_is_open() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::OrphanedShorthandMarker(OrphanedShorthandMarker(
-                "ttl: orphan".to_string()
-            )),
+            kind: "ttl: orphan"
+                .to_string()
+                .pipe(OrphanedShorthandMarker)
+                .pipe(ParseLyricsErrorKind::OrphanedShorthandMarker),
         },
     );
 }

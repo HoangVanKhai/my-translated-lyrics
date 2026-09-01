@@ -10,6 +10,7 @@ use crate::parse::error::{
 use crate::parse::parse_lyrics;
 use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::Timestamp;
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
 
@@ -223,7 +224,7 @@ fn rejects_annotation_without_a_body() {
         parse_lyrics(empty_body).unwrap_err(),
         ParseLyricsError {
             line_number: 2,
-            kind: ParseLyricsErrorKind::EmptyAnnotation(EmptyAnnotation),
+            kind: EmptyAnnotation.pipe(ParseLyricsErrorKind::EmptyAnnotation),
         },
     );
 
@@ -240,7 +241,10 @@ fn rejects_annotation_without_a_body() {
         parse_lyrics(no_separator).unwrap_err(),
         ParseLyricsError {
             line_number: 2,
-            kind: ParseLyricsErrorKind::MissingMarker(MissingMarker("ann".to_string())),
+            kind: "ann"
+                .to_string()
+                .pipe(MissingMarker)
+                .pipe(ParseLyricsErrorKind::MissingMarker),
         },
     );
 }
@@ -258,9 +262,10 @@ fn rejects_annotation_before_any_cue_is_open() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::OrphanedAnnotation(OrphanedAnnotation(
-                "ann: orphan note".to_string()
-            )),
+            kind: "ann: orphan note"
+                .to_string()
+                .pipe(OrphanedAnnotation)
+                .pipe(ParseLyricsErrorKind::OrphanedAnnotation),
         },
     );
 }
@@ -280,9 +285,10 @@ fn rejects_annotation_after_a_clear() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 3,
-            kind: ParseLyricsErrorKind::OrphanedAnnotation(OrphanedAnnotation(
-                "ann: stray note".to_string()
-            )),
+            kind: "ann: stray note"
+                .to_string()
+                .pipe(OrphanedAnnotation)
+                .pipe(ParseLyricsErrorKind::OrphanedAnnotation),
         },
     );
 }
@@ -301,9 +307,9 @@ fn annotation_marker_cannot_name_a_cue() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 2,
-            kind: ParseLyricsErrorKind::ReservedControlMarker(ReservedControlMarker(
-                ReservedMarker::Annotation
-            )),
+            kind: ReservedMarker::Annotation
+                .pipe(ReservedControlMarker)
+                .pipe(ParseLyricsErrorKind::ReservedControlMarker),
         },
     );
 }

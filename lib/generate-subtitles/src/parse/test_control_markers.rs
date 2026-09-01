@@ -8,6 +8,7 @@ use crate::parse::error::{
 use crate::parse::parse_lyrics;
 use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::Timestamp;
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
 
@@ -33,10 +34,11 @@ fn control_markers_reject_trailing_text() {
         parse_lyrics(clr_input).unwrap_err(),
         ParseLyricsError {
             line_number: 2,
-            kind: ParseLyricsErrorKind::ExtraTextAfterControlMarker(ExtraTextAfterControlMarker {
+            kind: ExtraTextAfterControlMarker {
                 marker: ReservedMarker::Clear,
                 trailing: "some trailing text".to_string(),
-            }),
+            }
+            .pipe(ParseLyricsErrorKind::ExtraTextAfterControlMarker),
         },
     );
 
@@ -49,10 +51,11 @@ fn control_markers_reject_trailing_text() {
         parse_lyrics(eov_input).unwrap_err(),
         ParseLyricsError {
             line_number: 3,
-            kind: ParseLyricsErrorKind::ExtraTextAfterControlMarker(ExtraTextAfterControlMarker {
+            kind: ExtraTextAfterControlMarker {
                 marker: ReservedMarker::EndOfVideo,
                 trailing: "end of video".to_string(),
-            }),
+            }
+            .pipe(ParseLyricsErrorKind::ExtraTextAfterControlMarker),
         },
     );
 }
@@ -115,9 +118,9 @@ fn rejects_cue_marker_that_collides_with_control_token() {
         parse_lyrics(clr_input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::ReservedControlMarker(ReservedControlMarker(
-                ReservedMarker::Clear
-            )),
+            kind: ReservedMarker::Clear
+                .pipe(ReservedControlMarker)
+                .pipe(ParseLyricsErrorKind::ReservedControlMarker),
         },
     );
 
@@ -129,9 +132,9 @@ fn rejects_cue_marker_that_collides_with_control_token() {
         parse_lyrics(eov_input).unwrap_err(),
         ParseLyricsError {
             line_number: 1,
-            kind: ParseLyricsErrorKind::ReservedControlMarker(ReservedControlMarker(
-                ReservedMarker::EndOfVideo
-            )),
+            kind: ReservedMarker::EndOfVideo
+                .pipe(ReservedControlMarker)
+                .pipe(ParseLyricsErrorKind::ReservedControlMarker),
         },
     );
 }

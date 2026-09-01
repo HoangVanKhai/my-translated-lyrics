@@ -17,7 +17,7 @@ use pretty_assertions::assert_eq;
 fn a_field_less_kind_renders_with_the_location_prefix() {
     let error = ParseLyricsError {
         line_number: 7,
-        kind: ParseLyricsErrorKind::TabIndentation(TabIndentation),
+        kind: TabIndentation.pipe(ParseLyricsErrorKind::TabIndentation),
     };
     assert_eq!(
         error.to_string(),
@@ -32,7 +32,8 @@ fn a_field_less_kind_renders_with_the_location_prefix() {
 fn a_kind_naming_another_line_keeps_both_numbers() {
     let error = ParseLyricsError {
         line_number: 9,
-        kind: EmptyRegion(4)
+        kind: 4
+            .pipe(EmptyRegion)
             .pipe(AdditiveRegionError::Empty)
             .pipe(ParseLyricsErrorKind::AdditiveRegion),
     };
@@ -49,11 +50,12 @@ fn a_kind_naming_another_line_keeps_both_numbers() {
 fn a_hand_written_kind_takes_the_same_prefix() {
     let error = ParseLyricsError {
         line_number: 3,
-        kind: ParseLyricsErrorKind::MalformedIndentation(MalformedIndentation {
+        kind: MalformedIndentation {
             actual: 12,
             shorthand_indent: 10,
             continuation_indent: Some(15),
-        }),
+        }
+        .pipe(ParseLyricsErrorKind::MalformedIndentation),
     };
     assert_eq!(
         error.to_string(),
