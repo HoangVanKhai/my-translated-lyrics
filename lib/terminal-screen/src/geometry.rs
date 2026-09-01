@@ -4,7 +4,7 @@
 //! [`Width`] and a [`Height`]. The four are distinct types, so none of them
 //! stands in for another.
 
-use std::ops::{Add, AddAssign};
+use std::ops::{Add, AddAssign, Sub};
 
 /// A zero-based column, counted from the left edge of the grid.
 #[derive(Clone, Copy, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
@@ -154,6 +154,16 @@ impl Add for Width {
 impl AddAssign for Width {
     fn add_assign(&mut self, other: Width) {
         *self = *self + other;
+    }
+}
+
+/// Narrows a run by `other` columns. The subtrahend must be no wider than the
+/// run, since a run cannot span fewer than no columns.
+impl Sub for Width {
+    type Output = Width;
+
+    fn sub(self, other: Width) -> Width {
+        Width(self.0 - other.0)
     }
 }
 

@@ -42,7 +42,7 @@ impl FilteredIndex {
 
     /// The row `rows` further down.
     pub const fn down_by(self, rows: usize) -> FilteredIndex {
-        FilteredIndex(self.0.saturating_add(rows))
+        FilteredIndex(self.0 + rows)
     }
 }
 
@@ -70,7 +70,7 @@ impl ItemIndex {
 
     /// The item after this one, which may be past the end of the slice.
     pub const fn next(self) -> ItemIndex {
-        ItemIndex(self.0.saturating_add(1))
+        ItemIndex(self.0 + 1)
     }
 }
 
@@ -161,7 +161,8 @@ where
         self.refilter();
     }
 
-    /// Moves the highlight one row towards the top.
+    /// Moves the highlight one row towards the top, never above the topmost
+    /// visible row.
     pub fn move_up(&mut self) {
         self.cursor = FilteredIndex(self.cursor.0.saturating_sub(1));
     }

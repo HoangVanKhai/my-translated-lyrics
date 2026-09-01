@@ -72,7 +72,7 @@ pub(crate) fn fit_chars(text: &str, mask: &[bool], width: Width) -> Vec<(char, b
         for (index, &character) in characters.iter().enumerate() {
             result.push((character, mask.get(index).copied().unwrap_or(false)));
         }
-        result.extend(blanks(width.saturating_sub(full_width)));
+        result.extend(blanks(width - full_width));
         return result;
     }
     if width == Width::ZERO {
@@ -80,7 +80,7 @@ pub(crate) fn fit_chars(text: &str, mask: &[bool], width: Width) -> Vec<(char, b
     }
     // Keep whole characters until the next one would not leave room for the
     // one-column ellipsis, then pad the column a wide glyph could not fill.
-    let room = width.saturating_sub(Width::ONE);
+    let room = width - Width::ONE;
     let mut used = Width::ZERO;
     for (index, &character) in characters.iter().enumerate() {
         let character_width = char_width(character);
@@ -91,7 +91,7 @@ pub(crate) fn fit_chars(text: &str, mask: &[bool], width: Width) -> Vec<(char, b
         used += character_width;
     }
     result.push(('…', false));
-    result.extend(blanks(room.saturating_sub(used)));
+    result.extend(blanks(room - used));
     result
 }
 
