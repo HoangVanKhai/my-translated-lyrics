@@ -1,7 +1,7 @@
-//! Tests for the way a [`ParseLyricsError`] renders. The location
-//! prefix is written once, on the error itself, rather than by each
-//! payload, so what is checked here is that every kind reads as
-//! `line {n}: ` followed by its own message and nothing else.
+//! Tests for the way a [`ParseLyricsError`] renders: the location
+//! prefix, then the kind's own message and nothing else. One test
+//! per shape a kind takes: a payload with no fields, one that names
+//! another line, and one that writes its own `Display`.
 
 use super::{
     AdditiveRegionError, EmptyRegion, MalformedIndentation, ParseLyricsError, ParseLyricsErrorKind,

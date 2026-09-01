@@ -87,11 +87,11 @@ fn rejects_cue_with_empty_body() {
 /// yields the empty string. The empty body has no `:` and no
 /// marker, so `parse_marker_part` falls into the
 /// `split_marker(body) -> None` branch and raises
-/// `MissingMarker("")`. The dedicated [`EmptyCueBody`]
-/// variant cannot apply here because it carries the marker
-/// name, and a whitespace-only body has none. Lock the current
-/// outcome so a future reader does not assume the diagnostic
-/// is something else.
+/// `MissingMarker("")`. The dedicated [`EmptyCueBody`] variant
+/// cannot apply here because it carries the marker name, and a
+/// whitespace-only body has none. Lock the current outcome so
+/// a future reader does not assume the diagnostic is something
+/// else.
 #[test]
 fn whitespace_only_cue_body_falls_through_to_missing_marker() {
     let input = text_block_fnl! {
