@@ -36,8 +36,7 @@ impl Env {
     }
 
     /// Writes a `video.toml` for `video_title` in its own subdirectory of the
-    /// source directory, serialized from a descriptor built with the test
-    /// collection.
+    /// source directory.
     pub fn add_video(&self, dir_name: &str, video_title: impl Into<String>) {
         let video_dir = self.source.join(dir_name);
         create_dir_all(&video_dir).unwrap();
