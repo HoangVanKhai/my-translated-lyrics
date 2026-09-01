@@ -38,12 +38,12 @@ impl Env {
     /// Writes a `video.toml` for `video_title` in its own subdirectory of the
     /// source directory, serialized from a descriptor built with the test
     /// collection.
-    pub fn add_video(&self, dir_name: &str, video_title: String) {
+    pub fn add_video(&self, dir_name: &str, video_title: impl Into<String>) {
         let video_dir = self.source.join(dir_name);
         create_dir_all(&video_dir).unwrap();
         let descriptor = video_desc(
             SEPARATED_COLLECTION.to_owned(),
-            video_title,
+            video_title.into(),
             Visibility::Visible,
         );
         let contents = toml::to_string(&descriptor).unwrap();

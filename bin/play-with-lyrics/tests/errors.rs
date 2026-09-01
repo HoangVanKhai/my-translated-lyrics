@@ -16,7 +16,7 @@ fn an_empty_source_directory_is_an_error() {
 #[test]
 fn an_unmatched_title_is_an_error() {
     let env = Env::new();
-    env.add_video("ExampleSong", "Example Song [id]".to_owned());
+    env.add_video("ExampleSong", "Example Song [id]");
     env.add_library_file("Example Song [id].mkv");
     env.add_library_file("Example Song [id].vi.srt");
 
@@ -32,7 +32,7 @@ fn an_unmatched_title_is_an_error() {
 #[test]
 fn a_video_without_subtitles_is_an_error() {
     let env = Env::new();
-    env.add_video("ExampleSong", "Example Song [id]".to_owned());
+    env.add_video("ExampleSong", "Example Song [id]");
     env.add_library_file("Example Song [id].mkv");
 
     let output = env.run(["--title=example"]);
@@ -44,7 +44,7 @@ fn a_video_without_subtitles_is_an_error() {
 #[test]
 fn an_unavailable_language_is_an_error() {
     let env = Env::new();
-    env.add_video("ExampleSong", "Example Song [id]".to_owned());
+    env.add_video("ExampleSong", "Example Song [id]");
     env.add_library_file("Example Song [id].mkv");
     env.add_library_file("Example Song [id].vi.srt");
 
@@ -59,7 +59,7 @@ fn an_unavailable_language_is_an_error() {
 #[test]
 fn an_unavailable_format_is_an_error() {
     let env = Env::new();
-    env.add_video("ExampleSong", "Example Song [id]".to_owned());
+    env.add_video("ExampleSong", "Example Song [id]");
     env.add_library_file("Example Song [id].mkv");
     env.add_library_file("Example Song [id].vi.srt");
 
@@ -74,7 +74,7 @@ fn an_unavailable_format_is_an_error() {
 #[test]
 fn an_ambiguous_language_without_a_flag_is_an_error_when_not_interactive() {
     let env = Env::new();
-    env.add_video("ExampleSong", "Example Song [id]".to_owned());
+    env.add_video("ExampleSong", "Example Song [id]");
     env.add_library_file("Example Song [id].mkv");
     env.add_library_file("Example Song [id].vi.srt");
     env.add_library_file("Example Song [id].zh.srt");
@@ -93,7 +93,7 @@ fn an_ambiguous_language_without_a_flag_is_an_error_when_not_interactive() {
 #[test]
 fn a_missing_video_file_is_an_error() {
     let env = Env::new();
-    env.add_video("ExampleSong", "Example Song [id]".to_owned());
+    env.add_video("ExampleSong", "Example Song [id]");
     // Only the subtitle exists; there is no playable video file.
     env.add_library_file("Example Song [id].vi.srt");
 
@@ -111,7 +111,7 @@ fn a_missing_video_file_is_an_error() {
 #[test]
 fn an_invalid_player_value_is_rejected_by_clap() {
     let env = Env::new();
-    env.add_video("ExampleSong", "Example Song [id]".to_owned());
+    env.add_video("ExampleSong", "Example Song [id]");
     env.add_library_file("Example Song [id].mkv");
     env.add_library_file("Example Song [id].vi.srt");
 

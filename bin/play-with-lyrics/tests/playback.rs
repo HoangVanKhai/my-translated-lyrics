@@ -9,7 +9,7 @@ pub use _utils::*;
 #[test]
 fn launches_mpv_with_the_resolved_files() {
     let env = Env::new();
-    env.add_video("ExampleSong", "Example Song [id]".to_owned());
+    env.add_video("ExampleSong", "Example Song [id]");
     env.add_library_file("Example Song [id].mkv");
     env.add_library_file("Example Song [id].vi.srt");
     env.install_fake_players();
@@ -36,7 +36,7 @@ fn launches_mpv_with_the_resolved_files() {
 #[test]
 fn launches_celluloid_with_the_mpv_prefixed_flag() {
     let env = Env::new();
-    env.add_video("ExampleSong", "Example Song [id]".to_owned());
+    env.add_video("ExampleSong", "Example Song [id]");
     env.add_library_file("Example Song [id].mkv");
     env.add_library_file("Example Song [id].zh.vtt");
     env.install_fake_players();
@@ -65,7 +65,7 @@ fn launches_celluloid_with_the_mpv_prefixed_flag() {
 #[test]
 fn a_failing_player_propagates_its_exit_code() {
     let env = Env::new();
-    env.add_video("ExampleSong", "Example Song [id]".to_owned());
+    env.add_video("ExampleSong", "Example Song [id]");
     env.add_library_file("Example Song [id].mkv");
     env.add_library_file("Example Song [id].vi.srt");
     env.install_failing_player(3);
@@ -83,7 +83,7 @@ fn a_failing_player_propagates_its_exit_code() {
 #[test]
 fn a_single_language_and_format_are_selected_automatically() {
     let env = Env::new();
-    env.add_video("ExampleSong", "Example Song [id]".to_owned());
+    env.add_video("ExampleSong", "Example Song [id]");
     env.add_library_file("Example Song [id].mkv");
     env.add_library_file("Example Song [id].vi.srt");
     env.install_fake_players();
