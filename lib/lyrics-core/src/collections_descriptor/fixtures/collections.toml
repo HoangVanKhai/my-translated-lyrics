@@ -1,0 +1,6 @@
+unified = ["Example Unified Collection"]
+
+separated = [
+  "Example Collection",
+  "Example Group/Another Example Collection",
+]
