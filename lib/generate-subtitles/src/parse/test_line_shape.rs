@@ -123,7 +123,7 @@ fn rejects_tab_in_leading_whitespace() {
     let error = parse_lyrics(input).unwrap_err();
     assert_eq!(
         error,
-        LineNumber::new(2)
+        2.pipe(LineNumber::new)
             .pipe(TabIndentation)
             .pipe(ParseLyricsError::TabIndentation),
     );

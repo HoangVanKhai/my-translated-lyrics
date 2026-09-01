@@ -108,7 +108,7 @@ fn rejects_a_region_that_is_never_closed() {
     let error = parse_lyrics(input).unwrap_err();
     assert_eq!(
         error,
-        LineNumber::new(2)
+        2.pipe(LineNumber::new)
             .pipe(UnclosedRegion)
             .pipe(AdditiveRegionError::Unclosed)
             .pipe(ParseLyricsError::AdditiveRegion),
@@ -126,7 +126,7 @@ fn rejects_a_closing_tag_without_an_opening_one() {
     let error = parse_lyrics(input).unwrap_err();
     assert_eq!(
         error,
-        LineNumber::new(2)
+        2.pipe(LineNumber::new)
             .pipe(UnopenedRegion)
             .pipe(AdditiveRegionError::Unopened)
             .pipe(ParseLyricsError::AdditiveRegion),

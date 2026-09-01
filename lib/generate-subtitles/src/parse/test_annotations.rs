@@ -222,7 +222,7 @@ fn rejects_annotation_without_a_body() {
     let error = parse_lyrics(empty_body).unwrap_err();
     assert_eq!(
         error,
-        LineNumber::new(2)
+        2.pipe(LineNumber::new)
             .pipe(EmptyAnnotation)
             .pipe(ParseLyricsError::EmptyAnnotation),
     );
