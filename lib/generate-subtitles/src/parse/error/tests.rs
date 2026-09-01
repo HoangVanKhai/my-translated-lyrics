@@ -1,12 +1,14 @@
 //! Tests for the way a [`ParseLyricsError`] renders: the location
 //! prefix, then the kind's own message and nothing else. One test
 //! per shape a kind takes: a payload with no fields, one that names
-//! another line, and one that writes its own `Display`.
+//! another line, one that writes its own `Display`, and one that
+//! forwards to the error it wraps.
 
 use super::{
-    AdditiveRegionError, EmptyRegion, MalformedIndentation, ParseLyricsError, ParseLyricsErrorKind,
-    TabIndentation,
+    AdditiveRegionError, EmptyRegion, InvalidTimestamp, MalformedIndentation, ParseLyricsError,
+    ParseLyricsErrorKind, TabIndentation,
 };
+use lyrics_core::timestamp::{SecondsOutOfRange, TakeTimestampError};
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 
@@ -63,4 +65,25 @@ fn a_hand_written_kind_takes_the_same_prefix() {
         expected 10 for a shorthand marker line \
         or 15 for a continuation of the current marker",
     );
+}
+
+/// [`InvalidTimestamp`] adds nothing of its own; it exists to name
+/// the failure and hand back the error it wraps. Its message is
+/// therefore the wrapped error's, compared here against that error
+/// rather than against a copy of its text, so the assertion holds
+/// whether the forwarding is written out or derived.
+#[test]
+fn a_wrapping_kind_forwards_to_the_error_it_wraps() {
+    let cause = TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
+        raw: "00:60.000".to_string(),
+        value: 60,
+    });
+    let error = ParseLyricsError {
+        line_number: 5,
+        kind: cause
+            .clone()
+            .pipe(InvalidTimestamp)
+            .pipe(ParseLyricsErrorKind::InvalidTimestamp),
+    };
+    assert_eq!(error.to_string(), format!("line 5: {cause}"));
 }

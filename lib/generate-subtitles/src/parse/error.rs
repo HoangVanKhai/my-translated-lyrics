@@ -18,7 +18,6 @@ use lyrics_core::timestamp::{TakeTimestampError, Timestamp};
 /// Payload for [`ParseLyricsErrorKind::InvalidTimestamp`]. Wraps the
 /// underlying [`TakeTimestampError`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("{_0}")]
 pub struct InvalidTimestamp(pub TakeTimestampError);
 
 /// Payload for [`ParseLyricsErrorKind::MissingMarker`]. Raised when a
