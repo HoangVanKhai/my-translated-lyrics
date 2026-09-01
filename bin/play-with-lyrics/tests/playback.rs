@@ -10,8 +10,8 @@ pub use _utils::*;
 fn launches_mpv_with_the_resolved_files() {
     let env = Env::new();
     env.add_video();
-    env.add_library_file(&format!("{VIDEO_TITLE}.mkv"));
-    env.add_library_file(&format!("{VIDEO_TITLE}.vi.srt"));
+    env.add_video_file("mkv");
+    env.add_video_file("vi.srt");
     env.install_fake_players();
 
     let (output, recorded) = env.run_played([
@@ -22,8 +22,8 @@ fn launches_mpv_with_the_resolved_files() {
     ]);
 
     assert!(output.status.success(), "{output:?}");
-    let video = env.library_path(&format!("{VIDEO_TITLE}.mkv"));
-    let subtitle = env.library_path(&format!("{VIDEO_TITLE}.vi.srt"));
+    let video = env.video_path("mkv");
+    let subtitle = env.video_path("vi.srt");
     assert_eq!(
         recorded,
         vec![
@@ -37,8 +37,8 @@ fn launches_mpv_with_the_resolved_files() {
 fn launches_celluloid_with_the_mpv_prefixed_flag() {
     let env = Env::new();
     env.add_video();
-    env.add_library_file(&format!("{VIDEO_TITLE}.mkv"));
-    env.add_library_file(&format!("{VIDEO_TITLE}.zh.vtt"));
+    env.add_video_file("mkv");
+    env.add_video_file("zh.vtt");
     env.install_fake_players();
 
     let (output, recorded) = env.run_played([
@@ -49,8 +49,8 @@ fn launches_celluloid_with_the_mpv_prefixed_flag() {
     ]);
 
     assert!(output.status.success(), "{output:?}");
-    let video = env.library_path(&format!("{VIDEO_TITLE}.mkv"));
-    let subtitle = env.library_path(&format!("{VIDEO_TITLE}.zh.vtt"));
+    let video = env.video_path("mkv");
+    let subtitle = env.video_path("zh.vtt");
     assert_eq!(
         recorded,
         vec![
@@ -66,8 +66,8 @@ fn launches_celluloid_with_the_mpv_prefixed_flag() {
 fn a_failing_player_propagates_its_exit_code() {
     let env = Env::new();
     env.add_video();
-    env.add_library_file(&format!("{VIDEO_TITLE}.mkv"));
-    env.add_library_file(&format!("{VIDEO_TITLE}.vi.srt"));
+    env.add_video_file("mkv");
+    env.add_video_file("vi.srt");
     env.install_failing_player(3);
 
     let (output, _recorded) = env.run_played([
@@ -84,14 +84,14 @@ fn a_failing_player_propagates_its_exit_code() {
 fn a_single_language_and_format_are_selected_automatically() {
     let env = Env::new();
     env.add_video();
-    env.add_library_file(&format!("{VIDEO_TITLE}.mkv"));
-    env.add_library_file(&format!("{VIDEO_TITLE}.vi.srt"));
+    env.add_video_file("mkv");
+    env.add_video_file("vi.srt");
     env.install_fake_players();
 
     // Only one language and format are available, so neither flag is needed.
     let (output, recorded) = env.run_played(["--title=example", "--player=mpv"]);
 
     assert!(output.status.success(), "{output:?}");
-    let subtitle = env.library_path(&format!("{VIDEO_TITLE}.vi.srt"));
+    let subtitle = env.video_path("vi.srt");
     assert_eq!(recorded[0], format!("--sub-file={}", subtitle.display()));
 }

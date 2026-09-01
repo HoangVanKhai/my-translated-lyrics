@@ -12,7 +12,6 @@ use std::process::{Command, Output, Stdio};
 use test_utils::{SEPARATED_COLLECTION, Temp, video_desc};
 
 const PLAY_WITH_LYRICS: &str = env!("CARGO_BIN_EXE_play-with-lyrics");
-pub const VIDEO_TITLE: &str = "Example Song [id]";
 
 /// A temporary source directory and media library for one test.
 pub struct Env {
@@ -36,6 +35,14 @@ impl Env {
         }
     }
 
+    /// The title of the video that [`Env::add_video`] declares. The media
+    /// library names every file of that video after this title, so
+    /// [`Env::add_video_file`] and [`Env::video_path`] build the names and
+    /// each test spells out only the suffix that follows the title.
+    fn video_title() -> &'static str {
+        "Example Song [id]"
+    }
+
     /// Writes a `video.toml` serialized from a descriptor built with the
     /// test collection and title.
     pub fn add_video(&self) {
@@ -43,7 +50,7 @@ impl Env {
         create_dir_all(&video_dir).unwrap();
         let descriptor = video_desc(
             SEPARATED_COLLECTION.to_owned(),
-            VIDEO_TITLE.to_owned(),
+            Env::video_title().to_owned(),
             Visibility::Visible,
         );
         let contents = toml::to_string(&descriptor).unwrap();
@@ -58,10 +65,19 @@ impl Env {
         dir
     }
 
-    /// Creates an empty file named `file_name` inside the collection
-    /// directory.
-    pub fn add_library_file(&self, file_name: &str) {
-        write_file(self.collection_dir().join(file_name), "").unwrap();
+    /// Creates an empty file for the added video inside the collection
+    /// directory, named after the video title followed by `suffix`, such as
+    /// `mkv` for the video itself or `vi.srt` for a Vietnamese SubRip
+    /// subtitle.
+    pub fn add_video_file(&self, suffix: &str) {
+        write_file(self.video_path(suffix), "").unwrap();
+    }
+
+    /// The path that [`Env::add_video_file`] writes `suffix` to, for
+    /// asserting on the launched command.
+    pub fn video_path(&self, suffix: &str) -> PathBuf {
+        self.collection_dir()
+            .join(format!("{}.{suffix}", Env::video_title()))
     }
 
     pub fn run<Args>(&self, args: Args) -> Output
@@ -158,12 +174,6 @@ impl Env {
             .map(str::to_string)
             .collect();
         (output, recorded)
-    }
-
-    /// The path a library file would have, for asserting on the launched
-    /// command.
-    pub fn library_path(&self, file_name: &str) -> PathBuf {
-        self.collection_dir().join(file_name)
     }
 }
 
