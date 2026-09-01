@@ -17,12 +17,12 @@ use std::cmp::Ordering;
 type Comparator<'a, Item> = Box<dyn Fn(&Item, &Item) -> Ordering + 'a>;
 
 /// A position within the filtered view: which visible row is meant, counting
-/// from the top of what the query currently shows.
+/// from the top of what the query currently shows. The visible rows are
+/// numbered from zero upwards without gaps, however many items the query
+/// hides between them.
 ///
-/// It is not an index into the borrowed slice of items. The two spaces
-/// coincide only while the query is empty and no order is set; any filtering
-/// or sorting moves them apart, and [`Selector::item_at`] is the only
-/// conversion between them.
+/// It is not an index into the borrowed slice of items;
+/// [`Selector::item_at`] is the only conversion between the two spaces.
 #[derive(Clone, Copy, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
 pub struct FilteredIndex(usize);
 
