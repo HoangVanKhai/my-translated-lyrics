@@ -1,6 +1,3 @@
-# A fixture for the tests of this module, loaded by the `manifest` helper in
-# `tests.rs`.
-
 unified = ["Example Unified Collection"]
 
 separated = [
