@@ -74,12 +74,10 @@ pub struct ReservedControlMarker {
 /// annotation line carries no text after its `:` separator.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "line {line_number}: annotation marker `{}` has an empty body",
+    "line {_0}: annotation marker `{}` has an empty body",
     ReservedMarker::Annotation
 )]
-pub struct EmptyAnnotation {
-    pub line_number: LineNumber,
-}
+pub struct EmptyAnnotation(pub LineNumber);
 
 /// Payload for [`ParseLyricsError::MalformedTagLine`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
@@ -107,17 +105,13 @@ pub struct NestedRegion {
 
 /// Payload for [`AdditiveRegionError::Unopened`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("line {line_number}: stray `</{tag}>`", tag = TagName::Additive)]
-pub struct UnopenedRegion {
-    pub line_number: LineNumber,
-}
+#[display("line {_0}: stray `</{tag}>`", tag = TagName::Additive)]
+pub struct UnopenedRegion(pub LineNumber);
 
 /// Payload for [`AdditiveRegionError::Unclosed`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("line {line_number}: unclosed `<{tag}>`", tag = TagName::Additive)]
-pub struct UnclosedRegion {
-    pub line_number: LineNumber,
-}
+#[display("line {_0}: unclosed `<{tag}>`", tag = TagName::Additive)]
+pub struct UnclosedRegion(pub LineNumber);
 
 /// Payload for [`AdditiveRegionError::Empty`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
@@ -241,11 +235,9 @@ pub struct RepeatedTimestamp {
 /// new marker at the same timestamp.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
-    "line {line_number}: indentation contains a tab; only ASCII spaces are allowed in leading whitespace"
+    "line {_0}: indentation contains a tab; only ASCII spaces are allowed in leading whitespace"
 )]
-pub struct TabIndentation {
-    pub line_number: LineNumber,
-}
+pub struct TabIndentation(pub LineNumber);
 
 /// Payload for [`ParseLyricsError::CueTextReservedCharacter`].
 ///

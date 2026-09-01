@@ -9,6 +9,7 @@ use crate::parse::error::{
     MissingSeparatorAfterTimestamp, ParseLyricsError, TabIndentation,
 };
 use crate::parse::{LineNumber, parse_lyrics};
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
 
@@ -119,11 +120,16 @@ fn rejects_tab_in_leading_whitespace() {
         "\t            cre: tabbed indent"
         "00:05.000 clr"
     };
+    let error = parse_lyrics(input).unwrap_err();
     assert_eq!(
-        parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::TabIndentation(TabIndentation {
-            line_number: LineNumber::new(2)
-        }),
+        error,
+        LineNumber::new(2)
+            .pipe(TabIndentation)
+            .pipe(ParseLyricsError::TabIndentation),
+    );
+    assert_eq!(
+        error.to_string(),
+        "line 2: indentation contains a tab; only ASCII spaces are allowed in leading whitespace",
     );
 }
 

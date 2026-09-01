@@ -236,7 +236,8 @@ impl RegionState {
     /// leaves the state as it was rather than half closed.
     fn close_region(&mut self, line_number: LineNumber) -> Result<(), AdditiveRegionError> {
         let Some(open) = self.open else {
-            return UnopenedRegion { line_number }
+            return line_number
+                .pipe(UnopenedRegion)
                 .pipe(AdditiveRegionError::Unopened)
                 .pipe(Err);
         };
@@ -307,9 +308,10 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
         }
 
         if raw_line.trim_start_matches(' ').starts_with('\t') {
-            return Err(ParseLyricsError::TabIndentation(TabIndentation {
-                line_number,
-            }));
+            return line_number
+                .pipe(TabIndentation)
+                .pipe(ParseLyricsError::TabIndentation)
+                .pipe(Err);
         }
 
         let indent = raw_line.bytes().take_while(|&b| b == b' ').count();
@@ -384,7 +386,8 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
     }
 
     if let Some(OpenRegion { line_number, .. }) = regions.open {
-        return UnclosedRegion { line_number }
+        return line_number
+            .pipe(UnclosedRegion)
             .pipe(AdditiveRegionError::Unclosed)
             .pipe(ParseLyricsError::AdditiveRegion)
             .pipe(Err);
@@ -585,9 +588,10 @@ fn handle_annotation_line(
     open_marker_line: &mut Option<OpenMarkerLine>,
 ) -> Result<(), ParseLyricsError> {
     if text.is_empty() {
-        return Err(ParseLyricsError::EmptyAnnotation(EmptyAnnotation {
-            line_number,
-        }));
+        return line_number
+            .pipe(EmptyAnnotation)
+            .pipe(ParseLyricsError::EmptyAnnotation)
+            .pipe(Err);
     }
     last_part_mut(events, cue_index)
         .annotations

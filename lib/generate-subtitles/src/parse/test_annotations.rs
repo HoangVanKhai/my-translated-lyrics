@@ -9,6 +9,7 @@ use crate::parse::error::{
 use crate::parse::{LineNumber, parse_lyrics};
 use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::Timestamp;
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
 
@@ -218,11 +219,16 @@ fn rejects_annotation_without_a_body() {
         "          ann:"
         "00:04.000 clr"
     };
+    let error = parse_lyrics(empty_body).unwrap_err();
     assert_eq!(
-        parse_lyrics(empty_body).unwrap_err(),
-        ParseLyricsError::EmptyAnnotation(EmptyAnnotation {
-            line_number: LineNumber::new(2)
-        }),
+        error,
+        LineNumber::new(2)
+            .pipe(EmptyAnnotation)
+            .pipe(ParseLyricsError::EmptyAnnotation),
+    );
+    assert_eq!(
+        error.to_string(),
+        "line 2: annotation marker `ann` has an empty body",
     );
 
     // Without a `:` the line names no marker at all, so it draws the

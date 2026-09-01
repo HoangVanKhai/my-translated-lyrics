@@ -105,14 +105,15 @@ fn rejects_a_region_that_is_never_closed() {
         "07:22.222 LRC: first line"
         "07:33.333 LRC: second line"
     };
+    let error = parse_lyrics(input).unwrap_err();
     assert_eq!(
-        parse_lyrics(input).unwrap_err(),
-        UnclosedRegion {
-            line_number: LineNumber::new(2)
-        }
-        .pipe(AdditiveRegionError::Unclosed)
-        .pipe(ParseLyricsError::AdditiveRegion),
+        error,
+        LineNumber::new(2)
+            .pipe(UnclosedRegion)
+            .pipe(AdditiveRegionError::Unclosed)
+            .pipe(ParseLyricsError::AdditiveRegion),
     );
+    assert_eq!(error.to_string(), "line 2: unclosed `<additive>`");
 }
 
 #[test]
@@ -122,14 +123,15 @@ fn rejects_a_closing_tag_without_an_opening_one() {
         "</additive>"
         "07:22.222 clr"
     };
+    let error = parse_lyrics(input).unwrap_err();
     assert_eq!(
-        parse_lyrics(input).unwrap_err(),
-        UnopenedRegion {
-            line_number: LineNumber::new(2)
-        }
-        .pipe(AdditiveRegionError::Unopened)
-        .pipe(ParseLyricsError::AdditiveRegion),
+        error,
+        LineNumber::new(2)
+            .pipe(UnopenedRegion)
+            .pipe(AdditiveRegionError::Unopened)
+            .pipe(ParseLyricsError::AdditiveRegion),
     );
+    assert_eq!(error.to_string(), "line 2: stray `</additive>`");
 }
 
 /// A region exists to accumulate cues, so one that encloses none is
