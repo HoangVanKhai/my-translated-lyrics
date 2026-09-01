@@ -13,15 +13,15 @@ impl Searchable for Row {
     }
 }
 
-// Each placeholder title says the same thing in every language:
-// "Example Song" (示例歌曲 / Bài Hát Ví Dụ), "Sample Song" (样本歌曲 /
-// Bài Hát Mẫu), and "Sample Tune" (样本曲调 / Giai Điệu Mẫu). They
-// deliberately share words so a query can match one row or several.
-/// The item indices `indices` names, for comparing against a filtered view.
+/// Each number in `indices` as the item index it names.
 fn items<const LEN: usize>(indices: [usize; LEN]) -> [ItemIndex; LEN] {
     indices.map(ItemIndex::new)
 }
 
+// Each placeholder title says the same thing in every language:
+// "Example Song" (示例歌曲 / Bài Hát Ví Dụ), "Sample Song" (样本歌曲 /
+// Bài Hát Mẫu), and "Sample Tune" (样本曲调 / Giai Điệu Mẫu). They
+// deliberately share words so a query can match one row or several.
 fn sample() -> Vec<Row> {
     // cspell:locale en vi
     vec![
