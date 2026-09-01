@@ -10,6 +10,7 @@
 //! converts one into the other.
 
 use crate::fuzzy::contains_substring;
+use pipe_trait::Pipe;
 use std::cmp::Ordering;
 
 /// A comparator that orders two items, held as a boxed closure so the selector
@@ -41,7 +42,7 @@ impl FilteredIndex {
     }
 
     /// The row `rows` further down.
-    pub const fn down_by(self, rows: usize) -> FilteredIndex {
+    pub fn down_by(self, rows: usize) -> FilteredIndex {
         FilteredIndex(self.0 + rows)
     }
 }
@@ -64,12 +65,12 @@ impl ItemIndex {
 
     /// The item before this one, or the first item when this is already the
     /// first.
-    pub const fn previous(self) -> ItemIndex {
-        ItemIndex(self.0.saturating_sub(1))
+    pub fn previous(self) -> ItemIndex {
+        self.0.saturating_sub(1).pipe(ItemIndex)
     }
 
     /// The item after this one, which may be past the end of the slice.
-    pub const fn next(self) -> ItemIndex {
+    pub fn next(self) -> ItemIndex {
         ItemIndex(self.0 + 1)
     }
 }
@@ -164,7 +165,7 @@ where
     /// Moves the highlight one row towards the top, never above the topmost
     /// visible row.
     pub fn move_up(&mut self) {
-        self.cursor = FilteredIndex(self.cursor.0.saturating_sub(1));
+        self.cursor = self.cursor.0.saturating_sub(1).pipe(FilteredIndex);
     }
 
     /// Moves the highlight one row towards the bottom, never past the last
