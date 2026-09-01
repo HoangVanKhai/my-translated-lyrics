@@ -94,8 +94,6 @@ pub struct UndeclaredCollection {
 
 impl fmt::Display for UndeclaredCollection {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // Both names are quoted through the text they wrap, so the
-        // message reads as the manifest spells them.
         let UndeclaredCollection { name, closest } = self;
         write!(formatter, "unknown collection: {:?}", &**name)?;
         match closest {

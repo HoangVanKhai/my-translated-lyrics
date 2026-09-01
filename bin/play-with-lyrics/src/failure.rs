@@ -36,8 +36,6 @@ pub(crate) struct NoVideos {
 
 /// No subtitle files exist for the chosen video in the media library.
 #[derive(Debug, Display)]
-// The title is quoted through the text it wraps, so the message shows
-// the name as the descriptor spells it.
 #[display("No subtitles for {:?} were found in {collection_dir:?}.", &**video_title)]
 pub(crate) struct NoSubtitles {
     pub(crate) video_title: VideoTitle,

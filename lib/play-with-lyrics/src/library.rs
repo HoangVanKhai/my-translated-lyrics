@@ -87,8 +87,6 @@ pub fn subtitle_path(
 pub enum VideoLookupError {
     /// No file named `{video_title}.{ext}` with a known video extension
     /// exists in the collection directory.
-    // The title is quoted through the text it wraps, so the message
-    // shows the name as the descriptor spells it.
     #[display("no video file for {:?} was found in {collection_dir:?}", &**video_title)]
     NotFound {
         collection_dir: PathBuf,
