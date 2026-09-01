@@ -16,9 +16,9 @@ fn an_empty_source_directory_is_an_error() {
 #[test]
 fn an_unmatched_title_is_an_error() {
     let env = Env::new();
-    env.add_video();
-    env.add_video_file("mkv");
-    env.add_video_file("vi.srt");
+    env.add_video("ExampleSong", "Example Song [id]".to_owned());
+    env.add_library_file("Example Song [id].mkv");
+    env.add_library_file("Example Song [id].vi.srt");
 
     let output = env.run(["--title=nonexistent"]);
 
@@ -32,8 +32,8 @@ fn an_unmatched_title_is_an_error() {
 #[test]
 fn a_video_without_subtitles_is_an_error() {
     let env = Env::new();
-    env.add_video();
-    env.add_video_file("mkv");
+    env.add_video("ExampleSong", "Example Song [id]".to_owned());
+    env.add_library_file("Example Song [id].mkv");
 
     let output = env.run(["--title=example"]);
 
@@ -44,9 +44,9 @@ fn a_video_without_subtitles_is_an_error() {
 #[test]
 fn an_unavailable_language_is_an_error() {
     let env = Env::new();
-    env.add_video();
-    env.add_video_file("mkv");
-    env.add_video_file("vi.srt");
+    env.add_video("ExampleSong", "Example Song [id]".to_owned());
+    env.add_library_file("Example Song [id].mkv");
+    env.add_library_file("Example Song [id].vi.srt");
 
     // Only Vietnamese is available, so English is rejected. The full
     // language name is given here, exercising one of the aliases.
@@ -59,9 +59,9 @@ fn an_unavailable_language_is_an_error() {
 #[test]
 fn an_unavailable_format_is_an_error() {
     let env = Env::new();
-    env.add_video();
-    env.add_video_file("mkv");
-    env.add_video_file("vi.srt");
+    env.add_video("ExampleSong", "Example Song [id]".to_owned());
+    env.add_library_file("Example Song [id].mkv");
+    env.add_library_file("Example Song [id].vi.srt");
 
     // Only SubRip is available for Vietnamese, so WebVTT is rejected. The
     // canonical "vi" code and the "web-vtt" alias are exercised here.
@@ -74,10 +74,10 @@ fn an_unavailable_format_is_an_error() {
 #[test]
 fn an_ambiguous_language_without_a_flag_is_an_error_when_not_interactive() {
     let env = Env::new();
-    env.add_video();
-    env.add_video_file("mkv");
-    env.add_video_file("vi.srt");
-    env.add_video_file("zh.srt");
+    env.add_video("ExampleSong", "Example Song [id]".to_owned());
+    env.add_library_file("Example Song [id].mkv");
+    env.add_library_file("Example Song [id].vi.srt");
+    env.add_library_file("Example Song [id].zh.srt");
 
     // Two languages are available and stdin is not a terminal, so the
     // program cannot prompt and must fail.
@@ -93,9 +93,9 @@ fn an_ambiguous_language_without_a_flag_is_an_error_when_not_interactive() {
 #[test]
 fn a_missing_video_file_is_an_error() {
     let env = Env::new();
-    env.add_video();
+    env.add_video("ExampleSong", "Example Song [id]".to_owned());
     // Only the subtitle exists; there is no playable video file.
-    env.add_video_file("vi.srt");
+    env.add_library_file("Example Song [id].vi.srt");
 
     let output = env.run([
         "--title=example",
@@ -111,9 +111,9 @@ fn a_missing_video_file_is_an_error() {
 #[test]
 fn an_invalid_player_value_is_rejected_by_clap() {
     let env = Env::new();
-    env.add_video();
-    env.add_video_file("mkv");
-    env.add_video_file("vi.srt");
+    env.add_video("ExampleSong", "Example Song [id]".to_owned());
+    env.add_library_file("Example Song [id].mkv");
+    env.add_library_file("Example Song [id].vi.srt");
 
     // "vlc" is not one of the accepted players, so clap rejects the value.
     let output = env.run(["--title=example", "--player=vlc"]);
