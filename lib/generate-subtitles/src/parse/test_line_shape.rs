@@ -130,7 +130,7 @@ fn rejects_tab_in_leading_whitespace() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 2,
-            kind: TabIndentation.pipe(ParseLyricsErrorKind::TabIndentation),
+            kind: ParseLyricsErrorKind::TabIndentation(TabIndentation),
         },
     );
 }
@@ -150,12 +150,11 @@ fn rejects_malformed_indentation_between_recognized_widths() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 2,
-            kind: MalformedIndentation {
+            kind: ParseLyricsErrorKind::MalformedIndentation(MalformedIndentation {
                 actual: 12,
                 shorthand_indent: 10,
                 continuation_indent: Some(15),
-            }
-            .pipe(ParseLyricsErrorKind::MalformedIndentation),
+            }),
         },
     );
 }

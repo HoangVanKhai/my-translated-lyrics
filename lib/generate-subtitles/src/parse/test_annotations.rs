@@ -224,7 +224,7 @@ fn rejects_annotation_without_a_body() {
         parse_lyrics(empty_body).unwrap_err(),
         ParseLyricsError {
             line_number: 2,
-            kind: EmptyAnnotation.pipe(ParseLyricsErrorKind::EmptyAnnotation),
+            kind: ParseLyricsErrorKind::EmptyAnnotation(EmptyAnnotation),
         },
     );
 

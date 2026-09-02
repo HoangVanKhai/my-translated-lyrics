@@ -19,7 +19,7 @@ use pretty_assertions::assert_eq;
 fn a_field_less_kind_renders_with_the_location_prefix() {
     let error = ParseLyricsError {
         line_number: 7,
-        kind: TabIndentation.pipe(ParseLyricsErrorKind::TabIndentation),
+        kind: ParseLyricsErrorKind::TabIndentation(TabIndentation),
     };
     assert_eq!(
         error.to_string(),
@@ -52,12 +52,11 @@ fn a_kind_naming_another_line_keeps_both_numbers() {
 fn a_hand_written_kind_takes_the_same_prefix() {
     let error = ParseLyricsError {
         line_number: 3,
-        kind: MalformedIndentation {
+        kind: ParseLyricsErrorKind::MalformedIndentation(MalformedIndentation {
             actual: 12,
             shorthand_indent: 10,
             continuation_indent: Some(15),
-        }
-        .pipe(ParseLyricsErrorKind::MalformedIndentation),
+        }),
     };
     assert_eq!(
         error.to_string(),

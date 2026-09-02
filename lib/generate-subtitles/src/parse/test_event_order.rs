@@ -24,11 +24,10 @@ fn rejects_out_of_order_events() {
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
             line_number: 2,
-            kind: OutOfOrder {
+            kind: ParseLyricsErrorKind::OutOfOrder(OutOfOrder {
                 previous: Timestamp::new(0, 2, 0).unwrap(),
                 next: Timestamp::new(0, 1, 0).unwrap(),
-            }
-            .pipe(ParseLyricsErrorKind::OutOfOrder),
+            }),
         },
     );
 }
@@ -86,11 +85,10 @@ fn ordering_rules_still_apply_inside_a_region() {
         parse_lyrics(out_of_order).unwrap_err(),
         ParseLyricsError {
             line_number: 3,
-            kind: OutOfOrder {
+            kind: ParseLyricsErrorKind::OutOfOrder(OutOfOrder {
                 previous: Timestamp::new(7, 22, 222).unwrap(),
                 next: Timestamp::new(7, 11, 111).unwrap(),
-            }
-            .pipe(ParseLyricsErrorKind::OutOfOrder),
+            }),
         },
     );
 

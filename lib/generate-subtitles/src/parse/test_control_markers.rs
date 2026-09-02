@@ -34,11 +34,10 @@ fn control_markers_reject_trailing_text() {
         parse_lyrics(clr_input).unwrap_err(),
         ParseLyricsError {
             line_number: 2,
-            kind: ExtraTextAfterControlMarker {
+            kind: ParseLyricsErrorKind::ExtraTextAfterControlMarker(ExtraTextAfterControlMarker {
                 marker: ReservedMarker::Clear,
                 trailing: "some trailing text".to_string(),
-            }
-            .pipe(ParseLyricsErrorKind::ExtraTextAfterControlMarker),
+            }),
         },
     );
 
@@ -51,11 +50,10 @@ fn control_markers_reject_trailing_text() {
         parse_lyrics(eov_input).unwrap_err(),
         ParseLyricsError {
             line_number: 3,
-            kind: ExtraTextAfterControlMarker {
+            kind: ParseLyricsErrorKind::ExtraTextAfterControlMarker(ExtraTextAfterControlMarker {
                 marker: ReservedMarker::EndOfVideo,
                 trailing: "end of video".to_string(),
-            }
-            .pipe(ParseLyricsErrorKind::ExtraTextAfterControlMarker),
+            }),
         },
     );
 }
