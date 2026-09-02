@@ -428,22 +428,15 @@ fn handle_header_line(
     open_marker_line: &mut Option<OpenMarkerLine>,
     regions: &mut RegionState,
 ) -> Result<(), ParseLyricsErrorKind> {
-    let (start, after_prefix) = match Timestamp::take(body) {
-        Ok(parsed) => parsed,
-        Err(TakeTimestampError::ShapeMismatch) => {
-            return body
-                .to_string()
-                .pipe(MalformedHeader)
-                .pipe(ParseLyricsErrorKind::MalformedHeader)
-                .pipe(Err);
-        }
-        Err(cause) => {
-            return cause
-                .pipe(InvalidTimestamp)
-                .pipe(ParseLyricsErrorKind::InvalidTimestamp)
-                .pipe(Err);
-        }
-    };
+    let (start, after_prefix) = Timestamp::take(body).map_err(|cause| match cause {
+        TakeTimestampError::ShapeMismatch => body
+            .to_string()
+            .pipe(MalformedHeader)
+            .pipe(ParseLyricsErrorKind::MalformedHeader),
+        cause => cause
+            .pipe(InvalidTimestamp)
+            .pipe(ParseLyricsErrorKind::InvalidTimestamp),
+    })?;
 
     let cue_body = after_prefix.trim_start();
     if cue_body.len() == after_prefix.len() {
@@ -522,23 +515,19 @@ fn handle_shorthand_marker_line(
     open_marker_line: &mut Option<OpenMarkerLine>,
 ) -> Result<(), ParseLyricsErrorKind> {
     if let Some(annotation) = annotation_body(body) {
-        let Some(cue_index) = last_cue_index else {
-            return body
-                .to_string()
-                .pipe(OrphanedAnnotation)
-                .pipe(ParseLyricsErrorKind::OrphanedAnnotation)
-                .pipe(Err);
-        };
+        let cue_index = last_cue_index
+            .ok_or(body)
+            .map_err(String::from)
+            .map_err(OrphanedAnnotation)
+            .map_err(ParseLyricsErrorKind::OrphanedAnnotation)?;
         return handle_annotation_line(annotation, cue_index, events, open_marker_line);
     }
 
-    let Some(cue_index) = last_cue_index else {
-        return body
-            .to_string()
-            .pipe(OrphanedShorthandMarker)
-            .pipe(ParseLyricsErrorKind::OrphanedShorthandMarker)
-            .pipe(Err);
-    };
+    let cue_index = last_cue_index
+        .ok_or(body)
+        .map_err(String::from)
+        .map_err(OrphanedShorthandMarker)
+        .map_err(ParseLyricsErrorKind::OrphanedShorthandMarker)?;
     let (marker, text) = parse_marker_part(body)?;
     cue_group_mut(events, cue_index).parts.push(CuePart {
         marker: marker.to_string(),
@@ -622,11 +611,11 @@ fn handle_continuation_line(
 
 fn parse_marker_part(body: &str) -> Result<(&str, &str), ParseLyricsErrorKind> {
     reject_reserved_cue_text_characters(body)?;
-    let (marker, text) = split_marker(body).ok_or_else(|| {
-        body.to_string()
-            .pipe(MissingMarker)
-            .pipe(ParseLyricsErrorKind::MissingMarker)
-    })?;
+    let (marker, text) = split_marker(body)
+        .ok_or(body)
+        .map_err(String::from)
+        .map_err(MissingMarker)
+        .map_err(ParseLyricsErrorKind::MissingMarker)?;
     if let Ok(reserved) = marker.parse::<ReservedMarker>() {
         return reserved
             .pipe(ReservedControlMarker)
@@ -761,13 +750,11 @@ fn split_marker(body: &str) -> Option<(&str, &str)> {
 /// body, so neither could reach the output as itself. Reports the
 /// first offender only.
 fn reject_reserved_cue_text_characters(text: &str) -> Result<(), ParseLyricsErrorKind> {
-    if let Some(character) = text.chars().find(|&c| matches!(c, '<' | '>')) {
-        return character
-            .pipe(CueTextReservedCharacter)
-            .pipe(ParseLyricsErrorKind::CueTextReservedCharacter)
-            .pipe(Err);
-    }
-    Ok(())
+    text.chars()
+        .find(|&character| matches!(character, '<' | '>'))
+        .map(CueTextReservedCharacter)
+        .map(ParseLyricsErrorKind::CueTextReservedCharacter)
+        .map_or(Ok(()), Err)
 }
 
 #[cfg(test)]
