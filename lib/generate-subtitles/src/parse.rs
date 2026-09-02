@@ -214,9 +214,10 @@ impl RegionState {
     /// before the region is released, so a rejected tag leaves the
     /// state as it was rather than half closed.
     fn close_region(&mut self) -> Result<(), AdditiveRegionError> {
-        let Some(open) = self.open else {
-            return UnopenedRegion.pipe(AdditiveRegionError::Unopened).pipe(Err);
-        };
+        let open = self
+            .open
+            .ok_or(UnopenedRegion)
+            .map_err(AdditiveRegionError::Unopened)?;
         if open.cue_count == 0 {
             return open
                 .opened_at
