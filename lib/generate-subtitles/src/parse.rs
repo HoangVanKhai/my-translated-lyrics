@@ -689,14 +689,13 @@ fn resolve_cues(events: Vec<Event>) -> Result<Vec<SubtitleCue>, ParseLyricsError
             continue;
         };
 
-        let Some(end) = events.get(index + 1).map(Event::start) else {
-            return group
-                .start
-                .pipe(UnclosedCue)
-                .pipe(ParseLyricsErrorKind::UnclosedCue)
-                .pipe(at_line(group.opened_at))
-                .pipe(Err);
-        };
+        let end = events
+            .get(index + 1)
+            .map(Event::start)
+            .ok_or(group.start)
+            .map_err(UnclosedCue)
+            .map_err(ParseLyricsErrorKind::UnclosedCue)
+            .map_err(at_line(group.opened_at))?;
 
         if group.region != carried_region {
             carried_region = group.region;
