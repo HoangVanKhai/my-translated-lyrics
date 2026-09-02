@@ -150,8 +150,18 @@ pub(crate) fn is_double_click(
 }
 
 /// The first row offset that keeps `cursor` visible within `visible` rows.
+/// A cursor that already sits above the bottom of the window needs no
+/// scrolling, and zero is exactly the offset that shows the top of the list,
+/// so the subtraction from `cursor` saturates on purpose.
+///
+/// # Panics
+///
+/// Panics when `visible` is zero. Every caller reads it from [`visible_rows`],
+/// which never reports fewer than one row, so a window with no room to draw is
+/// a bug in the caller rather than an input to absorb.
 pub(crate) fn scroll_offset(cursor: usize, visible: usize) -> usize {
-    cursor.saturating_sub(visible.saturating_sub(1))
+    assert!(visible > 0, "a window must have at least one visible row");
+    cursor.saturating_sub(visible - 1)
 }
 
 /// The number of title rows that fit in a terminal `rows` rows tall, after

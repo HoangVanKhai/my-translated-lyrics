@@ -94,6 +94,16 @@ fn scroll_offset_keeps_the_cursor_on_screen() {
     assert_eq!(scroll_offset(2, 5), 0);
     // The cursor sits past the page, so the window scrolls to show it.
     assert_eq!(scroll_offset(7, 5), 3);
+    // A single visible row scrolls the window to the cursor itself.
+    assert_eq!(scroll_offset(7, 1), 7);
+}
+
+/// A window with no rows has nowhere to put the cursor, so the call reports the
+/// caller's mistake instead of quietly answering with the top of the list.
+#[test]
+#[should_panic(expected = "a window must have at least one visible row")]
+fn scroll_offset_rejects_a_window_with_no_rows() {
+    scroll_offset(7, 0);
 }
 
 /// Each output character carries its highlight flag; the padding does not.
