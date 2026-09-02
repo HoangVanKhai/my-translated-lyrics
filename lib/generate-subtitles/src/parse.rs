@@ -462,13 +462,14 @@ fn handle_header_line(
             .pipe(Err);
         }
         if let Some(open) = &regions.open {
-            return ControlMarkerInRegion {
+            let payload = ControlMarkerInRegion {
                 marker,
                 opened_at: open.opened_at,
-            }
-            .pipe(AdditiveRegionError::ControlMarker)
-            .pipe(ParseLyricsErrorKind::AdditiveRegion)
-            .pipe(Err);
+            };
+            return payload
+                .pipe(AdditiveRegionError::ControlMarker)
+                .pipe(ParseLyricsErrorKind::AdditiveRegion)
+                .pipe(Err);
         }
         if marker == ReservedMarker::Clear {
             check_event_order(start, events)?;
@@ -751,11 +752,13 @@ fn split_marker(body: &str) -> Option<(&str, &str)> {
 /// body, so neither could reach the output as itself. Reports the
 /// first offender only.
 fn reject_reserved_cue_text_characters(text: &str) -> Result<(), ParseLyricsErrorKind> {
-    text.chars()
-        .find(|&character| matches!(character, '<' | '>'))
-        .map(CueTextReservedCharacter)
-        .map(ParseLyricsErrorKind::CueTextReservedCharacter)
-        .map_or(Ok(()), Err)
+    if let Some(character) = text.chars().find(|&c| matches!(c, '<' | '>')) {
+        return character
+            .pipe(CueTextReservedCharacter)
+            .pipe(ParseLyricsErrorKind::CueTextReservedCharacter)
+            .pipe(Err);
+    }
+    Ok(())
 }
 
 #[cfg(test)]
