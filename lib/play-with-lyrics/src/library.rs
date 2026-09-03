@@ -88,11 +88,8 @@ pub fn subtitle_path(
 #[derive(Debug, Display)]
 #[display("video lookup for {video_title:?} in {collection_dir:?}: {kind}")]
 pub struct VideoLookupError {
-    /// The collection directory that was searched.
     pub collection_dir: PathBuf,
-    /// The video title that was searched for.
     pub video_title: String,
-    /// What went wrong during the lookup.
     pub kind: VideoLookupErrorKind,
 }
 
