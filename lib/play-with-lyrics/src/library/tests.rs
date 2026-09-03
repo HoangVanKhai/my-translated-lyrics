@@ -59,7 +59,7 @@ fn reports_a_missing_video_file() {
     touch(&dir, &format!("{title}.vi.srt"));
 
     let error = find_video_file(&dir, title).unwrap_err();
-    assert!(matches!(error.kind, VideoLookupErrorKind::NotFound));
+    assert_eq!(error.kind, VideoLookupErrorKind::NotFound);
 }
 
 #[test]
@@ -68,7 +68,7 @@ fn a_missing_collection_directory_reports_no_video_file() {
     let missing = dir.join("does-not-exist");
 
     let error = find_video_file(&missing, "Some Title [id]").unwrap_err();
-    assert!(matches!(error.kind, VideoLookupErrorKind::NotFound));
+    assert_eq!(error.kind, VideoLookupErrorKind::NotFound);
 }
 
 #[test]
@@ -79,7 +79,13 @@ fn reports_multiple_matching_video_files() {
     touch(&dir, &format!("{title}.mp4"));
 
     let error = find_video_file(&dir, title).unwrap_err();
-    assert!(matches!(error.kind, VideoLookupErrorKind::Multiple(_)));
+    assert_eq!(
+        error.kind,
+        VideoLookupErrorKind::Multiple(vec![
+            dir.join(format!("{title}.mkv")),
+            dir.join(format!("{title}.mp4")),
+        ]),
+    );
 }
 
 #[test]
@@ -89,7 +95,7 @@ fn a_title_that_is_a_prefix_of_another_is_not_matched() {
     touch(&dir, &format!("{title} Extended.mkv"));
 
     let error = find_video_file(&dir, title).unwrap_err();
-    assert!(matches!(error.kind, VideoLookupErrorKind::NotFound));
+    assert_eq!(error.kind, VideoLookupErrorKind::NotFound);
 }
 
 #[test]
