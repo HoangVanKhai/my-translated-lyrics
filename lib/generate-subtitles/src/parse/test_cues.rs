@@ -45,6 +45,23 @@ fn comments_and_blank_lines_are_skipped() {
     assert_eq!(cues[0].parts[0].text, "Hello");
 }
 
+/// Lines are split the way [`str::lines`] splits them, so a file
+/// written with Windows line endings parses as the same file with
+/// Unix ones would. The carriage return leaves with its terminator
+/// rather than reaching a cue body, an indent, or a tag line.
+#[test]
+fn parses_a_file_with_carriage_return_line_endings() {
+    let input = concat! {
+        "00:00.000 cre: first line\r\n",
+        "               second line\r\n",
+        "00:05.000 clr\r\n",
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(cues.len(), 1);
+    assert_eq!(cues[0].parts[0].text, "first line\nsecond line");
+    assert_eq!(cues[0].end, Timestamp::new(0, 5, 0).unwrap());
+}
+
 #[test]
 fn continuation_lines_append_to_current_cue() {
     let input = text_block_fnl! {

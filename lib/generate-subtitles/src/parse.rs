@@ -19,9 +19,15 @@
 //! every cue above it in the region, then its own. Regions do not
 //! nest, enclose at least one cue, and admit neither
 //! [`ReservedMarker::Clear`] nor [`ReservedMarker::EndOfVideo`].
+//!
+//! Every parser here consumes a prefix of the unread lines and hands
+//! back the tail, so a construct that encloses others is parsed as one
+//! value by one parser.
 
 pub mod error;
 
+use crate::take::{take_leading_whitespace, take_non_whitespace};
+use core::iter::once;
 use error::{
     AdditiveRegionError, ControlMarkerInRegion, CueTextReservedCharacter, EmptyAnnotation,
     EmptyCueBody, EmptyRegion, ExtraTextAfterControlMarker, InvalidTimestamp, MalformedHeader,
@@ -75,24 +81,114 @@ pub struct CuePart {
     pub annotations: Vec<String>,
 }
 
-/// Which text body a continuation line extends.
+/// One line of a source file that takes part in the grammar, split
+/// into the indent that positions it and the body that follows.
 #[derive(Clone, Copy)]
-enum ContinuationTarget {
-    /// The text of the most recently opened cue part.
-    PartText,
-    /// The most recent annotation of that part.
-    AnnotationText,
+struct Line<'a> {
+    /// One-based number of the line within the file.
+    number: usize,
+    /// How many ASCII spaces the line is indented by. The indent
+    /// selects which construct the line opens or extends.
+    indent: usize,
+    /// The line with its indent removed. Never blank, and never a
+    /// comment, because [`Input::take_content_line`] passes over both.
+    body: &'a str,
 }
 
-/// The marker line a continuation would extend, and the indent such
-/// a continuation must carry.
+/// The unread remainder of a source file: what is left to parse, the
+/// line it stands at, and the region enclosing it.
 #[derive(Clone, Copy)]
-struct OpenMarkerLine {
-    /// Byte width of the line's `marker: ` prefix. A continuation of
-    /// it is indented by [`TIMESTAMP_PREFIX_WIDTH`] plus this width.
-    marker_prefix_width: usize,
-    /// Where that continuation's text is appended.
-    target: ContinuationTarget,
+struct Input<'a> {
+    /// The unread text, always positioned at the start of a line.
+    text: &'a str,
+    /// The number the next line carries.
+    number: usize,
+    /// Line number of the `<additive>` enclosing the unread text, or
+    /// `None` outside a region.
+    region: Option<usize>,
+}
+
+impl<'a> Input<'a> {
+    /// The whole of `content`, read from its first line and outside
+    /// any region.
+    fn new(content: &'a str) -> Self {
+        Input {
+            text: content,
+            number: 1,
+            region: None,
+        }
+    }
+
+    /// The same position, read as the inside of the region opened at
+    /// `opened_at`.
+    fn inside(self, opened_at: usize) -> Self {
+        Input {
+            region: Some(opened_at),
+            ..self
+        }
+    }
+
+    /// The same position, read as outside any region. Regions do not
+    /// nest, so what encloses the text after a `</additive>` is
+    /// always nothing.
+    fn outside(self) -> Self {
+        Input {
+            region: None,
+            ..self
+        }
+    }
+
+    /// Consumes the next line that carries content, passing over the
+    /// blank and comment lines above it. Lines are split as
+    /// [`str::lines`] splits them.
+    fn take_content_line(self) -> Result<Option<(Line<'a>, Self)>, ParseLyricsError> {
+        if self.text.is_empty() {
+            return Ok(None);
+        }
+        let (raw, tail) = match self.text.split_once('\n') {
+            Some((raw, tail)) => (raw.strip_suffix('\r').unwrap_or(raw), tail),
+            None => (self.text, ""),
+        };
+        let number = self.number;
+        let rest = Input {
+            text: tail,
+            number: number + 1,
+            ..self
+        };
+        if raw.trim().is_empty() || raw.trim_start().starts_with('#') {
+            return rest.take_content_line();
+        }
+        if raw.trim_start_matches(' ').starts_with('\t') {
+            return TabIndentation
+                .pipe(ParseLyricsErrorKind::TabIndentation)
+                .pipe(at_line(number))
+                .pipe(Err);
+        }
+        let indent = raw.bytes().take_while(|&byte| byte == b' ').count();
+        let line = Line {
+            number,
+            indent,
+            body: &raw[indent..],
+        };
+        Ok(Some((line, rest)))
+    }
+
+    /// Consumes the next line that any parser here reads.
+    ///
+    /// Outside a region an `eov` line is passed over too. The format
+    /// ignores it entirely, so it leaves the cue above it open and a
+    /// continuation line beneath one still extends that cue. Inside a
+    /// region the line is handed back, for [`take_additive_region`] to
+    /// reject.
+    fn take_line(self) -> Result<Option<(Line<'a>, Self)>, ParseLyricsError> {
+        let Some((line, rest)) = self.take_content_line()? else {
+            return Ok(None);
+        };
+        if self.region.is_none() && line.indent == 0 && is_end_of_video(line) {
+            return rest.take_line();
+        }
+        Ok(Some((line, rest)))
+    }
 }
 
 /// A tag name.
@@ -160,74 +256,22 @@ impl ClosingTag {
     }
 }
 
-/// Identifies one `<additive>` region within a source file.
-///
-/// The index counts regions in the order they open, which keeps two
-/// adjacent regions distinct even though no event separates them.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-struct AdditiveRegionIndex(usize);
-
-/// The `<additive>` region the parser is currently inside.
-#[derive(Clone, Copy)]
-struct OpenRegion {
-    /// The index the region's cue groups carry.
-    index: AdditiveRegionIndex,
-    /// Line of the `<additive>` that opened the region. Every
-    /// diagnostic that names the region points back at this line,
-    /// because that is where the author has to act.
-    opened_at: usize,
-    /// How many cue groups the region has collected so far. A region
-    /// that closes having collected none is rejected.
-    cue_count: usize,
+/// Whether `body` is an `<additive>` line. A tag carries no
+/// attributes, so nothing but trailing whitespace may follow it.
+fn is_opening_additive_tag(body: &str) -> bool {
+    matches!(
+        OpeningTag::take(body),
+        Some((tag, tail)) if tag.name() == TagName::Additive && tail.trim().is_empty(),
+    )
 }
 
-/// The `<additive>` regions a source file declares, as seen from the
-/// line currently being read.
-#[derive(Default)]
-struct RegionState {
-    /// The region currently open, if any.
-    open: Option<OpenRegion>,
-    /// How many regions have opened so far, which names the next one.
-    opened: usize,
-}
-
-impl RegionState {
-    /// Opens a region whose `<additive>` sits on line `opened_at`.
-    fn open_region(&mut self, opened_at: usize) -> Result<(), AdditiveRegionError> {
-        if let Some(open) = self.open {
-            return open
-                .opened_at
-                .pipe(NestedRegion)
-                .pipe(AdditiveRegionError::Nested)
-                .pipe(Err);
-        }
-        self.open = Some(OpenRegion {
-            index: AdditiveRegionIndex(self.opened),
-            opened_at,
-            cue_count: 0,
-        });
-        self.opened += 1;
-        Ok(())
-    }
-
-    /// Closes the region currently open. Both rules are checked
-    /// before the region is released, so a rejected tag leaves the
-    /// state as it was rather than half closed.
-    fn close_region(&mut self) -> Result<(), AdditiveRegionError> {
-        let open = self
-            .open
-            .ok_or(UnopenedRegion)
-            .map_err(AdditiveRegionError::Unopened)?;
-        if open.cue_count == 0 {
-            return open
-                .opened_at
-                .pipe(EmptyRegion)
-                .pipe(AdditiveRegionError::Empty)
-                .pipe(Err);
-        }
-        self.open = None;
-        Ok(())
-    }
+/// Whether `body` is a `</additive>` line, under the same rule as
+/// [`is_opening_additive_tag`].
+fn is_closing_additive_tag(body: &str) -> bool {
+    matches!(
+        ClosingTag::take(body),
+        Some((tag, tail)) if tag.name() == TagName::Additive && tail.trim().is_empty(),
+    )
 }
 
 /// Payload of an [`Event::Cue`]. The start time is the one declared
@@ -240,9 +284,52 @@ impl RegionState {
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct CueGroup {
     start: Timestamp,
+    /// Line of the header that opened the group. A cue the file
+    /// never closes reports this line, since by the time the failure
+    /// is detected the input has run out and no later line remains to
+    /// name.
     opened_at: usize,
-    region: Option<AdditiveRegionIndex>,
     parts: Vec<CuePart>,
+}
+
+/// One `<additive>` region, holding the cue groups written between
+/// its two tags.
+///
+/// A region exists to accumulate cues, so it encloses at least one.
+/// Splitting the first group from the rest states that in the type:
+/// the region can be built no other way, and the code that resolves
+/// end times never has to ask whether a region is empty.
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct AdditiveRegion {
+    first: CueGroup,
+    rest: Vec<CueGroup>,
+}
+
+impl AdditiveRegion {
+    /// The region `region` with `group` written beneath it, or the
+    /// region that `group` opens when it is the first one enclosed.
+    fn extended(region: Option<Self>, group: CueGroup) -> Self {
+        match region {
+            None => AdditiveRegion {
+                first: group,
+                rest: Vec::new(),
+            },
+            Some(mut region) => {
+                region.rest.push(group);
+                region
+            }
+        }
+    }
+
+    /// The region's cue groups, in the order they were written.
+    fn groups(&self) -> impl Iterator<Item = &CueGroup> {
+        once(&self.first).chain(&self.rest)
+    }
+
+    /// The last group the region encloses.
+    fn last(&self) -> &CueGroup {
+        self.rest.last().unwrap_or(&self.first)
+    }
 }
 
 /// An intermediate event extracted from a source file before end times
@@ -251,13 +338,27 @@ struct CueGroup {
 enum Event {
     Cue(CueGroup),
     Clear(Timestamp),
+    Region(AdditiveRegion),
 }
 
 impl Event {
-    fn start(&self) -> Timestamp {
+    /// The start time the event opens with, which closes the event
+    /// before it.
+    fn first_start(&self) -> Timestamp {
         match self {
             Event::Cue(group) => group.start,
             Event::Clear(start) => *start,
+            Event::Region(region) => region.first.start,
+        }
+    }
+
+    /// The start time the event ends with, which the event after it
+    /// must follow.
+    fn last_start(&self) -> Timestamp {
+        match self {
+            Event::Cue(group) => group.start,
+            Event::Clear(start) => *start,
+            Event::Region(region) => region.last().start,
         }
     }
 }
@@ -265,399 +366,505 @@ impl Event {
 /// Parses `content` into a list of cues ordered by start time.
 pub fn parse_lyrics(content: &str) -> Result<Vec<SubtitleCue>, ParseLyricsError> {
     let events = collect_events(content)?;
-    resolve_cues(events)
+    resolve_cues(&events)
 }
 
-/// Locates a [`ParseLyricsErrorKind`] at `line_number`.
+/// Locates a [`ParseLyricsErrorKind`] at `line_number`, forming the
+/// [`ParseLyricsError`] the parser returns. The kinds carry no line of
+/// their own, so each parser attaches the line it stands at as its
+/// error surfaces.
 fn at_line(line_number: usize) -> impl Fn(ParseLyricsErrorKind) -> ParseLyricsError {
     move |kind| ParseLyricsError { line_number, kind }
 }
 
+/// Reads `content` as a sequence of top-level elements.
 fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
     let mut events = Vec::<Event>::new();
-    let mut last_cue_index: Option<usize> = None;
-    // The marker line a continuation would extend, which is the one
-    // most recently opened, whether by a cue part or by an
-    // annotation. A continuation is valid only when its indent equals
-    // `TIMESTAMP_PREFIX_WIDTH` plus that line's `marker: ` width.
-    let mut open_marker_line: Option<OpenMarkerLine> = None;
-    let mut regions = RegionState::default();
+    let mut input = Input::new(content);
 
-    for (line_index, raw_line) in content.lines().enumerate() {
-        let line_number = line_index + 1;
-        if raw_line.trim().is_empty() || raw_line.trim_start().starts_with('#') {
-            continue;
+    while let Some((line, rest)) = input.take_line()? {
+        let previous_start = events.last().map(Event::last_start);
+        let (event, tail) = take_element(line, rest, previous_start)?;
+        if let Some(event) = event {
+            events.push(event);
         }
-        let locate = at_line(line_number);
-
-        if raw_line.trim_start_matches(' ').starts_with('\t') {
-            return TabIndentation
-                .pipe(ParseLyricsErrorKind::TabIndentation)
-                .pipe(locate)
-                .pipe(Err);
-        }
-
-        let indent = raw_line.bytes().take_while(|&b| b == b' ').count();
-        let body = &raw_line[indent..];
-
-        if indent == 0 {
-            // A tag line is the one column-zero shape that carries no
-            // timestamp, so it is parsed before the header parser sees
-            // the line. Nothing else in the format opens with `<`, so
-            // any other line that does is a misspelled tag rather than
-            // a header.
-            if let Some((tag, tail)) = OpeningTag::take(body)
-                && tag.name() == TagName::Additive
-                && tail.trim().is_empty()
-            {
-                handle_additive_opening_tag_line(
-                    line_number,
-                    &mut regions,
-                    &mut last_cue_index,
-                    &mut open_marker_line,
-                )
-                .map_err(locate)?;
-            } else if let Some((tag, tail)) = ClosingTag::take(body)
-                && tag.name() == TagName::Additive
-                && tail.trim().is_empty()
-            {
-                handle_additive_closing_tag_line(
-                    &mut regions,
-                    &mut last_cue_index,
-                    &mut open_marker_line,
-                )
-                .map_err(locate)?;
-            } else if body.starts_with('<') {
-                return body
-                    .to_string()
-                    .pipe(MalformedTagLine)
-                    .pipe(ParseLyricsErrorKind::MalformedTagLine)
-                    .pipe(locate)
-                    .pipe(Err);
-            } else {
-                handle_header_line(
-                    body,
-                    line_number,
-                    &mut events,
-                    &mut last_cue_index,
-                    &mut open_marker_line,
-                    &mut regions,
-                )
-                .map_err(locate)?;
-            }
-        } else if indent == TIMESTAMP_PREFIX_WIDTH {
-            handle_shorthand_marker_line(body, &mut events, last_cue_index, &mut open_marker_line)
-                .map_err(locate)?;
-        } else if let Some(open) = open_marker_line
-            && indent == TIMESTAMP_PREFIX_WIDTH + open.marker_prefix_width
-        {
-            handle_continuation_line(body, &mut events, last_cue_index, open.target)
-                .map_err(locate)?;
-        } else {
-            return MalformedIndentation {
-                actual: indent,
-                shorthand_indent: TIMESTAMP_PREFIX_WIDTH,
-                continuation_indent: open_marker_line
-                    .map(|open| TIMESTAMP_PREFIX_WIDTH + open.marker_prefix_width),
-            }
-            .pipe(ParseLyricsErrorKind::MalformedIndentation)
-            .pipe(locate)
-            .pipe(Err);
-        }
-    }
-
-    if let Some(OpenRegion { opened_at, .. }) = regions.open {
-        return UnclosedRegion
-            .pipe(AdditiveRegionError::Unclosed)
-            .pipe(ParseLyricsErrorKind::AdditiveRegion)
-            .pipe(at_line(opened_at))
-            .pipe(Err);
+        input = tail;
     }
 
     Ok(events)
 }
 
-/// Opens an additive region at an `<additive>` line. `opened_at` is
-/// the line that tag sits on; it travels down because [`OpenRegion`]
-/// records it, not because a diagnostic raised here needs to name it.
-fn handle_additive_opening_tag_line(
+/// Consumes the element that `line` opens, with every line beneath it
+/// that the element owns, and returns it with the unconsumed tail.
+///
+/// `rest` is the tail that follows `line`, and `previous_start` the
+/// start time of the event most recently recorded. The element
+/// contributes no event when the line is ignored entirely.
+fn take_element<'a>(
+    line: Line<'a>,
+    rest: Input<'a>,
+    previous_start: Option<Timestamp>,
+) -> Result<(Option<Event>, Input<'a>), ParseLyricsError> {
+    match parse_element_line(line)? {
+        ElementLine::OpeningTag => {
+            let (region, tail) = take_additive_region(rest, line.number, previous_start)?;
+            Ok((Some(Event::Region(region)), tail))
+        }
+        // A closing tag is consumed by the parser that consumed its
+        // opening tag, so one reaching the top level closes nothing.
+        ElementLine::ClosingTag => UnopenedRegion
+            .pipe(AdditiveRegionError::Unopened)
+            .pipe(ParseLyricsErrorKind::AdditiveRegion)
+            .pipe(at_line(line.number))
+            .pipe(Err),
+        ElementLine::Header(start, Header::Control(ReservedMarker::Clear)) => {
+            check_event_order(start, previous_start).map_err(at_line(line.number))?;
+            Ok((Some(Event::Clear(start)), rest))
+        }
+        // The only other control marker is `eov`, which `take_line`
+        // passes over outside a region and which a region rejects, so
+        // no line reaches here. Were one to, ignoring it entirely is
+        // what the format asks for.
+        ElementLine::Header(_, Header::Control(_)) => Ok((None, rest)),
+        ElementLine::Header(start, Header::Cue(body)) => {
+            check_event_order(start, previous_start).map_err(at_line(line.number))?;
+            let header = PartHeader::parse(body).map_err(at_line(line.number))?;
+            let (group, tail) = take_cue_group(start, line.number, header, rest)?;
+            Ok((Some(Event::Cue(group)), tail))
+        }
+    }
+}
+
+/// What a line standing where an element may begin declares. The
+/// indent rules and the tag spellings are the same inside a region as
+/// outside one, so both callers read such a line through here and
+/// differ only in what they make of the answer.
+enum ElementLine<'a> {
+    /// An `<additive>` line.
+    OpeningTag,
+    /// A `</additive>` line.
+    ClosingTag,
+    /// A header line, carrying the timestamp it opens with and what
+    /// the body after that timestamp declares.
+    Header(Timestamp, Header<'a>),
+}
+
+/// Reads a line that stands where an element may begin.
+fn parse_element_line(line: Line<'_>) -> Result<ElementLine<'_>, ParseLyricsError> {
+    if line.indent == TIMESTAMP_PREFIX_WIDTH {
+        return Err(orphaned_shorthand_line(line));
+    }
+    if line.indent != 0 {
+        return Err(malformed_indentation(line, None));
+    }
+    // A tag line is the one column-zero shape that carries no
+    // timestamp, so it is recognized before the header parser sees the
+    // line. Nothing else in the format opens with `<`, so any other
+    // line that does is a misspelled tag rather than a header.
+    if is_opening_additive_tag(line.body) {
+        return Ok(ElementLine::OpeningTag);
+    }
+    if is_closing_additive_tag(line.body) {
+        return Ok(ElementLine::ClosingTag);
+    }
+    if line.body.starts_with('<') {
+        return Err(malformed_tag_line(line));
+    }
+    let (start, header) = parse_header(line)?;
+    Ok(ElementLine::Header(start, header))
+}
+
+/// Consumes the cue groups an `<additive>` region encloses and the
+/// `</additive>` that closes it, returning the region with the
+/// unconsumed tail.
+///
+/// The opening tag has already been consumed; `opened_at` is the line
+/// it stood on, and `input` the tail that follows it. Nesting is not
+/// part of the grammar this parser reads, so the region it returns is
+/// flat by construction and an `<additive>` met on the way is
+/// reported where it stands.
+fn take_additive_region<'a>(
+    input: Input<'a>,
     opened_at: usize,
-    regions: &mut RegionState,
-    last_cue_index: &mut Option<usize>,
-    open_marker_line: &mut Option<OpenMarkerLine>,
-) -> Result<(), ParseLyricsErrorKind> {
-    regions
-        .open_region(opened_at)
-        .map_err(ParseLyricsErrorKind::AdditiveRegion)?;
-    end_cue_scope(last_cue_index, open_marker_line);
-    Ok(())
+    previous_start: Option<Timestamp>,
+) -> Result<(AdditiveRegion, Input<'a>), ParseLyricsError> {
+    // The region built so far, which is `None` until its first cue
+    // group opens it. The groups accumulate in the region itself, so
+    // none of them is moved out of one vector and into another when
+    // the closing tag arrives.
+    let mut region: Option<AdditiveRegion> = None;
+    let mut input = input.inside(opened_at);
+
+    loop {
+        let Some((line, rest)) = input.take_line()? else {
+            return UnclosedRegion
+                .pipe(AdditiveRegionError::Unclosed)
+                .pipe(ParseLyricsErrorKind::AdditiveRegion)
+                .pipe(at_line(opened_at))
+                .pipe(Err);
+        };
+
+        match parse_element_line(line)? {
+            // A region exists to accumulate cues, so one that closes
+            // having enclosed none is an authoring mistake rather than
+            // a silent no-op.
+            ElementLine::ClosingTag => {
+                let Some(region) = region else {
+                    return opened_at
+                        .pipe(EmptyRegion)
+                        .pipe(AdditiveRegionError::Empty)
+                        .pipe(ParseLyricsErrorKind::AdditiveRegion)
+                        .pipe(at_line(line.number))
+                        .pipe(Err);
+                };
+                return Ok((region, rest.outside()));
+            }
+            // The cues a region encloses are read by a parser that
+            // admits no opening tag, so a nested region is not a state
+            // this parser can reach; the tag is reported where it
+            // stands instead.
+            ElementLine::OpeningTag => {
+                return opened_at
+                    .pipe(NestedRegion)
+                    .pipe(AdditiveRegionError::Nested)
+                    .pipe(ParseLyricsErrorKind::AdditiveRegion)
+                    .pipe(at_line(line.number))
+                    .pipe(Err);
+            }
+            // A region encloses cues, not the boundary events that end
+            // them, so both control markers are rejected here rather
+            // than acted on.
+            ElementLine::Header(_, Header::Control(marker)) => {
+                return ControlMarkerInRegion { marker, opened_at }
+                    .pipe(AdditiveRegionError::ControlMarker)
+                    .pipe(ParseLyricsErrorKind::AdditiveRegion)
+                    .pipe(at_line(line.number))
+                    .pipe(Err);
+            }
+            ElementLine::Header(start, Header::Cue(body)) => {
+                let previous = region
+                    .as_ref()
+                    .map(|region| region.last().start)
+                    .or(previous_start);
+                check_event_order(start, previous).map_err(at_line(line.number))?;
+                let header = PartHeader::parse(body).map_err(at_line(line.number))?;
+                let (group, tail) = take_cue_group(start, line.number, header, rest)?;
+                region = Some(AdditiveRegion::extended(region, group));
+                input = tail;
+            }
+        }
+    }
 }
 
-/// Closes the additive region at a `</additive>` line.
-fn handle_additive_closing_tag_line(
-    regions: &mut RegionState,
-    last_cue_index: &mut Option<usize>,
-    open_marker_line: &mut Option<OpenMarkerLine>,
-) -> Result<(), ParseLyricsErrorKind> {
-    regions
-        .close_region()
-        .map_err(ParseLyricsErrorKind::AdditiveRegion)?;
-    end_cue_scope(last_cue_index, open_marker_line);
-    Ok(())
-}
-
-/// Ends the scope of the cue above a region boundary, exactly as
-/// [`ReservedMarker::Clear`] does, so that no continuation or
-/// shorthand marker line reaches across the tag.
-fn end_cue_scope(
-    last_cue_index: &mut Option<usize>,
-    open_marker_line: &mut Option<OpenMarkerLine>,
-) {
-    *last_cue_index = None;
-    *open_marker_line = None;
-}
-
-/// Reads a column-zero header line. `opened_at` is the line that
-/// header sits on; a header that opens a cue records it in the
-/// [`CueGroup`], so that a cue the file never closes can still name
-/// the line that opened it. No diagnostic raised here reads it.
-fn handle_header_line(
-    body: &str,
+/// Consumes the lines beneath the header that opened a cue at `start`
+/// with `header`, returning the group with the unconsumed tail.
+///
+/// The group owns every line written beneath that header: the
+/// shorthand marker lines that add parts to it, the annotations that
+/// attach notes to those parts, and the continuation lines each of
+/// those takes. It ends at the first column-zero line, which opens
+/// the next element.
+fn take_cue_group<'a>(
+    start: Timestamp,
     opened_at: usize,
-    events: &mut Vec<Event>,
-    last_cue_index: &mut Option<usize>,
-    open_marker_line: &mut Option<OpenMarkerLine>,
-    regions: &mut RegionState,
-) -> Result<(), ParseLyricsErrorKind> {
-    let (start, after_prefix) = Timestamp::take(body).map_err(|cause| match cause {
-        TakeTimestampError::ShapeMismatch => body
-            .to_string()
-            .pipe(MalformedHeader)
-            .pipe(ParseLyricsErrorKind::MalformedHeader),
-        cause => cause
-            .pipe(InvalidTimestamp)
-            .pipe(ParseLyricsErrorKind::InvalidTimestamp),
-    })?;
+    header: PartHeader<'a>,
+    input: Input<'a>,
+) -> Result<(CueGroup, Input<'a>), ParseLyricsError> {
+    // The part the shorthand column is currently writing into is held
+    // aside from the parts a later shorthand line has already closed.
+    // That is what lets an annotation reach the open part without the
+    // group having to prove that a part exists.
+    let (mut open, mut input) = take_cue_part(header, input)?;
+    let mut parts = Vec::<CuePart>::new();
+    let annotation_indent = continuation_indent(ReservedMarker::Annotation.as_ref());
 
-    let cue_body = after_prefix.trim_start();
-    if cue_body.len() == after_prefix.len() {
+    while let Some((line, rest)) = input.take_line()? {
+        // A part accepts every line indented at its continuation width
+        // and rejects every other width, so the line reached here
+        // stands at column zero or at the shorthand column.
+        if line.indent != TIMESTAMP_PREFIX_WIDTH {
+            break;
+        }
+        match parse_shorthand_line(line.body).map_err(at_line(line.number))? {
+            ShorthandLine::Annotation(text) => {
+                let (annotation, tail) = take_body(
+                    text.to_string(),
+                    rest,
+                    annotation_indent,
+                    Continued::AnnotationText,
+                )?;
+                open.annotations.push(annotation);
+                input = tail;
+            }
+            ShorthandLine::Part(header) => {
+                let (part, tail) = take_cue_part(header, rest)?;
+                parts.push(open);
+                open = part;
+                input = tail;
+            }
+        }
+    }
+
+    parts.push(open);
+    Ok((
+        CueGroup {
+            start,
+            opened_at,
+            parts,
+        },
+        input,
+    ))
+}
+
+/// Consumes the continuation lines that extend the text of the part
+/// `header` opens, returning the part with the unconsumed tail. The
+/// annotations written beneath the part are the cue group's to read,
+/// since each attaches to whichever part is open when it appears.
+fn take_cue_part<'a>(
+    header: PartHeader<'a>,
+    input: Input<'a>,
+) -> Result<(CuePart, Input<'a>), ParseLyricsError> {
+    let PartHeader { marker, text } = header;
+    let indent = continuation_indent(marker);
+    let (text, input) = take_body(text.to_string(), input, indent, Continued::CueText)?;
+    let part = CuePart {
+        marker: marker.to_string(),
+        text,
+        annotations: Vec::new(),
+    };
+    Ok((part, input))
+}
+
+/// Which body a run of continuation lines extends. Only cue text is
+/// checked for the reserved tag delimiters: annotation text reaches no
+/// renderer, so `<` and `>` carry no meaning there and are ordinary
+/// punctuation.
+#[derive(Clone, Copy, Eq, PartialEq)]
+enum Continued {
+    CueText,
+    AnnotationText,
+}
+
+/// Reads the body of a part or an annotation: the `opening` text, then
+/// the continuation lines indented by `indent` beneath it, each
+/// appended to the opening under a newline. Returns that text with the
+/// unconsumed tail.
+///
+/// The opening arrives owned and the continuations are appended to it
+/// in place, rather than gathered into a list and joined, so the body
+/// costs the one allocation the string already is.
+///
+/// The first line carrying another indent opens something else, so it
+/// must stand at column zero, where a header or a tag line does, or at
+/// the shorthand column, where a new part or an annotation does. Any
+/// other indent names nothing the grammar admits here and is reported
+/// against the two widths that were in force.
+fn take_body<'a>(
+    opening: String,
+    input: Input<'a>,
+    indent: usize,
+    continued: Continued,
+) -> Result<(String, Input<'a>), ParseLyricsError> {
+    let mut text = opening;
+    let mut input = input;
+
+    while let Some((line, rest)) = input.take_line()? {
+        if line.indent == indent {
+            if continued == Continued::CueText {
+                reject_reserved_cue_text_characters(line.body).map_err(at_line(line.number))?;
+            }
+            text.push('\n');
+            text.push_str(line.body);
+            input = rest;
+            continue;
+        }
+        if line.indent != 0 && line.indent != TIMESTAMP_PREFIX_WIDTH {
+            return Err(malformed_indentation(line, Some(indent)));
+        }
+        break;
+    }
+
+    Ok((text, input))
+}
+
+/// What a line at the shorthand column declares.
+enum ShorthandLine<'a> {
+    /// An `ann` line, carrying the note it attaches to the part above
+    /// it.
+    Annotation(&'a str),
+    /// A marker line, opening a part of its own.
+    Part(PartHeader<'a>),
+}
+
+/// Reads a whole line at the shorthand column. The line is split into
+/// a marker and its text once, and the marker alone decides which of
+/// the two shapes the line is, so neither half is derived twice.
+fn parse_shorthand_line(body: &str) -> Result<ShorthandLine<'_>, ParseLyricsErrorKind> {
+    let Some((marker, text)) = split_marker(body) else {
+        reject_reserved_cue_text_characters(body)?;
         return body
+            .to_string()
+            .pipe(MissingMarker)
+            .pipe(ParseLyricsErrorKind::MissingMarker)
+            .pipe(Err);
+    };
+    if matches!(marker.parse(), Ok(ReservedMarker::Annotation)) {
+        if text.is_empty() {
+            return EmptyAnnotation
+                .pipe(ParseLyricsErrorKind::EmptyAnnotation)
+                .pipe(Err);
+        }
+        return Ok(ShorthandLine::Annotation(text));
+    }
+    reject_reserved_cue_text_characters(body)?;
+    PartHeader::from_parts(marker, text).map(ShorthandLine::Part)
+}
+
+/// The marker and the text that a `marker: text` line declares, which
+/// together open one [`CuePart`].
+#[derive(Clone, Copy)]
+struct PartHeader<'a> {
+    marker: &'a str,
+    text: &'a str,
+}
+
+impl<'a> PartHeader<'a> {
+    /// Reads a whole `marker: text` body, rejecting the bodies that
+    /// no cue part may carry.
+    fn parse(body: &'a str) -> Result<Self, ParseLyricsErrorKind> {
+        reject_reserved_cue_text_characters(body)?;
+        let (marker, text) = split_marker(body)
+            .ok_or(body)
+            .map_err(String::from)
+            .map_err(MissingMarker)
+            .map_err(ParseLyricsErrorKind::MissingMarker)?;
+        PartHeader::from_parts(marker, text)
+    }
+
+    /// Checks the two halves of a body that has already been split.
+    /// A caller that split the body to learn what kind of line it was
+    /// reaches the same checks through here rather than splitting the
+    /// same bytes a second time.
+    fn from_parts(marker: &'a str, text: &'a str) -> Result<Self, ParseLyricsErrorKind> {
+        if let Ok(reserved) = marker.parse::<ReservedMarker>() {
+            return reserved
+                .pipe(ReservedControlMarker)
+                .pipe(ParseLyricsErrorKind::ReservedControlMarker)
+                .pipe(Err);
+        }
+        if text.is_empty() {
+            return marker
+                .to_string()
+                .pipe(EmptyCueBody)
+                .pipe(ParseLyricsErrorKind::EmptyCueBody)
+                .pipe(Err);
+        }
+        Ok(PartHeader { marker, text })
+    }
+}
+
+/// What the body of a column-zero header line declares.
+enum Header<'a> {
+    /// A control marker standing alone on the line.
+    Control(ReservedMarker),
+    /// The body of a line that opens a cue, which the caller reads as
+    /// a [`PartHeader`]. It is handed on unparsed so that the checks a
+    /// cue faces apply in the order the caller wants them, rather than
+    /// in the order this layer happens to run.
+    Cue(&'a str),
+}
+
+/// Reads a whole header line: an `MM:SS.mmm` timestamp, the
+/// whitespace that separates it from the body, and a body that either
+/// names a control marker or opens a cue.
+///
+/// Each layer is consumed by a parser that hands back its tail, and
+/// the next layer reads that tail rather than a position computed
+/// from what the previous one matched.
+fn parse_header(line: Line<'_>) -> Result<(Timestamp, Header<'_>), ParseLyricsError> {
+    let (start, after_timestamp) = Timestamp::take(line.body)
+        .map_err(|cause| match cause {
+            TakeTimestampError::ShapeMismatch => line
+                .body
+                .to_string()
+                .pipe(MalformedHeader)
+                .pipe(ParseLyricsErrorKind::MalformedHeader),
+            cause => cause
+                .pipe(InvalidTimestamp)
+                .pipe(ParseLyricsErrorKind::InvalidTimestamp),
+        })
+        .map_err(at_line(line.number))?;
+
+    let (separator, cue_body) = take_leading_whitespace(after_timestamp);
+    if separator.is_empty() {
+        return line
+            .body
             .to_string()
             .pipe(MissingSeparatorAfterTimestamp)
             .pipe(ParseLyricsErrorKind::MissingSeparatorAfterTimestamp)
+            .pipe(at_line(line.number))
             .pipe(Err);
     }
 
-    let first_token = cue_body.split_whitespace().next().unwrap_or("");
+    let (first_token, after_token) = take_non_whitespace(cue_body);
     if let Ok(marker) = first_token.parse::<ReservedMarker>()
         && marker.is_control()
     {
-        let trailing = cue_body[first_token.len()..].trim();
+        let trailing = after_token.trim();
         if !trailing.is_empty() {
             return ExtraTextAfterControlMarker {
                 marker,
                 trailing: trailing.to_string(),
             }
             .pipe(ParseLyricsErrorKind::ExtraTextAfterControlMarker)
+            .pipe(at_line(line.number))
             .pipe(Err);
         }
-        if let Some(open) = &regions.open {
-            let payload = ControlMarkerInRegion {
-                marker,
-                opened_at: open.opened_at,
-            };
-            return payload
-                .pipe(AdditiveRegionError::ControlMarker)
-                .pipe(ParseLyricsErrorKind::AdditiveRegion)
-                .pipe(Err);
-        }
-        if marker == ReservedMarker::Clear {
-            check_event_order(start, events)?;
-            events.push(Event::Clear(start));
-            *last_cue_index = None;
-            *open_marker_line = None;
-        }
-        // `eov` is documented as "ignored entirely"; it pushes no
-        // event and so does not participate in the repeated- or
-        // out-of-order checks. This lets a source file note both
-        // `clr` and `eov` at the moment the video ends, since the
-        // `eov` is a documentation sentinel rather than a competing
-        // cue boundary.
-        return Ok(());
+        return Ok((start, Header::Control(marker)));
     }
 
-    check_event_order(start, events)?;
-    let (marker, text) = parse_marker_part(cue_body)?;
-    let region = regions.open.as_mut().map(|open| {
-        open.cue_count += 1;
-        open.index
-    });
-    events.push(Event::Cue(CueGroup {
-        start,
-        opened_at,
-        region,
-        parts: vec![CuePart {
-            marker: marker.to_string(),
-            text: text.to_string(),
-            annotations: Vec::new(),
-        }],
-    }));
-    *last_cue_index = Some(events.len() - 1);
-    *open_marker_line = Some(OpenMarkerLine {
-        marker_prefix_width: marker_prefix_width(marker),
-        target: ContinuationTarget::PartText,
-    });
-    Ok(())
+    Ok((start, Header::Cue(cue_body)))
 }
 
-fn handle_shorthand_marker_line(
-    body: &str,
-    events: &mut [Event],
-    last_cue_index: Option<usize>,
-    open_marker_line: &mut Option<OpenMarkerLine>,
+/// Whether `line` is an `eov` line, which the format ignores
+/// entirely. A line the header parser rejects is not one; its
+/// diagnostic belongs to the parser that owns the position rather
+/// than to this test.
+fn is_end_of_video(line: Line<'_>) -> bool {
+    matches!(
+        parse_header(line),
+        Ok((_, Header::Control(ReservedMarker::EndOfVideo))),
+    )
+}
+
+/// The indent a continuation of a `marker: ` line must carry: the
+/// timestamp column, plus the marker name, its colon and one ASCII
+/// space.
+fn continuation_indent(marker: &str) -> usize {
+    TIMESTAMP_PREFIX_WIDTH + marker.len() + 2
+}
+
+/// Rejects a new event whose start time matches or precedes the most
+/// recent recorded event, whose start time is `previous`. An `eov`
+/// line never reaches this check, because it pushes no event and
+/// therefore must not compete for the same start-time slot as a real
+/// cue or `clr`.
+fn check_event_order(
+    start: Timestamp,
+    previous: Option<Timestamp>,
 ) -> Result<(), ParseLyricsErrorKind> {
-    if let Some(annotation) = annotation_body(body) {
-        let cue_index = last_cue_index
-            .ok_or(body)
-            .map_err(String::from)
-            .map_err(OrphanedAnnotation)
-            .map_err(ParseLyricsErrorKind::OrphanedAnnotation)?;
-        return handle_annotation_line(annotation, cue_index, events, open_marker_line);
-    }
-
-    let cue_index = last_cue_index
-        .ok_or(body)
-        .map_err(String::from)
-        .map_err(OrphanedShorthandMarker)
-        .map_err(ParseLyricsErrorKind::OrphanedShorthandMarker)?;
-    let (marker, text) = parse_marker_part(body)?;
-    cue_group_mut(events, cue_index).parts.push(CuePart {
-        marker: marker.to_string(),
-        text: text.to_string(),
-        annotations: Vec::new(),
-    });
-    *open_marker_line = Some(OpenMarkerLine {
-        marker_prefix_width: marker_prefix_width(marker),
-        target: ContinuationTarget::PartText,
-    });
-    Ok(())
-}
-
-/// Attaches an annotation carrying `text` to the last part of the
-/// cue group at `cue_index`.
-fn handle_annotation_line(
-    text: &str,
-    cue_index: usize,
-    events: &mut [Event],
-    open_marker_line: &mut Option<OpenMarkerLine>,
-) -> Result<(), ParseLyricsErrorKind> {
-    if text.is_empty() {
-        return EmptyAnnotation
-            .pipe(ParseLyricsErrorKind::EmptyAnnotation)
-            .pipe(Err);
-    }
-    last_part_mut(events, cue_index)
-        .annotations
-        .push(text.to_string());
-    *open_marker_line = Some(OpenMarkerLine {
-        marker_prefix_width: marker_prefix_width(ReservedMarker::Annotation.as_ref()),
-        target: ContinuationTarget::AnnotationText,
-    });
-    Ok(())
-}
-
-/// The cue group at `cue_index`, which the caller's `last_cue_index`
-/// guarantees is an [`Event::Cue`] rather than an [`Event::Clear`].
-fn cue_group_mut(events: &mut [Event], cue_index: usize) -> &mut CueGroup {
-    let Event::Cue(group) = &mut events[cue_index] else {
-        unreachable!("last_cue_index must point at a Cue event");
-    };
-    group
-}
-
-/// The part a continuation line or an annotation line attaches to:
-/// the most recently opened part of the cue group at `cue_index`.
-fn last_part_mut(events: &mut [Event], cue_index: usize) -> &mut CuePart {
-    cue_group_mut(events, cue_index)
-        .parts
-        .last_mut()
-        .expect("a cue group always has at least one part once it is opened")
-}
-
-fn handle_continuation_line(
-    body: &str,
-    events: &mut [Event],
-    last_cue_index: Option<usize>,
-    target: ContinuationTarget,
-) -> Result<(), ParseLyricsErrorKind> {
-    let cue_index =
-        last_cue_index.expect("indent matched continuation width, so a prior cue must exist");
-    // Only cue text is checked for the reserved tag delimiters.
-    // Annotation text reaches no renderer, so `<` and `>` carry no
-    // meaning there and are ordinary punctuation.
-    if matches!(target, ContinuationTarget::PartText) {
-        reject_reserved_cue_text_characters(body)?;
-    }
-    let part = last_part_mut(events, cue_index);
-    let destination = match target {
-        ContinuationTarget::PartText => &mut part.text,
-        ContinuationTarget::AnnotationText => part
-            .annotations
-            .last_mut()
-            .expect("an annotation is open, so the part carries at least one"),
-    };
-    destination.push('\n');
-    destination.push_str(body);
-    Ok(())
-}
-
-fn parse_marker_part(body: &str) -> Result<(&str, &str), ParseLyricsErrorKind> {
-    reject_reserved_cue_text_characters(body)?;
-    let (marker, text) = split_marker(body)
-        .ok_or(body)
-        .map_err(String::from)
-        .map_err(MissingMarker)
-        .map_err(ParseLyricsErrorKind::MissingMarker)?;
-    if let Ok(reserved) = marker.parse::<ReservedMarker>() {
-        return reserved
-            .pipe(ReservedControlMarker)
-            .pipe(ParseLyricsErrorKind::ReservedControlMarker)
-            .pipe(Err);
-    }
-    if text.is_empty() {
-        return marker
-            .to_string()
-            .pipe(EmptyCueBody)
-            .pipe(ParseLyricsErrorKind::EmptyCueBody)
-            .pipe(Err);
-    }
-    Ok((marker, text))
-}
-
-/// Byte width of `marker: ` (the marker name, a colon, and one
-/// ASCII space). Used to compute the expected indent of a
-/// continuation line under the part it continues.
-fn marker_prefix_width(marker: &str) -> usize {
-    marker.len() + 2
-}
-
-/// Rejects a new event whose start time matches or precedes the
-/// most recent recorded event. Skipped for `eov` lines because
-/// `eov` does not push an event and therefore should not compete
-/// for the same start-time slot as a real cue or `clr`.
-fn check_event_order(start: Timestamp, events: &[Event]) -> Result<(), ParseLyricsErrorKind> {
-    let Some(previous_start) = events.last().map(Event::start) else {
+    let Some(previous) = previous else {
         return Ok(());
     };
-    if previous_start == start {
+    if previous == start {
         return start
             .pipe(RepeatedTimestamp)
             .pipe(ParseLyricsErrorKind::RepeatedTimestamp)
             .pipe(Err);
     }
-    if start < previous_start {
+    if start < previous {
         return OutOfOrder {
-            previous: previous_start,
+            previous,
             next: start,
         }
         .pipe(ParseLyricsErrorKind::OutOfOrder)
@@ -666,47 +873,109 @@ fn check_event_order(start: Timestamp, events: &[Event]) -> Result<(), ParseLyri
     Ok(())
 }
 
-fn resolve_cues(events: Vec<Event>) -> Result<Vec<SubtitleCue>, ParseLyricsError> {
+/// The diagnostic for a shorthand-column line that no cue is open
+/// above. An annotation reports its own, because the fix for it
+/// differs from the fix for a marker line.
+fn orphaned_shorthand_line(line: Line<'_>) -> ParseLyricsError {
+    let kind = if annotation_body(line.body).is_some() {
+        line.body
+            .to_string()
+            .pipe(OrphanedAnnotation)
+            .pipe(ParseLyricsErrorKind::OrphanedAnnotation)
+    } else {
+        line.body
+            .to_string()
+            .pipe(OrphanedShorthandMarker)
+            .pipe(ParseLyricsErrorKind::OrphanedShorthandMarker)
+    };
+    kind.pipe(at_line(line.number))
+}
+
+/// The diagnostic for a line whose indent matches no width the parser
+/// accepts where it stands. `continuation` is the width a continuation
+/// would have carried, or `None` when no body is open for one to
+/// continue.
+fn malformed_indentation(line: Line<'_>, continuation: Option<usize>) -> ParseLyricsError {
+    MalformedIndentation {
+        actual: line.indent,
+        shorthand_indent: TIMESTAMP_PREFIX_WIDTH,
+        continuation_indent: continuation,
+    }
+    .pipe(ParseLyricsErrorKind::MalformedIndentation)
+    .pipe(at_line(line.number))
+}
+
+/// The diagnostic for a column-zero line that opens with `<` but
+/// spells neither tag.
+fn malformed_tag_line(line: Line<'_>) -> ParseLyricsError {
+    line.body
+        .to_string()
+        .pipe(MalformedTagLine)
+        .pipe(ParseLyricsErrorKind::MalformedTagLine)
+        .pipe(at_line(line.number))
+}
+
+/// Resolves the end time of every cue in `events` and flattens them
+/// into the rendered order.
+fn resolve_cues(events: &[Event]) -> Result<Vec<SubtitleCue>, ParseLyricsError> {
     let mut cues = Vec::<SubtitleCue>::new();
-    // The region whose parts `carried` holds, and those parts. A cue
-    // group in that same region renders them above its own; a group
-    // anywhere else resets both, which is what keeps two adjacent
-    // regions from bleeding into each other.
-    let mut carried_region: Option<AdditiveRegionIndex> = None;
-    let mut carried = Vec::<CuePart>::new();
 
     for (index, event) in events.iter().enumerate() {
-        let Event::Cue(group) = event else {
-            continue;
-        };
-
-        let end = events
-            .get(index + 1)
-            .map(Event::start)
-            .ok_or(group.start)
-            .map_err(UnclosedCue)
-            .map_err(ParseLyricsErrorKind::UnclosedCue)
-            .map_err(at_line(group.opened_at))?;
-
-        if group.region != carried_region {
-            carried_region = group.region;
-            carried.clear();
+        let following = events.get(index + 1).map(Event::first_start);
+        match event {
+            Event::Clear(_) => continue,
+            Event::Cue(group) => cues.push(resolve_group(group, Vec::new(), following)?),
+            Event::Region(region) => cues.extend(resolve_region(region, following)?),
         }
-
-        let mut parts = carried.clone();
-        parts.extend(group.parts.iter().cloned());
-        if group.region.is_some() {
-            carried = parts.iter().map(carried_part).collect();
-        }
-
-        cues.push(SubtitleCue {
-            start: group.start,
-            end,
-            parts,
-        });
     }
 
     Ok(cues)
+}
+
+/// Resolves the cues of one additive region, which is the one place
+/// where a cue renders the parts of the cues above it. The carried
+/// parts start empty and are dropped at the closing tag, so two
+/// adjacent regions cannot bleed into each other.
+///
+/// `following` is the start time of the event after the region, which
+/// closes its last cue.
+fn resolve_region(
+    region: &AdditiveRegion,
+    following: Option<Timestamp>,
+) -> Result<Vec<SubtitleCue>, ParseLyricsError> {
+    let mut cues = Vec::<SubtitleCue>::new();
+    let mut carried = Vec::<CuePart>::new();
+    let mut groups = region.groups().peekable();
+
+    while let Some(group) = groups.next() {
+        let next = groups.peek().map(|group| group.start).or(following);
+        let cue = resolve_group(group, carried, next)?;
+        carried = cue.parts.iter().map(carried_part).collect();
+        cues.push(cue);
+    }
+
+    Ok(cues)
+}
+
+/// Builds the cue of one group, whose own parts render below
+/// `carried`, and which ends at `following`.
+fn resolve_group(
+    group: &CueGroup,
+    carried: Vec<CuePart>,
+    following: Option<Timestamp>,
+) -> Result<SubtitleCue, ParseLyricsError> {
+    let end = following
+        .ok_or(group.start)
+        .map_err(UnclosedCue)
+        .map_err(ParseLyricsErrorKind::UnclosedCue)
+        .map_err(at_line(group.opened_at))?;
+    let mut parts = carried;
+    parts.extend(group.parts.iter().cloned());
+    Ok(SubtitleCue {
+        start: group.start,
+        end,
+        parts,
+    })
 }
 
 /// A copy of `part` for the cues below it in the same additive
