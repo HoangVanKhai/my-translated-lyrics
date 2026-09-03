@@ -82,28 +82,30 @@ pub fn subtitle_path(
     collection_dir.join(format!("{video_title}.{language}.{format}"))
 }
 
-/// Reason a video file could not be uniquely located in the library.
+/// Failure to uniquely locate a video file in the library.
 #[derive(Debug, Display)]
-pub enum VideoLookupError {
+#[display("video lookup for {:?} in {collection_dir:?}: {kind}", &**video_title)]
+pub struct VideoLookupError {
+    /// The collection directory that was searched.
+    pub collection_dir: PathBuf,
+    /// The video title that was searched for.
+    pub video_title: VideoTitle,
+    /// What went wrong during the lookup.
+    pub kind: VideoLookupErrorKind,
+}
+
+/// The reason a video file could not be uniquely located: either no file
+/// matched, or several did.
+#[derive(Debug, Display, Eq, PartialEq)]
+pub enum VideoLookupErrorKind {
     /// No file named `{video_title}.{ext}` with a known video extension
     /// exists in the collection directory.
-    #[display("no video file for {:?} was found in {collection_dir:?}", &**video_title)]
-    NotFound {
-        collection_dir: PathBuf,
-        video_title: VideoTitle,
-    },
+    #[display("no video file was found")]
+    NotFound,
     /// More than one matching video file exists, so the choice would be
     /// ambiguous.
-    #[display(
-        "multiple video files match {:?} in {collection_dir:?}: {}",
-        &**video_title,
-        matches.iter().map(|path| format!("{path:?}")).join(", "),
-    )]
-    Multiple {
-        collection_dir: PathBuf,
-        video_title: VideoTitle,
-        matches: Vec<PathBuf>,
-    },
+    #[display("multiple video files match: {}", _0.iter().map(|path| format!("{path:?}")).join(", "))]
+    Multiple(Vec<PathBuf>),
 }
 
 /// Finds the single playable video file for `video_title` inside
@@ -117,13 +119,15 @@ pub fn find_video_file(
     collection_dir: &Path,
     video_title: &VideoTitle,
 ) -> Result<PathBuf, VideoLookupError> {
+    let locate = |kind| VideoLookupError {
+        collection_dir: collection_dir.to_path_buf(),
+        video_title: video_title.clone(),
+        kind,
+    };
     let entries = match read_dir(collection_dir) {
         Ok(entries) => entries,
         Err(error) if error.kind() == ErrorKind::NotFound => {
-            return Err(VideoLookupError::NotFound {
-                collection_dir: collection_dir.to_path_buf(),
-                video_title: video_title.clone(),
-            });
+            return Err(locate(VideoLookupErrorKind::NotFound));
         }
         Err(error) => panic!("error: Cannot read directory {collection_dir:?}: {error}"),
     };
@@ -156,16 +160,9 @@ pub fn find_video_file(
         .into_sorted();
 
     match matches.len() {
-        0 => Err(VideoLookupError::NotFound {
-            collection_dir: collection_dir.to_path_buf(),
-            video_title: video_title.clone(),
-        }),
+        0 => Err(locate(VideoLookupErrorKind::NotFound)),
         1 => Ok(matches.remove(0)),
-        _ => Err(VideoLookupError::Multiple {
-            collection_dir: collection_dir.to_path_buf(),
-            video_title: video_title.clone(),
-            matches,
-        }),
+        _ => Err(locate(VideoLookupErrorKind::Multiple(matches))),
     }
 }
 
