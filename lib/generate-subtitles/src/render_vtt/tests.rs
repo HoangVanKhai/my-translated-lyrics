@@ -14,7 +14,7 @@ use pretty_assertions::assert_eq;
 
 fn test_palette() -> StylePalette {
     style_palette(btreemap! {
-        "vca".to_string() => Style {
+        marker_name("vca") => Style {
             color: Some(color("#66CCFF".to_owned())),
             italic: false,
             bold: false,
@@ -28,7 +28,7 @@ fn cue_text_html_meta_characters_are_escaped() {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
         parts: vec![CuePart {
-            marker: "plain".to_string(),
+            marker: marker_name("plain"),
             text: "<a> & <b>".to_string(),
             annotations: Vec::new(),
         }],
@@ -60,7 +60,7 @@ fn role_only_header_and_role_less_lines_render() {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
         parts: vec![CuePart {
-            marker: "cre".to_string(),
+            marker: marker_name("cre"),
             text: "role-a\n[label-a] name-a".to_string(),
             annotations: Vec::new(),
         }],
@@ -106,7 +106,7 @@ fn voice_name_containing_ampersand_is_emitted_verbatim_in_cue_tag() {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
         parts: vec![CuePart {
-            marker: "vca".to_string(),
+            marker: marker_name("vca"),
             text: "body".to_string(),
             annotations: Vec::new(),
         }],
@@ -139,7 +139,7 @@ fn unknown_role_in_credit_line_produces_credits_error() {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
         parts: vec![CuePart {
-            marker: "cre".to_string(),
+            marker: marker_name("cre"),
             text: "unknown-role name-a".to_string(),
             annotations: Vec::new(),
         }],
@@ -175,7 +175,7 @@ fn class_declared_without_palette_entry_produces_style_error() {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
         parts: vec![CuePart {
-            marker: "ttl".to_string(),
+            marker: marker_name("ttl"),
             text: "body".to_string(),
             annotations: Vec::new(),
         }],
@@ -189,7 +189,7 @@ fn class_declared_without_palette_entry_produces_style_error() {
     )
     .unwrap_err();
     match err {
-        RenderVttError::Style(MissingStyle::Class(name)) => assert_eq!(name, "title"),
+        RenderVttError::Style(MissingStyle::Class(name)) => assert_eq!(name.as_str(), "title"),
         other => panic!("expected a missing-class-style error, got {other:?}"),
     }
 }
@@ -211,7 +211,7 @@ fn voice_declared_without_palette_entry_produces_style_error() {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
         parts: vec![CuePart {
-            marker: "unk".to_string(),
+            marker: marker_name("unk"),
             text: "body".to_string(),
             annotations: Vec::new(),
         }],
@@ -225,7 +225,7 @@ fn voice_declared_without_palette_entry_produces_style_error() {
     )
     .unwrap_err();
     match err {
-        RenderVttError::Style(MissingStyle::Voice(name)) => assert_eq!(name, "unk"),
+        RenderVttError::Style(MissingStyle::Voice(name)) => assert_eq!(name.as_str(), "unk"),
         other => panic!("expected a missing-voice-style error, got {other:?}"),
     }
 }
@@ -239,7 +239,7 @@ fn annotations_are_not_rendered() {
         start: Timestamp::new(0, 0, 0).unwrap(),
         end: Timestamp::new(0, 5, 0).unwrap(),
         parts: vec![CuePart {
-            marker: "plain".to_string(),
+            marker: marker_name("plain"),
             text: "visible body".to_string(),
             annotations: vec!["hidden note".to_string(), "another note".to_string()],
         }],

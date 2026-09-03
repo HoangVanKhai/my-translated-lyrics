@@ -1,13 +1,16 @@
 //! Tests for the way a [`ParseLyricsError`] renders: the location
 //! prefix, then the kind's own message and nothing else. One test
 //! per shape a kind takes: a payload with no fields, one that names
-//! another line, one that writes its own `Display`, and one that
-//! forwards to the error it wraps.
+//! another line, one that writes its own `Display`, one that
+//! forwards to the error it wraps, and one that quotes a marker
+//! name through the type that carries it.
 
 use super::{
-    AdditiveRegionError, EmptyRegion, InvalidTimestamp, MalformedIndentation, ParseLyricsError,
-    ParseLyricsErrorKind, TabIndentation,
+    AdditiveRegionError, EmptyCueBody, EmptyRegion, InvalidTimestamp, MalformedIndentation,
+    ParseLyricsError, ParseLyricsErrorKind, TabIndentation,
 };
+use crate::_test_utils::marker_name;
+use crate::parse::LineNumber;
 use lyrics_core::timestamp::{SecondsOutOfRange, TakeTimestampError};
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
@@ -18,7 +21,7 @@ use pretty_assertions::assert_eq;
 #[test]
 fn a_field_less_kind_renders_with_the_location_prefix() {
     let error = ParseLyricsError {
-        line_number: 7,
+        line_number: LineNumber::new(7),
         kind: ParseLyricsErrorKind::TabIndentation(TabIndentation),
     };
     assert_eq!(
@@ -33,8 +36,9 @@ fn a_field_less_kind_renders_with_the_location_prefix() {
 #[test]
 fn a_kind_naming_another_line_keeps_both_numbers() {
     let error = ParseLyricsError {
-        line_number: 9,
+        line_number: LineNumber::new(9),
         kind: 4
+            .pipe(LineNumber::new)
             .pipe(EmptyRegion)
             .pipe(AdditiveRegionError::Empty)
             .pipe(ParseLyricsErrorKind::AdditiveRegion),
@@ -51,7 +55,7 @@ fn a_kind_naming_another_line_keeps_both_numbers() {
 #[test]
 fn a_hand_written_kind_takes_the_same_prefix() {
     let error = ParseLyricsError {
-        line_number: 3,
+        line_number: LineNumber::new(3),
         kind: ParseLyricsErrorKind::MalformedIndentation(MalformedIndentation {
             actual: 12,
             shorthand_indent: 10,
@@ -78,11 +82,31 @@ fn a_wrapping_kind_forwards_to_the_error_it_wraps() {
         value: 60,
     });
     let error = ParseLyricsError {
-        line_number: 5,
+        line_number: LineNumber::new(5),
         kind: cause
             .clone()
             .pipe(InvalidTimestamp)
             .pipe(ParseLyricsErrorKind::InvalidTimestamp),
     };
     assert_eq!(error.to_string(), format!("line 5: {cause}"));
+}
+
+/// A payload that carries a [`MarkerName`] quotes the name that type
+/// holds rather than the type's own `Debug` form, so the message reads
+/// as the author spelled the marker.
+///
+/// [`MarkerName`]: lyrics_core::line_markers_descriptor::MarkerName
+#[test]
+fn a_kind_carrying_a_marker_name_quotes_the_name_itself() {
+    let error = ParseLyricsError {
+        line_number: LineNumber::new(2),
+        kind: "ttl"
+            .pipe(marker_name)
+            .pipe(EmptyCueBody)
+            .pipe(ParseLyricsErrorKind::EmptyCueBody),
+    };
+    assert_eq!(
+        error.to_string(),
+        r#"line 2: cue with marker "ttl" has an empty body"#,
+    );
 }

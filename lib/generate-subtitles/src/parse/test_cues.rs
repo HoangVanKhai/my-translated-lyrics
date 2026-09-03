@@ -6,7 +6,7 @@
 use crate::parse::error::{
     OrphanedShorthandMarker, ParseLyricsError, ParseLyricsErrorKind, UnclosedCue,
 };
-use crate::parse::parse_lyrics;
+use crate::parse::{LineNumber, parse_lyrics};
 use lyrics_core::timestamp::Timestamp;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
@@ -23,11 +23,11 @@ fn parses_simple_sequence() {
     assert_eq!(cues.len(), 2);
     assert_eq!(cues[0].start, Timestamp::new(0, 0, 0).unwrap());
     assert_eq!(cues[0].end, Timestamp::new(0, 2, 0).unwrap());
-    assert_eq!(cues[0].parts[0].marker, "ttl");
+    assert_eq!(cues[0].parts[0].marker.as_str(), "ttl");
     assert_eq!(cues[0].parts[0].text, "Hello");
     assert_eq!(cues[1].start, Timestamp::new(0, 2, 0).unwrap());
     assert_eq!(cues[1].end, Timestamp::new(0, 4, 0).unwrap());
-    assert_eq!(cues[1].parts[0].marker, "LRC");
+    assert_eq!(cues[1].parts[0].marker.as_str(), "LRC");
     assert_eq!(cues[1].parts[0].text, "world");
 }
 
@@ -76,7 +76,7 @@ fn rejects_cue_without_following_event() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             kind: Timestamp::new(0, 0, 0)
                 .unwrap()
                 .pipe(UnclosedCue)
@@ -103,7 +103,7 @@ fn an_unclosed_cue_names_the_line_that_opened_it() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: 4,
+            line_number: LineNumber::new(4),
             kind: Timestamp::new(0, 2, 0)
                 .unwrap()
                 .pipe(UnclosedCue)
@@ -128,9 +128,9 @@ fn shorthand_marker_attaches_a_second_part_to_the_same_cue() {
     assert_eq!(cues[0].start, Timestamp::new(0, 10, 80).unwrap());
     assert_eq!(cues[0].end, Timestamp::new(0, 18, 0).unwrap());
     assert_eq!(cues[0].parts.len(), 2);
-    assert_eq!(cues[0].parts[0].marker, "ttl");
+    assert_eq!(cues[0].parts[0].marker.as_str(), "ttl");
     assert_eq!(cues[0].parts[0].text, "title body");
-    assert_eq!(cues[0].parts[1].marker, "cre");
+    assert_eq!(cues[0].parts[1].marker.as_str(), "cre");
     assert_eq!(cues[0].parts[1].text, "credit body");
 }
 
@@ -151,7 +151,7 @@ fn shorthand_marker_part_can_carry_its_own_continuation_lines() {
     };
     let cues = parse_lyrics(input).unwrap();
     assert_eq!(cues[0].parts.len(), 2);
-    assert_eq!(cues[0].parts[1].marker, "chorus");
+    assert_eq!(cues[0].parts[1].marker.as_str(), "chorus");
     assert_eq!(cues[0].parts[1].text, "opener\ncontinuation");
 }
 
@@ -167,7 +167,7 @@ fn rejects_shorthand_marker_before_any_cue_is_open() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             kind: "ttl: orphan"
                 .to_string()
                 .pipe(OrphanedShorthandMarker)

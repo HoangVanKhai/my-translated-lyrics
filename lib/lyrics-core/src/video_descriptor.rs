@@ -29,7 +29,7 @@ pub struct VideoDesc {
 /// title: it must be a single normal path component (so it can be used
 /// directly as the stem of an output filename), and it must contain
 /// no backslashes (for cross-platform consistency).
-#[derive(AsRef, Clone, Deref, Deserialize, Display, Into, Serialize)]
+#[derive(AsRef, Clone, Debug, Deref, Deserialize, Display, Eq, Into, PartialEq, Serialize)]
 #[as_ref(forward)]
 #[deref(forward)]
 #[serde(try_from = "String", into = "String")]

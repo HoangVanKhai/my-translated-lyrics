@@ -5,13 +5,14 @@
 
 use crate::Navigation;
 use crate::host::{Clock, Host, ReadEvent, WindowSize};
-use crate::render::{Button, LIST_ROW_OFFSET, button_at, fit, is_double_click, render_top_bar};
+use crate::render::{Button, FIRST_LIST_ROW, button_at, fit, is_double_click, render_top_bar};
 use crate::selectors::row_style;
 use crate::terminal::TerminalGuard;
 use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers, MouseButton, MouseEventKind};
+use fuzzy_select::selection::ItemIndex;
 use std::io::{self, Write};
 use std::time::SystemTime;
-use terminal_screen::{Screen, Style};
+use terminal_screen::{Column, Height, Row, Screen, Style, Width};
 
 /// Presents a simple single-column list of `labels` and reports the chosen
 /// item, a request to go back to the previous page, or a request to quit. The
@@ -34,9 +35,9 @@ pub(crate) fn select_one_loop<Sys>(
 where
     Sys: ReadEvent + WindowSize + Clock,
 {
-    let mut cursor = start.min(labels.len().saturating_sub(1));
-    let mut last_click: Option<(SystemTime, usize)> = None;
-    let mut hover: Option<(u16, u16)> = None;
+    let mut cursor = ItemIndex::new(start.min(labels.len().saturating_sub(1)));
+    let mut last_click: Option<(SystemTime, ItemIndex)> = None;
+    let mut hover: Option<(Column, Row)> = None;
     let mut screen = Screen::new();
     // Draw once up front, then redraw after any event that changes what is
     // shown, including a mouse movement that changes the hover highlight. The
@@ -59,16 +60,17 @@ where
                 KeyCode::Char('q' | 'Q') => return Ok(Navigation::Quit),
                 // With nothing to type, Backspace goes back to the previous page.
                 KeyCode::Backspace => return Ok(Navigation::Back),
-                KeyCode::Up => cursor = cursor.saturating_sub(1),
+                KeyCode::Up => cursor = cursor.previous(),
                 KeyCode::Down => {
-                    if cursor + 1 < labels.len() {
-                        cursor += 1;
+                    let next = cursor.next();
+                    if next.get() < labels.len() {
+                        cursor = next;
                     }
                 }
                 // With no text to type, Space confirms the choice like Enter.
                 KeyCode::Enter | KeyCode::Char(' ') => {
                     if !labels.is_empty() {
-                        return Ok(Navigation::Selected(cursor));
+                        return Ok(Navigation::Selected(cursor.get()));
                     }
                     continue;
                 }
@@ -77,42 +79,45 @@ where
             Event::Mouse(mouse) => {
                 // Track the pointer so the hovered button and label are
                 // highlighted on the redraw that follows.
-                hover = Some((mouse.column, mouse.row));
+                hover = Some((Column::new(mouse.column), Row::new(mouse.row)));
                 match mouse.kind {
-                    MouseEventKind::ScrollUp => cursor = cursor.saturating_sub(1),
+                    MouseEventKind::ScrollUp => cursor = cursor.previous(),
                     MouseEventKind::ScrollDown => {
-                        if cursor + 1 < labels.len() {
-                            cursor += 1;
+                        let next = cursor.next();
+                        if next.get() < labels.len() {
+                            cursor = next;
                         }
                     }
                     // A single click highlights the label on the clicked row; a
                     // double click on the same item also selects it.
                     MouseEventKind::Down(MouseButton::Left) => {
                         let (columns, rows) = Sys::window_size().unwrap_or((80, 24));
+                        let clicked_row = Row::new(mouse.row);
                         // A click on the top bar acts on the button under the
                         // pointer, where "Forward" matches pressing Enter.
-                        if mouse.row == 0 {
-                            match button_at(columns as usize, mouse.column as usize) {
+                        if clicked_row == Row::TOP {
+                            match button_at(Width::new(columns), Column::new(mouse.column)) {
                                 Some(Button::Exit) => return Ok(Navigation::Quit),
                                 Some(Button::Back) => return Ok(Navigation::Back),
                                 Some(Button::Forward) => {
                                     if !labels.is_empty() {
-                                        return Ok(Navigation::Selected(cursor));
+                                        return Ok(Navigation::Selected(cursor.get()));
                                     }
                                 }
                                 None => {}
                             }
-                        } else if mouse.row < rows.saturating_sub(1)
-                            && let Some(index) = (mouse.row as usize)
-                                .checked_sub(LIST_ROW_OFFSET)
-                                .filter(|&index| index < labels.len())
+                        } else if clicked_row < Row::new(rows.saturating_sub(1))
+                            && let Some(index) = clicked_row
+                                .rows_below(FIRST_LIST_ROW)
+                                .map(|rows_down| ItemIndex::new(usize::from(rows_down)))
+                                .filter(|index| index.get() < labels.len())
                         {
                             let now = Sys::now();
                             let confirm = is_double_click(last_click, now, index);
                             last_click = Some((now, index));
                             cursor = index;
                             if confirm {
-                                return Ok(Navigation::Selected(index));
+                                return Ok(Navigation::Selected(index.get()));
                             }
                         }
                     }
@@ -134,29 +139,33 @@ fn render_list<Sys>(
     output: &mut impl Write,
     title: &str,
     labels: &[String],
-    cursor: usize,
-    hover: Option<(u16, u16)>,
+    cursor: ItemIndex,
+    hover: Option<(Column, Row)>,
 ) -> io::Result<()>
 where
     Sys: WindowSize,
 {
     let (width, height) = Sys::window_size().unwrap_or((80, 24));
-    let buffer = screen.begin(width, height, output)?;
-    let columns = width as usize;
+    let columns = Width::new(width);
+    let buffer = screen.begin(columns, Height::new(height), output)?;
 
     // The top bar names the page; a list page always follows an earlier page,
     // so going back is available.
     render_top_bar(buffer, columns, title, true, hover);
 
-    for (index, label) in labels.iter().enumerate() {
-        let screen_y = (index + LIST_ROW_OFFSET) as u16;
+    for ((index, label), screen_y) in labels.iter().enumerate().zip(FIRST_LIST_ROW.downwards()) {
         let line = fit(label, columns);
-        let style = row_style(index == cursor, hover, screen_y);
-        buffer.set_string(0, screen_y, &line, style);
+        let style = row_style(ItemIndex::new(index) == cursor, hover, screen_y);
+        buffer.set_string(Column::LEFT, screen_y, &line, style);
     }
 
     let help = "↑/↓ move · ⌫/Esc back · ⏎/␣ select · ^Q quit";
-    buffer.set_string(0, height.saturating_sub(1), &fit(help, columns), Style::DIM);
+    buffer.set_string(
+        Column::LEFT,
+        Row::new(height.saturating_sub(1)),
+        &fit(help, columns),
+        Style::DIM,
+    );
 
     screen.flush(output)
 }
