@@ -82,24 +82,34 @@ pub fn subtitle_path(
     collection_dir.join(format!("{video_title}.{language}.{format}"))
 }
 
-/// Reason a video file could not be uniquely located in the library.
+/// A failed attempt to uniquely locate a video file in the library. It
+/// pairs the lookup context, namely the collection directory searched and
+/// the video title searched for, with a [`VideoLookupErrorKind`] that says
+/// what went wrong. The context describes where the lookup was performed
+/// rather than what failed, so it lives here rather than on each kind.
 #[derive(Debug, Display)]
-pub enum VideoLookupError {
+#[display("video lookup for {video_title:?} in {collection_dir:?}: {kind}")]
+pub struct VideoLookupError {
+    /// The collection directory that was searched.
+    pub collection_dir: PathBuf,
+    /// The video title that was searched for.
+    pub video_title: String,
+    /// What went wrong during the lookup.
+    pub kind: VideoLookupErrorKind,
+}
+
+/// The reason a video file could not be uniquely located, without the
+/// lookup context that [`VideoLookupError`] carries.
+#[derive(Debug, Display)]
+pub enum VideoLookupErrorKind {
     /// No file named `{video_title}.{ext}` with a known video extension
     /// exists in the collection directory.
-    #[display("no video file for {video_title:?} was found in {collection_dir:?}")]
-    NotFound {
-        collection_dir: PathBuf,
-        video_title: String,
-    },
+    #[display("no video file was found")]
+    NotFound,
     /// More than one matching video file exists, so the choice would be
     /// ambiguous.
-    #[display("multiple video files match {video_title:?} in {collection_dir:?}: {}", matches.iter().map(|path| format!("{path:?}")).join(", "))]
-    Multiple {
-        collection_dir: PathBuf,
-        video_title: String,
-        matches: Vec<PathBuf>,
-    },
+    #[display("multiple video files match: {}", _0.iter().map(|path| format!("{path:?}")).join(", "))]
+    Multiple(Vec<PathBuf>),
 }
 
 /// Finds the single playable video file for `video_title` inside
@@ -113,13 +123,15 @@ pub fn find_video_file(
     collection_dir: &Path,
     video_title: &str,
 ) -> Result<PathBuf, VideoLookupError> {
+    let locate = |kind| VideoLookupError {
+        collection_dir: collection_dir.to_path_buf(),
+        video_title: video_title.to_string(),
+        kind,
+    };
     let entries = match read_dir(collection_dir) {
         Ok(entries) => entries,
         Err(error) if error.kind() == ErrorKind::NotFound => {
-            return Err(VideoLookupError::NotFound {
-                collection_dir: collection_dir.to_path_buf(),
-                video_title: video_title.to_string(),
-            });
+            return Err(locate(VideoLookupErrorKind::NotFound));
         }
         Err(error) => panic!("error: Cannot read directory {collection_dir:?}: {error}"),
     };
@@ -152,16 +164,9 @@ pub fn find_video_file(
         .into_sorted();
 
     match matches.len() {
-        0 => Err(VideoLookupError::NotFound {
-            collection_dir: collection_dir.to_path_buf(),
-            video_title: video_title.to_string(),
-        }),
+        0 => Err(locate(VideoLookupErrorKind::NotFound)),
         1 => Ok(matches.remove(0)),
-        _ => Err(VideoLookupError::Multiple {
-            collection_dir: collection_dir.to_path_buf(),
-            video_title: video_title.to_string(),
-            matches,
-        }),
+        _ => Err(locate(VideoLookupErrorKind::Multiple(matches))),
     }
 }
 
