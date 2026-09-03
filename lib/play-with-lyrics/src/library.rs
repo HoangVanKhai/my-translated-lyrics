@@ -82,11 +82,9 @@ pub fn subtitle_path(
     collection_dir.join(format!("{video_title}.{language}.{format}"))
 }
 
-/// A failed attempt to uniquely locate a video file in the library. It
-/// pairs the lookup context, namely the collection directory searched and
-/// the video title searched for, with a [`VideoLookupErrorKind`] that says
-/// what went wrong. The context describes where the lookup was performed
-/// rather than what failed, so it lives here rather than on each kind.
+/// A failed attempt to uniquely locate a video file in the library: the
+/// collection directory and video title that were searched, paired with the
+/// [`VideoLookupErrorKind`] that says what went wrong.
 #[derive(Debug, Display)]
 #[display("video lookup for {video_title:?} in {collection_dir:?}: {kind}")]
 pub struct VideoLookupError {
@@ -98,8 +96,8 @@ pub struct VideoLookupError {
     pub kind: VideoLookupErrorKind,
 }
 
-/// The reason a video file could not be uniquely located, without the
-/// lookup context that [`VideoLookupError`] carries.
+/// The reason a video file could not be uniquely located: either no file
+/// matched, or several did.
 #[derive(Debug, Display)]
 pub enum VideoLookupErrorKind {
     /// No file named `{video_title}.{ext}` with a known video extension
