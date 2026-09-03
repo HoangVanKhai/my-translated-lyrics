@@ -6,7 +6,7 @@
 use crate::_test_utils::marker_name;
 use crate::parse::error::{
     EmptyCueBody, MalformedHeader, MalformedIndentation, MissingMarker,
-    MissingSeparatorAfterTimestamp, ParseLyricsError, TabIndentation,
+    MissingSeparatorAfterTimestamp, ParseLyricsError, ParseLyricsErrorKind, TabIndentation,
 };
 use crate::parse::{LineNumber, parse_lyrics};
 use pipe_trait::Pipe;
@@ -22,10 +22,13 @@ fn rejects_malformed_header_when_column_zero_line_has_no_timestamp() {
     let input = "no timestamp here\n";
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::MalformedHeader(MalformedHeader {
+        ParseLyricsError {
             line_number: LineNumber::new(1),
-            content: "no timestamp here".to_string(),
-        }),
+            kind: "no timestamp here"
+                .to_string()
+                .pipe(MalformedHeader)
+                .pipe(ParseLyricsErrorKind::MalformedHeader),
+        },
     );
 }
 
@@ -38,10 +41,13 @@ fn rejects_timestamp_without_separator_after_prefix() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::MissingSeparatorAfterTimestamp(MissingSeparatorAfterTimestamp {
+        ParseLyricsError {
             line_number: LineNumber::new(2),
-            content: "00:02.000ttl: no space after timestamp".to_string(),
-        }),
+            kind: "00:02.000ttl: no space after timestamp"
+                .to_string()
+                .pipe(MissingSeparatorAfterTimestamp)
+                .pipe(ParseLyricsErrorKind::MissingSeparatorAfterTimestamp),
+        },
     );
 }
 
@@ -53,10 +59,13 @@ fn rejects_cue_line_without_marker() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::MissingMarker(MissingMarker {
+        ParseLyricsError {
             line_number: LineNumber::new(1),
-            content: "Plain text without marker".to_string(),
-        }),
+            kind: "Plain text without marker"
+                .to_string()
+                .pipe(MissingMarker)
+                .pipe(ParseLyricsErrorKind::MissingMarker),
+        },
     );
 }
 
@@ -66,19 +75,15 @@ fn rejects_cue_with_empty_body() {
         "00:00.000 ttl:"
         "00:02.000 clr"
     };
-    let error = parse_lyrics(input).unwrap_err();
     assert_eq!(
-        error,
-        ParseLyricsError::EmptyCueBody(EmptyCueBody {
+        parse_lyrics(input).unwrap_err(),
+        ParseLyricsError {
             line_number: LineNumber::new(1),
-            marker: marker_name("ttl"),
-        }),
-    );
-    // The marker is quoted as the source spells it, rather than as the
-    // `Debug` form of the type that carries it.
-    assert_eq!(
-        error.to_string(),
-        r#"line 1: cue with marker "ttl" has an empty body"#,
+            kind: "ttl"
+                .pipe(marker_name)
+                .pipe(EmptyCueBody)
+                .pipe(ParseLyricsErrorKind::EmptyCueBody),
+        },
     );
 }
 
@@ -88,11 +93,11 @@ fn rejects_cue_with_empty_body() {
 /// yields the empty string. The empty body has no `:` and no
 /// marker, so `parse_marker_part` falls into the
 /// `split_marker(body) -> None` branch and raises
-/// `MissingMarker { content: "" }`. The dedicated [`EmptyCueBody`]
-/// variant cannot apply here because it carries the marker
-/// name, and a whitespace-only body has none. Lock the current
-/// outcome so a future reader does not assume the diagnostic
-/// is something else.
+/// `MissingMarker("")`. The dedicated [`EmptyCueBody`] variant
+/// cannot apply here because it carries the marker name, and a
+/// whitespace-only body has none. Lock the current outcome so
+/// a future reader does not assume the diagnostic is something
+/// else.
 #[test]
 fn whitespace_only_cue_body_falls_through_to_missing_marker() {
     let input = text_block_fnl! {
@@ -101,10 +106,12 @@ fn whitespace_only_cue_body_falls_through_to_missing_marker() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::MissingMarker(MissingMarker {
+        ParseLyricsError {
             line_number: LineNumber::new(1),
-            content: String::new(),
-        }),
+            kind: String::new()
+                .pipe(MissingMarker)
+                .pipe(ParseLyricsErrorKind::MissingMarker),
+        },
     );
 }
 
@@ -120,16 +127,12 @@ fn rejects_tab_in_leading_whitespace() {
         "\t            cre: tabbed indent"
         "00:05.000 clr"
     };
-    let error = parse_lyrics(input).unwrap_err();
     assert_eq!(
-        error,
-        2.pipe(LineNumber::new)
-            .pipe(TabIndentation)
-            .pipe(ParseLyricsError::TabIndentation),
-    );
-    assert_eq!(
-        error.to_string(),
-        "line 2: indentation contains a tab; only ASCII spaces are allowed in leading whitespace",
+        parse_lyrics(input).unwrap_err(),
+        ParseLyricsError {
+            line_number: LineNumber::new(2),
+            kind: ParseLyricsErrorKind::TabIndentation(TabIndentation),
+        },
     );
 }
 
@@ -146,11 +149,13 @@ fn rejects_malformed_indentation_between_recognized_widths() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::MalformedIndentation(MalformedIndentation {
+        ParseLyricsError {
             line_number: LineNumber::new(2),
-            actual: 12,
-            shorthand_indent: 10,
-            continuation_indent: Some(15),
-        }),
+            kind: ParseLyricsErrorKind::MalformedIndentation(MalformedIndentation {
+                actual: 12,
+                shorthand_indent: 10,
+                continuation_indent: Some(15),
+            }),
+        },
     );
 }

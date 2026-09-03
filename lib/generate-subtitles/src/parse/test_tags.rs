@@ -3,8 +3,11 @@
 //! cue scope a tag ends, and the `take` parsers that recognize a tag name
 //! and each of the two tag forms.
 
-use crate::parse::error::{MalformedTagLine, OrphanedShorthandMarker, ParseLyricsError};
+use crate::parse::error::{
+    MalformedTagLine, OrphanedShorthandMarker, ParseLyricsError, ParseLyricsErrorKind,
+};
 use crate::parse::{ClosingTag, LineNumber, OpeningTag, TagName, parse_lyrics};
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
 
@@ -39,10 +42,13 @@ fn rejects_every_near_miss_of_a_tag_line() {
         );
         assert_eq!(
             parse_lyrics(&input).unwrap_err(),
-            ParseLyricsError::MalformedTagLine(MalformedTagLine {
+            ParseLyricsError {
                 line_number: LineNumber::new(1),
-                content: content.to_string(),
-            }),
+                kind: content
+                    .to_string()
+                    .pipe(MalformedTagLine)
+                    .pipe(ParseLyricsErrorKind::MalformedTagLine),
+            },
         );
     }
 }
@@ -95,10 +101,13 @@ fn a_tag_ends_the_scope_of_the_cue_above_it() {
     };
     assert_eq!(
         parse_lyrics(after_opening_tag).unwrap_err(),
-        ParseLyricsError::OrphanedShorthandMarker(OrphanedShorthandMarker {
+        ParseLyricsError {
             line_number: LineNumber::new(3),
-            content: "cre: credit body".to_string(),
-        }),
+            kind: "cre: credit body"
+                .to_string()
+                .pipe(OrphanedShorthandMarker)
+                .pipe(ParseLyricsErrorKind::OrphanedShorthandMarker),
+        },
     );
 
     let after_closing_tag = text_block_fnl! {
@@ -110,10 +119,13 @@ fn a_tag_ends_the_scope_of_the_cue_above_it() {
     };
     assert_eq!(
         parse_lyrics(after_closing_tag).unwrap_err(),
-        ParseLyricsError::OrphanedShorthandMarker(OrphanedShorthandMarker {
+        ParseLyricsError {
             line_number: LineNumber::new(4),
-            content: "cre: credit body".to_string(),
-        }),
+            kind: "cre: credit body"
+                .to_string()
+                .pipe(OrphanedShorthandMarker)
+                .pipe(ParseLyricsErrorKind::OrphanedShorthandMarker),
+        },
     );
 }
 

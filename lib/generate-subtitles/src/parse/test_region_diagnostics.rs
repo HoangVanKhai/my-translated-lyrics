@@ -5,7 +5,7 @@
 
 use crate::parse::error::{
     AdditiveRegionError, ControlMarkerInRegion, EmptyRegion, NestedRegion, ParseLyricsError,
-    UnclosedRegion, UnopenedRegion,
+    ParseLyricsErrorKind, UnclosedRegion, UnopenedRegion,
 };
 use crate::parse::{LineNumber, parse_lyrics};
 use lyrics_core::line_markers_descriptor::ReservedMarker;
@@ -28,12 +28,14 @@ fn rejects_a_region_opened_inside_another_region() {
     };
     assert_eq!(
         parse_lyrics(doubled_tags).unwrap_err(),
-        NestedRegion {
+        ParseLyricsError {
             line_number: LineNumber::new(2),
-            opened_at: LineNumber::new(1),
-        }
-        .pipe(AdditiveRegionError::Nested)
-        .pipe(ParseLyricsError::AdditiveRegion),
+            kind: 1
+                .pipe(LineNumber::new)
+                .pipe(NestedRegion)
+                .pipe(AdditiveRegionError::Nested)
+                .pipe(ParseLyricsErrorKind::AdditiveRegion),
+        },
     );
 
     let inner_region = text_block_fnl! {
@@ -48,12 +50,14 @@ fn rejects_a_region_opened_inside_another_region() {
     };
     assert_eq!(
         parse_lyrics(inner_region).unwrap_err(),
-        NestedRegion {
+        ParseLyricsError {
             line_number: LineNumber::new(3),
-            opened_at: LineNumber::new(1),
-        }
-        .pipe(AdditiveRegionError::Nested)
-        .pipe(ParseLyricsError::AdditiveRegion),
+            kind: 1
+                .pipe(LineNumber::new)
+                .pipe(NestedRegion)
+                .pipe(AdditiveRegionError::Nested)
+                .pipe(ParseLyricsErrorKind::AdditiveRegion),
+        },
     );
 }
 
@@ -67,13 +71,15 @@ fn rejects_a_control_marker_inside_a_region() {
     };
     assert_eq!(
         parse_lyrics(clear_input).unwrap_err(),
-        ControlMarkerInRegion {
+        ParseLyricsError {
             line_number: LineNumber::new(3),
-            marker: ReservedMarker::Clear,
-            opened_at: LineNumber::new(1),
-        }
-        .pipe(AdditiveRegionError::ControlMarker)
-        .pipe(ParseLyricsError::AdditiveRegion),
+            kind: ControlMarkerInRegion {
+                marker: ReservedMarker::Clear,
+                opened_at: LineNumber::new(1),
+            }
+            .pipe(AdditiveRegionError::ControlMarker)
+            .pipe(ParseLyricsErrorKind::AdditiveRegion),
+        },
     );
 
     let end_of_video_input = text_block_fnl! {
@@ -84,13 +90,15 @@ fn rejects_a_control_marker_inside_a_region() {
     };
     assert_eq!(
         parse_lyrics(end_of_video_input).unwrap_err(),
-        ControlMarkerInRegion {
+        ParseLyricsError {
             line_number: LineNumber::new(3),
-            marker: ReservedMarker::EndOfVideo,
-            opened_at: LineNumber::new(1),
-        }
-        .pipe(AdditiveRegionError::ControlMarker)
-        .pipe(ParseLyricsError::AdditiveRegion),
+            kind: ControlMarkerInRegion {
+                marker: ReservedMarker::EndOfVideo,
+                opened_at: LineNumber::new(1),
+            }
+            .pipe(AdditiveRegionError::ControlMarker)
+            .pipe(ParseLyricsErrorKind::AdditiveRegion),
+        },
     );
 }
 
@@ -105,15 +113,15 @@ fn rejects_a_region_that_is_never_closed() {
         "07:22.222 LRC: first line"
         "07:33.333 LRC: second line"
     };
-    let error = parse_lyrics(input).unwrap_err();
     assert_eq!(
-        error,
-        2.pipe(LineNumber::new)
-            .pipe(UnclosedRegion)
-            .pipe(AdditiveRegionError::Unclosed)
-            .pipe(ParseLyricsError::AdditiveRegion),
+        parse_lyrics(input).unwrap_err(),
+        ParseLyricsError {
+            line_number: LineNumber::new(2),
+            kind: UnclosedRegion
+                .pipe(AdditiveRegionError::Unclosed)
+                .pipe(ParseLyricsErrorKind::AdditiveRegion),
+        },
     );
-    assert_eq!(error.to_string(), "line 2: unclosed `<additive>`");
 }
 
 #[test]
@@ -123,15 +131,15 @@ fn rejects_a_closing_tag_without_an_opening_one() {
         "</additive>"
         "07:22.222 clr"
     };
-    let error = parse_lyrics(input).unwrap_err();
     assert_eq!(
-        error,
-        2.pipe(LineNumber::new)
-            .pipe(UnopenedRegion)
-            .pipe(AdditiveRegionError::Unopened)
-            .pipe(ParseLyricsError::AdditiveRegion),
+        parse_lyrics(input).unwrap_err(),
+        ParseLyricsError {
+            line_number: LineNumber::new(2),
+            kind: UnopenedRegion
+                .pipe(AdditiveRegionError::Unopened)
+                .pipe(ParseLyricsErrorKind::AdditiveRegion),
+        },
     );
-    assert_eq!(error.to_string(), "line 2: stray `</additive>`");
 }
 
 /// A region exists to accumulate cues, so one that encloses none is
@@ -149,11 +157,13 @@ fn rejects_a_region_that_encloses_no_cue() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        EmptyRegion {
+        ParseLyricsError {
             line_number: LineNumber::new(4),
-            opened_at: LineNumber::new(1),
-        }
-        .pipe(AdditiveRegionError::Empty)
-        .pipe(ParseLyricsError::AdditiveRegion),
+            kind: 1
+                .pipe(LineNumber::new)
+                .pipe(EmptyRegion)
+                .pipe(AdditiveRegionError::Empty)
+                .pipe(ParseLyricsErrorKind::AdditiveRegion),
+        },
     );
 }

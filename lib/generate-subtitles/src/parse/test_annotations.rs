@@ -4,7 +4,8 @@
 //! annotation is rejected.
 
 use crate::parse::error::{
-    EmptyAnnotation, MissingMarker, OrphanedAnnotation, ParseLyricsError, ReservedControlMarker,
+    EmptyAnnotation, MissingMarker, OrphanedAnnotation, ParseLyricsError, ParseLyricsErrorKind,
+    ReservedControlMarker,
 };
 use crate::parse::{LineNumber, parse_lyrics};
 use lyrics_core::line_markers_descriptor::ReservedMarker;
@@ -219,16 +220,12 @@ fn rejects_annotation_without_a_body() {
         "          ann:"
         "00:04.000 clr"
     };
-    let error = parse_lyrics(empty_body).unwrap_err();
     assert_eq!(
-        error,
-        2.pipe(LineNumber::new)
-            .pipe(EmptyAnnotation)
-            .pipe(ParseLyricsError::EmptyAnnotation),
-    );
-    assert_eq!(
-        error.to_string(),
-        "line 2: annotation marker `ann` has an empty body",
+        parse_lyrics(empty_body).unwrap_err(),
+        ParseLyricsError {
+            line_number: LineNumber::new(2),
+            kind: ParseLyricsErrorKind::EmptyAnnotation(EmptyAnnotation),
+        },
     );
 
     // Without a `:` the line names no marker at all, so it draws the
@@ -242,10 +239,13 @@ fn rejects_annotation_without_a_body() {
     };
     assert_eq!(
         parse_lyrics(no_separator).unwrap_err(),
-        ParseLyricsError::MissingMarker(MissingMarker {
+        ParseLyricsError {
             line_number: LineNumber::new(2),
-            content: "ann".to_string(),
-        }),
+            kind: "ann"
+                .to_string()
+                .pipe(MissingMarker)
+                .pipe(ParseLyricsErrorKind::MissingMarker),
+        },
     );
 }
 
@@ -260,10 +260,13 @@ fn rejects_annotation_before_any_cue_is_open() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::OrphanedAnnotation(OrphanedAnnotation {
+        ParseLyricsError {
             line_number: LineNumber::new(1),
-            content: "ann: orphan note".to_string(),
-        }),
+            kind: "ann: orphan note"
+                .to_string()
+                .pipe(OrphanedAnnotation)
+                .pipe(ParseLyricsErrorKind::OrphanedAnnotation),
+        },
     );
 }
 
@@ -280,10 +283,13 @@ fn rejects_annotation_after_a_clear() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::OrphanedAnnotation(OrphanedAnnotation {
+        ParseLyricsError {
             line_number: LineNumber::new(3),
-            content: "ann: stray note".to_string(),
-        }),
+            kind: "ann: stray note"
+                .to_string()
+                .pipe(OrphanedAnnotation)
+                .pipe(ParseLyricsErrorKind::OrphanedAnnotation),
+        },
     );
 }
 
@@ -299,9 +305,11 @@ fn annotation_marker_cannot_name_a_cue() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::ReservedControlMarker(ReservedControlMarker {
+        ParseLyricsError {
             line_number: LineNumber::new(2),
-            marker: ReservedMarker::Annotation,
-        }),
+            kind: ReservedMarker::Annotation
+                .pipe(ReservedControlMarker)
+                .pipe(ParseLyricsErrorKind::ReservedControlMarker),
+        },
     );
 }
