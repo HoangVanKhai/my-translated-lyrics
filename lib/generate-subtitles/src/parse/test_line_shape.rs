@@ -86,15 +86,12 @@ fn rejects_cue_with_empty_body() {
     );
 }
 
-/// A header line like `00:00.000   ` (timestamp, run of spaces, no
-/// body) parses as `Timestamp::take` succeeding and the separator
-/// parser then taking every space that follows, which leaves the cue
-/// body empty. An empty body carries no `:`, so the marker parser
-/// reports [`MissingMarker`] with empty content. The dedicated
-/// [`EmptyCueBody`] variant cannot apply here, because it names the
-/// marker and a whitespace-only body has none. Lock the current
-/// outcome so a future reader does not assume the diagnostic is
-/// something else.
+/// A header whose body is a timestamp followed by nothing but spaces
+/// carries an empty cue body, and an empty cue body is reported as
+/// [`MissingMarker`] with empty content, not as [`EmptyCueBody`].
+/// [`EmptyCueBody`] names the marker whose text is missing, which a
+/// body carrying no marker cannot supply, so this case is the former.
+/// Lock that outcome so a future reader does not expect the latter.
 #[test]
 fn whitespace_only_cue_body_falls_through_to_missing_marker() {
     let input = text_block_fnl! {
