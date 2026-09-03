@@ -587,9 +587,13 @@ fn take_cue_group<'a>(
         }
         match parse_shorthand_line(line.body).map_err(at_line(line.number))? {
             ShorthandLine::Annotation(text) => {
-                let (continuations, tail) =
-                    take_continuation_lines(rest, annotation_indent, Continued::AnnotationText)?;
-                open.annotations.push(join_lines(text, &continuations));
+                let (annotation, tail) = take_body(
+                    text.to_string(),
+                    rest,
+                    annotation_indent,
+                    Continued::AnnotationText,
+                )?;
+                open.annotations.push(annotation);
                 input = tail;
             }
             ShorthandLine::Part(header) => {
@@ -622,10 +626,10 @@ fn take_cue_part<'a>(
 ) -> Result<(CuePart, Input<'a>), ParseLyricsError> {
     let PartHeader { marker, text } = header;
     let indent = continuation_indent(marker);
-    let (continuations, input) = take_continuation_lines(input, indent, Continued::CueText)?;
+    let (text, input) = take_body(text.to_string(), input, indent, Continued::CueText)?;
     let part = CuePart {
         marker: marker.to_string(),
-        text: join_lines(text, &continuations),
+        text,
         annotations: Vec::new(),
     };
     Ok((part, input))
@@ -641,20 +645,27 @@ enum Continued {
     AnnotationText,
 }
 
-/// Consumes the continuation lines of a body whose continuations are
-/// indented by `indent`, returning them with the unconsumed tail.
+/// Reads the body of a part or an annotation: the `opening` text, then
+/// the continuation lines indented by `indent` beneath it, each
+/// appended to the opening under a newline. Returns that text with the
+/// unconsumed tail.
+///
+/// The opening arrives owned and the continuations are appended to it
+/// in place, rather than gathered into a list and joined, so the body
+/// costs the one allocation the string already is.
 ///
 /// The first line carrying another indent opens something else, so it
 /// must stand at column zero, where a header or a tag line does, or at
 /// the shorthand column, where a new part or an annotation does. Any
 /// other indent names nothing the grammar admits here and is reported
 /// against the two widths that were in force.
-fn take_continuation_lines<'a>(
+fn take_body<'a>(
+    opening: String,
     input: Input<'a>,
     indent: usize,
     continued: Continued,
-) -> Result<(Vec<Line<'a>>, Input<'a>), ParseLyricsError> {
-    let mut continuations = Vec::<Line>::new();
+) -> Result<(String, Input<'a>), ParseLyricsError> {
+    let mut text = opening;
     let mut input = input;
 
     while let Some((line, rest)) = input.take_line()? {
@@ -662,7 +673,8 @@ fn take_continuation_lines<'a>(
             if continued == Continued::CueText {
                 reject_reserved_cue_text_characters(line.body).map_err(at_line(line.number))?;
             }
-            continuations.push(line);
+            text.push('\n');
+            text.push_str(line.body);
             input = rest;
             continue;
         }
@@ -672,7 +684,7 @@ fn take_continuation_lines<'a>(
         break;
     }
 
-    Ok((continuations, input))
+    Ok((text, input))
 }
 
 /// What a line at the shorthand column declares.
@@ -830,15 +842,6 @@ fn is_end_of_video(line: Line<'_>) -> bool {
 /// space.
 fn continuation_indent(marker: &str) -> usize {
     TIMESTAMP_PREFIX_WIDTH + marker.len() + 2
-}
-
-/// Joins the opening text of a body with the continuation lines that
-/// extend it, one line break apiece.
-fn join_lines(opening: &str, continuations: &[Line<'_>]) -> String {
-    once(opening)
-        .chain(continuations.iter().map(|line| line.body))
-        .collect::<Vec<_>>()
-        .join("\n")
 }
 
 /// Rejects a new event whose start time matches or precedes the most
