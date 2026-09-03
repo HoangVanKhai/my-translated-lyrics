@@ -1,11 +1,4 @@
 //! Prefix parsers shared by this crate's text parsers.
-//!
-//! Each function consumes a leading run of `input` and returns that
-//! run together with the unconsumed tail, so a caller assembles a
-//! larger grammar by threading the tail from one parser into the
-//! next. Both parsers here always succeed, since either half of the
-//! pair may be empty; see the Parser Combinators section of
-//! `CONTRIBUTING.md` for the return shapes and when each applies.
 
 /// Consumes the leading whitespace of `input`.
 pub(crate) fn take_leading_whitespace(input: &str) -> (&str, &str) {
