@@ -3,9 +3,12 @@
 //! extend them, and the end time each cue takes from the event that
 //! follows it.
 
-use crate::parse::error::{OrphanedShorthandMarker, ParseLyricsError, UnclosedCue};
+use crate::parse::error::{
+    OrphanedShorthandMarker, ParseLyricsError, ParseLyricsErrorKind, UnclosedCue,
+};
 use crate::parse::parse_lyrics;
 use lyrics_core::timestamp::Timestamp;
+use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
 
@@ -89,9 +92,40 @@ fn rejects_cue_without_following_event() {
     let input = "00:00.000 ttl: Hello\n";
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::UnclosedCue(UnclosedCue {
-            start: Timestamp::new(0, 0, 0).unwrap()
-        }),
+        ParseLyricsError {
+            line_number: 1,
+            kind: Timestamp::new(0, 0, 0)
+                .unwrap()
+                .pipe(UnclosedCue)
+                .pipe(ParseLyricsErrorKind::UnclosedCue),
+        },
+    );
+}
+
+/// The failure is detected once the whole file has been read, so the
+/// line it reports is the header that opened the cue rather than the
+/// last line of the file. Comments and blank lines sit between the
+/// two so a mistaken count cannot land on the right answer.
+#[test]
+fn an_unclosed_cue_names_the_line_that_opened_it() {
+    let input = text_block_fnl! {
+        "# a leading comment"
+        ""
+        "00:00.000 ttl: title body"
+        "00:02.000 LRC: lyric body"
+        "               a continuation"
+        ""
+        "# a trailing comment"
+    };
+    assert_eq!(
+        parse_lyrics(input).unwrap_err(),
+        ParseLyricsError {
+            line_number: 4,
+            kind: Timestamp::new(0, 2, 0)
+                .unwrap()
+                .pipe(UnclosedCue)
+                .pipe(ParseLyricsErrorKind::UnclosedCue),
+        },
     );
 }
 
@@ -149,9 +183,12 @@ fn rejects_shorthand_marker_before_any_cue_is_open() {
     };
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
-        ParseLyricsError::OrphanedShorthandMarker(OrphanedShorthandMarker {
+        ParseLyricsError {
             line_number: 1,
-            content: "ttl: orphan".to_string(),
-        }),
+            kind: "ttl: orphan"
+                .to_string()
+                .pipe(OrphanedShorthandMarker)
+                .pipe(ParseLyricsErrorKind::OrphanedShorthandMarker),
+        },
     );
 }

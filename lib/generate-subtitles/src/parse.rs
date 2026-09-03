@@ -33,8 +33,8 @@ use error::{
     EmptyCueBody, EmptyRegion, ExtraTextAfterControlMarker, InvalidTimestamp, MalformedHeader,
     MalformedIndentation, MalformedTagLine, MissingMarker, MissingSeparatorAfterTimestamp,
     NestedRegion, OrphanedAnnotation, OrphanedShorthandMarker, OutOfOrder, ParseLyricsError,
-    RepeatedTimestamp, ReservedControlMarker, TabIndentation, UnclosedCue, UnclosedRegion,
-    UnopenedRegion,
+    ParseLyricsErrorKind, RepeatedTimestamp, ReservedControlMarker, TabIndentation, UnclosedCue,
+    UnclosedRegion, UnopenedRegion,
 };
 use lyrics_core::line_markers_descriptor::ReservedMarker;
 use lyrics_core::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
@@ -159,11 +159,10 @@ impl<'a> Input<'a> {
             return rest.take_content_line();
         }
         if raw.trim_start_matches(' ').starts_with('\t') {
-            return TabIndentation {
-                line_number: number,
-            }
-            .pipe(ParseLyricsError::TabIndentation)
-            .pipe(Err);
+            return TabIndentation
+                .pipe(ParseLyricsErrorKind::TabIndentation)
+                .pipe(at_line(number))
+                .pipe(Err);
         }
         let indent = raw.bytes().take_while(|&byte| byte == b' ').count();
         let line = Line {
@@ -285,6 +284,11 @@ fn is_closing_additive_tag(body: &str) -> bool {
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct CueGroup {
     start: Timestamp,
+    /// Line of the header that opened the group. A cue the file
+    /// never closes reports this line, since by the time the failure
+    /// is detected the input has run out and no later line remains to
+    /// name.
+    opened_at: usize,
     parts: Vec<CuePart>,
 }
 
@@ -365,6 +369,14 @@ pub fn parse_lyrics(content: &str) -> Result<Vec<SubtitleCue>, ParseLyricsError>
     resolve_cues(&events)
 }
 
+/// Locates a [`ParseLyricsErrorKind`] at `line_number`, forming the
+/// [`ParseLyricsError`] the parser returns. The kinds carry no line of
+/// their own, so each parser attaches the line it stands at as its
+/// error surfaces.
+fn at_line(line_number: usize) -> impl Fn(ParseLyricsErrorKind) -> ParseLyricsError {
+    move |kind| ParseLyricsError { line_number, kind }
+}
+
 /// Reads `content` as a sequence of top-level elements.
 fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
     let mut events = Vec::<Event>::new();
@@ -400,14 +412,13 @@ fn take_element<'a>(
         }
         // A closing tag is consumed by the parser that consumed its
         // opening tag, so one reaching the top level closes nothing.
-        ElementLine::ClosingTag => UnopenedRegion {
-            line_number: line.number,
-        }
-        .pipe(AdditiveRegionError::Unopened)
-        .pipe(ParseLyricsError::AdditiveRegion)
-        .pipe(Err),
+        ElementLine::ClosingTag => UnopenedRegion
+            .pipe(AdditiveRegionError::Unopened)
+            .pipe(ParseLyricsErrorKind::AdditiveRegion)
+            .pipe(at_line(line.number))
+            .pipe(Err),
         ElementLine::Header(start, Header::Control(ReservedMarker::Clear)) => {
-            check_event_order(start, line.number, previous_start)?;
+            check_event_order(start, previous_start).map_err(at_line(line.number))?;
             Ok((Some(Event::Clear(start)), rest))
         }
         // The only other control marker is `eov`, which `take_line`
@@ -416,9 +427,9 @@ fn take_element<'a>(
         // what the format asks for.
         ElementLine::Header(_, Header::Control(_)) => Ok((None, rest)),
         ElementLine::Header(start, Header::Cue(body)) => {
-            check_event_order(start, line.number, previous_start)?;
-            let header = PartHeader::parse(body, line.number)?;
-            let (group, tail) = take_cue_group(start, header, rest)?;
+            check_event_order(start, previous_start).map_err(at_line(line.number))?;
+            let header = PartHeader::parse(body).map_err(at_line(line.number))?;
+            let (group, tail) = take_cue_group(start, line.number, header, rest)?;
             Ok((Some(Event::Cue(group)), tail))
         }
     }
@@ -486,12 +497,11 @@ fn take_additive_region<'a>(
 
     loop {
         let Some((line, rest)) = input.take_line()? else {
-            return UnclosedRegion {
-                line_number: opened_at,
-            }
-            .pipe(AdditiveRegionError::Unclosed)
-            .pipe(ParseLyricsError::AdditiveRegion)
-            .pipe(Err);
+            return UnclosedRegion
+                .pipe(AdditiveRegionError::Unclosed)
+                .pipe(ParseLyricsErrorKind::AdditiveRegion)
+                .pipe(at_line(opened_at))
+                .pipe(Err);
         };
 
         match parse_element_line(line)? {
@@ -500,13 +510,12 @@ fn take_additive_region<'a>(
             // a silent no-op.
             ElementLine::ClosingTag => {
                 let Some(region) = region else {
-                    return EmptyRegion {
-                        line_number: line.number,
-                        opened_at,
-                    }
-                    .pipe(AdditiveRegionError::Empty)
-                    .pipe(ParseLyricsError::AdditiveRegion)
-                    .pipe(Err);
+                    return opened_at
+                        .pipe(EmptyRegion)
+                        .pipe(AdditiveRegionError::Empty)
+                        .pipe(ParseLyricsErrorKind::AdditiveRegion)
+                        .pipe(at_line(line.number))
+                        .pipe(Err);
                 };
                 return Ok((region, rest.outside()));
             }
@@ -515,35 +524,31 @@ fn take_additive_region<'a>(
             // this parser can reach; the tag is reported where it
             // stands instead.
             ElementLine::OpeningTag => {
-                return NestedRegion {
-                    line_number: line.number,
-                    opened_at,
-                }
-                .pipe(AdditiveRegionError::Nested)
-                .pipe(ParseLyricsError::AdditiveRegion)
-                .pipe(Err);
+                return opened_at
+                    .pipe(NestedRegion)
+                    .pipe(AdditiveRegionError::Nested)
+                    .pipe(ParseLyricsErrorKind::AdditiveRegion)
+                    .pipe(at_line(line.number))
+                    .pipe(Err);
             }
             // A region encloses cues, not the boundary events that end
             // them, so both control markers are rejected here rather
             // than acted on.
             ElementLine::Header(_, Header::Control(marker)) => {
-                return ControlMarkerInRegion {
-                    line_number: line.number,
-                    marker,
-                    opened_at,
-                }
-                .pipe(AdditiveRegionError::ControlMarker)
-                .pipe(ParseLyricsError::AdditiveRegion)
-                .pipe(Err);
+                return ControlMarkerInRegion { marker, opened_at }
+                    .pipe(AdditiveRegionError::ControlMarker)
+                    .pipe(ParseLyricsErrorKind::AdditiveRegion)
+                    .pipe(at_line(line.number))
+                    .pipe(Err);
             }
             ElementLine::Header(start, Header::Cue(body)) => {
                 let previous = region
                     .as_ref()
                     .map(|region| region.last().start)
                     .or(previous_start);
-                check_event_order(start, line.number, previous)?;
-                let header = PartHeader::parse(body, line.number)?;
-                let (group, tail) = take_cue_group(start, header, rest)?;
+                check_event_order(start, previous).map_err(at_line(line.number))?;
+                let header = PartHeader::parse(body).map_err(at_line(line.number))?;
+                let (group, tail) = take_cue_group(start, line.number, header, rest)?;
                 region = Some(AdditiveRegion::extended(region, group));
                 input = tail;
             }
@@ -561,6 +566,7 @@ fn take_additive_region<'a>(
 /// the next element.
 fn take_cue_group<'a>(
     start: Timestamp,
+    opened_at: usize,
     header: PartHeader<'a>,
     input: Input<'a>,
 ) -> Result<(CueGroup, Input<'a>), ParseLyricsError> {
@@ -579,7 +585,7 @@ fn take_cue_group<'a>(
         if line.indent != TIMESTAMP_PREFIX_WIDTH {
             break;
         }
-        match parse_shorthand_line(line.body, line.number)? {
+        match parse_shorthand_line(line.body).map_err(at_line(line.number))? {
             ShorthandLine::Annotation(text) => {
                 let (continuations, tail) =
                     take_continuation_lines(rest, annotation_indent, Continued::AnnotationText)?;
@@ -596,7 +602,14 @@ fn take_cue_group<'a>(
     }
 
     parts.push(open);
-    Ok((CueGroup { start, parts }, input))
+    Ok((
+        CueGroup {
+            start,
+            opened_at,
+            parts,
+        },
+        input,
+    ))
 }
 
 /// Consumes the continuation lines that extend the text of the part
@@ -647,7 +660,7 @@ fn take_continuation_lines<'a>(
     while let Some((line, rest)) = input.take_line()? {
         if line.indent == indent {
             if continued == Continued::CueText {
-                reject_reserved_cue_text_characters(line.body, line.number)?;
+                reject_reserved_cue_text_characters(line.body).map_err(at_line(line.number))?;
             }
             continuations.push(line);
             input = rest;
@@ -674,29 +687,25 @@ enum ShorthandLine<'a> {
 /// Reads a whole line at the shorthand column. The line is split into
 /// a marker and its text once, and the marker alone decides which of
 /// the two shapes the line is, so neither half is derived twice.
-fn parse_shorthand_line(
-    body: &str,
-    line_number: usize,
-) -> Result<ShorthandLine<'_>, ParseLyricsError> {
+fn parse_shorthand_line(body: &str) -> Result<ShorthandLine<'_>, ParseLyricsErrorKind> {
     let Some((marker, text)) = split_marker(body) else {
-        reject_reserved_cue_text_characters(body, line_number)?;
-        return MissingMarker {
-            line_number,
-            content: body.to_string(),
-        }
-        .pipe(ParseLyricsError::MissingMarker)
-        .pipe(Err);
+        reject_reserved_cue_text_characters(body)?;
+        return body
+            .to_string()
+            .pipe(MissingMarker)
+            .pipe(ParseLyricsErrorKind::MissingMarker)
+            .pipe(Err);
     };
     if matches!(marker.parse(), Ok(ReservedMarker::Annotation)) {
         if text.is_empty() {
-            return EmptyAnnotation { line_number }
-                .pipe(ParseLyricsError::EmptyAnnotation)
+            return EmptyAnnotation
+                .pipe(ParseLyricsErrorKind::EmptyAnnotation)
                 .pipe(Err);
         }
         return Ok(ShorthandLine::Annotation(text));
     }
-    reject_reserved_cue_text_characters(body, line_number)?;
-    PartHeader::from_parts(marker, text, line_number).map(ShorthandLine::Part)
+    reject_reserved_cue_text_characters(body)?;
+    PartHeader::from_parts(marker, text).map(ShorthandLine::Part)
 }
 
 /// The marker and the text that a `marker: text` line declares, which
@@ -710,39 +719,33 @@ struct PartHeader<'a> {
 impl<'a> PartHeader<'a> {
     /// Reads a whole `marker: text` body, rejecting the bodies that
     /// no cue part may carry.
-    fn parse(body: &'a str, line_number: usize) -> Result<Self, ParseLyricsError> {
-        reject_reserved_cue_text_characters(body, line_number)?;
-        let (marker, text) = split_marker(body).ok_or_else(|| {
-            ParseLyricsError::MissingMarker(MissingMarker {
-                line_number,
-                content: body.to_string(),
-            })
-        })?;
-        PartHeader::from_parts(marker, text, line_number)
+    fn parse(body: &'a str) -> Result<Self, ParseLyricsErrorKind> {
+        reject_reserved_cue_text_characters(body)?;
+        let (marker, text) = split_marker(body)
+            .ok_or(body)
+            .map_err(String::from)
+            .map_err(MissingMarker)
+            .map_err(ParseLyricsErrorKind::MissingMarker)?;
+        PartHeader::from_parts(marker, text)
     }
 
     /// Checks the two halves of a body that has already been split.
     /// A caller that split the body to learn what kind of line it was
     /// reaches the same checks through here rather than splitting the
     /// same bytes a second time.
-    fn from_parts(
-        marker: &'a str,
-        text: &'a str,
-        line_number: usize,
-    ) -> Result<Self, ParseLyricsError> {
+    fn from_parts(marker: &'a str, text: &'a str) -> Result<Self, ParseLyricsErrorKind> {
         if let Ok(reserved) = marker.parse::<ReservedMarker>() {
-            return Err(ParseLyricsError::ReservedControlMarker(
-                ReservedControlMarker {
-                    line_number,
-                    marker: reserved,
-                },
-            ));
+            return reserved
+                .pipe(ReservedControlMarker)
+                .pipe(ParseLyricsErrorKind::ReservedControlMarker)
+                .pipe(Err);
         }
         if text.is_empty() {
-            return Err(ParseLyricsError::EmptyCueBody(EmptyCueBody {
-                line_number,
-                marker: marker.to_string(),
-            }));
+            return marker
+                .to_string()
+                .pipe(EmptyCueBody)
+                .pipe(ParseLyricsErrorKind::EmptyCueBody)
+                .pipe(Err);
         }
         Ok(PartHeader { marker, text })
     }
@@ -767,30 +770,28 @@ enum Header<'a> {
 /// the next layer reads that tail rather than a position computed
 /// from what the previous one matched.
 fn parse_header(line: Line<'_>) -> Result<(Timestamp, Header<'_>), ParseLyricsError> {
-    let (start, after_timestamp) = match Timestamp::take(line.body) {
-        Ok(parsed) => parsed,
-        Err(TakeTimestampError::ShapeMismatch) => {
-            return Err(ParseLyricsError::MalformedHeader(MalformedHeader {
-                line_number: line.number,
-                content: line.body.to_string(),
-            }));
-        }
-        Err(cause) => {
-            return Err(ParseLyricsError::InvalidTimestamp(InvalidTimestamp {
-                line_number: line.number,
-                cause,
-            }));
-        }
-    };
+    let (start, after_timestamp) = Timestamp::take(line.body)
+        .map_err(|cause| match cause {
+            TakeTimestampError::ShapeMismatch => line
+                .body
+                .to_string()
+                .pipe(MalformedHeader)
+                .pipe(ParseLyricsErrorKind::MalformedHeader),
+            cause => cause
+                .pipe(InvalidTimestamp)
+                .pipe(ParseLyricsErrorKind::InvalidTimestamp),
+        })
+        .map_err(at_line(line.number))?;
 
     let (separator, cue_body) = take_leading_whitespace(after_timestamp);
     if separator.is_empty() {
-        return Err(ParseLyricsError::MissingSeparatorAfterTimestamp(
-            MissingSeparatorAfterTimestamp {
-                line_number: line.number,
-                content: line.body.to_string(),
-            },
-        ));
+        return line
+            .body
+            .to_string()
+            .pipe(MissingSeparatorAfterTimestamp)
+            .pipe(ParseLyricsErrorKind::MissingSeparatorAfterTimestamp)
+            .pipe(at_line(line.number))
+            .pipe(Err);
     }
 
     let (first_token, after_token) = take_non_whitespace(cue_body);
@@ -799,13 +800,13 @@ fn parse_header(line: Line<'_>) -> Result<(Timestamp, Header<'_>), ParseLyricsEr
     {
         let trailing = after_token.trim();
         if !trailing.is_empty() {
-            return Err(ParseLyricsError::ExtraTextAfterControlMarker(
-                ExtraTextAfterControlMarker {
-                    line_number: line.number,
-                    marker,
-                    trailing: trailing.to_string(),
-                },
-            ));
+            return ExtraTextAfterControlMarker {
+                marker,
+                trailing: trailing.to_string(),
+            }
+            .pipe(ParseLyricsErrorKind::ExtraTextAfterControlMarker)
+            .pipe(at_line(line.number))
+            .pipe(Err);
         }
         return Ok((start, Header::Control(marker)));
     }
@@ -847,23 +848,24 @@ fn join_lines(opening: &str, continuations: &[Line<'_>]) -> String {
 /// cue or `clr`.
 fn check_event_order(
     start: Timestamp,
-    line_number: usize,
     previous: Option<Timestamp>,
-) -> Result<(), ParseLyricsError> {
+) -> Result<(), ParseLyricsErrorKind> {
     let Some(previous) = previous else {
         return Ok(());
     };
     if previous == start {
-        return Err(ParseLyricsError::RepeatedTimestamp(RepeatedTimestamp {
-            line_number,
-            start,
-        }));
+        return start
+            .pipe(RepeatedTimestamp)
+            .pipe(ParseLyricsErrorKind::RepeatedTimestamp)
+            .pipe(Err);
     }
     if start < previous {
-        return Err(ParseLyricsError::OutOfOrder(OutOfOrder {
+        return OutOfOrder {
             previous,
             next: start,
-        }));
+        }
+        .pipe(ParseLyricsErrorKind::OutOfOrder)
+        .pipe(Err);
     }
     Ok(())
 }
@@ -872,18 +874,18 @@ fn check_event_order(
 /// above. An annotation reports its own, because the fix for it
 /// differs from the fix for a marker line.
 fn orphaned_shorthand_line(line: Line<'_>) -> ParseLyricsError {
-    if annotation_body(line.body).is_some() {
-        return OrphanedAnnotation {
-            line_number: line.number,
-            content: line.body.to_string(),
-        }
-        .pipe(ParseLyricsError::OrphanedAnnotation);
-    }
-    OrphanedShorthandMarker {
-        line_number: line.number,
-        content: line.body.to_string(),
-    }
-    .pipe(ParseLyricsError::OrphanedShorthandMarker)
+    let kind = if annotation_body(line.body).is_some() {
+        line.body
+            .to_string()
+            .pipe(OrphanedAnnotation)
+            .pipe(ParseLyricsErrorKind::OrphanedAnnotation)
+    } else {
+        line.body
+            .to_string()
+            .pipe(OrphanedShorthandMarker)
+            .pipe(ParseLyricsErrorKind::OrphanedShorthandMarker)
+    };
+    kind.pipe(at_line(line.number))
 }
 
 /// The diagnostic for a line whose indent matches no width the parser
@@ -892,22 +894,22 @@ fn orphaned_shorthand_line(line: Line<'_>) -> ParseLyricsError {
 /// continue.
 fn malformed_indentation(line: Line<'_>, continuation: Option<usize>) -> ParseLyricsError {
     MalformedIndentation {
-        line_number: line.number,
         actual: line.indent,
         shorthand_indent: TIMESTAMP_PREFIX_WIDTH,
         continuation_indent: continuation,
     }
-    .pipe(ParseLyricsError::MalformedIndentation)
+    .pipe(ParseLyricsErrorKind::MalformedIndentation)
+    .pipe(at_line(line.number))
 }
 
 /// The diagnostic for a column-zero line that opens with `<` but
 /// spells neither tag.
 fn malformed_tag_line(line: Line<'_>) -> ParseLyricsError {
-    MalformedTagLine {
-        line_number: line.number,
-        content: line.body.to_string(),
-    }
-    .pipe(ParseLyricsError::MalformedTagLine)
+    line.body
+        .to_string()
+        .pipe(MalformedTagLine)
+        .pipe(ParseLyricsErrorKind::MalformedTagLine)
+        .pipe(at_line(line.number))
 }
 
 /// Resolves the end time of every cue in `events` and flattens them
@@ -959,9 +961,11 @@ fn resolve_group(
     carried: Vec<CuePart>,
     following: Option<Timestamp>,
 ) -> Result<SubtitleCue, ParseLyricsError> {
-    let end = following.ok_or(ParseLyricsError::UnclosedCue(UnclosedCue {
-        start: group.start,
-    }))?;
+    let end = following
+        .ok_or(group.start)
+        .map_err(UnclosedCue)
+        .map_err(ParseLyricsErrorKind::UnclosedCue)
+        .map_err(at_line(group.opened_at))?;
     let mut parts = carried;
     parts.extend(group.parts.iter().cloned());
     Ok(SubtitleCue {
@@ -997,7 +1001,7 @@ fn annotation_body(body: &str) -> Option<&str> {
 
 /// Splits a line body like `marker: text` into its two halves. Returns
 /// `None` when the line has no `:` separator or when the marker half
-/// is empty; the caller reports this as [`ParseLyricsError::MissingMarker`]
+/// is empty; the caller reports this as [`ParseLyricsErrorKind::MissingMarker`]
 /// because every cue-opening line in the source format is expected to
 /// carry a marker.
 fn split_marker(body: &str) -> Option<(&str, &str)> {
@@ -1013,17 +1017,12 @@ fn split_marker(body: &str) -> Option<(&str, &str)> {
 /// grammar reserves as tag delimiters. The renderer escapes the cue
 /// body, so neither could reach the output as itself. Reports the
 /// first offender only.
-fn reject_reserved_cue_text_characters(
-    text: &str,
-    line_number: usize,
-) -> Result<(), ParseLyricsError> {
+fn reject_reserved_cue_text_characters(text: &str) -> Result<(), ParseLyricsErrorKind> {
     if let Some(character) = text.chars().find(|&c| matches!(c, '<' | '>')) {
-        return Err(ParseLyricsError::CueTextReservedCharacter(
-            CueTextReservedCharacter {
-                line_number,
-                character,
-            },
-        ));
+        return character
+            .pipe(CueTextReservedCharacter)
+            .pipe(ParseLyricsErrorKind::CueTextReservedCharacter)
+            .pipe(Err);
     }
     Ok(())
 }
