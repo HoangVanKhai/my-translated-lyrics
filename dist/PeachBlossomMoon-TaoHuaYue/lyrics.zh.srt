@@ -192,7 +192,7 @@
 
 47
 00:03:59,613 --> 00:04:06,210
-<font color="#AAAA22">调校</font>：<font color="#AAAAAA">晴海</font>
+<font color="#AAAA22">调教</font>：<font color="#AAAAAA">晴海</font>
 <font color="#AAAA22">二胡实录</font>：<font color="#AAAAAA">陆二胡</font>
 <font color="#AAAA22">混音</font>：<font color="#AAAAAA">拙木</font>
 

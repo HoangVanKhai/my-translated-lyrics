@@ -72,7 +72,6 @@
 03:59.613 cre: Điều giáo: 晴海
                Thu âm nhị hồ: 陆二胡
                Mix nhạc: 拙木
-          ann: Bản gốc chép chức danh này là 调校, còn khối thông tin đầu MV chép là 调教; cả hai đều được giữ nguyên.
 04:06.210 cre: Minh họa: 唯Tu
                Video: 游叶
                Mô hình đình: 唐挽
