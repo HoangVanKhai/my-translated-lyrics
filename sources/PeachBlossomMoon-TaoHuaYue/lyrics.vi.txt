@@ -6,7 +6,7 @@
 # cre: Thông tin sản xuất
 # eov: Kết thúc MV
 
-00:00.134 txt: Loạt ca khúc Đào Hoa Tuyết
+00:00.134 txt: Sê-ri Đào Hoa Tuyết
                莫与人辩
 00:03.162 LRC: Sân nhà xuân năm cũ, hoa đào rực rỡ ngợp trời
           ann: Kinh Thi, Chu Nam – Đào Yêu: “Đào tơ mơn mởn, rực rỡ hoa tươi.”
