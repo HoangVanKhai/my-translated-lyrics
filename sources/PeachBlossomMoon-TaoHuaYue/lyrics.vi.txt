@@ -1,0 +1,88 @@
+# clr: Xóa chữ trên màn hình
+# LRC: Lời bài hát
+# ttl: Tiêu đề ca khúc
+# txt: Chữ trên màn hình
+# ann: Chú thích
+# cre: Thông tin sản xuất
+# eov: Kết thúc MV
+
+00:00.134 txt: Loạt ca khúc Đào Hoa Tuyết
+               莫与人辩
+00:03.162 LRC: Sân nhà xuân năm cũ, hoa đào rực rỡ ngợp trời
+          ann: Kinh Thi, Chu Nam – Đào Yêu: “Đào tơ mơn mởn, rực rỡ hoa tươi.”
+00:08.347 LRC: Giữa ngàn hoa rụng, tiếng đàn khảy động dây lòng ai
+00:12.613 LRC: Vẫn hẹn rằng lại một năm nữa, tuyết hoa đào rơi đầy vườn
+00:18.019 LRC: Người viễn du rồi sẽ hiện bên song giấy khuê phòng
+00:22.949 LRC: Hoa đào năm ấy cũng như hôm nay, tươi thắm rạng ngời
+00:27.199 LRC: Chàng bảo chiến sự Hải Châu chẳng cho ai được thảnh thơi
+00:32.253 LRC: Ta cắt đứt dây đàn, chàng dứt khoát ly biệt
+00:36.989 LRC: Ta biết chàng hiểu tâm nguyện này
+00:41.089 LRC: Dưới vầng trăng hoa đào ấy, dung nhan tô vẽ đôi ba lượt
+00:46.164 LRC: Bẻ một nhành hồng bay, khẽ cài lên mái tóc mây
+00:51.087 LRC: Chàng chợt giãn mày mà cười, in hằn mãi nơi rèm lòng ta
+00:56.001 LRC: Mà giờ đây chàng ở bên cầu thành nào
+01:00.214 LRC: Lại đến mùa trăng hoa đào, ánh trăng mờ ảo vấn vương sợi bạc
+01:05.313 LRC: Giữa năm tháng đằng đẵng, luống để lại từng phong thư
+01:10.216 LRC: Dưới trăng nhìn kỹ nét chữ, tựa hồ thấy được dung nhan chàng
+01:14.867 LRC: Khẽ vuốt dây đàn vừa nối, biết rằng chàng cũng đang nhớ mong
+01:24.164 clr
+
+01:24.601 cre: Tác từ: 莫与人辩
+               Soạn nhạc: 莫与人辩
+01:29.229 cre: Phối khí: 清黛半夏
+               Điều giáo: 晴海
+01:33.606 cre: Thu âm nhị hồ: 陆二胡
+               Mix nhạc: 拙木
+01:38.818 cre: Minh họa: 唯Tu
+               Video: 游叶
+               Mô hình đình: 唐挽
+01:46.760 LRC: Sân nhà tháng giêng năm cũ, sương trắng lạnh đọng mặt đầm
+01:51.640 LRC: Giữa đêm trăng gảy đàn, khảy động dây lòng ai
+01:55.960 LRC: Vẫn hẹn rằng lại một năm nữa, ánh trăng ngập tràn sân này
+02:01.200 LRC: Người viễn du rồi sẽ hiện, cùng ta chung một vầng trăng
+          ann: Tô Thức, Thủy Điệu Ca Đầu: “Chỉ nguyện người bền lâu, ngàn dặm chung vầng trăng sáng.”
+02:05.680 LRC: Ánh trăng năm ấy cũng như hôm nay, lấp lánh dập dờn
+02:10.600 LRC: Đôi mắt sao của chàng lấp lánh, còn thu trọn cả mâm ngọc trời cao
+          ann: Lý Bạch, Cổ Lãng Nguyệt Hành: “Thuở nhỏ chẳng biết trăng, cứ gọi là mâm ngọc trắng.”
+02:15.000 LRC: Chàng say múa kiếm lạnh, lệ rơi tựa ánh bạc tàn
+02:20.235 LRC: Một lần ly biệt này, thoắt đã bao năm ròng
+          ann: Liễu Vĩnh, Vũ Lâm Linh: “Chuyến đi này qua bao năm, hẳn giờ lành cảnh đẹp cũng thành vô nghĩa.”
+02:24.214 LRC: Dưới vầng trăng hoa đào ấy, dung nhan tô vẽ đôi ba lượt
+02:29.433 LRC: Bẻ một nhành hồng bay, khẽ cài lên mái tóc mây
+02:34.160 LRC: Chàng chợt giãn mày mà cười, in hằn mãi nơi rèm lòng ta
+02:39.112 LRC: Mà giờ đây chàng ở bên cầu thành nào
+02:43.353 LRC: Lại đến mùa trăng hoa đào, ánh trăng mờ ảo vấn vương sợi bạc
+02:48.502 LRC: Giữa năm tháng đằng đẵng, luống để lại từng phong thư
+02:53.537 LRC: Dưới trăng nhìn kỹ nét chữ, tựa hồ thấy được dung nhan chàng
+02:58.153 LRC: Khẽ vuốt dây đàn vừa nối, biết rằng chàng cũng đang nhớ mong
+03:07.152 LRC: Trăng hoa đào một đời này, lòng khắc khoải khôn nguôi chẳng yên
+03:12.419 LRC: Sóng biếc soi vườn đào, cảnh sắc mường tượng tựa năm xưa
+03:17.291 LRC: Người thưởng nguyệt nay nơi đâu, một mình lên lầu cao tựa mà trông
+03:21.954 LRC: Gió dữ chốn biên cương, liệu có biết ấm lạnh chăng
+03:26.421 LRC: Trăng hoa đào kiếp này, bên Tam Sinh Thạch hẹn ước duyên
+          ann: Truyền thuyết Tam Sinh Thạch chép trong Cam Trạch Dao – Viên Quán của Viên Giao, đời sau mượn để chỉ duyên phận từ kiếp trước.
+03:31.658 LRC: Hoa thắm bên tường nở rộ, rồi sẽ liền cành đền niềm hợp hoan
+          ann: Bạch Cư Dị, Trường Hận Ca: “Trên trời nguyện làm chim liền cánh, dưới đất nguyện làm cây liền cành.”
+03:36.369 LRC: Trong lùm hoa đào chôn đôi kiếm, ký ức thuở nhỏ hiện trước mắt
+03:41.676 LRC: Một đời chỉ một mối tình, sao đành dứt với chàng, thôi đành nguôi niệm
+          ann: Hán nhạc phủ, Thượng Tà: “Núi mòn hết gò, sông cạn hết nước… trời đất liền nhau, mới dám dứt tình cùng chàng.”
+03:50.363 cre: Tác từ: 莫与人辩
+               Soạn nhạc: 莫与人辩
+               Phối khí: 清黛半夏
+03:59.613 cre: Điều giáo: 晴海
+               Thu âm nhị hồ: 陆二胡
+               Mix nhạc: 拙木
+          ann: Bản gốc chép chức danh này là 调校, còn khối thông tin đầu MV chép là 调教; cả hai đều được giữ nguyên.
+04:06.210 cre: Minh họa: 唯Tu
+               Video: 游叶
+               Mô hình đình: 唐挽
+04:10.893 clr
+
+04:11.922 ttl: Đào Hoa Nguyệt 2020
+04:16.851 clr
+
+04:17.455 txt: Kết quả quét mã QR: sản phẩm đã hết hạn, không còn tồn tại
+               (chỉ còn cách tìm ở chợ đồ cũ)
+04:22.481 clr
+
+04:22.481 eov
