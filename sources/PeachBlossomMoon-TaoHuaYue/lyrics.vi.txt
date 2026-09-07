@@ -77,7 +77,8 @@
                Mô hình đình: 唐挽
 04:10.893 clr
 
-04:11.922 ttl: Đào Hoa Nguyệt 2020
+04:11.922 ttl: Đào Hoa Nguyệt
+          txt: 2020
 04:16.851 clr
 
 04:17.455 txt: Kết quả quét mã QR: sản phẩm đã hết hạn, không còn tồn tại
