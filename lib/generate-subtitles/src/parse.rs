@@ -575,7 +575,10 @@ fn take_cue_group<'a>(
     // That is what lets an annotation reach the open part without the
     // group having to prove that a part exists.
     let (mut open, mut input) = take_cue_part(header, input)?;
-    let mut parts = Vec::<CuePart>::new();
+    // A group of one part is the common case, so the vector is sized
+    // for it: growing from empty would round the first push up to
+    // four slots and leave three of them unused for good.
+    let mut parts = Vec::<CuePart>::with_capacity(1);
     let annotation_indent = continuation_indent(ReservedMarker::Annotation.as_ref());
 
     while let Some((line, rest)) = input.take_line()? {
