@@ -1,0 +1,12 @@
+markers = [
+  "cre",
+  "ttl",
+  "txt",
+  "LRC",
+]
+
+credits = ["cre"]
+
+[classes]
+ttl = "title"
+txt = "expo"

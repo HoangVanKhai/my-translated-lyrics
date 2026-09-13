@@ -1,0 +1,163 @@
+WEBVTT
+Language: vi
+
+STYLE
+::cue {
+  background-color: transparent;
+  text-shadow: 2px 2px 2px black;
+}
+::cue(c.creditRole) {
+  color: #AAAA22;
+}
+::cue(c.creditName) {
+  color: #AAAAAA;
+}
+::cue(c.title) {
+  color: #FFD966;
+  font-weight: bold;
+}
+::cue(c.expo) {
+  color: #CCCCCC;
+  font-style: italic;
+}
+
+00:00:01.200 --> 00:00:01.969
+<c.creditRole>Đơn vị sản xuất:</c> <c.creditName>玉兔坊、坐标系工作室</c>
+
+00:00:01.969 --> 00:00:02.802
+<c.creditRole>Chỉ đạo:</c> <c.creditName>千雪棠遙</c>
+
+00:00:02.802 --> 00:00:03.638
+<c.creditRole>Giám chế:</c> <c.creditName>落骞、花间有鹿来</c>
+
+00:00:03.638 --> 00:00:04.450
+<c.creditRole>Soạn nhạc/Phối khí:</c> <c.creditName>阿落-itHH</c>
+
+00:00:04.450 --> 00:00:05.227
+<c.creditRole>Phối hòa thanh:</c> <c.creditName>被遗忘者的哀伤</c>
+
+00:00:05.227 --> 00:00:06.040
+<c.creditRole>Tác từ:</c> <c.creditName>北山薇</c>
+
+00:00:06.040 --> 00:00:06.814
+<c.creditRole>Minh họa:</c> <c.creditName>春杏</c>
+
+00:00:06.814 --> 00:00:07.535
+<c.creditRole>Điều giáo:</c> <c.creditName>磷元素P-Yuezheng Ling V5、千雪棠遙-Luo Tianyi AI</c>
+
+00:00:07.535 --> 00:00:08.373
+<c.creditRole>Video:</c> <c.creditName>寒洲</c>
+
+00:00:08.373 --> 00:00:09.119
+<c.creditRole>Ghép giọng/Mix nhạc:</c> <c.creditName>小欧</c>
+
+00:00:09.119 --> 00:00:09.883
+<c.creditRole>Hỗ trợ:</c> <c.creditName>浙江共青团</c>
+
+00:00:09.883 --> 00:00:10.643
+<c.creditRole>Cảm ơn:</c> <c.creditName>灰儿白、玖蝶</c>
+
+00:00:17.201 --> 00:00:19.650
+<c.title>Tây Linh Túy Thoại</c>
+
+00:00:19.650 --> 00:00:22.720
+Lúc nâng chén, trời dần ấm
+
+00:00:22.720 --> 00:00:25.950
+Thanh mai nổi trên mặt chén
+
+00:00:25.950 --> 00:00:28.800
+Đã mấy độ hoa trăng thay đổi
+
+00:00:28.800 --> 00:00:34.950
+Bên bờ Tây Linh, cổng đá đối bóng non hồ
+
+00:00:34.950 --> 00:00:41.790
+Chợt gặp người, đang lúc gió ấm như rượu, rượu như sầu
+
+00:00:41.790 --> 00:00:50.670
+Nâng bút, Cô Sơn như gấm thêu, mống trời tạnh mưa vắt ngang đỉnh núi, mượn sắc má say mà nán lại đôi khắc
+
+00:00:50.670 --> 00:00:59.850
+Sau ly biệt, lệ đẫm tay áo xuân, tóc xanh đổi đầu bạc, đàn sách đổi ngày qua
+
+00:00:59.850 --> 00:01:06.060
+Hai nơi trầm ngâm năm tháng đằng đẵng, mỗi người riêng cúi mắt
+
+00:01:06.060 --> 00:01:12.150
+Hỏi Đoạn Kiều, gió si sóng sầu, biết đem tâm sự tỏ cùng hải đường sao đây
+
+00:01:12.150 --> 00:01:18.480
+Mà xuân về, bình phong bạc song cửa gấm, xa xa ngóng nhau
+
+00:01:18.480 --> 00:01:24.570
+Non mây thu lại, khói nước mênh mang, ngoài cầu Tây Linh sóng thu dập dờn
+
+00:01:24.570 --> 00:01:31.280
+Nơi nghiêng chén, gió trăng rượu đục, khó nghĩ cho cùng
+
+00:01:31.792 --> 00:01:37.372
+<c.expo>Cầu Tây Linh là cầu vòm đá một nhịp, còn có tên là cầu Tây Lăng, xưa vốn là bến đò; câu “Tây thôn hoán độ xứ” trong thơ người xưa chính là chỉ nơi này.</c>
+
+00:01:37.372 --> 00:01:42.288
+<c.expo>Cuối đời Minh cầu được xây lại. Năm 1921, mặt cầu từ bậc thang đá ban đầu được sửa thành mặt dốc. Năm 2004, cầu Tây Linh được trùng tu.</c>
+
+00:01:42.288 --> 00:01:47.269
+<c.expo>Cầu hiện nay dài 9,3 mét, rộng 8,5 mét, khẩu độ thông thủy 7,4 mét; cùng với Đoạn Kiều và Trường Kiều được gọi chung là ba cây cầu tình nhân lớn của Tây Hồ.</c>
+
+00:01:47.274 --> 00:01:49.560
+<c.title>Tây Linh Túy Thoại</c>
+
+00:01:49.560 --> 00:01:52.720
+Lại gặp cơn mưa Tây Hồ
+
+00:01:52.720 --> 00:01:55.800
+Đun trà qua tiết Thanh Minh
+
+00:01:55.800 --> 00:01:58.800
+Nỗi sầu theo thuyền hoa trôi xa
+
+00:01:58.800 --> 00:02:04.692
+Trước cảnh đẹp, dừng bút lại nhớ người
+
+00:02:04.692 --> 00:02:11.820
+Qua ngàn cánh buồm, mái chèo xuôi ngược, gió bụi giặt áo người xa xứ
+
+00:02:11.820 --> 00:02:20.490
+Đáy chén mưa tạnh mây tan, người đi xa, hợp tan đều gửi lại cầu này
+
+00:02:20.490 --> 00:02:23.910
+Vô tình nhất là tiếng nhạn mờ xa
+
+00:02:23.910 --> 00:02:29.850
+Chẳng như vầng trăng trước sân, chiều chiều sớm sớm
+
+00:02:29.850 --> 00:02:36.000
+Tiếng chèo trôi lạc vào con nước xuân, sen trong gió dần già
+
+00:02:36.000 --> 00:02:42.150
+Hỏi Đoạn Kiều, gió si sóng sầu, biết đem tâm sự tỏ cùng hải đường sao đây
+
+00:02:42.150 --> 00:02:48.510
+Mà xuân về, bình phong bạc song cửa gấm, xa xa ngóng nhau
+
+00:02:48.510 --> 00:02:54.570
+Non mây thu lại, khói nước mênh mang, ngoài cầu Tây Linh sóng thu dập dờn
+
+00:02:54.570 --> 00:03:01.280
+Nơi nghiêng chén, gió trăng rượu đục, khó nghĩ cho cùng
+
+00:03:18.960 --> 00:03:25.710
+Mượn rượu hỏi gió đông, sắc xuân ai ủ, ủ đến khi tỉnh mộng lòng người đứt đoạn
+
+00:03:25.710 --> 00:03:31.920
+Ngoài vầng trăng sáng, sóng liễu nối dài, tiếng oanh ngân mãi
+
+00:03:31.920 --> 00:03:38.070
+Vẫn cứ là bóng mây ánh sóng, chuyện say bên Tây Linh còn đọng nỗi bùi ngùi
+
+00:03:38.070 --> 00:03:44.370
+Nơi nghiêng chén, gió trăng rượu đục, khó nghĩ cho cùng
+
+00:03:44.370 --> 00:03:59.880
+Thôi thì quên nhau, cùng ngắm non hồ vẫn vẹn nguyên
