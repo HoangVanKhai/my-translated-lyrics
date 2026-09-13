@@ -18,7 +18,7 @@ use std::collections::BTreeMap;
 /// A credits descriptor declaring a single Vietnamese role, `role-a`.
 pub(crate) fn credits_with_one_role() -> CreditsDesc {
     CreditsDesc {
-        credit_roles: vec![btreemap! { Language::Vietnamese => "role-a".to_string() }],
+        credit_roles: vec![btreemap! { Language::Vietnamese => "role-a".to_string().into() }],
         ..Default::default()
     }
 }
@@ -50,7 +50,7 @@ pub(crate) fn color(value: String) -> Color {
 /// the given voice table. The credit colors and the empty class table
 /// are identical across both renderers; each renderer's test module
 /// supplies whatever voice entries it needs.
-pub(crate) fn style_palette(voices: BTreeMap<String, Style>) -> StylePalette {
+pub(crate) fn style_palette(voices: BTreeMap<MarkerName, Style>) -> StylePalette {
     StylePalette {
         credit: CreditPalette {
             role: color("#AAAA22".to_owned()),

@@ -8,7 +8,7 @@
 
 use derive_more::Display;
 use fuzzy_select::fuzzy::ResolveError;
-use lyrics_core::video_descriptor::Language;
+use lyrics_core::video_descriptor::{Language, VideoTitle};
 use play_with_lyrics::library::VideoLookupError;
 use play_with_lyrics::player::SubtitleFormat;
 use std::path::PathBuf;
@@ -36,9 +36,9 @@ pub(crate) struct NoVideos {
 
 /// No subtitle files exist for the chosen video in the media library.
 #[derive(Debug, Display)]
-#[display("No subtitles for {video_title:?} were found in {collection_dir:?}.")]
+#[display("No subtitles for {:?} were found in {collection_dir:?}.", &**video_title)]
 pub(crate) struct NoSubtitles {
-    pub(crate) video_title: String,
+    pub(crate) video_title: VideoTitle,
     pub(crate) collection_dir: PathBuf,
 }
 
