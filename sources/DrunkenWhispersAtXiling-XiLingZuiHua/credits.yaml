@@ -1,0 +1,27 @@
+credit-roles:
+  - { vi: Chỉ đạo, zh: 策划 }
+  - { vi: Cảm tạ, zh: 鸣谢 }
+  - { vi: Ghép giọng/Mix nhạc, zh: 贴混 }
+  - { vi: Giám chế, zh: 监制 }
+  - { vi: Hỗ trợ, zh: 协力 }
+  - { vi: Minh họa, zh: 曲绘 }
+  - { vi: Phối hòa thanh, zh: 和编 }
+  - { vi: Soạn nhạc/Phối khí, zh: 作编 }
+  - { vi: Tác từ, zh: 作词 }
+  - { vi: Video, zh: 视频 }
+  - { vi: Điều giáo, zh: 调教 }
+  - { vi: Đơn vị sản xuất, zh: 出品 }
+
+credit-names:
+  - { vi: 北山薇, zh: 北山薇 }
+  - { vi: 千雪棠遙, zh: 千雪棠遙 }
+  - { vi: 寒洲, zh: 寒洲 }
+  - { vi: 小欧, zh: 小欧 }
+  - { vi: 春杏, zh: 春杏 }
+  - { vi: 浙江共青团, zh: 浙江共青团 }
+  - { vi: 灰儿白、玖蝶, zh: 灰儿白、玖蝶 }
+  - { vi: 玉兔坊、坐标系工作室, zh: 玉兔坊、坐标系工作室 }
+  - { vi: 磷元素P-Yuezheng Ling V5、千雪棠遙-Luo Tianyi AI, zh: 磷元素P-乐正绫V5、千雪棠遙-洛天依AI }
+  - { vi: 落骞、花间有鹿来, zh: 落骞、花间有鹿来 }
+  - { vi: 被遗忘者的哀伤, zh: 被遗忘者的哀伤 }
+  - { vi: 阿落-itHH, zh: 阿落-itHH }

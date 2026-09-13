@@ -1,0 +1,72 @@
+# clr: Xóa chữ trên màn hình
+# LRC: Lời bài hát (không rõ người trình bày)
+# ttl: Tiêu đề ca khúc
+# txt: Chữ trên màn hình
+# ann: Chú thích
+# cre: Thông tin sản xuất
+# eov: Kết thúc MV
+
+00:01.200 cre: Đơn vị sản xuất: 玉兔坊、坐标系工作室
+00:01.969 cre: Chỉ đạo: 千雪棠遙
+00:02.802 cre: Giám chế: 落骞、花间有鹿来
+00:03.638 cre: Soạn nhạc/Phối khí: 阿落-itHH
+00:04.450 cre: Phối hòa thanh: 被遗忘者的哀伤
+00:05.227 cre: Tác từ: 北山薇
+00:06.040 cre: Minh họa: 春杏
+00:06.814 cre: Điều giáo: 磷元素P-Yuezheng Ling V5、千雪棠遙-Luo Tianyi AI
+00:07.535 cre: Video: 寒洲
+00:08.373 cre: Ghép giọng/Mix nhạc: 小欧
+00:09.119 cre: Hỗ trợ: 浙江共青团
+00:09.883 cre: Cảm tạ: 灰儿白、玖蝶
+00:10.643 clr
+
+00:17.201 ttl: Tây Linh Túy Thoại
+00:19.650 LRC: Lúc nâng chén, trời dần ấm
+00:22.720 LRC: Thanh mai nổi trên mặt chén
+00:25.950 LRC: Đã mấy độ hoa trăng thay đổi
+00:28.800 LRC: Bên bờ Tây Linh, cổng đá đối bóng non hồ
+00:34.950 LRC: Chợt gặp người, đang lúc gió ấm như rượu, rượu như sầu
+00:41.790 LRC: Nâng bút, Cô Sơn như gấm thêu, mống trời tạnh mưa vắt ngang đỉnh núi, mượn sắc má say mà nán lại đôi khắc
+          ann: Cô Sơn là hòn đảo giữa Tây Hồ, nơi tọa lạc của Tây Linh Ấn Xã; đời Tống, Lâm Bô từng ẩn cư tại đây.
+00:50.670 LRC: Sau ly biệt, lệ đẫm tay áo xuân, tóc xanh đổi đầu bạc, đàn sách đổi ngày qua
+          ann: Âu Dương Tu, Sinh Tra Tử – Nguyên Tịch: “Chẳng thấy người năm ngoái, lệ ướt đẫm tay áo xuân.”
+00:59.850 LRC: Hai nơi trầm ngâm năm tháng đằng đẵng, mỗi người riêng cúi mắt
+01:06.060 LRC: Hỏi Đoạn Kiều, gió si sóng sầu, biết đem tâm sự tỏ cùng hải đường sao đây
+          ann: Đoạn Kiều nằm ở đầu phía đông Bạch Đê; “Đoạn Kiều tàn tuyết” là một trong Tây Hồ thập cảnh.
+01:12.150 LRC: Mà xuân về, bình phong bạc song cửa gấm, xa xa ngóng nhau
+01:18.480 LRC: Non mây thu lại, khói nước mênh mang, ngoài cầu Tây Linh sóng thu dập dờn
+01:24.570 LRC: Nơi nghiêng chén, gió trăng rượu đục, khó nghĩ cho cùng
+01:31.280 clr
+
+01:31.792 txt: Cầu Tây Linh là cầu vòm đá một nhịp, còn có tên là cầu Tây Lăng, xưa vốn là bến đò; câu “Tây thôn hoán độ xứ” trong thơ người xưa chính là chỉ nơi này.
+01:37.372 txt: Cuối đời Minh cầu được xây lại. Năm 1921, mặt cầu từ bậc thang đá ban đầu được sửa thành mặt dốc. Năm 2004, cầu Tây Linh được trùng tu.
+01:42.288 txt: Cầu hiện nay dài 9,3 mét, rộng 8,5 mét, khẩu độ thông thủy 7,4 mét; cùng với Đoạn Kiều và Trường Kiều được gọi chung là ba cây cầu tình nhân lớn của Tây Hồ.
+01:47.269 clr
+
+01:47.274 ttl: Tây Linh Túy Thoại
+01:49.560 LRC: Lại gặp cơn mưa Tây Hồ
+01:52.720 LRC: Đun trà qua tiết Thanh Minh
+01:55.800 LRC: Nỗi sầu theo thuyền hoa trôi xa
+01:58.800 LRC: Trước cảnh đẹp, dừng bút lại nhớ người
+02:04.692 LRC: Qua ngàn cánh buồm, mái chèo xuôi ngược, gió bụi giặt áo người xa xứ
+          ann: Ôn Đình Quân, Vọng Giang Nam: “Qua hết ngàn buồm đều chẳng phải, nắng xiên lặng lẽ nước mênh mang.”
+02:11.820 LRC: Đáy chén mưa tạnh mây tan, người đi xa, hợp tan đều gửi lại cầu này
+02:20.490 LRC: Vô tình nhất là tiếng nhạn mờ xa
+02:23.910 LRC: Chẳng như vầng trăng trước sân, chiều chiều sớm sớm
+02:29.850 LRC: Tiếng chèo trôi lạc vào con nước xuân, sen trong gió dần già
+          ann: “Khúc Viện phong hà” (sen trong gió ở Khúc Viện) là một trong Tây Hồ thập cảnh.
+02:36.000 LRC: Hỏi Đoạn Kiều, gió si sóng sầu, biết đem tâm sự tỏ cùng hải đường sao đây
+02:42.150 LRC: Mà xuân về, bình phong bạc song cửa gấm, xa xa ngóng nhau
+02:48.510 LRC: Non mây thu lại, khói nước mênh mang, ngoài cầu Tây Linh sóng thu dập dờn
+02:54.570 LRC: Nơi nghiêng chén, gió trăng rượu đục, khó nghĩ cho cùng
+03:01.280 clr
+
+03:18.960 LRC: Mượn rượu hỏi gió đông, sắc xuân ai ủ, ủ đến khi tỉnh mộng lòng người đứt đoạn
+03:25.710 LRC: Ngoài vầng trăng sáng, sóng liễu nối dài, tiếng oanh ngân mãi
+          ann: “Liễu Lãng văn oanh” (nghe oanh hót giữa sóng liễu) là một trong Tây Hồ thập cảnh.
+03:31.920 LRC: Vẫn cứ là bóng mây ánh sóng, chuyện say bên Tây Linh còn đọng nỗi bùi ngùi
+03:38.070 LRC: Nơi nghiêng chén, gió trăng rượu đục, khó nghĩ cho cùng
+03:44.370 LRC: Thôi thì quên nhau, cùng ngắm non hồ vẫn vẹn nguyên
+03:59.880 clr
+
+03:59.880 eov
