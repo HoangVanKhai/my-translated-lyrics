@@ -30,7 +30,7 @@
 00:52.620 LRC: Khói bụi phủ khắp mặt đất, chuyện hoang đường cũng đem ra đùa cợt
 00:57.000 LRC: Chi bằng nghe ta kể lại một đoạn tuồng
 01:01.500 LRC: Nến hồng cháy cạn, tạm mượn làm phấn sáp thay
-01:05.010 LRC: Công tử khá biết chăng, ai còn nợ ta một chén rượu vàng
+01:05.010 LRC: Công tử có biết chăng, ai còn nợ ta một chén rượu vàng
 01:09.480 LRC: Cớ sao chỉ đáp rằng thu đã sang
 01:11.910 LRC: Trăng sáng mãi treo cao trên đài gương kẻ ly biệt
 01:15.240 LRC: Hỏi ta đã từng ôm được bao nhiêu sắc xuân vào lòng
@@ -59,11 +59,11 @@
 02:09.841 LRC: Chốn tỉnh rượu lại khẽ cắt may tấm xiêm la
 02:12.930 LRC: Nhân gian ngọc ngà lộng lẫy, lòng chẳng buồn ngó ngàng
 02:15.060 LRC: Nào ngờ nơi đèn tàn lửa lụi lại chính là cố nhân
-02:19.361 LRC: Hỏi công tử khá lòng nghe ta một khúc cũ chăng
+02:19.361 LRC: Hỏi công tử có bằng lòng nghe ta một khúc cũ chăng
 02:23.693 LRC: Để lại cho ta chút sắc xuân từng ôm vào lòng
-02:27.300 LRC: Công tử khá biết chăng, ai còn nợ ta một chén rượu vàng
+02:27.300 LRC: Công tử có biết chăng, ai còn nợ ta một chén rượu vàng
 02:31.710 LRC: Chốn bình phong gấm, thiều quang tan tác bay
-02:34.140 LRC: Công tử khá lòng vẽ giúp một nét mày cong nhạt
+02:34.140 LRC: Công tử có bằng lòng vẽ giúp một nét mày cong nhạt
 02:37.487 LRC: Có thể tặng ta những năm tháng, cùng vượt ải phong nguyệt chăng
 02:41.946 LRC: Hoa rụng Hoài Nam
 02:43.785 LRC: Hạ một nét mực đậm màu nồng
