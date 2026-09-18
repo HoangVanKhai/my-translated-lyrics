@@ -25,7 +25,7 @@ Sắc xuân đầy sân cũng thua chiếc trâm hoa thơm nàng cài
 
 7
 00:00:23,667 --> 00:00:27,210
-Ngoài thuyền hoa nghe tiếng Ngô mềm trong tơ liễu khói
+Ngoài thuyền hoa nghe giọng Ngô mềm trong tơ liễu khói
 
 8
 00:00:27,210 --> 00:00:30,477
@@ -77,11 +77,11 @@ Nến hồng cháy cạn, tạm mượn làm phấn sáp thay
 
 20
 00:01:05,010 --> 00:01:09,480
-Công tử có biết chăng, ai còn nợ ta một chén rượu vàng
+Công tử có biết chăng, ai còn nợ ta một chén rượu vàng?
 
 21
 00:01:09,480 --> 00:01:11,910
-Cớ sao chỉ đáp rằng thu đã sang
+Cớ sao chỉ đáp rằng thu đã sang?
 
 22
 00:01:11,910 --> 00:01:15,240
@@ -125,7 +125,7 @@ Gió dài thổi lòng ta mấy bận nổi chìm
 
 32
 00:01:46,080 --> 00:01:49,530
-Ngoài trùng sơn tựa có tiếng Ngô mềm trong tơ liễu khói
+Ngoài trùng sơn tựa có giọng Ngô mềm trong tơ liễu khói
 
 33
 00:01:49,530 --> 00:01:53,010
@@ -169,7 +169,7 @@ Nào ngờ nơi đèn tàn lửa lụi lại chính là cố nhân
 
 43
 00:02:19,361 --> 00:02:23,693
-Hỏi công tử có bằng lòng nghe ta một khúc cũ chăng
+Hỏi công tử có bằng lòng nghe ta một khúc cũ chăng?
 
 44
 00:02:23,693 --> 00:02:27,300
@@ -177,7 +177,7 @@ Hỏi công tử có bằng lòng nghe ta một khúc cũ chăng
 
 45
 00:02:27,300 --> 00:02:31,710
-Công tử có biết chăng, ai còn nợ ta một chén rượu vàng
+Công tử có biết chăng, ai còn nợ ta một chén rượu vàng?
 
 46
 00:02:31,710 --> 00:02:34,140
@@ -185,11 +185,11 @@ Chốn bình phong gấm, thiều quang tan tác bay
 
 47
 00:02:34,140 --> 00:02:37,487
-Công tử có bằng lòng vẽ giúp một nét mày cong nhạt
+Công tử có bằng lòng vẽ giúp một nét mày cong nhạt?
 
 48
 00:02:37,487 --> 00:02:41,946
-Có thể tặng ta những năm tháng, cùng vượt ải phong nguyệt chăng
+Có thể tặng ta những năm tháng, cùng vượt ải phong nguyệt chăng?
 
 49
 00:02:41,946 --> 00:02:43,785
@@ -233,7 +233,7 @@ Ngoài sân xuân yểu điệu
 
 59
 00:03:14,400 --> 00:03:18,480
-Sao chẳng nghe ta hát lên một đoạn tuồng
+Sao chẳng nghe ta hát lên một đoạn tuồng?
 
 60
 00:03:18,480 --> 00:03:22,200
@@ -249,7 +249,7 @@ Nguyện quãng đời còn lại chẳng còn trôi dạt
 
 63
 00:03:29,040 --> 00:03:32,100
-Có thể cầm bút cùng vẽ một nét mày cong nhạt chăng
+Có thể cầm bút cùng vẽ một nét mày cong nhạt chăng?
 
 64
 00:03:32,100 --> 00:03:36,807
