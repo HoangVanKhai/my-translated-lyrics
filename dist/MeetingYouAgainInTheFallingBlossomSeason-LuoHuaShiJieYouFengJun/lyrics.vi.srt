@@ -1,0 +1,268 @@
+1
+00:00:03,200 --> 00:00:06,766
+<font color="#AAAA22">Sáng tác:</font> <font color="#AAAAAA">星葵、阿落</font>
+
+2
+00:00:06,766 --> 00:00:09,383
+<font color="#AAAA22">Viết lời:</font> <font color="#AAAAAA">Suya</font>
+
+3
+00:00:10,009 --> 00:00:12,997
+<font color="#AAAA22">Điều giáo:</font> <font color="#AAAAAA">星葵</font>
+<font color="#AAAA22">Phối khí:</font> <font color="#AAAAAA">阿落</font>
+
+4
+00:00:13,298 --> 00:00:16,397
+<b><font color="#FFD966">Lạc Hoa Thời Tiết Hựu Phùng Quân</font></b>
+
+5
+00:00:16,669 --> 00:00:19,950
+Chim thước mới ngậm cành sà vào lòng
+
+6
+00:00:19,950 --> 00:00:23,667
+Sắc xuân đầy sân cũng thua chiếc trâm hoa thơm nàng cài
+
+7
+00:00:23,667 --> 00:00:27,210
+Ngoài thuyền hoa nghe tiếng Ngô mềm trong tơ liễu khói
+
+8
+00:00:27,210 --> 00:00:30,477
+Cười bảo rằng tựa như cố nhân đã đến
+
+9
+00:00:30,477 --> 00:00:33,690
+Nâng vầng trăng sáng soi rọi lầu đài
+
+10
+00:00:33,690 --> 00:00:37,560
+Chén đầy sao trời chẳng bằng đôi mắt sáng khéo đưa duyên
+
+11
+00:00:37,560 --> 00:00:40,980
+Kim phong ngọc lộ, nỡ nào để lại khoảng trắng
+
+12
+00:00:40,980 --> 00:00:44,015
+Điểm thêm mực đậm màu nồng
+
+13
+00:00:44,015 --> 00:00:45,937
+Tuồng hát quá đỗi quanh co
+
+14
+00:00:45,937 --> 00:00:47,820
+Còn chưa hiểu ải phong nguyệt
+
+15
+00:00:47,820 --> 00:00:50,610
+Lại gặp bông liễu theo gió phiêu dạt vạn trùng san
+
+16
+00:00:50,610 --> 00:00:52,620
+Biết lần biệt ly này để lại mình ta trơ trọi
+
+17
+00:00:52,620 --> 00:00:57,000
+Khói bụi phủ khắp mặt đất, chuyện hoang đường cũng đem ra đùa cợt
+
+18
+00:00:57,000 --> 00:01:01,500
+Chi bằng nghe ta kể lại một đoạn tuồng
+
+19
+00:01:01,500 --> 00:01:05,010
+Nến hồng cháy cạn, tạm mượn làm phấn sáp thay
+
+20
+00:01:05,010 --> 00:01:09,480
+Công tử khá biết chăng, ai còn nợ ta một chén rượu vàng
+
+21
+00:01:09,480 --> 00:01:11,910
+Cớ sao chỉ đáp rằng thu đã sang
+
+22
+00:01:11,910 --> 00:01:15,240
+Trăng sáng mãi treo cao trên đài gương kẻ ly biệt
+
+23
+00:01:15,240 --> 00:01:19,830
+Hỏi ta đã từng ôm được bao nhiêu sắc xuân vào lòng
+
+24
+00:01:19,830 --> 00:01:21,513
+Ngắm hết cánh buồm xa
+
+25
+00:01:21,513 --> 00:01:25,484
+Trong mơ thấp thoáng cố nhân về
+
+26
+00:01:26,917 --> 00:01:30,383
+<font color="#AAAA22">Minh họa:</font> <font color="#AAAAAA">川泽纡、琉珂</font>
+
+27
+00:01:30,383 --> 00:01:33,070
+<font color="#AAAA22">Video:</font> <font color="#AAAAAA">穗月黎花</font>
+
+28
+00:01:33,663 --> 00:01:36,628
+<font color="#AAAA22">Mỹ thuật:</font> <font color="#AAAAAA">綄风</font>
+
+29
+00:01:36,981 --> 00:01:39,330
+<b><font color="#FFD966">Lạc Hoa Thời Tiết Hựu Phùng Quân</font></b>
+
+30
+00:01:39,330 --> 00:01:42,210
+Một lần ra đi đã mấy năm ròng
+
+31
+00:01:42,210 --> 00:01:46,080
+Gió dài thổi lòng ta mấy bận nổi chìm
+
+32
+00:01:46,080 --> 00:01:49,530
+Ngoài trùng sơn tựa có tiếng Ngô mềm trong tơ liễu khói
+
+33
+00:01:49,530 --> 00:01:53,010
+Chỉ thêm nỗi cảm hoài từ buổi biệt ly
+
+34
+00:01:53,010 --> 00:01:56,070
+Mộng về mười hai lầu đài
+
+35
+00:01:56,070 --> 00:01:59,850
+Dư âm nay vẫn còn, én trên rường lượn quanh
+
+36
+00:01:59,850 --> 00:02:03,300
+Kim phong ngọc lộ vẫn còn đó khoảng trắng
+
+37
+00:02:03,300 --> 00:02:06,363
+Mà nào có ai đoái hoài
+
+38
+00:02:06,363 --> 00:02:08,228
+Hoa thơm lần lượt nở
+
+39
+00:02:08,228 --> 00:02:09,841
+Gỉ đồng lan lên đài gương
+
+40
+00:02:09,841 --> 00:02:12,930
+Chốn tỉnh rượu lại khẽ cắt may tấm xiêm la
+
+41
+00:02:12,930 --> 00:02:15,060
+Nhân gian ngọc ngà lộng lẫy, lòng chẳng buồn ngó ngàng
+
+42
+00:02:15,060 --> 00:02:19,361
+Nào ngờ nơi đèn tàn lửa lụi lại chính là cố nhân
+
+43
+00:02:19,361 --> 00:02:23,693
+Hỏi công tử khá lòng nghe ta một khúc cũ chăng
+
+44
+00:02:23,693 --> 00:02:27,300
+Để lại cho ta chút sắc xuân từng ôm vào lòng
+
+45
+00:02:27,300 --> 00:02:31,710
+Công tử khá biết chăng, ai còn nợ ta một chén rượu vàng
+
+46
+00:02:31,710 --> 00:02:34,140
+Chốn bình phong gấm, thiều quang tan tác bay
+
+47
+00:02:34,140 --> 00:02:37,487
+Công tử khá lòng vẽ giúp một nét mày cong nhạt
+
+48
+00:02:37,487 --> 00:02:41,946
+Có thể tặng ta những năm tháng, cùng vượt ải phong nguyệt chăng
+
+49
+00:02:41,946 --> 00:02:43,785
+Hoa rụng Hoài Nam
+
+50
+00:02:43,785 --> 00:02:48,270
+Hạ một nét mực đậm màu nồng
+
+51
+00:02:48,270 --> 00:02:51,570
+Chỉ khêu ngọn nến hồng soi cho tỏ rõ
+
+52
+00:02:51,570 --> 00:02:55,110
+Thuở thiếu niên chưa hiểu tấm lòng kín đáo
+
+53
+00:02:55,110 --> 00:02:58,080
+Nay lại vén lên lời giải cho câu đố ấy
+
+54
+00:02:58,080 --> 00:03:01,672
+Nghĩ lại thật may mắn biết bao
+
+55
+00:03:01,672 --> 00:03:05,138
+Giữa kiếp phù sinh cùng đối ẩm chén hợp cẩn
+
+56
+00:03:05,138 --> 00:03:08,715
+Chưa kịp trôi qua cổ họng đã say nghiêng ngả
+
+57
+00:03:08,715 --> 00:03:11,820
+Nghe oanh hót trong mưa hoa hạnh
+
+58
+00:03:11,820 --> 00:03:14,400
+Ngoài sân xuân yểu điệu
+
+59
+00:03:14,400 --> 00:03:18,480
+Sao chẳng nghe ta hát lên một đoạn tuồng
+
+60
+00:03:18,480 --> 00:03:22,200
+Năm tháng vời vợi đã làm phai nhạt phấn sáp
+
+61
+00:03:22,200 --> 00:03:26,730
+Mùa hoa rơi mà vẫn ôm được sắc xuân vào lòng
+
+62
+00:03:26,730 --> 00:03:29,040
+Nguyện quãng đời còn lại chẳng còn trôi dạt
+
+63
+00:03:29,040 --> 00:03:32,100
+Có thể cầm bút cùng vẽ một nét mày cong nhạt chăng
+
+64
+00:03:32,100 --> 00:03:36,807
+Gọi kim phong ngọc lộ thổi suốt mười hai lầu đài
+
+65
+00:03:36,807 --> 00:03:38,727
+Chén vàng rót đầy
+
+66
+00:03:38,727 --> 00:03:43,989
+Vừa gặp buổi nhân gian mùa đẹp, vẫn còn được bầu bạn cùng chàng
+
+67
+00:03:53,288 --> 00:03:56,320
+<b><font color="#FFD966">Lạc Hoa Thời Tiết Hựu Phùng Quân</font></b>
