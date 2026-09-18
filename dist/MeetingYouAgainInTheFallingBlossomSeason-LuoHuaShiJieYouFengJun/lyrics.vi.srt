@@ -13,7 +13,7 @@
 
 4
 00:00:13,298 --> 00:00:16,397
-<b><font color="#FFD966">Lạc Hoa Thời Tiết Hựu Phùng Quân</font></b>
+<b><font color="#FFD966">Mùa Hoa Rơi Lại Gặp Người</font></b>
 
 5
 00:00:16,669 --> 00:00:19,950
@@ -113,7 +113,7 @@ Trong mơ thấp thoáng cố nhân về
 
 29
 00:01:36,981 --> 00:01:39,330
-<b><font color="#FFD966">Lạc Hoa Thời Tiết Hựu Phùng Quân</font></b>
+<b><font color="#FFD966">Mùa Hoa Rơi Lại Gặp Người</font></b>
 
 30
 00:01:39,330 --> 00:01:42,210
@@ -265,4 +265,4 @@ Vừa gặp buổi nhân gian mùa đẹp, vẫn còn được bầu bạn cùng
 
 67
 00:03:53,288 --> 00:03:56,320
-<b><font color="#FFD966">Lạc Hoa Thời Tiết Hựu Phùng Quân</font></b>
+<b><font color="#FFD966">Mùa Hoa Rơi Lại Gặp Người</font></b>

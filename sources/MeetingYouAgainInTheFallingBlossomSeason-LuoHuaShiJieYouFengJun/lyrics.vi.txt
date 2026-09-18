@@ -12,7 +12,7 @@
                Phối khí: 阿落
 00:12.997 clr
 
-00:13.298 ttl: Lạc Hoa Thời Tiết Hựu Phùng Quân
+00:13.298 ttl: Mùa Hoa Rơi Lại Gặp Người
 00:16.397 clr
 
 00:16.669 LRC: Chim thước mới ngậm cành sà vào lòng
@@ -45,7 +45,7 @@
 01:33.663 cre: Mỹ thuật: 綄风
 01:36.628 clr
 
-01:36.981 ttl: Lạc Hoa Thời Tiết Hựu Phùng Quân
+01:36.981 ttl: Mùa Hoa Rơi Lại Gặp Người
 01:39.330 LRC: Một lần ra đi đã mấy năm ròng
 01:42.210 LRC: Gió dài thổi lòng ta mấy bận nổi chìm
 01:46.080 LRC: Ngoài trùng sơn tựa có tiếng Ngô mềm trong tơ liễu khói
@@ -85,7 +85,7 @@
 03:38.727 LRC: Vừa gặp buổi nhân gian mùa đẹp, vẫn còn được bầu bạn cùng chàng
 03:43.989 clr
 
-03:53.288 ttl: Lạc Hoa Thời Tiết Hựu Phùng Quân
+03:53.288 ttl: Mùa Hoa Rơi Lại Gặp Người
 03:56.320 clr
 
 03:56.320 eov
