@@ -26,7 +26,7 @@
 00:44.015 LRC: Tuồng hát quá đỗi quanh co
 00:45.937 LRC: Còn chưa hiểu phong nguyệt quan
 00:47.820 LRC: Lại gặp bông liễu theo gió phiêu dạt vạn trùng san
-00:50.610 LRC: Biết lần biệt ly này để lại mình ta trơ trọi
+00:50.610 LRC: Biệt ly lần này để ta trơ trọi
 00:52.620 LRC: Khói bụi phủ khắp mặt đất, chuyện hoang đường cũng đem ra đùa cợt
 00:57.000 LRC: Chi bằng nghe ta kể lại một đoạn tuồng
 01:01.500 LRC: Nến hồng cháy cạn, tạm mượn làm phấn sáp thay
@@ -57,18 +57,18 @@
 02:06.363 LRC: Hoa thơm lần lượt nở
 02:08.228 LRC: Gỉ đồng lan lên đài gương
 02:09.841 LRC: Chốn tỉnh rượu lại khẽ cắt may tấm xiêm la
-02:12.930 LRC: Nhân gian ngọc ngà lộng lẫy, lòng chẳng buồn ngó ngàng
+02:12.930 LRC: Nhân gian ngọc ngà, chẳng buồn ngó ngàng
 02:15.060 LRC: Nào ngờ nơi đèn hiu hắt, là nơi cố nhân đến
 02:19.361 LRC: Hỏi công tử có bằng lòng nghe ta một khúc cũ chăng?
 02:23.693 LRC: Để lại cho ta chút sắc xuân từng ôm vào lòng
 02:27.300 LRC: Công tử biết chăng, ai còn nợ ta rượu vàng một chén?
-02:31.710 LRC: Chốn bình phong gấm, thiều quang tan tác bay
+02:31.710 LRC: Chốn bình phong gấm, ánh xuân tan tác
 02:34.140 LRC: Công tử có bằng lòng vẽ giúp một nét mày cong nhạt?
 02:37.487 LRC: Có thể tặng ta những năm tháng, cùng vượt phong nguyệt quan chăng?
 02:41.946 LRC: Hoa rụng Hoài Nam
 02:43.785 LRC: Hạ một nét mực đậm màu nồng
 02:48.270 LRC: Chỉ khêu ngọn nến hồng soi cho tỏ rõ
-02:51.570 LRC: Thuở thiếu niên chưa hiểu tấm lòng kín đáo
+02:51.570 LRC: Thuở thiếu niên chưa hiểu tình ý không lời
 02:55.110 LRC: Nay lại vén lên lời giải cho câu đố ấy
 02:58.080 LRC: Nghĩ lại thật may mắn biết bao
 03:01.672 LRC: Giữa kiếp phù sinh cùng đối ẩm chén hợp cẩn
