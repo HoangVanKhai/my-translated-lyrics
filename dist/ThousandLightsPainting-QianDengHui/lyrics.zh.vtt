@@ -6,6 +6,23 @@ STYLE
   background-color: transparent;
   text-shadow: 2px 2px 2px black;
 }
+::cue(c.creditRole) {
+  color: #AAAA22;
+}
+::cue(c.creditName) {
+  color: #AAAAAA;
+}
+::cue(c.title) {
+  color: #FFD966;
+  font-weight: bold;
+}
+
+00:00:00.933 --> 00:00:05.983
+<c.title>《千灯绘》</c>
+<c.creditRole>演唱</c>：<c.creditName>洛天依</c>
+<c.creditRole>原唱</c>：<c.creditName>洛天依</c> <c.creditRole>作词</c>：<c.creditName>清彦</c>
+<c.creditRole>作曲</c>：<c.creditName>刘兆伦</c> <c.creditRole>编曲</c>：<c.creditName>蔡成钰</c>
+<c.creditRole>调校</c>：<c.creditName>苍梧_abilrue</c>
 
 00:00:25.903 --> 00:00:29.258
 千年月色高悬

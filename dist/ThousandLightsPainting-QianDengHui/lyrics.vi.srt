@@ -1,211 +1,219 @@
 1
+00:00:00,933 --> 00:00:05,983
+<b><font color="#FFD966">《Thiên Đăng Hội》</font></b>
+<font color="#AAAA22">Trình bày:</font> <font color="#AAAAAA">Luo Tianyi</font>
+<font color="#AAAA22">Nguyên xướng:</font> <font color="#AAAAAA">Luo Tianyi</font> <font color="#AAAA22">Tác từ:</font> <font color="#AAAAAA">清彦</font>
+<font color="#AAAA22">Soạn nhạc:</font> <font color="#AAAAAA">刘兆伦</font> <font color="#AAAA22">Phối khí:</font> <font color="#AAAAAA">蔡成钰</font>
+<font color="#AAAA22">Điều giáo:</font> <font color="#AAAAAA">苍梧_abilrue</font>
+
+2
 00:00:25,903 --> 00:00:29,258
 Ánh trăng ngàn năm treo cao
 
-2
+3
 00:00:29,258 --> 00:00:33,255
 Dần ngưng lại thành sương giá
 
-3
+4
 00:00:33,255 --> 00:00:37,559
 Khói lửa nhân gian lượn quanh
 
-4
+5
 00:00:37,559 --> 00:00:40,647
 Khắp phố lớn ngõ nhỏ
 
-5
+6
 00:00:40,647 --> 00:00:43,877
 Tôi trong lửa dữ mà thành hồn
 
-6
+7
 00:00:43,877 --> 00:00:47,484
 Thấy sắc men chảy trôi
 
-7
+8
 00:00:47,484 --> 00:00:50,690
 Nhờ một chiếc đèn tinh xảo
 
-8
+9
 00:00:50,690 --> 00:00:54,294
 Soi rạng khắp tám phương
 
-9
+10
 00:00:54,660 --> 00:00:55,575
 Lấy đèn làm bút
 
-10
+11
 00:00:55,575 --> 00:00:59,549
 Vẽ nghê thường cho đất trời　Ha～
 
-11
+12
 00:00:59,549 --> 00:01:01,960
 Dải ngân hà Đường Tống, thong dong trong đáy mắt
 
-12
+13
 00:01:01,960 --> 00:01:02,926
 Tâm người thợ bất hủ
 
-13
+14
 00:01:02,926 --> 00:01:06,332
 Nối tiếp ngàn năm gìn giữ　Ha～
 
-14
+15
 00:01:06,332 --> 00:01:09,295
 Bước đi giữa muôn ánh rực rỡ
 
-15
+16
 00:01:09,295 --> 00:01:13,151
 Tay có thể chạm tới ánh sao
 
-16
+17
 00:01:29,788 --> 00:01:33,162
 Vàng lá điểm tô, hiện cá chép vượt sóng
 
-17
+18
 00:01:33,162 --> 00:01:36,925
 Tơ kén quấn quanh, hiện đan phượng chầu dương
 
-18
+19
 00:01:36,925 --> 00:01:38,721
 Nhìn khung tre khẽ xoay
 
-19
+20
 00:01:38,721 --> 00:01:40,720
 Bừng hào quang ngàn trượng
 
-20
+21
 00:01:40,720 --> 00:01:43,033
 Soi sáng niềm khát vọng muôn đời
 
-21
+22
 00:01:44,461 --> 00:01:47,758
 Đừng than thời gian trôi, hãy phiêu bạt về phía vĩnh hằng
 
-22
+23
 00:01:47,758 --> 00:01:51,657
 Trăm ngàn năm qua, lòng bàn tay vẫn nóng rực
 
-23
+24
 00:01:51,657 --> 00:01:53,395
 Là ngọn lửa di sản phi vật thể
 
-24
+25
 00:01:53,395 --> 00:01:55,559
 Nó bừng sáng nơi đầu ngón tay
 
-25
+26
 00:01:55,559 --> 00:01:59,371
 Lại soi thêm vạn năm dài
 
-26
+27
 00:02:00,952 --> 00:02:01,852
 Lấy đèn làm bút
 
-27
+28
 00:02:01,852 --> 00:02:05,691
 Vẽ nghê thường cho đất trời　Ha～
 
-28
+29
 00:02:05,691 --> 00:02:08,259
 Dải ngân hà Đường Tống, thong dong trong đáy mắt
 
-29
+30
 00:02:08,259 --> 00:02:09,128
 Tâm người thợ bất hủ
 
-30
+31
 00:02:09,128 --> 00:02:12,696
 Nối tiếp ngàn năm gìn giữ　Ha～
 
-31
+32
 00:02:12,696 --> 00:02:15,454
 Bước đi giữa muôn ánh rực rỡ
 
-32
+33
 00:02:15,454 --> 00:02:19,598
 Tay có thể chạm tới ánh sao
 
-33
+34
 00:02:20,600 --> 00:02:22,466
 Rồng phượng chạm trên giấy
 
-34
+35
 00:02:22,466 --> 00:02:27,666
 Tựa thoắt cái vút lên tầng mây
 
-35
+36
 00:02:27,666 --> 00:02:29,651
 Đôi tay khéo léo dời càn khôn
 
-36
+37
 00:02:29,651 --> 00:02:34,303
 Hái vầng trăng Bồng Lai nào có ngại chi
 
-37
+38
 00:02:34,303 --> 00:02:38,118
 Mượn chiếc bình trong suốt
 
-38
+39
 00:02:38,118 --> 00:02:42,282
 Ngưng tụ vì sao, soi sáng đêm dài
 
-39
+40
 00:02:42,282 --> 00:02:44,521
 Đèn muôn nhà như sóng
 
-40
+41
 00:02:44,521 --> 00:02:49,817
 Thịnh thế ánh rọi trời xanh
 
-41
+42
 00:02:50,920 --> 00:02:51,859
 Lấy đèn làm bút
 
-42
+43
 00:02:51,859 --> 00:02:55,709
 Vẽ nghê thường cho đất trời　Ha～
 
-43
+44
 00:02:55,709 --> 00:02:58,221
 Dải ngân hà Đường Tống, thong dong trong đáy mắt
 
-44
+45
 00:02:58,221 --> 00:02:59,165
 Tâm người thợ bất hủ
 
-45
+46
 00:02:59,165 --> 00:03:02,550
 Nối tiếp ngàn năm gìn giữ　Ha～
 
-46
+47
 00:03:02,550 --> 00:03:04,661
 Bước đi giữa muôn ánh rực rỡ
 
-47
+48
 00:03:05,587 --> 00:03:06,501
 Lấy đèn làm thuyền
 
-48
+49
 00:03:06,501 --> 00:03:10,341
 Chở văn minh đi viễn hành　Ha～
 
-49
+50
 00:03:10,341 --> 00:03:12,886
 “Ngũ cốc bội thu”, hương thơm tỏa dưới ánh trăng
 
-50
+51
 00:03:12,886 --> 00:03:13,784
 Đêm dài chưa cạn
 
-51
+52
 00:03:13,784 --> 00:03:17,308
 Đèn Trung Hoa mênh mang　Ha～
 
-52
+53
 00:03:17,308 --> 00:03:20,101
 Soi đất trời thành không đêm
 
-53
+54
 00:03:20,101 --> 00:03:25,174
 Bốn biển đều là cố hương

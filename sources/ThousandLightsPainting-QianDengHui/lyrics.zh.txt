@@ -1,6 +1,15 @@
 # clr: Clear of Text
 # LRC: Lyric
+# ttl: Song's Title
+# cre: Credits
 # eov: End of Video
+
+00:00.933 ttl: 《千灯绘》
+          cre: 演唱：洛天依
+               原唱：洛天依　作词：清彦
+               作曲：刘兆伦　编曲：蔡成钰
+               调校：苍梧_abilrue
+00:05.983 clr
 
 00:25.903 LRC: 千年月色高悬
 00:29.258 LRC: 渐凝成了霜

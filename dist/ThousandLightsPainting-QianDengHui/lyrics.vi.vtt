@@ -6,6 +6,23 @@ STYLE
   background-color: transparent;
   text-shadow: 2px 2px 2px black;
 }
+::cue(c.creditRole) {
+  color: #AAAA22;
+}
+::cue(c.creditName) {
+  color: #AAAAAA;
+}
+::cue(c.title) {
+  color: #FFD966;
+  font-weight: bold;
+}
+
+00:00:00.933 --> 00:00:05.983
+<c.title>《Thiên Đăng Hội》</c>
+<c.creditRole>Trình bày:</c> <c.creditName>Luo Tianyi</c>
+<c.creditRole>Nguyên xướng:</c> <c.creditName>Luo Tianyi</c> <c.creditRole>Tác từ:</c> <c.creditName>清彦</c>
+<c.creditRole>Soạn nhạc:</c> <c.creditName>刘兆伦</c> <c.creditRole>Phối khí:</c> <c.creditName>蔡成钰</c>
+<c.creditRole>Điều giáo:</c> <c.creditName>苍梧_abilrue</c>
 
 00:00:25.903 --> 00:00:29.258
 Ánh trăng ngàn năm treo cao

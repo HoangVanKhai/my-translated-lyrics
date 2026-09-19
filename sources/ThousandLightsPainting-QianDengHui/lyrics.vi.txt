@@ -1,6 +1,15 @@
 # clr: Xóa chữ trên màn hình
 # LRC: Lời bài hát
+# ttl: Tiêu đề ca khúc
+# cre: Thông tin sản xuất
 # eov: Kết thúc MV
+
+00:00.933 ttl: 《Thiên Đăng Hội》
+          cre: Trình bày: Luo Tianyi
+               Nguyên xướng: Luo Tianyi    Tác từ: 清彦
+               Soạn nhạc: 刘兆伦    Phối khí: 蔡成钰
+               Điều giáo: 苍梧_abilrue
+00:05.983 clr
 
 00:25.903 LRC: Ánh trăng ngàn năm treo cao
 00:29.258 LRC: Dần ngưng lại thành sương giá
