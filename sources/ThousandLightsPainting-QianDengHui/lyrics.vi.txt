@@ -1,0 +1,83 @@
+# clr: Xóa chữ trên màn hình
+# LRC: Lời bài hát
+# ttl: Tiêu đề ca khúc
+# cre: Thông tin sản xuất
+# eov: Kết thúc MV
+
+00:00.933 ttl: 《Thiên Đăng Hội》
+          cre: Trình bày: Luo Tianyi
+               Nguyên xướng: Luo Tianyi    Tác từ: 清彦
+               Soạn nhạc: 刘兆伦    Phối khí: 蔡成钰
+               Điều giáo: 苍梧_abilrue
+00:05.983 clr
+
+00:25.903 LRC: Ánh trăng ngàn năm treo cao
+00:29.258 LRC: Dần ngưng thành sương giá
+00:33.255 LRC: Khói lửa nhân gian lượn quanh
+00:37.559 LRC: Phố lớn ngõ nhỏ
+00:40.647 LRC: Tôi trong lửa dữ thành hồn
+00:43.877 LRC: Thấy sắc men chảy trôi
+00:47.484 LRC: Nhờ một chiếc đèn tinh xảo
+00:50.690 LRC: Soi rạng tám phương
+00:54.294 clr
+
+00:54.660 LRC: Lấy đèn làm bút
+00:55.575 LRC: Vẽ nghê thường cho đất trời　Ha～
+00:59.549 LRC: Tinh hà Đường Tống, thong dong trong mắt
+01:01.960 LRC: Tâm người thợ bất hủ
+01:02.926 LRC: Nối ngàn năm gìn giữ　Ha～
+01:06.332 LRC: Bước đi giữa ánh rực rỡ
+01:09.295 LRC: Tay chạm được ánh sao
+01:13.151 clr
+
+01:29.788 LRC: Vàng lá điểm tô, hiện cá chép vượt sóng
+01:33.162 LRC: Tơ kén quấn quanh, hiện đan phượng chầu dương
+01:36.925 LRC: Nhìn khung tre khẽ xoay
+01:38.721 LRC: Bừng hào quang ngàn trượng
+01:40.720 LRC: Soi sáng khát vọng muôn đời
+01:43.033 clr
+
+01:44.461 LRC: Đừng than thời gian trôi, phiêu bạt phía vĩnh hằng
+01:47.758 LRC: Trăm ngàn năm, lòng bàn tay vẫn nóng rực
+01:51.657 LRC: Là ngọn lửa di sản phi vật thể
+01:53.395 LRC: Nó bừng sáng nơi đầu ngón tay
+01:55.559 LRC: Lại soi vạn năm dài
+01:59.371 clr
+
+02:00.952 LRC: Lấy đèn làm bút
+02:01.852 LRC: Vẽ nghê thường cho đất trời　Ha～
+02:05.691 LRC: Tinh hà Đường Tống, thong dong trong mắt
+02:08.259 LRC: Tâm người thợ bất hủ
+02:09.128 LRC: Nối ngàn năm gìn giữ　Ha～
+02:12.696 LRC: Bước đi giữa ánh rực rỡ
+02:15.454 LRC: Tay chạm được ánh sao
+02:19.598 clr
+
+02:20.600 LRC: Rồng phượng khắc giấy
+02:22.466 LRC: Tựa thoắt cái vút lên tầng mây
+02:27.666 LRC: Tay khéo chứa càn khôn
+02:29.651 LRC: Hái vầng trăng Bồng Lai nào ngại chi
+02:34.303 LRC: Mượn chiếc bình trong suốt
+02:38.118 LRC: Ngưng tụ vì sao, soi đêm dài
+02:42.282 LRC: Đèn muôn nhà như sóng
+02:44.521 LRC: Thịnh thế rọi thương khung
+02:49.817 clr
+
+02:50.920 LRC: Lấy đèn làm bút
+02:51.859 LRC: Vẽ nghê thường cho đất trời　Ha～
+02:55.709 LRC: Tinh hà Đường Tống, thong dong trong mắt
+02:58.221 LRC: Tâm người thợ bất hủ
+02:59.165 LRC: Nối ngàn năm gìn giữ　Ha～
+03:02.550 LRC: Bước đi giữa ánh rực rỡ
+03:04.661 clr
+
+03:05.587 LRC: Lấy đèn làm thuyền
+03:06.501 LRC: Chở văn minh viễn hành　Ha～
+03:10.341 LRC: “Ngũ cốc bội thu”, hương thơm tỏa dưới trăng
+03:12.886 LRC: Đêm dài chưa cạn
+03:13.784 LRC: Đèn Trung Hoa mênh mang　Ha～
+03:17.308 LRC: Soi đất trời không đêm
+03:20.101 LRC: Bốn biển đều là cố hương
+03:25.174 clr
+
+03:30.300 eov
