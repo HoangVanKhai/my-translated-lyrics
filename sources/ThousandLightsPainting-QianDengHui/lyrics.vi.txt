@@ -25,7 +25,7 @@
 00:55.575 LRC: Vẽ nghê thường cho đất trời　Ha～
 00:59.549 LRC: Tinh hà Đường Tống, thong dong trong mắt
 01:01.960 LRC: Tâm người thợ bất hủ
-01:02.926 LRC: Nối tiếp ngàn năm gìn giữ　Ha～
+01:02.926 LRC: Nối ngàn năm gìn giữ　Ha～
 01:06.332 LRC: Bước đi giữa ánh rực rỡ
 01:09.295 LRC: Tay chạm được ánh sao
 01:13.151 clr
@@ -48,15 +48,15 @@
 02:01.852 LRC: Vẽ nghê thường cho đất trời　Ha～
 02:05.691 LRC: Tinh hà Đường Tống, thong dong trong mắt
 02:08.259 LRC: Tâm người thợ bất hủ
-02:09.128 LRC: Nối tiếp ngàn năm gìn giữ　Ha～
+02:09.128 LRC: Nối ngàn năm gìn giữ　Ha～
 02:12.696 LRC: Bước đi giữa ánh rực rỡ
 02:15.454 LRC: Tay chạm được ánh sao
 02:19.598 clr
 
-02:20.600 LRC: Rồng phượng chạm trên giấy
+02:20.600 LRC: Rồng phượng khắc giấy
 02:22.466 LRC: Tựa thoắt cái vút lên tầng mây
 02:27.666 LRC: Tay khéo chứa càn khôn
-02:29.651 LRC: Hái vầng trăng Bồng Lai nào có ngại chi
+02:29.651 LRC: Hái vầng trăng Bồng Lai nào ngại chi
 02:34.303 LRC: Mượn chiếc bình trong suốt
 02:38.118 LRC: Ngưng tụ vì sao, soi đêm dài
 02:42.282 LRC: Đèn muôn nhà như sóng
@@ -67,7 +67,7 @@
 02:51.859 LRC: Vẽ nghê thường cho đất trời　Ha～
 02:55.709 LRC: Tinh hà Đường Tống, thong dong trong mắt
 02:58.221 LRC: Tâm người thợ bất hủ
-02:59.165 LRC: Nối tiếp ngàn năm gìn giữ　Ha～
+02:59.165 LRC: Nối ngàn năm gìn giữ　Ha～
 03:02.550 LRC: Bước đi giữa ánh rực rỡ
 03:04.661 clr
 
@@ -76,7 +76,7 @@
 03:10.341 LRC: “Ngũ cốc bội thu”, hương thơm tỏa dưới trăng
 03:12.886 LRC: Đêm dài chưa cạn
 03:13.784 LRC: Đèn Trung Hoa mênh mang　Ha～
-03:17.308 LRC: Soi đất trời thành không đêm
+03:17.308 LRC: Soi đất trời không đêm
 03:20.101 LRC: Bốn biển đều là cố hương
 03:25.174 clr
 
