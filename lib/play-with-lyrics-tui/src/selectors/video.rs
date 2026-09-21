@@ -5,7 +5,7 @@
 use crate::Navigation;
 use crate::host::{Clock, Host, ReadEvent, WindowSize};
 use crate::render::{
-    Button, COLUMN_SEPARATOR, DATA_ROW_OFFSET, HEADER_ROW, SEARCH_ROW, button_at, column_at,
+    Button, COLUMN_SEPARATOR, FIRST_DATA_ROW, HEADER_ROW, SEARCH_ROW, button_at, column_at,
     column_spans, columns_line, columns_line_highlighted, draw_highlighted_line, fit,
     is_double_click, render_top_bar, scroll_offset, visible_rows,
 };
@@ -14,13 +14,13 @@ use crate::terminal::TerminalGuard;
 use column_sort::{ColumnSort, Direction};
 use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers, MouseButton, MouseEventKind};
 use fuzzy_select::fuzzy::match_mask;
-use fuzzy_select::selection::Selector;
+use fuzzy_select::selection::{ItemIndex, Selector};
 use lyrics_core::video_descriptor::Language;
 use play_with_lyrics::catalog::{Video, language_label};
 use std::cmp::Ordering;
 use std::io::{self, Write};
 use std::time::SystemTime;
-use terminal_screen::{Buffer, Screen, Style};
+use terminal_screen::{Buffer, Column, Height, Row, Screen, Style, Width};
 
 /// Presents the fuzzy table of titles and reports the chosen row, a request
 /// to go back, or a request to quit. This is the first page, so going back
@@ -55,10 +55,10 @@ where
     let mut sort = ColumnSort::new([Language::English, Language::Vietnamese, Language::Chinese]);
     selector.set_order(video_order(sort.clone()));
     if let Some(index) = selected {
-        selector.focus(index);
+        selector.focus(ItemIndex::new(index));
     }
-    let mut last_click: Option<(SystemTime, usize)> = None;
-    let mut hover: Option<(u16, u16)> = None;
+    let mut last_click: Option<(SystemTime, ItemIndex)> = None;
+    let mut hover: Option<(Column, Row)> = None;
     let mut screen = Screen::new();
     // Draw once up front, then redraw after any event that changes what is
     // shown, including a mouse movement that changes the hover highlight. The
@@ -90,7 +90,7 @@ where
                 KeyCode::Backspace => selector.pop_char(),
                 KeyCode::Char(char) => selector.push_char(char),
                 KeyCode::Enter => match selector.selected_index() {
-                    Some(index) => break Navigation::Selected(index),
+                    Some(index) => break Navigation::Selected(index.get()),
                     None => continue,
                 },
                 _ => continue,
@@ -98,7 +98,7 @@ where
             Event::Mouse(mouse) => {
                 // Track the pointer so the hovered button and row are highlighted
                 // on the redraw that follows.
-                hover = Some((mouse.column, mouse.row));
+                hover = Some((Column::new(mouse.column), Row::new(mouse.row)));
                 match mouse.kind {
                     MouseEventKind::ScrollUp => selector.move_up(),
                     MouseEventKind::ScrollDown => selector.move_down(),
@@ -106,39 +106,41 @@ where
                     // double click on the same item also selects it.
                     MouseEventKind::Down(MouseButton::Left) => {
                         let (columns, rows) = Sys::window_size().unwrap_or((80, 24));
+                        let width = Width::new(columns);
+                        let clicked_row = Row::new(mouse.row);
+                        let clicked_column = Column::new(mouse.column);
                         // A click on the top bar acts on the button under the
                         // pointer, where "Forward" matches pressing Enter.
-                        if mouse.row == 0 {
-                            match button_at(columns as usize, mouse.column as usize) {
+                        if clicked_row == Row::TOP {
+                            match button_at(width, clicked_column) {
                                 Some(Button::Exit) => break Navigation::Quit,
                                 // Go back is disabled on the first page.
                                 Some(Button::Back) | None => {}
                                 Some(Button::Forward) => {
                                     if let Some(index) = selector.selected_index() {
-                                        break Navigation::Selected(index);
+                                        break Navigation::Selected(index.get());
                                     }
                                 }
                             }
-                        } else if mouse.row == HEADER_ROW {
+                        } else if clicked_row == HEADER_ROW {
                             // A click on a column header re-sorts the table by
                             // that column.
-                            if let Some(column) = column_at(columns as usize, mouse.column as usize)
-                            {
-                                let language = COLUMN_LANGUAGES[column];
+                            if let Some(column) = column_at(width, clicked_column) {
+                                let language = COLUMN_LANGUAGES[column.position()];
                                 sort.click(language);
                                 selector.set_order(video_order(sort.clone()));
                             }
                         } else {
-                            let visible = visible_rows(rows as usize);
+                            let visible = visible_rows(Height::new(rows));
                             let offset = scroll_offset(selector.cursor(), visible);
                             // Only the data rows are clickable; a click on the
                             // help line below them must not reach a scrolled-off
                             // item.
-                            let clicked = (mouse.row as usize)
-                                .checked_sub(DATA_ROW_OFFSET)
-                                .filter(|&screen_index| screen_index < visible)
-                                .and_then(|screen_index| {
-                                    selector.filtered().get(offset + screen_index).copied()
+                            let clicked = clicked_row
+                                .rows_below(FIRST_DATA_ROW)
+                                .filter(|&rows_down| rows_down < visible)
+                                .and_then(|rows_down| {
+                                    selector.item_at(offset.down_by(usize::from(rows_down)))
                                 });
                             if let Some(index) = clicked {
                                 let now = Sys::now();
@@ -146,7 +148,7 @@ where
                                 last_click = Some((now, index));
                                 selector.focus(index);
                                 if confirm {
-                                    break Navigation::Selected(index);
+                                    break Navigation::Selected(index.get());
                                 }
                             }
                         }
@@ -184,12 +186,12 @@ fn video_order(sort: ColumnSort<Language>) -> impl Fn(&Video, &Video) -> Orderin
 
 /// Draws the search bar at [`SEARCH_ROW`]: a dimmed magnifier, the italic
 /// "Search:" label, and the typed `query` in bold.
-pub(super) fn render_search_bar(buffer: &mut Buffer, columns: usize, query: &str) {
+pub(super) fn render_search_bar(buffer: &mut Buffer, columns: Width, query: &str) {
     // Chain off each segment's end column so the layout matches the buffer's own
     // widths; measuring separately would disagree on the magnifier's width.
-    let after_magnifier = buffer.set_string(0, SEARCH_ROW, "🔍︎", Style::DIM);
+    let after_magnifier = buffer.set_string(Column::LEFT, SEARCH_ROW, "🔍︎", Style::DIM);
     let after_label = buffer.set_string(after_magnifier, SEARCH_ROW, " Search: ", Style::ITALIC);
-    let shown = fit(query, columns.saturating_sub(after_label.into()));
+    let shown = fit(query, columns.remaining_from(after_label));
     buffer.set_string(after_label, SEARCH_ROW, &shown, Style::BOLD);
 }
 
@@ -198,9 +200,9 @@ pub(super) fn render_search_bar(buffer: &mut Buffer, columns: usize, query: &str
 /// the pointer drops the dim to read brighter.
 pub(super) fn render_header(
     buffer: &mut Buffer,
-    columns: usize,
+    columns: Width,
     sort: &ColumnSort<Language>,
-    hover: Option<(u16, u16)>,
+    hover: Option<(Column, Row)>,
 ) {
     let primary = sort.order().first().copied();
     let label = |language: Language| -> String {
@@ -220,19 +222,24 @@ pub(super) fn render_header(
     let header = columns_line(&labels[0], &labels[1], &labels[2], columns);
     let spans = column_spans(columns);
     // The headers are bold and dimmed.
-    buffer.set_string(0, HEADER_ROW, &header, Style::BOLD.with(Style::DIM));
+    buffer.set_string(
+        Column::LEFT,
+        HEADER_ROW,
+        &header,
+        Style::BOLD.with(Style::DIM),
+    );
     // The separators between the headers are bold but not dimmed.
     for span in &spans[..2] {
-        buffer.set_string(span.end as u16, HEADER_ROW, COLUMN_SEPARATOR, Style::BOLD);
+        buffer.set_string(span.end(), HEADER_ROW, COLUMN_SEPARATOR, Style::BOLD);
     }
     // The column under the pointer drops the dim.
     if let Some((hover_column, hover_row)) = hover
         && hover_row == HEADER_ROW
-        && let Some(index) = column_at(columns, hover_column as usize)
+        && let Some(column) = column_at(columns, hover_column)
     {
-        let span = &spans[index];
-        let fitted = fit(&labels[index], span.len());
-        buffer.set_string(span.start as u16, HEADER_ROW, &fitted, Style::BOLD);
+        let span = spans[column.position()];
+        let fitted = fit(&labels[column.position()], span.width());
+        buffer.set_string(span.start(), HEADER_ROW, &fitted, Style::BOLD);
     }
 }
 
@@ -242,15 +249,15 @@ fn render_table<Sys>(
     selector: &Selector<Video>,
     videos: &[Video],
     sort: &ColumnSort<Language>,
-    hover: Option<(u16, u16)>,
+    hover: Option<(Column, Row)>,
 ) -> io::Result<()>
 where
     Sys: WindowSize,
 {
     let (width, height) = Sys::window_size().unwrap_or((80, 24));
-    let buffer = screen.begin(width, height, output)?;
-    let columns = width as usize;
-    let rows = height as usize;
+    let columns = Width::new(width);
+    let rows = Height::new(height);
+    let buffer = screen.begin(columns, rows, output)?;
 
     // The top bar names the page; the table is the first page, so going back is
     // not available here.
@@ -260,16 +267,18 @@ where
 
     render_header(buffer, columns, sort, hover);
 
-    let filtered = selector.filtered();
-    let cursor = selector.cursor();
+    let selected = selector.selected_index();
     let visible = visible_rows(rows);
-    let offset = scroll_offset(cursor, visible);
+    let offset = scroll_offset(selector.cursor(), visible);
 
     let query = selector.query();
-    for (screen_index, filtered_position) in
-        (offset..filtered.len().min(offset + visible)).enumerate()
-    {
-        let video = &videos[filtered[filtered_position]];
+    let window = selector
+        .filtered()
+        .iter()
+        .skip(offset.get())
+        .take(usize::from(visible));
+    for (screen_y, &item) in FIRST_DATA_ROW.downwards().zip(window) {
+        let video = &videos[item];
         let english = video.title(Language::English).unwrap_or("");
         let vietnamese = video.title(Language::Vietnamese).unwrap_or("");
         let chinese = video.title(Language::Chinese).unwrap_or("");
@@ -281,13 +290,19 @@ where
             ],
             columns,
         );
-        let screen_y = (screen_index + DATA_ROW_OFFSET) as u16;
-        let base = row_style(filtered_position == cursor, hover, screen_y);
+        // The highlighted row is the one showing the selected item, which
+        // stays correct however the window is scrolled or the table sorted.
+        let base = row_style(Some(item) == selected, hover, screen_y);
         draw_highlighted_line(buffer, screen_y, &line, base);
     }
 
     let help = "↑/↓ move · type to search · ⌫ delete · ^⌫ back · ⏎ select · Esc/^Q quit";
-    buffer.set_string(0, height.saturating_sub(1), &fit(help, columns), Style::DIM);
+    buffer.set_string(
+        Column::LEFT,
+        Row::new(height.saturating_sub(1)),
+        &fit(help, columns),
+        Style::DIM,
+    );
 
     screen.flush(output)
 }

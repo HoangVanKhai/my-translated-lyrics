@@ -7,12 +7,29 @@ use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
 use std::time::SystemTime;
 
+/// The device a file lives on, as the filesystem reports it.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct DeviceId(u64);
+
+/// A file's inode number within its device. Two snapshots naming the same
+/// inode on the same device name the same file.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct Inode(u64);
+
+/// A file's length in bytes.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct FileSize(u64);
+
 #[derive(Clone)]
 pub struct FileSnapshot {
     path: PathBuf,
-    dev: u64,
-    inode: u64,
-    size: u64,
+    // The three identifiers below are all `u64` underneath, so they wear
+    // separate types: a snapshot that recorded its inode as its device,
+    // or the reverse, would otherwise compile and make two unrelated
+    // files compare equal.
+    dev: DeviceId,
+    inode: Inode,
+    size: FileSize,
     modified: SystemTime,
     content: OnceCell<String>,
 }
@@ -22,9 +39,9 @@ impl fmt::Debug for FileSnapshot {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("FileSnapshot")
             .field("path", &self.path)
-            .field("dev", &self.dev)
-            .field("inode", &self.inode)
-            .field("size", &self.size)
+            .field("dev", &self.dev.0)
+            .field("inode", &self.inode.0)
+            .field("size", &self.size.0)
             .field("modified", &self.modified)
             .finish_non_exhaustive()
     }
@@ -36,9 +53,9 @@ impl FileSnapshot {
         let modified = stats.modified()?;
         Ok(FileSnapshot {
             path,
-            dev: stats.dev(),
-            inode: stats.ino(),
-            size: stats.len(),
+            dev: DeviceId(stats.dev()),
+            inode: Inode(stats.ino()),
+            size: FileSize(stats.len()),
             modified,
             content: OnceCell::new(),
         })
@@ -73,7 +90,7 @@ impl FileSnapshot {
     }
 
     pub fn content_eq_str(&self, other: &str) -> bool {
-        if self.size != other.len() as u64 {
+        if self.size != FileSize(other.len() as u64) {
             return false;
         }
         match self.load() {

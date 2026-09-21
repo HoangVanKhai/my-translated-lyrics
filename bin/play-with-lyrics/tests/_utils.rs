@@ -9,7 +9,7 @@ use std::fs::{
 use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 use std::process::{Command, Output, Stdio};
-use test_utils::{SEPARATED_COLLECTION, Temp, video_desc};
+use test_utils::{SEPARATED_COLLECTION, Temp, collection_name, video_desc, video_title};
 
 const PLAY_WITH_LYRICS: &str = env!("CARGO_BIN_EXE_play-with-lyrics");
 
@@ -35,14 +35,14 @@ impl Env {
         }
     }
 
-    /// Writes a `video.toml` for `video_title` in its own subdirectory of the
+    /// Writes a `video.toml` for `title` in its own subdirectory of the
     /// source directory.
-    pub fn add_video(&self, dir_name: &str, video_title: impl Into<String>) {
+    pub fn add_video(&self, dir_name: &str, title: impl Into<String>) {
         let video_dir = self.source.join(dir_name);
         create_dir_all(&video_dir).unwrap();
         let descriptor = video_desc(
-            SEPARATED_COLLECTION.to_owned(),
-            video_title.into(),
+            collection_name(SEPARATED_COLLECTION),
+            video_title(title),
             Visibility::Visible,
         );
         let contents = toml::to_string(&descriptor).unwrap();

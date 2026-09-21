@@ -1,6 +1,7 @@
 //! The double buffer and the diff that turns a drawn frame into terminal writes.
 
 use crate::buffer::{Buffer, Cell, glyph_width};
+use crate::geometry::{Column, Height, Width};
 use crate::style::Style;
 use crossterm::QueueableCommand;
 use crossterm::cursor::MoveTo;
@@ -26,8 +27,8 @@ impl Default for Screen {
 impl Screen {
     pub fn new() -> Self {
         Screen {
-            front: Buffer::new(0, 0),
-            back: Buffer::new(0, 0),
+            front: Buffer::new(Width::ZERO, Height::ZERO),
+            back: Buffer::new(Width::ZERO, Height::ZERO),
         }
     }
 
@@ -37,8 +38,8 @@ impl Screen {
     /// back buffer is cleared.
     pub fn begin(
         &mut self,
-        width: u16,
-        height: u16,
+        width: Width,
+        height: Height,
         output: &mut impl Write,
     ) -> io::Result<&mut Buffer> {
         if self.back.width != width || self.back.height != height {
@@ -68,16 +69,16 @@ impl Screen {
 fn diff(front: &Buffer, back: &Buffer, output: &mut impl Write) -> io::Result<()> {
     let width = back.width;
     let mut current = Style::PLAIN;
-    for row in 0..back.height {
-        let mut col = 0;
-        while col < width {
+    for row in back.height.rows() {
+        let mut col = Column::LEFT;
+        while width.contains(col) {
             let index = usize::from(row) * usize::from(width) + usize::from(col);
             if back.cells[index] == front.cells[index] {
-                col += 1;
+                col += Width::ONE;
                 continue;
             }
-            output.queue(MoveTo(col, row))?;
-            while col < width {
+            output.queue(MoveTo(col.get(), row.get()))?;
+            while width.contains(col) {
                 let index = usize::from(row) * usize::from(width) + usize::from(col);
                 if back.cells[index] == front.cells[index] {
                     break;
@@ -86,7 +87,7 @@ fn diff(front: &Buffer, back: &Buffer, output: &mut impl Write) -> io::Result<()
                     Cell::Empty => {
                         set_style(output, &mut current, Style::PLAIN)?;
                         output.queue(Print(' '))?;
-                        col += 1;
+                        col += Width::ONE;
                     }
                     Cell::Glyph(glyph) => {
                         set_style(output, &mut current, glyph.style)?;
@@ -94,10 +95,10 @@ fn diff(front: &Buffer, back: &Buffer, output: &mut impl Write) -> io::Result<()
                         if let Some(selector) = glyph.variation_selector {
                             output.queue(Print(selector))?;
                         }
-                        col += glyph_width(glyph.char, glyph.variation_selector).max(1);
+                        col += glyph_width(glyph.char, glyph.variation_selector).max(Width::ONE);
                     }
                     // The leading glyph already covered this column.
-                    Cell::Trailing => col += 1,
+                    Cell::Trailing => col += Width::ONE,
                 }
             }
         }
