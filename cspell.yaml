@@ -74,6 +74,7 @@ overrides:
   - filename: '**/*.rs'
     words:
       - btreemap
+      - combinators
       - Deque
       - hardlink
       - maplit
