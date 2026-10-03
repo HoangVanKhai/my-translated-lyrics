@@ -1,0 +1,10 @@
+markers = [
+  "cre",
+  "ttl",
+  "LRC",
+]
+
+credits = ["cre"]
+
+[classes]
+ttl = "title"

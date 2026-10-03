@@ -25,6 +25,7 @@ overrides:
       - '**/*.vi.txt'
     language: en,vi
     words:
+      - abilrue
       - AXIDI
       - Dinstakovich
       - distantal
@@ -55,6 +56,7 @@ overrides:
       - '**/*.zh-*.vtt'
     language: en,zh
     words:
+      - abilrue
       - AXIDI
       - distantal
       - Irecorder
