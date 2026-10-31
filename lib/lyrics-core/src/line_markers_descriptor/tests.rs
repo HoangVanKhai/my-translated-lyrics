@@ -202,17 +202,17 @@ fn marker_name_accepts_ordinary_tokens() {
 
 /// The rejected set is read off [`ReservedMarker`] rather than
 /// restated here, so a marker added to the enum is covered by this
-/// test without an edit.
+/// test without an edit. Both ways in are checked: the constructor
+/// hands the reserved marker straight back, and the conversion
+/// `serde` goes through wraps it.
 #[test]
 fn marker_name_rejects_every_reserved_marker() {
     for reserved in ReservedMarker::VARIANTS {
         eprintln!("CASE: {reserved:?}");
+        let source = reserved.as_ref().to_string();
+        assert_eq!(source.clone().pipe(MarkerName::new).unwrap_err(), *reserved);
         assert_eq!(
-            reserved
-                .as_ref()
-                .to_string()
-                .pipe(MarkerName::new)
-                .unwrap_err(),
+            source.pipe(MarkerName::try_from).unwrap_err(),
             InvalidMarkerName::Reserved(*reserved),
         );
     }

@@ -640,19 +640,11 @@ fn parse_marker_part(body: &str) -> Result<(MarkerName, &str), ParseLyricsErrorK
         .map_err(String::from)
         .map_err(MissingMarker)
         .map_err(ParseLyricsErrorKind::MissingMarker)?;
-    if let Ok(reserved) = marker.parse::<ReservedMarker>() {
-        return reserved
-            .pipe(ReservedControlMarker)
-            .pipe(ParseLyricsErrorKind::ReservedControlMarker)
-            .pipe(Err);
-    }
-    // Naming a reserved marker is the only thing `MarkerName` refuses,
-    // and the branch above has already reported that case, so the name
-    // is established here and travels as a `MarkerName` from now on.
     let marker = marker
         .to_string()
         .pipe(MarkerName::new)
-        .expect("the marker names no reserved marker, which is all `MarkerName` rejects");
+        .map_err(ReservedControlMarker)
+        .map_err(ParseLyricsErrorKind::ReservedControlMarker)?;
     if text.is_empty() {
         return marker
             .pipe(EmptyCueBody)
