@@ -11,7 +11,7 @@ use derive_more::Display;
 use into_deduped::IntoDeduped;
 use into_sorted::IntoSorted;
 use itertools::Itertools;
-use lyrics_core::video_descriptor::Language;
+use lyrics_core::video_descriptor::{Language, VideoTitle};
 use pipe_trait::Pipe;
 use std::fs::read_dir;
 use std::io::ErrorKind;
@@ -31,7 +31,7 @@ pub const VIDEO_EXTENSIONS: &[&str] = &[
 /// not contain that collection yet.
 pub fn available_subtitles(
     collection_dir: &Path,
-    video_title: &str,
+    video_title: &VideoTitle,
 ) -> Vec<(Language, SubtitleFormat)> {
     let entries = match read_dir(collection_dir) {
         Ok(entries) => entries,
@@ -75,7 +75,7 @@ fn parse_subtitle_name(file_name: &str, video_title: &str) -> Option<(Language, 
 /// The path an installed subtitle file would have in the library.
 pub fn subtitle_path(
     collection_dir: &Path,
-    video_title: &str,
+    video_title: &VideoTitle,
     language: Language,
     format: SubtitleFormat,
 ) -> PathBuf {
@@ -84,12 +84,12 @@ pub fn subtitle_path(
 
 /// Failure to uniquely locate a video file in the library.
 #[derive(Debug, Display)]
-#[display("video lookup for {video_title:?} in {collection_dir:?}: {kind}")]
+#[display("video lookup for {:?} in {collection_dir:?}: {kind}", &**video_title)]
 pub struct VideoLookupError {
     /// The collection directory that was searched.
     pub collection_dir: PathBuf,
     /// The video title that was searched for.
-    pub video_title: String,
+    pub video_title: VideoTitle,
     /// What went wrong during the lookup.
     pub kind: VideoLookupErrorKind,
 }
@@ -117,11 +117,11 @@ pub enum VideoLookupErrorKind {
 /// lookup is an error unless exactly one candidate exists.
 pub fn find_video_file(
     collection_dir: &Path,
-    video_title: &str,
+    video_title: &VideoTitle,
 ) -> Result<PathBuf, VideoLookupError> {
     let locate = |kind| VideoLookupError {
         collection_dir: collection_dir.to_path_buf(),
-        video_title: video_title.to_string(),
+        video_title: video_title.clone(),
         kind,
     };
     let entries = match read_dir(collection_dir) {

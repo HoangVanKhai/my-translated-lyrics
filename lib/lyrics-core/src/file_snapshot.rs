@@ -7,12 +7,25 @@ use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
 use std::time::SystemTime;
 
+/// The device a file lives on, as the filesystem reports it.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct DeviceId(u64);
+
+/// A file's inode number within its device. Two snapshots naming the same
+/// inode on the same device name the same file.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct Inode(u64);
+
+/// A file's length in bytes.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct FileSize(u64);
+
 #[derive(Clone)]
 pub struct FileSnapshot {
     path: PathBuf,
-    dev: u64,
-    inode: u64,
-    size: u64,
+    dev: DeviceId,
+    inode: Inode,
+    size: FileSize,
     modified: SystemTime,
     content: OnceCell<String>,
 }
@@ -36,9 +49,9 @@ impl FileSnapshot {
         let modified = stats.modified()?;
         Ok(FileSnapshot {
             path,
-            dev: stats.dev(),
-            inode: stats.ino(),
-            size: stats.len(),
+            dev: DeviceId(stats.dev()),
+            inode: Inode(stats.ino()),
+            size: FileSize(stats.len()),
             modified,
             content: OnceCell::new(),
         })
@@ -73,7 +86,7 @@ impl FileSnapshot {
     }
 
     pub fn content_eq_str(&self, other: &str) -> bool {
-        if self.size != other.len() as u64 {
+        if self.size != FileSize(other.len() as u64) {
             return false;
         }
         match self.load() {

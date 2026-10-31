@@ -427,7 +427,7 @@ fn a_sort_between_clicks_is_not_a_double_click() {
     ];
     EVENTS.lock().unwrap().extend([
         click(3),
-        click_at(30, HEADER_ROW),
+        click_at(30, HEADER_ROW.get()),
         click(3),
         control(KeyCode::Char('q')),
     ]);
@@ -499,10 +499,11 @@ fn clicking_a_column_header_re_sorts_by_that_column() {
     // header row falls on the Vietnamese header; clicking it sorts by
     // Vietnamese, putting Charlie (Xray) first. Clicking the first data row,
     // then Enter, selects it: Charlie is item index 2.
-    EVENTS
-        .lock()
-        .unwrap()
-        .extend([click_at(30, HEADER_ROW), click(3), press(KeyCode::Enter)]);
+    EVENTS.lock().unwrap().extend([
+        click_at(30, HEADER_ROW.get()),
+        click(3),
+        press(KeyCode::Enter),
+    ]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
     assert_eq!(chosen, Navigation::Selected(2));

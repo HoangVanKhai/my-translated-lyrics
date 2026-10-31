@@ -9,7 +9,7 @@ use play_with_lyrics::catalog::Video;
 use std::collections::{HashMap, VecDeque};
 use std::io;
 use std::sync::Mutex;
-use test_utils::{SEPARATED_COLLECTION, video_desc};
+use test_utils::{SEPARATED_COLLECTION, collection_name, video_desc, video_title};
 
 /// A video with both an English and a Vietnamese title, so the table can be
 /// sorted by either column to a different order.
@@ -111,7 +111,11 @@ pub(super) fn label_list(values: &[&str]) -> Vec<String> {
 
 pub(super) fn video(title: String) -> Video {
     Video {
-        desc: video_desc(SEPARATED_COLLECTION.to_owned(), title, Visibility::Visible),
+        desc: video_desc(
+            collection_name(SEPARATED_COLLECTION),
+            video_title(title),
+            Visibility::Visible,
+        ),
     }
 }
 

@@ -8,6 +8,13 @@ use serde::{Deserialize, Serialize};
 use strum::VariantArray;
 use text_block_macros::text_block_fnl;
 
+/// Wraps a marker token that the fixtures know to be declarable.
+fn marker_name(name: impl Into<String>) -> MarkerName {
+    name.into()
+        .pipe(MarkerName::new)
+        .expect("test fixture passes the marker-name validator")
+}
+
 #[test]
 fn accepts_simple_ascii_names() {
     assert_eq!(
@@ -195,17 +202,17 @@ fn marker_name_accepts_ordinary_tokens() {
 
 /// The rejected set is read off [`ReservedMarker`] rather than
 /// restated here, so a marker added to the enum is covered by this
-/// test without an edit.
+/// test without an edit. Both ways in are checked: the constructor
+/// hands the reserved marker straight back, and the conversion
+/// `serde` goes through wraps it.
 #[test]
 fn marker_name_rejects_every_reserved_marker() {
     for reserved in ReservedMarker::VARIANTS {
         eprintln!("CASE: {reserved:?}");
+        let source = reserved.as_ref().to_string();
+        assert_eq!(source.clone().pipe(MarkerName::new).unwrap_err(), *reserved);
         assert_eq!(
-            reserved
-                .as_ref()
-                .to_string()
-                .pipe(MarkerName::new)
-                .unwrap_err(),
+            source.pipe(MarkerName::try_from).unwrap_err(),
             InvalidMarkerName::Reserved(*reserved),
         );
     }
@@ -268,11 +275,14 @@ fn line_markers_descriptor_accepts_ordinary_markers() {
     let descriptor: LineMarkersDesc = toml::from_str(source).unwrap();
     let markers: Vec<&str> = descriptor.markers.iter().map(MarkerName::as_str).collect();
     assert_eq!(markers, ["cre", "ttl", "vca"]);
-    assert!(descriptor.is_credit("cre"));
-    assert!(!descriptor.is_credit("ttl"));
-    assert!(descriptor.voices.contains_key("vca"));
+    assert!(descriptor.is_credit(&marker_name("cre")));
+    assert!(!descriptor.is_credit(&marker_name("ttl")));
+    assert!(descriptor.voices.contains_key(&marker_name("vca")));
     assert_eq!(
-        descriptor.classes.get("ttl").map(CssClassName::as_str),
+        descriptor
+            .classes
+            .get(&marker_name("ttl"))
+            .map(CssClassName::as_str),
         Some("title"),
     );
 }

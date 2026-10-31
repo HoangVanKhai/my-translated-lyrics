@@ -14,9 +14,11 @@
 //! [`Screen::begin`], then calls [`Screen::flush`] to send the diff.
 
 mod buffer;
+mod geometry;
 mod screen;
 mod style;
 
 pub use buffer::Buffer;
+pub use geometry::{Column, Height, Row, Width};
 pub use screen::Screen;
 pub use style::Style;

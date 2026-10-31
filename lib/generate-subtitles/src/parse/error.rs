@@ -9,10 +9,10 @@
 //!
 //! [`parse_lyrics`]: super::parse_lyrics
 
-use super::{TIMESTAMP_PREFIX_WIDTH, TagName};
+use super::{LineNumber, TIMESTAMP_PREFIX_WIDTH, TagName};
 use core::fmt;
 use derive_more::Display;
-use lyrics_core::line_markers_descriptor::ReservedMarker;
+use lyrics_core::line_markers_descriptor::{MarkerName, ReservedMarker};
 use lyrics_core::timestamp::{TakeTimestampError, Timestamp};
 
 /// Payload for [`ParseLyricsErrorKind::InvalidTimestamp`]. Wraps the
@@ -73,7 +73,7 @@ pub struct MalformedTagLine(pub String);
     "`<{tag}>` opens an additive region inside the one opened on line {_0}",
     tag = TagName::Additive
 )]
-pub struct NestedRegion(pub usize);
+pub struct NestedRegion(pub LineNumber);
 
 /// Payload for [`AdditiveRegionError::Unopened`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
@@ -91,7 +91,7 @@ pub struct UnclosedRegion;
 /// Payload for [`AdditiveRegionError::Empty`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("the additive region opened on line {_0} encloses no cue")]
-pub struct EmptyRegion(pub usize);
+pub struct EmptyRegion(pub LineNumber);
 
 /// Payload for [`AdditiveRegionError::ControlMarker`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
@@ -101,13 +101,13 @@ pub struct EmptyRegion(pub usize);
 )]
 pub struct ControlMarkerInRegion {
     pub marker: ReservedMarker,
-    pub opened_at: usize,
+    pub opened_at: LineNumber,
 }
 
 /// Payload for [`ParseLyricsErrorKind::EmptyCueBody`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("cue with marker {_0:?} has an empty body")]
-pub struct EmptyCueBody(pub String);
+#[display("cue with marker {:?} has an empty body", _0.as_str())]
+pub struct EmptyCueBody(pub MarkerName);
 
 /// Payload for [`ParseLyricsErrorKind::MalformedHeader`]. Raised when
 /// a column-zero line does not begin with an `MM:SS.mmm` timestamp;
@@ -247,7 +247,7 @@ pub enum ParseLyricsErrorKind {
 #[display("line {line_number}: {kind}")]
 pub struct ParseLyricsError {
     /// The line the author has to revisit, counting from 1.
-    pub line_number: usize,
+    pub line_number: LineNumber,
     /// What the parser rejected.
     pub kind: ParseLyricsErrorKind,
 }

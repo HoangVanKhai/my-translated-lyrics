@@ -5,7 +5,7 @@ use pretty_assertions::assert_eq;
 use std::fs::{create_dir, remove_file, write as write_file};
 use test_utils::{
     InstallLocalLyricsEnv, OTHER_SEPARATED_COLLECTION, SEPARATED_COLLECTION, UNIFIED_COLLECTION,
-    collection_name, video_desc,
+    collection_name, video_desc, video_title,
 };
 use text_block_macros::text_block_fnl;
 
@@ -17,13 +17,13 @@ const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
 #[test]
 fn installs_into_every_declared_collection() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let other_title = "【示例表演者】《示例歌曲》Other Example Song [OtherID]";
     env.add_source_entry(
         "ExampleSong",
         &video_desc(
-            SEPARATED_COLLECTION.to_owned(),
-            video_title.to_owned(),
+            collection_name(SEPARATED_COLLECTION),
+            video_title(title),
             Visibility::default(),
         ),
         &[("lyrics.vi.srt", "line one\n")],
@@ -31,8 +31,8 @@ fn installs_into_every_declared_collection() {
     env.add_source_entry(
         "OtherExampleSong",
         &video_desc(
-            OTHER_SEPARATED_COLLECTION.to_owned(),
-            other_title.to_owned(),
+            collection_name(OTHER_SEPARATED_COLLECTION),
+            video_title(other_title),
             Visibility::default(),
         ),
         &[("lyrics.vi.srt", "line two\n")],
@@ -44,8 +44,8 @@ fn installs_into_every_declared_collection() {
         env.target_subtitle_files(),
         [
             format!("{OTHER_SEPARATED_COLLECTION}/{other_title}.vi.srt"),
-            format!("{SEPARATED_COLLECTION}/{video_title}.vi.srt"),
-            format!("{UNIFIED_COLLECTION}/{video_title}.vi.srt"),
+            format!("{SEPARATED_COLLECTION}/{title}.vi.srt"),
+            format!("{UNIFIED_COLLECTION}/{title}.vi.srt"),
             format!("{UNIFIED_COLLECTION}/{other_title}.vi.srt"),
         ],
     );
@@ -57,7 +57,7 @@ fn installs_into_every_declared_collection() {
 #[test]
 fn installs_into_every_unified_collection() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let other_unified = "Another Example Unified Collection";
     let collections = CollectionsDesc {
         unified: vec![
@@ -75,8 +75,8 @@ fn installs_into_every_unified_collection() {
     env.add_source_entry(
         "ExampleSong",
         &video_desc(
-            SEPARATED_COLLECTION.to_owned(),
-            video_title.to_owned(),
+            collection_name(SEPARATED_COLLECTION),
+            video_title(title),
             Visibility::default(),
         ),
         &[("lyrics.vi.srt", "line one\n")],
@@ -85,7 +85,7 @@ fn installs_into_every_unified_collection() {
     env.run(["--execute"]);
 
     for collection in [SEPARATED_COLLECTION, UNIFIED_COLLECTION, other_unified] {
-        let installed = env.target_path(collection, &format!("{video_title}.vi.srt"));
+        let installed = env.target_path(collection, &format!("{title}.vi.srt"));
         assert!(installed.is_file(), "{installed:?} was not installed");
     }
 }
@@ -95,10 +95,10 @@ fn installs_into_every_unified_collection() {
 #[test]
 fn rejects_a_descriptor_naming_an_undeclared_collection() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let desc = video_desc(
-        "Undeclared Example Collection".to_owned(),
-        video_title.to_owned(),
+        collection_name("Undeclared Example Collection"),
+        video_title(title),
         Visibility::default(),
     );
     env.add_source_entry("ExampleSong", &desc, &[("lyrics.vi.srt", "line one\n")]);

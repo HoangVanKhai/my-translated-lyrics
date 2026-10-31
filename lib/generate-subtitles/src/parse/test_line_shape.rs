@@ -3,11 +3,12 @@
 //! separator after its timestamp, a body that declares no marker or no
 //! text, and an indent that matches neither of the two recognized widths.
 
+use crate::_test_utils::marker_name;
 use crate::parse::error::{
     EmptyCueBody, MalformedHeader, MalformedIndentation, MissingMarker,
     MissingSeparatorAfterTimestamp, ParseLyricsError, ParseLyricsErrorKind, TabIndentation,
 };
-use crate::parse::parse_lyrics;
+use crate::parse::{LineNumber, parse_lyrics};
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
@@ -22,7 +23,7 @@ fn rejects_malformed_header_when_column_zero_line_has_no_timestamp() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             kind: "no timestamp here"
                 .to_string()
                 .pipe(MalformedHeader)
@@ -41,7 +42,7 @@ fn rejects_timestamp_without_separator_after_prefix() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: 2,
+            line_number: LineNumber::new(2),
             kind: "00:02.000ttl: no space after timestamp"
                 .to_string()
                 .pipe(MissingSeparatorAfterTimestamp)
@@ -59,7 +60,7 @@ fn rejects_cue_line_without_marker() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             kind: "Plain text without marker"
                 .to_string()
                 .pipe(MissingMarker)
@@ -77,9 +78,9 @@ fn rejects_cue_with_empty_body() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             kind: "ttl"
-                .to_string()
+                .pipe(marker_name)
                 .pipe(EmptyCueBody)
                 .pipe(ParseLyricsErrorKind::EmptyCueBody),
         },
@@ -106,7 +107,7 @@ fn whitespace_only_cue_body_falls_through_to_missing_marker() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: 1,
+            line_number: LineNumber::new(1),
             kind: String::new()
                 .pipe(MissingMarker)
                 .pipe(ParseLyricsErrorKind::MissingMarker),
@@ -129,7 +130,7 @@ fn rejects_tab_in_leading_whitespace() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: 2,
+            line_number: LineNumber::new(2),
             kind: ParseLyricsErrorKind::TabIndentation(TabIndentation),
         },
     );
@@ -149,7 +150,7 @@ fn rejects_malformed_indentation_between_recognized_widths() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: 2,
+            line_number: LineNumber::new(2),
             kind: ParseLyricsErrorKind::MalformedIndentation(MalformedIndentation {
                 actual: 12,
                 shorthand_indent: 10,

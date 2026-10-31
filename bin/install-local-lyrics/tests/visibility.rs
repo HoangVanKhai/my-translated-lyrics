@@ -3,7 +3,8 @@ use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::fs::{read_to_string, write as write_file};
 use test_utils::{
-    InstallLocalLyricsEnv, SEPARATED_COLLECTION, UNIFIED_COLLECTION, expected_stderr, video_desc,
+    InstallLocalLyricsEnv, SEPARATED_COLLECTION, UNIFIED_COLLECTION, collection_name,
+    expected_stderr, video_desc, video_title,
 };
 
 const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
@@ -11,16 +12,16 @@ const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
 #[test]
 fn hidden_visibility_causes_removal() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
-    let video_title = "【示例表演者 | 日本語タグ】《示例歌曲名》 [ExampleID]";
+    let collection = SEPARATED_COLLECTION;
+    let title = "【示例表演者 | 日本語タグ】《示例歌曲名》 [ExampleID]";
     let desc = video_desc(
-        collection_name.to_owned(),
-        video_title.to_owned(),
+        collection_name(collection),
+        video_title(title),
         Visibility::Hidden,
     );
 
-    let separated = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
-    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
+    let separated = env.target_path(collection, &format!("{title}.vi.srt"));
+    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{title}.vi.srt"));
     write_file(&separated, "old content").unwrap();
     write_file(&unified, "old content").unwrap();
 
@@ -42,16 +43,16 @@ fn hidden_visibility_causes_removal() {
 #[test]
 fn dry_run_does_not_remove_hidden_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
-    let video_title = "【示例表演者 | 日本語タグ】《示例歌曲名》 [ExampleID]";
+    let collection = SEPARATED_COLLECTION;
+    let title = "【示例表演者 | 日本語タグ】《示例歌曲名》 [ExampleID]";
     let desc = video_desc(
-        collection_name.to_owned(),
-        video_title.to_owned(),
+        collection_name(collection),
+        video_title(title),
         Visibility::Hidden,
     );
 
-    let separated = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
-    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
+    let separated = env.target_path(collection, &format!("{title}.vi.srt"));
+    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{title}.vi.srt"));
     write_file(&separated, "old content").unwrap();
     write_file(&unified, "old content").unwrap();
 
@@ -73,18 +74,17 @@ fn dry_run_does_not_remove_hidden_files() {
 #[test]
 fn manual_visibility_preserves_existing_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
-    let video_title =
-        "【FULL ver.】Example Performer 示例表演者 - Example Song 示例歌曲【示例标签】";
+    let collection = SEPARATED_COLLECTION;
+    let title = "【FULL ver.】Example Performer 示例表演者 - Example Song 示例歌曲【示例标签】";
     let desc = video_desc(
-        collection_name.to_owned(),
-        video_title.to_owned(),
+        collection_name(collection),
+        video_title(title),
         Visibility::Manual,
     );
     let manual_content = "manually edited content";
 
-    let separated = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
-    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
+    let separated = env.target_path(collection, &format!("{title}.vi.srt"));
+    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{title}.vi.srt"));
     write_file(&separated, manual_content).unwrap();
     write_file(&unified, manual_content).unwrap();
 
@@ -106,18 +106,17 @@ fn manual_visibility_preserves_existing_files() {
 #[test]
 fn dry_run_manual_visibility_preserves_existing_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
-    let video_title =
-        "【FULL ver.】Example Performer 示例表演者 - Example Song 示例歌曲【示例标签】";
+    let collection = SEPARATED_COLLECTION;
+    let title = "【FULL ver.】Example Performer 示例表演者 - Example Song 示例歌曲【示例标签】";
     let desc = video_desc(
-        collection_name.to_owned(),
-        video_title.to_owned(),
+        collection_name(collection),
+        video_title(title),
         Visibility::Manual,
     );
     let manual_content = "manually edited content";
 
-    let separated = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
-    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
+    let separated = env.target_path(collection, &format!("{title}.vi.srt"));
+    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{title}.vi.srt"));
     write_file(&separated, manual_content).unwrap();
     write_file(&unified, manual_content).unwrap();
 

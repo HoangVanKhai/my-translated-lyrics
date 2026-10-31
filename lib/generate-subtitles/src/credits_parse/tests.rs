@@ -12,7 +12,7 @@ fn make_descriptor(roles: &[&str]) -> CreditsDesc {
     CreditsDesc {
         credit_roles: roles
             .iter()
-            .map(|role| btreemap! { Language::Vietnamese => role.to_string() })
+            .map(|role| btreemap! { Language::Vietnamese => role.to_string().into() })
             .collect(),
         credit_names: Vec::new(),
     }

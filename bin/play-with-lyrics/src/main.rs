@@ -112,11 +112,11 @@ fn run() -> Result<(), Termination> {
                 let chosen_video =
                     &catalog[video_index.expect("the video is resolved before the language")];
                 let collection_dir = args.target.join(&*chosen_video.desc.collection);
-                let video_title = chosen_video.desc.video_title.as_ref();
+                let video_title = &chosen_video.desc.video_title;
                 available = available_subtitles(&collection_dir, video_title);
                 if available.is_empty() {
                     return Err(Failure::NoSubtitles(NoSubtitles {
-                        video_title: video_title.to_string(),
+                        video_title: video_title.clone(),
                         collection_dir,
                     })
                     .into());
@@ -170,7 +170,7 @@ fn run() -> Result<(), Termination> {
     let format = format.expect("the format is resolved");
 
     let collection_dir = args.target.join(&*video.desc.collection);
-    let video_title = video.desc.video_title.as_ref();
+    let video_title = &video.desc.video_title;
     let video_file = find_video_file(&collection_dir, video_title).map_err(Failure::VideoLookup)?;
     let subtitle_file = subtitle_path(&collection_dir, video_title, language, format);
 

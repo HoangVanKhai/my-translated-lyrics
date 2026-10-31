@@ -13,7 +13,7 @@ use std::collections::VecDeque;
 use std::io;
 use std::sync::Mutex;
 use std::time::{Duration, SystemTime};
-use terminal_screen::{Buffer, Style};
+use terminal_screen::{Buffer, Column, Height, Style, Width};
 
 /// The table header labels each column with its language's own name. Driving
 /// the loop with an injected size makes the rendered output deterministic.
@@ -344,22 +344,27 @@ fn select_one_reverses_the_button_under_the_pointer() {
 #[test]
 fn render_header_marks_the_sorted_and_hovered_columns() {
     let sort = ColumnSort::new([Language::English, Language::Vietnamese, Language::Chinese]);
-    let mut buffer = Buffer::new(80, 3);
+    let mut buffer = Buffer::new(Width::new(80), Height::new(3));
     // Hover the English header, at column 5 on the header row.
-    render_header(&mut buffer, 80, &sort, Some((5, HEADER_ROW)));
+    render_header(
+        &mut buffer,
+        Width::new(80),
+        &sort,
+        Some((Column::new(5), HEADER_ROW)),
+    );
     let header = buffer.row_text(HEADER_ROW);
     // English is the default sort column, ascending, so it carries the ▲ arrow.
     assert!(header.contains("English ▲"), "{header}");
     // The hovered English header is bold without the dim.
-    assert_eq!(buffer.style_at(0, HEADER_ROW), Style::BOLD);
+    assert_eq!(buffer.style_at(Column::LEFT, HEADER_ROW), Style::BOLD);
     // A column the pointer is not over is bold and dimmed.
-    let vietnamese_start = column_spans(80)[1].start as u16;
+    let vietnamese_start = column_spans(Width::new(80))[1].start();
     assert_eq!(
         buffer.style_at(vietnamese_start, HEADER_ROW),
         Style::BOLD.with(Style::DIM),
     );
     // The separator bar between the headers is bold but not dimmed.
-    let separator_bar = column_spans(80)[0].end as u16 + 1;
+    let separator_bar = column_spans(Width::new(80))[0].end() + Width::ONE;
     assert_eq!(buffer.style_at(separator_bar, HEADER_ROW), Style::BOLD);
 }
 
@@ -367,19 +372,19 @@ fn render_header_marks_the_sorted_and_hovered_columns() {
 /// the typed query.
 #[test]
 fn render_search_bar_styles_the_magnifier_label_and_query() {
-    let mut buffer = Buffer::new(40, 2);
-    render_search_bar(&mut buffer, 40, "abc");
+    let mut buffer = Buffer::new(Width::new(40), Height::new(2));
+    render_search_bar(&mut buffer, Width::new(40), "abc");
     let row = buffer.row_text(SEARCH_ROW);
     assert!(row.contains("Search:"), "{row}");
     assert!(row.contains("abc"), "{row}");
     // The magnifier is dimmed, not italic.
-    assert_eq!(buffer.style_at(0, SEARCH_ROW), Style::DIM);
+    assert_eq!(buffer.style_at(Column::LEFT, SEARCH_ROW), Style::DIM);
     // The "Search:" label is italic. The magnifier spans columns 0-1 and column
     // 2 is the label's leading space, so column 3 is its first letter.
-    assert_eq!(buffer.style_at(3, SEARCH_ROW), Style::ITALIC);
+    assert_eq!(buffer.style_at(Column::new(3), SEARCH_ROW), Style::ITALIC);
     // The typed query is bold. The magnifier (2) and " Search: " (9) take eleven
     // columns, so the query begins at column 11.
-    assert_eq!(buffer.style_at(11, SEARCH_ROW), Style::BOLD);
+    assert_eq!(buffer.style_at(Column::new(11), SEARCH_ROW), Style::BOLD);
 }
 
 /// The search bar shows a magnifier with the italic "Search:" label and the
