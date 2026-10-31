@@ -75,9 +75,7 @@ pub struct LineMarkersDesc {
 }
 
 impl LineMarkersDesc {
-    /// Whether `marker` opens a credit block in this song. The
-    /// argument is the marker name a parsed cue part carries, which
-    /// the parser established through [`MarkerName::new`].
+    /// Whether `marker` opens a credit block in this song.
     pub fn is_credit(&self, marker: &MarkerName) -> bool {
         self.credits.contains(marker)
     }

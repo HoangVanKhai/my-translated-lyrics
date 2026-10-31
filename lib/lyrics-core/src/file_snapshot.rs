@@ -23,10 +23,6 @@ struct FileSize(u64);
 #[derive(Clone)]
 pub struct FileSnapshot {
     path: PathBuf,
-    // The three identifiers below are all `u64` underneath, so they wear
-    // separate types: a snapshot that recorded its inode as its device,
-    // or the reverse, would otherwise compile and make two unrelated
-    // files compare equal.
     dev: DeviceId,
     inode: Inode,
     size: FileSize,
