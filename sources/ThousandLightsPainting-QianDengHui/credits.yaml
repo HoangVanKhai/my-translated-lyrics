@@ -1,0 +1,14 @@
+credit-roles:
+  - { vi: Nguyên xướng, zh: 原唱 }
+  - { vi: Phối khí, zh: 编曲 }
+  - { vi: Soạn nhạc, zh: 作曲 }
+  - { vi: Trình bày, zh: 演唱 }
+  - { vi: Tác từ, zh: 作词 }
+  - { vi: Điều giáo, zh: 调校 }
+
+credit-names:
+  - { vi: Luo Tianyi, zh: 洛天依 }
+  - { vi: 刘兆伦, zh: 刘兆伦 }
+  - { vi: 清彦, zh: 清彦 }
+  - { vi: 苍梧_abilrue, zh: 苍梧_abilrue }
+  - { vi: 蔡成钰, zh: 蔡成钰 }
