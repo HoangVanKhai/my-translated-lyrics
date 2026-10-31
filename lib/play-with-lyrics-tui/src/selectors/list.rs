@@ -95,11 +95,10 @@ where
                             match button_at(columns as usize, mouse.column as usize) {
                                 Some(Button::Exit) => return Ok(Navigation::Quit),
                                 Some(Button::Back) => return Ok(Navigation::Back),
-                                Some(Button::Forward) => {
-                                    if !labels.is_empty() {
-                                        return Ok(Navigation::Selected(cursor));
-                                    }
+                                Some(Button::Forward) if !labels.is_empty() => {
+                                    return Ok(Navigation::Selected(cursor));
                                 }
+                                Some(Button::Forward) => {}
                                 None => {}
                             }
                         } else if mouse.row < rows.saturating_sub(1)
