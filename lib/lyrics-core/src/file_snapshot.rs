@@ -39,9 +39,9 @@ impl fmt::Debug for FileSnapshot {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("FileSnapshot")
             .field("path", &self.path)
-            .field("dev", &self.dev.0)
-            .field("inode", &self.inode.0)
-            .field("size", &self.size.0)
+            .field("dev", &self.dev)
+            .field("inode", &self.inode)
+            .field("size", &self.size)
             .field("modified", &self.modified)
             .finish_non_exhaustive()
     }
