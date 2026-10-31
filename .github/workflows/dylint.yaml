@@ -1,8 +1,5 @@
 name: Dylint
 
-# Dylint only lints the Rust workspace, so it runs solely when Rust sources,
-# cargo manifests, the toolchain pin, the Dylint configuration, or this
-# workflow change. Edits to prose or lyrics data do not affect the lints.
 on:
   push:
     paths:
@@ -10,6 +7,7 @@ on:
       - '**/Cargo.toml'
       - Cargo.lock
       - rust-toolchain
+      - dylint-version
       - dylint.toml
       - .github/workflows/dylint.yaml
   pull_request:
@@ -18,6 +16,7 @@ on:
       - '**/Cargo.toml'
       - Cargo.lock
       - rust-toolchain
+      - dylint-version
       - dylint.toml
       - .github/workflows/dylint.yaml
 
@@ -38,10 +37,10 @@ jobs:
             ~/.cargo
             ~/.dylint_drivers
             target
-          key: ${{ github.job }}-${{ runner.os }}-${{ hashFiles('rust-toolchain') }}-${{ hashFiles('dylint.toml') }}-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ github.job }}-${{ runner.os }}-${{ hashFiles('rust-toolchain') }}-${{ hashFiles('dylint.toml', 'dylint-version') }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ github.job }}-${{ runner.os }}-${{ hashFiles('rust-toolchain') }}-${{ hashFiles('dylint.toml') }}-${{ hashFiles('**/Cargo.lock') }}
-            ${{ github.job }}-${{ runner.os }}-${{ hashFiles('rust-toolchain') }}-${{ hashFiles('dylint.toml') }}-
+            ${{ github.job }}-${{ runner.os }}-${{ hashFiles('rust-toolchain') }}-${{ hashFiles('dylint.toml', 'dylint-version') }}-${{ hashFiles('**/Cargo.lock') }}
+            ${{ github.job }}-${{ runner.os }}-${{ hashFiles('rust-toolchain') }}-${{ hashFiles('dylint.toml', 'dylint-version') }}-
             ${{ github.job }}-${{ runner.os }}-${{ hashFiles('rust-toolchain') }}-
 
       - name: Install Rust
@@ -53,7 +52,10 @@ jobs:
 
       - name: Install Dylint tooling
         shell: bash
-        run: cargo install --locked cargo-dylint dylint-link
+        run: |
+          dylint_version=$(< dylint-version)
+          cargo install --locked --version "$dylint_version" cargo-dylint
+          cargo install --locked --version "$dylint_version" dylint-link
 
       # When the primary cache key did not match exactly, the cache was
       # either missed entirely or restored from one of the looser

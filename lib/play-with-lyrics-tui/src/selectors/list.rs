@@ -99,11 +99,10 @@ where
                             match button_at(Width::new(columns), Column::new(mouse.column)) {
                                 Some(Button::Exit) => return Ok(Navigation::Quit),
                                 Some(Button::Back) => return Ok(Navigation::Back),
-                                Some(Button::Forward) => {
-                                    if !labels.is_empty() {
-                                        return Ok(Navigation::Selected(cursor.get()));
-                                    }
+                                Some(Button::Forward) if !labels.is_empty() => {
+                                    return Ok(Navigation::Selected(cursor.get()));
                                 }
+                                Some(Button::Forward) => {}
                                 None => {}
                             }
                         } else if clicked_row < Row::new(rows.saturating_sub(1))

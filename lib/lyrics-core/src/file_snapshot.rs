@@ -76,11 +76,11 @@ impl FileSnapshot {
 
         match (self.load(), other.load()) {
             (Ok(a), Ok(b)) => a == b,
-            (Err(error), Ok(_)) => panic!("error: Cannot load file {:?}: {error}", &self.path),
-            (Ok(_), Err(error)) => panic!("error: Cannot load file {:?}: {error}", &other.path),
+            (Err(error), Ok(_)) => panic!("error: Cannot load file {:?}: {error}", self.path),
+            (Ok(_), Err(error)) => panic!("error: Cannot load file {:?}: {error}", other.path),
             (Err(error_a), Err(error_b)) => panic!(
                 "error: Cannot load file {:?} ({error_a}) and {:?} ({error_b})",
-                &self.path, &other.path,
+                self.path, other.path,
             ),
         }
     }
@@ -91,7 +91,7 @@ impl FileSnapshot {
         }
         match self.load() {
             Ok(content) => content == other,
-            Err(error) => panic!("error: Cannot load file {:?}: {error}", &self.path),
+            Err(error) => panic!("error: Cannot load file {:?}: {error}", self.path),
         }
     }
 
