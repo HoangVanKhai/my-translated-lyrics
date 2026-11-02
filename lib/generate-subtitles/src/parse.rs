@@ -30,7 +30,7 @@ use error::{
     ParseLyricsErrorKind, RepeatedTimestamp, TabIndentation, UnclosedCue, UnclosedRegion,
     UnopenedRegion,
 };
-use lyrics_core::line_markers_descriptor::{InvalidMarkerName, ReservedMarker};
+use lyrics_core::line_markers_descriptor::{MarkerName, ReservedMarker};
 use lyrics_core::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
 use pipe_trait::Pipe;
 use strum::EnumString;
@@ -488,6 +488,7 @@ fn handle_header_line(
 
     check_event_order(start, events)?;
     let (marker, text) = parse_marker_part(cue_body)?;
+    let prefix_width = marker_prefix_width(marker.as_str());
     let region = regions.open.as_mut().map(|open| {
         open.cue_count += 1;
         open.index
@@ -497,14 +498,14 @@ fn handle_header_line(
         opened_at,
         region,
         parts: vec![CuePart {
-            marker: marker.to_string(),
+            marker: marker.into(),
             text: text.to_string(),
             annotations: Vec::new(),
         }],
     }));
     *last_cue_index = Some(events.len() - 1);
     *open_marker_line = Some(OpenMarkerLine {
-        marker_prefix_width: marker_prefix_width(marker),
+        marker_prefix_width: prefix_width,
         target: ContinuationTarget::PartText,
     });
     Ok(())
@@ -531,13 +532,14 @@ fn handle_shorthand_marker_line(
         .map_err(OrphanedShorthandMarker)
         .map_err(ParseLyricsErrorKind::OrphanedShorthandMarker)?;
     let (marker, text) = parse_marker_part(body)?;
+    let prefix_width = marker_prefix_width(marker.as_str());
     cue_group_mut(events, cue_index).parts.push(CuePart {
-        marker: marker.to_string(),
+        marker: marker.into(),
         text: text.to_string(),
         annotations: Vec::new(),
     });
     *open_marker_line = Some(OpenMarkerLine {
-        marker_prefix_width: marker_prefix_width(marker),
+        marker_prefix_width: prefix_width,
         target: ContinuationTarget::PartText,
     });
     Ok(())
@@ -611,22 +613,20 @@ fn handle_continuation_line(
     Ok(())
 }
 
-fn parse_marker_part(body: &str) -> Result<(&str, &str), ParseLyricsErrorKind> {
+fn parse_marker_part(body: &str) -> Result<(MarkerName, &str), ParseLyricsErrorKind> {
     reject_reserved_cue_text_characters(body)?;
     let (marker, text) = split_marker(body)
         .ok_or(body)
         .map_err(String::from)
         .map_err(MissingMarker)
         .map_err(ParseLyricsErrorKind::MissingMarker)?;
-    if let Ok(reserved) = marker.parse::<ReservedMarker>() {
-        return reserved
-            .pipe(InvalidMarkerName::Reserved)
-            .pipe(ParseLyricsErrorKind::InvalidMarkerName)
-            .pipe(Err);
-    }
+    let marker = marker
+        .to_string()
+        .pipe(MarkerName::new)
+        .map_err(ParseLyricsErrorKind::InvalidMarkerName)?;
     if text.is_empty() {
         return marker
-            .to_string()
+            .pipe(String::from)
             .pipe(EmptyCueBody)
             .pipe(ParseLyricsErrorKind::EmptyCueBody)
             .pipe(Err);
