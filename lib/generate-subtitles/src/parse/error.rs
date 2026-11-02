@@ -48,8 +48,7 @@ pub struct OutOfOrder {
     pub next: Timestamp,
 }
 
-/// Payload for [`ParseLyricsErrorKind::InvalidCueMarker`]. Wraps the
-/// underlying [`InvalidMarkerName`].
+/// Payload for [`ParseLyricsErrorKind::InvalidCueMarker`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 pub struct InvalidCueMarker(pub InvalidMarkerName);
 
