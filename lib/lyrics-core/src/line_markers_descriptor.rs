@@ -276,7 +276,7 @@ pub enum InvalidCssClassName {
 #[derive(Clone, Copy, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum InvalidMarkerName {
-    #[display("marker name `{_0}` is reserved by the parser and must not be declared")]
+    #[display("marker name `{_0}` is reserved by the parser")]
     Reserved(ReservedMarker),
 }
 

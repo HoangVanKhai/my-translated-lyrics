@@ -5,10 +5,9 @@
 
 use crate::parse::error::{
     EmptyAnnotation, MissingMarker, OrphanedAnnotation, ParseLyricsError, ParseLyricsErrorKind,
-    ReservedControlMarker,
 };
 use crate::parse::parse_lyrics;
-use lyrics_core::line_markers_descriptor::ReservedMarker;
+use lyrics_core::line_markers_descriptor::{InvalidMarkerName, ReservedMarker};
 use lyrics_core::timestamp::Timestamp;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
@@ -308,8 +307,8 @@ fn annotation_marker_cannot_name_a_cue() {
         ParseLyricsError {
             line_number: 2,
             kind: ReservedMarker::Annotation
-                .pipe(ReservedControlMarker)
-                .pipe(ParseLyricsErrorKind::ReservedControlMarker),
+                .pipe(InvalidMarkerName::Reserved)
+                .pipe(ParseLyricsErrorKind::InvalidMarkerName),
         },
     );
 }
