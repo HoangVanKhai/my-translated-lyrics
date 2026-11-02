@@ -90,11 +90,12 @@ impl LineMarkersDesc {
 pub struct MarkerName(String);
 
 impl MarkerName {
-    /// Wraps `source` if and only if it names no [`ReservedMarker`].
-    pub fn new(source: String) -> Result<Self, InvalidMarkerName> {
-        match MarkerToken::new(source) {
-            MarkerToken::Declared(name) => Ok(name),
-            MarkerToken::Reserved(reserved) => Err(InvalidMarkerName::Reserved(reserved)),
+    /// Wraps `source` if and only if it names no [`ReservedMarker`],
+    /// handing back the marker it names when it does.
+    pub fn new(source: String) -> Result<MarkerName, ReservedMarker> {
+        match source.parse::<ReservedMarker>() {
+            Ok(reserved) => Err(reserved),
+            Err(strum::ParseError::VariantNotFound) => Ok(MarkerName(source)),
         }
     }
 
@@ -104,35 +105,11 @@ impl MarkerName {
     }
 }
 
-/// Which of the two kinds of marker a token in a source file names.
-///
-/// The parser reserves a fixed set of markers for its own control
-/// lines; every other token is a name a song may declare. The two are
-/// told apart by one rule, so classifying a token answers both
-/// questions at once.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum MarkerToken {
-    /// The token names a marker the parser reserves.
-    Reserved(ReservedMarker),
-    /// The token is a name a song may declare.
-    Declared(MarkerName),
-}
-
-impl MarkerToken {
-    /// Which kind `source` names.
-    pub fn new(source: String) -> MarkerToken {
-        match source.parse::<ReservedMarker>() {
-            Ok(reserved) => MarkerToken::Reserved(reserved),
-            Err(strum::ParseError::VariantNotFound) => MarkerToken::Declared(MarkerName(source)),
-        }
-    }
-}
-
 impl TryFrom<String> for MarkerName {
     type Error = InvalidMarkerName;
 
     fn try_from(source: String) -> Result<Self, Self::Error> {
-        MarkerName::new(source)
+        MarkerName::new(source).map_err(InvalidMarkerName::Reserved)
     }
 }
 
