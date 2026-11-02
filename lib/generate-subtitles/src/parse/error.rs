@@ -2,10 +2,10 @@
 //!
 //! [`ParseLyricsError`] is the single error returned by the parser; it
 //! pairs the source line with a [`ParseLyricsErrorKind`], whose
-//! variants each wrap a dedicated payload struct that carries whatever
-//! context the diagnostic needs beyond that line. The payloads are
-//! split out from the parsing engine in [`super`] so the engine reads
-//! as one algorithm and the vocabulary of failures sits on its own.
+//! variants each carry whatever context the diagnostic needs beyond
+//! that line. The payloads are split out from the parsing engine in
+//! [`super`] so the engine reads as one algorithm and the vocabulary
+//! of failures sits on its own.
 //!
 //! [`parse_lyrics`]: super::parse_lyrics
 
@@ -47,10 +47,6 @@ pub struct OutOfOrder {
     pub previous: Timestamp,
     pub next: Timestamp,
 }
-
-/// Payload for [`ParseLyricsErrorKind::InvalidCueMarker`].
-#[derive(Clone, Debug, Display, Eq, PartialEq)]
-pub struct InvalidCueMarker(pub InvalidMarkerName);
 
 /// Payload for [`ParseLyricsErrorKind::EmptyAnnotation`]. Raised when
 /// an annotation line carries no text after its `:` separator.
@@ -232,7 +228,7 @@ pub enum ParseLyricsErrorKind {
     OutOfOrder(OutOfOrder),
     CueTextReservedCharacter(CueTextReservedCharacter),
     MissingMarker(MissingMarker),
-    InvalidCueMarker(InvalidCueMarker),
+    InvalidMarkerName(InvalidMarkerName),
     EmptyCueBody(EmptyCueBody),
     EmptyAnnotation(EmptyAnnotation),
     OrphanedShorthandMarker(OrphanedShorthandMarker),

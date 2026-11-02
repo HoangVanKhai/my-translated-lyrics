@@ -2,9 +2,7 @@
 //! text each one accepts, the events each one does and does not push, and
 //! the rejection of a cue whose marker names either of them.
 
-use crate::parse::error::{
-    ExtraTextAfterControlMarker, InvalidCueMarker, ParseLyricsError, ParseLyricsErrorKind,
-};
+use crate::parse::error::{ExtraTextAfterControlMarker, ParseLyricsError, ParseLyricsErrorKind};
 use crate::parse::{LineNumber, parse_lyrics};
 use lyrics_core::line_markers_descriptor::{InvalidMarkerName, ReservedMarker};
 use lyrics_core::timestamp::Timestamp;
@@ -118,8 +116,7 @@ fn rejects_cue_marker_that_collides_with_control_token() {
             line_number: LineNumber::new(1),
             kind: ReservedMarker::Clear
                 .pipe(InvalidMarkerName::Reserved)
-                .pipe(InvalidCueMarker)
-                .pipe(ParseLyricsErrorKind::InvalidCueMarker),
+                .pipe(ParseLyricsErrorKind::InvalidMarkerName),
         },
     );
 
@@ -133,8 +130,7 @@ fn rejects_cue_marker_that_collides_with_control_token() {
             line_number: LineNumber::new(1),
             kind: ReservedMarker::EndOfVideo
                 .pipe(InvalidMarkerName::Reserved)
-                .pipe(InvalidCueMarker)
-                .pipe(ParseLyricsErrorKind::InvalidCueMarker),
+                .pipe(ParseLyricsErrorKind::InvalidMarkerName),
         },
     );
 }

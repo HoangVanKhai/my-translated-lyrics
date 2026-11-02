@@ -4,8 +4,7 @@
 //! annotation is rejected.
 
 use crate::parse::error::{
-    EmptyAnnotation, InvalidCueMarker, MissingMarker, OrphanedAnnotation, ParseLyricsError,
-    ParseLyricsErrorKind,
+    EmptyAnnotation, MissingMarker, OrphanedAnnotation, ParseLyricsError, ParseLyricsErrorKind,
 };
 use crate::parse::{LineNumber, parse_lyrics};
 use lyrics_core::line_markers_descriptor::{InvalidMarkerName, ReservedMarker};
@@ -309,8 +308,7 @@ fn annotation_marker_cannot_name_a_cue() {
             line_number: LineNumber::new(2),
             kind: ReservedMarker::Annotation
                 .pipe(InvalidMarkerName::Reserved)
-                .pipe(InvalidCueMarker)
-                .pipe(ParseLyricsErrorKind::InvalidCueMarker),
+                .pipe(ParseLyricsErrorKind::InvalidMarkerName),
         },
     );
 }

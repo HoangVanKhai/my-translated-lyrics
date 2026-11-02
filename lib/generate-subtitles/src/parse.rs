@@ -25,11 +25,11 @@ pub mod error;
 use derive_more::Display;
 use error::{
     AdditiveRegionError, ControlMarkerInRegion, CueTextReservedCharacter, EmptyAnnotation,
-    EmptyCueBody, EmptyRegion, ExtraTextAfterControlMarker, InvalidCueMarker, InvalidTimestamp,
-    MalformedHeader, MalformedIndentation, MalformedTagLine, MissingMarker,
-    MissingSeparatorAfterTimestamp, NestedRegion, OrphanedAnnotation, OrphanedShorthandMarker,
-    OutOfOrder, ParseLyricsError, ParseLyricsErrorKind, RepeatedTimestamp, TabIndentation,
-    UnclosedCue, UnclosedRegion, UnopenedRegion,
+    EmptyCueBody, EmptyRegion, ExtraTextAfterControlMarker, InvalidTimestamp, MalformedHeader,
+    MalformedIndentation, MalformedTagLine, MissingMarker, MissingSeparatorAfterTimestamp,
+    NestedRegion, OrphanedAnnotation, OrphanedShorthandMarker, OutOfOrder, ParseLyricsError,
+    ParseLyricsErrorKind, RepeatedTimestamp, TabIndentation, UnclosedCue, UnclosedRegion,
+    UnopenedRegion,
 };
 use lyrics_core::line_markers_descriptor::{MarkerName, ReservedMarker};
 use lyrics_core::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
@@ -643,8 +643,7 @@ fn parse_marker_part(body: &str) -> Result<(MarkerName, &str), ParseLyricsErrorK
     let marker = marker
         .to_string()
         .pipe(MarkerName::new)
-        .map_err(InvalidCueMarker)
-        .map_err(ParseLyricsErrorKind::InvalidCueMarker)?;
+        .map_err(ParseLyricsErrorKind::InvalidMarkerName)?;
     if text.is_empty() {
         return marker
             .pipe(EmptyCueBody)
