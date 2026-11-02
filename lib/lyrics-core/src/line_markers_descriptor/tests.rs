@@ -1,6 +1,6 @@
 use super::{
     CssClassName, InvalidCssClassName, InvalidMarkerName, InvalidVoiceName, LineMarkersDesc,
-    MarkerName, ReservedMarker, VoiceName,
+    MarkerName, MarkerToken, ReservedMarker, VoiceName,
 };
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
@@ -202,18 +202,39 @@ fn marker_name_accepts_ordinary_tokens() {
 
 /// The rejected set is read off [`ReservedMarker`] rather than
 /// restated here, so a marker added to the enum is covered by this
-/// test without an edit. Both ways in are checked: the constructor
-/// hands the reserved marker straight back, and the conversion
-/// `serde` goes through wraps it.
+/// test without an edit.
 #[test]
 fn marker_name_rejects_every_reserved_marker() {
     for reserved in ReservedMarker::VARIANTS {
         eprintln!("CASE: {reserved:?}");
-        let source = reserved.as_ref().to_string();
-        assert_eq!(source.clone().pipe(MarkerName::new).unwrap_err(), *reserved);
         assert_eq!(
-            source.pipe(MarkerName::try_from).unwrap_err(),
+            reserved
+                .as_ref()
+                .to_string()
+                .pipe(MarkerName::new)
+                .unwrap_err(),
             InvalidMarkerName::Reserved(*reserved),
+        );
+    }
+}
+
+/// Classifying a token answers both questions at once, so every
+/// reserved marker lands on one side and an ordinary name on the
+/// other. The reserved set is read off [`ReservedMarker`] here too.
+#[test]
+fn a_token_is_classified_as_reserved_or_declarable() {
+    for reserved in ReservedMarker::VARIANTS {
+        eprintln!("CASE: {reserved:?}");
+        assert_eq!(
+            reserved.as_ref().to_string().pipe(MarkerToken::new),
+            MarkerToken::Reserved(*reserved),
+        );
+    }
+    for source in ["ttl", "cre", "MKA", "mk-b", "m+n", "名字"] {
+        eprintln!("CASE: {source:?}");
+        assert_eq!(
+            source.to_string().pipe(MarkerToken::new),
+            MarkerToken::Declared(marker_name(source)),
         );
     }
 }

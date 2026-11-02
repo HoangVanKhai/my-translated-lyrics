@@ -31,7 +31,7 @@ use error::{
     ParseLyricsErrorKind, RepeatedTimestamp, ReservedControlMarker, TabIndentation, UnclosedCue,
     UnclosedRegion, UnopenedRegion,
 };
-use lyrics_core::line_markers_descriptor::{MarkerName, ReservedMarker};
+use lyrics_core::line_markers_descriptor::{MarkerName, MarkerToken, ReservedMarker};
 use lyrics_core::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
 use pipe_trait::Pipe;
 use strum::EnumString;
@@ -640,11 +640,15 @@ fn parse_marker_part(body: &str) -> Result<(MarkerName, &str), ParseLyricsErrorK
         .map_err(String::from)
         .map_err(MissingMarker)
         .map_err(ParseLyricsErrorKind::MissingMarker)?;
-    let marker = marker
-        .to_string()
-        .pipe(MarkerName::new)
-        .map_err(ReservedControlMarker)
-        .map_err(ParseLyricsErrorKind::ReservedControlMarker)?;
+    let marker = match marker.to_string().pipe(MarkerToken::new) {
+        MarkerToken::Declared(name) => name,
+        MarkerToken::Reserved(reserved) => {
+            return reserved
+                .pipe(ReservedControlMarker)
+                .pipe(ParseLyricsErrorKind::ReservedControlMarker)
+                .pipe(Err);
+        }
+    };
     if text.is_empty() {
         return marker
             .pipe(EmptyCueBody)
