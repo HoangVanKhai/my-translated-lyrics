@@ -202,20 +202,31 @@ fn marker_name_accepts_ordinary_tokens() {
 
 /// The rejected set is read off [`ReservedMarker`] rather than
 /// restated here, so a marker added to the enum is covered by this
-/// test without an edit. Both ways in are checked: the constructor
-/// hands the reserved marker straight back, and the conversion
-/// `serde` goes through wraps it.
+/// test without an edit.
 #[test]
 fn marker_name_rejects_every_reserved_marker() {
     for reserved in ReservedMarker::VARIANTS {
         eprintln!("CASE: {reserved:?}");
-        let source = reserved.as_ref().to_string();
-        assert_eq!(source.clone().pipe(MarkerName::new).unwrap_err(), *reserved);
         assert_eq!(
-            source.pipe(MarkerName::try_from).unwrap_err(),
+            reserved
+                .as_ref()
+                .to_string()
+                .pipe(MarkerName::new)
+                .unwrap_err(),
             InvalidMarkerName::Reserved(*reserved),
         );
     }
+}
+
+/// The rule has one wording, held by the type that owns the rule, so a
+/// descriptor and the parser report a reserved marker the same way
+/// rather than each phrasing it for its own context.
+#[test]
+fn a_reserved_marker_name_states_the_rule_once() {
+    assert_eq!(
+        InvalidMarkerName::Reserved(ReservedMarker::Annotation).to_string(),
+        "marker name `ann` is reserved by the parser",
+    );
 }
 
 #[test]

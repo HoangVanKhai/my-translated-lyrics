@@ -12,7 +12,7 @@
 use super::{LineNumber, TIMESTAMP_PREFIX_WIDTH, TagName};
 use core::fmt;
 use derive_more::Display;
-use lyrics_core::line_markers_descriptor::{MarkerName, ReservedMarker};
+use lyrics_core::line_markers_descriptor::{InvalidMarkerName, MarkerName, ReservedMarker};
 use lyrics_core::timestamp::{TakeTimestampError, Timestamp};
 
 /// Payload for [`ParseLyricsErrorKind::InvalidTimestamp`]. Wraps the
@@ -48,10 +48,10 @@ pub struct OutOfOrder {
     pub next: Timestamp,
 }
 
-/// Payload for [`ParseLyricsErrorKind::ReservedControlMarker`].
+/// Payload for [`ParseLyricsErrorKind::InvalidCueMarker`]. Wraps the
+/// underlying [`InvalidMarkerName`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("marker `{_0}` is reserved by the parser and cannot name a cue")]
-pub struct ReservedControlMarker(pub ReservedMarker);
+pub struct InvalidCueMarker(pub InvalidMarkerName);
 
 /// Payload for [`ParseLyricsErrorKind::EmptyAnnotation`]. Raised when
 /// an annotation line carries no text after its `:` separator.
@@ -233,7 +233,7 @@ pub enum ParseLyricsErrorKind {
     OutOfOrder(OutOfOrder),
     CueTextReservedCharacter(CueTextReservedCharacter),
     MissingMarker(MissingMarker),
-    ReservedControlMarker(ReservedControlMarker),
+    InvalidCueMarker(InvalidCueMarker),
     EmptyCueBody(EmptyCueBody),
     EmptyAnnotation(EmptyAnnotation),
     OrphanedShorthandMarker(OrphanedShorthandMarker),

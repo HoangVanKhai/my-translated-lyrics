@@ -90,11 +90,10 @@ impl LineMarkersDesc {
 pub struct MarkerName(String);
 
 impl MarkerName {
-    /// Wraps `source` if and only if it names no [`ReservedMarker`],
-    /// handing back the marker it names when it does.
-    pub fn new(source: String) -> Result<MarkerName, ReservedMarker> {
+    /// Wraps `source` if and only if it names no [`ReservedMarker`].
+    pub fn new(source: String) -> Result<MarkerName, InvalidMarkerName> {
         match source.parse::<ReservedMarker>() {
-            Ok(reserved) => Err(reserved),
+            Ok(reserved) => Err(InvalidMarkerName::Reserved(reserved)),
             Err(strum::ParseError::VariantNotFound) => Ok(MarkerName(source)),
         }
     }
@@ -109,7 +108,7 @@ impl TryFrom<String> for MarkerName {
     type Error = InvalidMarkerName;
 
     fn try_from(source: String) -> Result<Self, Self::Error> {
-        MarkerName::new(source).map_err(InvalidMarkerName::Reserved)
+        MarkerName::new(source)
     }
 }
 
@@ -267,7 +266,7 @@ pub enum InvalidCssClassName {
 #[derive(Clone, Copy, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum InvalidMarkerName {
-    #[display("marker name `{_0}` is reserved by the parser and must not be declared")]
+    #[display("marker name `{_0}` is reserved by the parser")]
     Reserved(ReservedMarker),
 }
 
