@@ -10,7 +10,8 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 ///
 /// A reserved marker names no rendering role, so a song must not
 /// declare it in its `line-markers.toml`; [`MarkerName`] rejects
-/// every one of them at the deserialization boundary.
+/// every one of them, whether a descriptor declares it or a cue
+/// line names it.
 #[derive(AsRefStr, Clone, Copy, Debug, strum::Display, EnumString, Eq, PartialEq, VariantArray)]
 pub enum ReservedMarker {
     /// An annotation. Lines that start with this marker carry
@@ -81,7 +82,8 @@ impl LineMarkersDesc {
     }
 }
 
-/// A marker name that a song declares in its `line-markers.toml`.
+/// A marker name, whether a song declares it in its
+/// `line-markers.toml` or a cue line names it.
 ///
 /// The name must not be a [`ReservedMarker`]; no further shape is
 /// imposed.
