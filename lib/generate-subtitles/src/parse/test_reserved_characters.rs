@@ -3,8 +3,9 @@
 //! much as on a continuation line. A character the grammar leaves alone,
 //! such as the ampersand, reaches the cue unchanged.
 
+use crate::_test_utils::line_number;
 use crate::parse::error::{CueTextReservedCharacter, ParseLyricsError, ParseLyricsErrorKind};
-use crate::parse::{LineNumber, parse_lyrics};
+use crate::parse::parse_lyrics;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use text_block_macros::text_block_fnl;
@@ -23,7 +24,7 @@ fn rejects_angle_bracket_in_cue_opening_body() {
     assert_eq!(
         parse_lyrics(lt_input).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(1),
+            line_number: line_number(1),
             kind: '<'
                 .pipe(CueTextReservedCharacter)
                 .pipe(ParseLyricsErrorKind::CueTextReservedCharacter),
@@ -37,7 +38,7 @@ fn rejects_angle_bracket_in_cue_opening_body() {
     assert_eq!(
         parse_lyrics(gt_input).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(1),
+            line_number: line_number(1),
             kind: '>'
                 .pipe(CueTextReservedCharacter)
                 .pipe(ParseLyricsErrorKind::CueTextReservedCharacter),
@@ -60,7 +61,7 @@ fn rejects_angle_bracket_in_continuation_line() {
     assert_eq!(
         parse_lyrics(lt_input).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(2),
+            line_number: line_number(2),
             kind: '<'
                 .pipe(CueTextReservedCharacter)
                 .pipe(ParseLyricsErrorKind::CueTextReservedCharacter),
@@ -75,7 +76,7 @@ fn rejects_angle_bracket_in_continuation_line() {
     assert_eq!(
         parse_lyrics(gt_input).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(2),
+            line_number: line_number(2),
             kind: '>'
                 .pipe(CueTextReservedCharacter)
                 .pipe(ParseLyricsErrorKind::CueTextReservedCharacter),
@@ -98,7 +99,7 @@ fn marker_less_body_with_reserved_character_reports_reserved_character() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(1),
+            line_number: line_number(1),
             kind: '<'
                 .pipe(CueTextReservedCharacter)
                 .pipe(ParseLyricsErrorKind::CueTextReservedCharacter),
@@ -118,7 +119,7 @@ fn a_tag_written_inside_cue_text_is_still_a_reserved_character() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(1),
+            line_number: line_number(1),
             kind: '<'
                 .pipe(CueTextReservedCharacter)
                 .pipe(ParseLyricsErrorKind::CueTextReservedCharacter),

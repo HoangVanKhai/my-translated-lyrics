@@ -3,10 +3,11 @@
 //! extend them, and the end time each cue takes from the event that
 //! follows it.
 
+use crate::_test_utils::line_number;
 use crate::parse::error::{
     OrphanedShorthandMarker, ParseLyricsError, ParseLyricsErrorKind, UnclosedCue,
 };
-use crate::parse::{LineNumber, parse_lyrics};
+use crate::parse::parse_lyrics;
 use lyrics_core::timestamp::Timestamp;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
@@ -76,7 +77,7 @@ fn rejects_cue_without_following_event() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(1),
+            line_number: line_number(1),
             kind: Timestamp::new(0, 0, 0)
                 .unwrap()
                 .pipe(UnclosedCue)
@@ -103,7 +104,7 @@ fn an_unclosed_cue_names_the_line_that_opened_it() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(4),
+            line_number: line_number(4),
             kind: Timestamp::new(0, 2, 0)
                 .unwrap()
                 .pipe(UnclosedCue)
@@ -167,7 +168,7 @@ fn rejects_shorthand_marker_before_any_cue_is_open() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(1),
+            line_number: line_number(1),
             kind: "ttl: orphan"
                 .to_string()
                 .pipe(OrphanedShorthandMarker)

@@ -34,6 +34,7 @@ use error::{
 use lyrics_core::line_markers_descriptor::{MarkerName, ReservedMarker};
 use lyrics_core::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
 use pipe_trait::Pipe;
+use std::num::NonZeroUsize;
 use strum::EnumString;
 
 /// Indent width of a line that opens a new marker at the same start
@@ -45,18 +46,21 @@ const TIMESTAMP_PREFIX_WIDTH: usize = TIMESTAMP_STR_LEN + 1;
 /// characters, so it is not one of the indents or column widths the parser's
 /// diagnostics carry beside it.
 #[derive(Clone, Copy, Debug, Display, Eq, PartialEq)]
-pub struct LineNumber(usize);
+pub struct LineNumber(NonZeroUsize);
 
 impl LineNumber {
     /// The `number`-th line of a file, counting the first line as line one.
-    pub const fn new(number: usize) -> LineNumber {
+    /// The argument's type is what keeps line zero out of a diagnostic.
+    pub const fn new(number: NonZeroUsize) -> LineNumber {
         LineNumber(number)
     }
 
     /// The line `index` lines from the start of a file, counting the first
-    /// line as index zero.
+    /// line as index zero. A file cannot hold more lines than its byte
+    /// length, so the saturation at the last line a `usize` can name is
+    /// unreachable rather than a rounding of a real line number.
     pub const fn from_index(index: usize) -> LineNumber {
-        LineNumber(index + 1)
+        LineNumber(NonZeroUsize::MIN.saturating_add(index))
     }
 }
 

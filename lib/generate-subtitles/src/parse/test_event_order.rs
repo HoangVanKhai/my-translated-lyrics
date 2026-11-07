@@ -4,10 +4,11 @@
 //! application of the same rules to the cues inside an `<additive>`
 //! region.
 
+use crate::_test_utils::line_number;
 use crate::parse::error::{
     InvalidTimestamp, OutOfOrder, ParseLyricsError, ParseLyricsErrorKind, RepeatedTimestamp,
 };
-use crate::parse::{LineNumber, parse_lyrics};
+use crate::parse::parse_lyrics;
 use lyrics_core::timestamp::{SecondsOutOfRange, TakeTimestampError, Timestamp};
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
@@ -23,7 +24,7 @@ fn rejects_out_of_order_events() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(2),
+            line_number: line_number(2),
             kind: ParseLyricsErrorKind::OutOfOrder(OutOfOrder {
                 previous: Timestamp::new(0, 2, 0).unwrap(),
                 next: Timestamp::new(0, 1, 0).unwrap(),
@@ -42,7 +43,7 @@ fn rejects_repeated_timestamp_for_consecutive_cue_lines() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(2),
+            line_number: line_number(2),
             kind: Timestamp::new(0, 10, 80)
                 .unwrap()
                 .pipe(RepeatedTimestamp)
@@ -59,7 +60,7 @@ fn invalid_timestamp_preserves_line_and_cause() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(1),
+            line_number: line_number(1),
             kind: TakeTimestampError::SecondsOutOfRange(SecondsOutOfRange {
                 raw: "00:60.000".to_string(),
                 value: 60,
@@ -84,7 +85,7 @@ fn ordering_rules_still_apply_inside_a_region() {
     assert_eq!(
         parse_lyrics(out_of_order).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(3),
+            line_number: line_number(3),
             kind: ParseLyricsErrorKind::OutOfOrder(OutOfOrder {
                 previous: Timestamp::new(7, 22, 222).unwrap(),
                 next: Timestamp::new(7, 11, 111).unwrap(),
@@ -102,7 +103,7 @@ fn ordering_rules_still_apply_inside_a_region() {
     assert_eq!(
         parse_lyrics(repeated).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(3),
+            line_number: line_number(3),
             kind: Timestamp::new(7, 11, 111)
                 .unwrap()
                 .pipe(RepeatedTimestamp)

@@ -3,10 +3,11 @@
 //! an annotation takes of its own, and the positions in which an
 //! annotation is rejected.
 
+use crate::_test_utils::line_number;
 use crate::parse::error::{
     EmptyAnnotation, MissingMarker, OrphanedAnnotation, ParseLyricsError, ParseLyricsErrorKind,
 };
-use crate::parse::{LineNumber, parse_lyrics};
+use crate::parse::parse_lyrics;
 use lyrics_core::line_markers_descriptor::{InvalidMarkerName, ReservedMarker};
 use lyrics_core::timestamp::Timestamp;
 use pipe_trait::Pipe;
@@ -222,7 +223,7 @@ fn rejects_annotation_without_a_body() {
     assert_eq!(
         parse_lyrics(empty_body).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(2),
+            line_number: line_number(2),
             kind: ParseLyricsErrorKind::EmptyAnnotation(EmptyAnnotation),
         },
     );
@@ -239,7 +240,7 @@ fn rejects_annotation_without_a_body() {
     assert_eq!(
         parse_lyrics(no_separator).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(2),
+            line_number: line_number(2),
             kind: "ann"
                 .to_string()
                 .pipe(MissingMarker)
@@ -260,7 +261,7 @@ fn rejects_annotation_before_any_cue_is_open() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(1),
+            line_number: line_number(1),
             kind: "ann: orphan note"
                 .to_string()
                 .pipe(OrphanedAnnotation)
@@ -283,7 +284,7 @@ fn rejects_annotation_after_a_clear() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(3),
+            line_number: line_number(3),
             kind: "ann: stray note"
                 .to_string()
                 .pipe(OrphanedAnnotation)
@@ -305,7 +306,7 @@ fn annotation_marker_cannot_name_a_cue() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: LineNumber::new(2),
+            line_number: line_number(2),
             kind: ReservedMarker::Annotation
                 .pipe(InvalidMarkerName::Reserved)
                 .pipe(ParseLyricsErrorKind::InvalidMarkerName),

@@ -1,12 +1,12 @@
-//! Shared fixtures for the SRT and VTT renderer tests. Both renderers
-//! exercise the same format-agnostic scaffolding: a credits descriptor,
-//! a line-markers descriptor that triggers credit rendering, a
-//! [`MarkerName`] constructor wrapper, a [`Color`] constructor wrapper,
-//! and a [`StylePalette`]. Each renderer's test module pulls the pieces
-//! it needs from here rather than defining its own copy, so a change to
-//! a shared type is made in one place instead of two that can silently
-//! drift apart.
+//! Shared fixtures for the crate's tests: a credits descriptor, a
+//! line-markers descriptor that triggers credit rendering, a
+//! [`StylePalette`], and a constructor wrapper for each type whose
+//! own constructor is fallible. Every test module pulls the pieces it
+//! needs from here rather than defining its own copy, so a change to a
+//! shared type is made in one place instead of several that can
+//! silently drift apart.
 
+use crate::parse::LineNumber;
 use crate::styles::{Color, CreditPalette, Style, StylePalette};
 use lyrics_core::credits_descriptor::CreditsDesc;
 use lyrics_core::line_markers_descriptor::{LineMarkersDesc, MarkerName};
@@ -14,6 +14,7 @@ use lyrics_core::video_descriptor::Language;
 use maplit::btreemap;
 use pipe_trait::Pipe;
 use std::collections::BTreeMap;
+use std::num::NonZeroUsize;
 
 /// A credits descriptor declaring a single Vietnamese role, `role-a`.
 pub(crate) fn credits_with_one_role() -> CreditsDesc {
@@ -37,6 +38,13 @@ pub(crate) fn marker_name(name: impl Into<String>) -> MarkerName {
     name.into()
         .pipe(MarkerName::new)
         .expect("test fixture passes the marker-name validator")
+}
+
+/// Wraps a line number that the fixtures know to name a real line.
+pub(crate) fn line_number(number: usize) -> LineNumber {
+    NonZeroUsize::new(number)
+        .map(LineNumber::new)
+        .expect("test fixture names a line from one upwards")
 }
 
 /// Wraps a color string that the fixtures know to be valid.
