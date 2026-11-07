@@ -50,7 +50,6 @@ pub struct LineNumber(NonZeroUsize);
 
 impl LineNumber {
     /// The `number`-th line of a file, counting the first line as line one.
-    /// The argument's type is what keeps line zero out of a diagnostic.
     pub const fn new(number: NonZeroUsize) -> LineNumber {
         LineNumber(number)
     }
