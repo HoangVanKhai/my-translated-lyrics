@@ -2,17 +2,17 @@
 //!
 //! [`ParseLyricsError`] is the single error returned by the parser; it
 //! pairs the source line with a [`ParseLyricsErrorKind`], whose
-//! variants each wrap a dedicated payload struct that carries whatever
-//! context the diagnostic needs beyond that line. The payloads are
-//! split out from the parsing engine in [`super`] so the engine reads
-//! as one algorithm and the vocabulary of failures sits on its own.
+//! variants each carry whatever context the diagnostic needs beyond
+//! that line. The payloads are split out from the parsing engine in
+//! [`super`] so the engine reads as one algorithm and the vocabulary
+//! of failures sits on its own.
 //!
 //! [`parse_lyrics`]: super::parse_lyrics
 
 use super::{TIMESTAMP_PREFIX_WIDTH, TagName};
 use core::fmt;
 use derive_more::Display;
-use lyrics_core::line_markers_descriptor::ReservedMarker;
+use lyrics_core::line_markers_descriptor::{InvalidMarkerName, ReservedMarker};
 use lyrics_core::timestamp::{TakeTimestampError, Timestamp};
 
 /// Payload for [`ParseLyricsErrorKind::InvalidTimestamp`]. Wraps the
@@ -47,11 +47,6 @@ pub struct OutOfOrder {
     pub previous: Timestamp,
     pub next: Timestamp,
 }
-
-/// Payload for [`ParseLyricsErrorKind::ReservedControlMarker`].
-#[derive(Clone, Debug, Display, Eq, PartialEq)]
-#[display("marker `{_0}` is reserved by the parser and cannot name a cue")]
-pub struct ReservedControlMarker(pub ReservedMarker);
 
 /// Payload for [`ParseLyricsErrorKind::EmptyAnnotation`]. Raised when
 /// an annotation line carries no text after its `:` separator.
@@ -233,7 +228,7 @@ pub enum ParseLyricsErrorKind {
     OutOfOrder(OutOfOrder),
     CueTextReservedCharacter(CueTextReservedCharacter),
     MissingMarker(MissingMarker),
-    ReservedControlMarker(ReservedControlMarker),
+    InvalidMarkerName(InvalidMarkerName),
     EmptyCueBody(EmptyCueBody),
     EmptyAnnotation(EmptyAnnotation),
     OrphanedShorthandMarker(OrphanedShorthandMarker),

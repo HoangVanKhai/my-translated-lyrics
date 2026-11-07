@@ -211,6 +211,17 @@ fn marker_name_rejects_every_reserved_marker() {
     }
 }
 
+/// The rule has one wording, held by the type that owns the rule, so a
+/// descriptor and the lyrics parser report a reserved marker the same
+/// way rather than each phrasing it for its own context.
+#[test]
+fn a_reserved_marker_name_states_the_rule_once() {
+    assert_eq!(
+        InvalidMarkerName::Reserved(ReservedMarker::Annotation).to_string(),
+        "marker name `ann` is reserved by the parser",
+    );
+}
+
 #[test]
 fn marker_name_round_trips_through_toml() {
     let original = MarkerNameHolder {
