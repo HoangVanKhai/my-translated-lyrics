@@ -7,7 +7,7 @@ use itertools::Itertools;
 use lyrics_core::collections_descriptor::{
     COLLECTIONS_CONFIG_FILE_NAME, CollectionName, CollectionsDesc,
 };
-use lyrics_core::video_descriptor::{Language, VideoDesc, Visibility};
+use lyrics_core::video_descriptor::{Language, VideoDesc, VideoTitle, Visibility};
 use maplit::hashmap;
 use pipe_trait::Pipe;
 use rand::distr::Alphanumeric;
@@ -252,14 +252,22 @@ pub fn collection_name(name: impl Into<String>) -> CollectionName {
     name.into().pipe(CollectionName::try_from).unwrap()
 }
 
+/// Wraps a fixture video title, which is always of a valid shape.
+pub fn video_title(title: impl Into<String>) -> VideoTitle {
+    title.into().pipe(VideoTitle::try_from).unwrap()
+}
+
+/// A descriptor for one fixture video. Both names are taken as the types
+/// the descriptor declares, so a call that swapped the collection for the
+/// title would not compile.
 pub fn video_desc(
-    collection_name: String,
-    video_title: String,
+    collection: CollectionName,
+    title: VideoTitle,
     visibility: Visibility,
 ) -> VideoDesc {
     VideoDesc {
-        collection: collection_name.try_into().unwrap(),
-        video_title: video_title.try_into().unwrap(),
+        collection,
+        video_title: title,
         song_titles: hashmap! {
             Language::Vietnamese => "test".to_string(),
             Language::Chinese => "test".to_string(),
@@ -287,20 +295,20 @@ pub fn set_mtime(path: &Path, seconds_since_epoch: u64) {
 /// collections. Returns the separated and unified target files.
 pub fn prepare_outdated(
     env: &InstallLocalLyricsEnv,
-    collection_name: &str,
-    video_title: &str,
+    collection: &str,
+    title: &str,
     source_content: &str,
     target_content: &str,
 ) -> (PathBuf, PathBuf) {
     let desc = video_desc(
-        collection_name.to_owned(),
-        video_title.to_owned(),
+        collection_name(collection),
+        video_title(title),
         Visibility::default(),
     );
     env.add_source_entry("ExampleSong", &desc, &[("lyrics.vi.srt", source_content)]);
 
-    let separated = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
-    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
+    let separated = env.target_path(collection, &format!("{title}.vi.srt"));
+    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{title}.vi.srt"));
     write_file(&separated, target_content).unwrap();
     write_file(&unified, target_content).unwrap();
 

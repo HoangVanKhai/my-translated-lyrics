@@ -1,4 +1,5 @@
 use super::Screen;
+use crate::geometry::{Column, Height, Row, Width};
 use crate::style::Style;
 
 /// The first frame clears the terminal and draws the whole frame.
@@ -7,9 +8,9 @@ fn the_first_frame_clears_and_draws() {
     let mut screen = Screen::new();
     let mut output = Vec::new();
     screen
-        .begin(10, 1, &mut output)
+        .begin(Width::new(10), Height::new(1), &mut output)
         .unwrap()
-        .set_string(0, 0, "hello", Style::PLAIN);
+        .set_string(Column::LEFT, Row::TOP, "hello", Style::PLAIN);
     screen.flush(&mut output).unwrap();
     let rendered = String::from_utf8(output).unwrap();
     // The clear-screen sequence precedes the drawn text.
@@ -24,9 +25,9 @@ fn the_default_screen_draws_its_first_frame() {
     let mut screen = Screen::default();
     let mut output = Vec::new();
     screen
-        .begin(4, 1, &mut output)
+        .begin(Width::new(4), Height::new(1), &mut output)
         .unwrap()
-        .set_string(0, 0, "hi", Style::PLAIN);
+        .set_string(Column::LEFT, Row::TOP, "hi", Style::PLAIN);
     screen.flush(&mut output).unwrap();
     let rendered = String::from_utf8(output).unwrap();
     assert!(rendered.contains("\u{1b}[2J"), "{rendered:?}");
@@ -40,17 +41,17 @@ fn a_later_frame_sends_only_the_changed_cells() {
     let mut screen = Screen::new();
     let mut output = Vec::new();
     screen
-        .begin(10, 1, &mut output)
+        .begin(Width::new(10), Height::new(1), &mut output)
         .unwrap()
-        .set_string(0, 0, "world", Style::PLAIN);
+        .set_string(Column::LEFT, Row::TOP, "world", Style::PLAIN);
     screen.flush(&mut output).unwrap();
 
     output.clear();
     // "world" and "would" differ only in the third character.
     screen
-        .begin(10, 1, &mut output)
+        .begin(Width::new(10), Height::new(1), &mut output)
         .unwrap()
-        .set_string(0, 0, "would", Style::PLAIN);
+        .set_string(Column::LEFT, Row::TOP, "would", Style::PLAIN);
     screen.flush(&mut output).unwrap();
     let rendered = String::from_utf8(output).unwrap();
     // Only the changed character is sent, so the unchanged text is not redrawn
@@ -66,17 +67,17 @@ fn clearing_a_cell_overwrites_it_with_a_blank() {
     let mut screen = Screen::new();
     let mut output = Vec::new();
     screen
-        .begin(4, 1, &mut output)
+        .begin(Width::new(4), Height::new(1), &mut output)
         .unwrap()
-        .set_string(0, 0, "ab", Style::PLAIN);
+        .set_string(Column::LEFT, Row::TOP, "ab", Style::PLAIN);
     screen.flush(&mut output).unwrap();
 
     output.clear();
     // The second frame draws only "a", so the "b" cell becomes blank.
     screen
-        .begin(4, 1, &mut output)
+        .begin(Width::new(4), Height::new(1), &mut output)
         .unwrap()
-        .set_string(0, 0, "a", Style::PLAIN);
+        .set_string(Column::LEFT, Row::TOP, "a", Style::PLAIN);
     screen.flush(&mut output).unwrap();
     let rendered = String::from_utf8(output).unwrap();
     assert!(rendered.contains(' '), "{rendered:?}");
@@ -90,9 +91,9 @@ fn a_variation_selector_is_sent_with_its_glyph() {
     let mut screen = Screen::new();
     let mut output = Vec::new();
     screen
-        .begin(4, 1, &mut output)
+        .begin(Width::new(4), Height::new(1), &mut output)
         .unwrap()
-        .set_string(0, 0, "🔍︎", Style::PLAIN);
+        .set_string(Column::LEFT, Row::TOP, "🔍︎", Style::PLAIN);
     screen.flush(&mut output).unwrap();
     let rendered = String::from_utf8(output).unwrap();
     assert!(rendered.contains("🔍︎"), "{rendered:?}");

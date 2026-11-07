@@ -3,6 +3,7 @@
 //! cue scope a tag ends, and the `take` parsers that recognize a tag name
 //! and each of the two tag forms.
 
+use crate::_test_utils::line_number;
 use crate::parse::error::{
     MalformedTagLine, OrphanedShorthandMarker, ParseLyricsError, ParseLyricsErrorKind,
 };
@@ -43,7 +44,7 @@ fn rejects_every_near_miss_of_a_tag_line() {
         assert_eq!(
             parse_lyrics(&input).unwrap_err(),
             ParseLyricsError {
-                line_number: 1,
+                line_number: line_number(1),
                 kind: content
                     .to_string()
                     .pipe(MalformedTagLine)
@@ -102,7 +103,7 @@ fn a_tag_ends_the_scope_of_the_cue_above_it() {
     assert_eq!(
         parse_lyrics(after_opening_tag).unwrap_err(),
         ParseLyricsError {
-            line_number: 3,
+            line_number: line_number(3),
             kind: "cre: credit body"
                 .to_string()
                 .pipe(OrphanedShorthandMarker)
@@ -120,7 +121,7 @@ fn a_tag_ends_the_scope_of_the_cue_above_it() {
     assert_eq!(
         parse_lyrics(after_closing_tag).unwrap_err(),
         ParseLyricsError {
-            line_number: 4,
+            line_number: line_number(4),
             kind: "cre: credit body"
                 .to_string()
                 .pipe(OrphanedShorthandMarker)

@@ -3,6 +3,7 @@
 //! an annotation takes of its own, and the positions in which an
 //! annotation is rejected.
 
+use crate::_test_utils::line_number;
 use crate::parse::error::{
     EmptyAnnotation, MissingMarker, OrphanedAnnotation, ParseLyricsError, ParseLyricsErrorKind,
 };
@@ -31,7 +32,7 @@ fn annotation_attaches_to_the_part_above_it() {
     assert_eq!(cues[1].start, Timestamp::new(0, 2, 0).unwrap());
     assert_eq!(cues[1].end, Timestamp::new(0, 6, 0).unwrap());
     assert_eq!(cues[1].parts.len(), 1);
-    assert_eq!(cues[1].parts[0].marker, "LRC");
+    assert_eq!(cues[1].parts[0].marker.as_str(), "LRC");
     assert_eq!(cues[1].parts[0].text, "lyric body");
     assert_eq!(cues[1].parts[0].annotations, ["a note about the lyric"]);
 }
@@ -102,7 +103,7 @@ fn shorthand_marker_after_an_annotation_opens_a_new_part() {
     let cues = parse_lyrics(input).unwrap();
     assert_eq!(cues[0].parts.len(), 2);
     assert_eq!(cues[0].parts[0].annotations, ["a note about the title"]);
-    assert_eq!(cues[0].parts[1].marker, "cre");
+    assert_eq!(cues[0].parts[1].marker.as_str(), "cre");
     assert_eq!(cues[0].parts[1].text, "credit body\ncredit continuation");
     assert_eq!(cues[0].parts[1].annotations, Vec::<String>::new());
 }
@@ -121,7 +122,7 @@ fn annotation_attaches_to_a_shorthand_opened_part() {
     let cues = parse_lyrics(input).unwrap();
     assert_eq!(cues[0].parts.len(), 2);
     assert_eq!(cues[0].parts[0].annotations, Vec::<String>::new());
-    assert_eq!(cues[0].parts[1].marker, "cre");
+    assert_eq!(cues[0].parts[1].marker.as_str(), "cre");
     assert_eq!(cues[0].parts[1].annotations, ["a note about the credit"]);
 }
 
@@ -222,7 +223,7 @@ fn rejects_annotation_without_a_body() {
     assert_eq!(
         parse_lyrics(empty_body).unwrap_err(),
         ParseLyricsError {
-            line_number: 2,
+            line_number: line_number(2),
             kind: ParseLyricsErrorKind::EmptyAnnotation(EmptyAnnotation),
         },
     );
@@ -239,7 +240,7 @@ fn rejects_annotation_without_a_body() {
     assert_eq!(
         parse_lyrics(no_separator).unwrap_err(),
         ParseLyricsError {
-            line_number: 2,
+            line_number: line_number(2),
             kind: "ann"
                 .to_string()
                 .pipe(MissingMarker)
@@ -260,7 +261,7 @@ fn rejects_annotation_before_any_cue_is_open() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: 1,
+            line_number: line_number(1),
             kind: "ann: orphan note"
                 .to_string()
                 .pipe(OrphanedAnnotation)
@@ -283,7 +284,7 @@ fn rejects_annotation_after_a_clear() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: 3,
+            line_number: line_number(3),
             kind: "ann: stray note"
                 .to_string()
                 .pipe(OrphanedAnnotation)
@@ -305,7 +306,7 @@ fn annotation_marker_cannot_name_a_cue() {
     assert_eq!(
         parse_lyrics(input).unwrap_err(),
         ParseLyricsError {
-            line_number: 2,
+            line_number: line_number(2),
             kind: ReservedMarker::Annotation
                 .pipe(InvalidMarkerName::Reserved)
                 .pipe(ParseLyricsErrorKind::InvalidMarkerName),

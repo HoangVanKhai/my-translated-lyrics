@@ -1,5 +1,6 @@
 //! The in-memory grid of character cells a frame is drawn into.
 
+use crate::geometry::{Column, Height, Row, Width};
 use crate::style::Style;
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
@@ -32,14 +33,14 @@ pub(crate) struct Glyph {
 /// The display width of a glyph. A variation selector can widen a symbol to its
 /// emoji form, but terminals keep the base width even for a text-form selector
 /// (they change the color, not the width), so the wider of the two is used.
-pub(crate) fn glyph_width(char: char, variation_selector: Option<char>) -> u16 {
-    let base = char.width().unwrap_or(0) as u16;
+pub(crate) fn glyph_width(char: char, variation_selector: Option<char>) -> Width {
+    let base = Width::new(char.width().unwrap_or(0) as u16);
     match variation_selector {
         Some(selector) => {
             let mut grapheme = String::with_capacity(char.len_utf8() + selector.len_utf8());
             grapheme.push(char);
             grapheme.push(selector);
-            base.max(grapheme.width() as u16)
+            base.max(Width::new(grapheme.width() as u16))
         }
         None => base,
     }
@@ -53,13 +54,13 @@ fn is_variation_selector(char: char) -> bool {
 
 /// A grid of character cells, in row-major order.
 pub struct Buffer {
-    pub(crate) width: u16,
-    pub(crate) height: u16,
+    pub(crate) width: Width,
+    pub(crate) height: Height,
     pub(crate) cells: Vec<Cell>,
 }
 
 impl Buffer {
-    pub fn new(width: u16, height: u16) -> Self {
+    pub fn new(width: Width, height: Height) -> Self {
         let count = usize::from(width) * usize::from(height);
         Buffer {
             width,
@@ -73,8 +74,8 @@ impl Buffer {
         self.cells.iter_mut().for_each(|cell| *cell = Cell::Empty);
     }
 
-    fn index(&self, col: u16, row: u16) -> Option<usize> {
-        (col < self.width && row < self.height)
+    fn index(&self, col: Column, row: Row) -> Option<usize> {
+        (self.width.contains(col) && self.height.contains(row))
             .then(|| usize::from(row) * usize::from(self.width) + usize::from(col))
     }
 
@@ -83,19 +84,19 @@ impl Buffer {
     /// written when the glyph would run past the right edge.
     fn place_glyph(
         &mut self,
-        col: u16,
-        row: u16,
+        col: Column,
+        row: Row,
         char: char,
         variation_selector: Option<char>,
         style: Style,
-    ) -> u16 {
+    ) -> Width {
         let width = glyph_width(char, variation_selector);
         // A zero-width glyph, such as a combining mark or a control character,
         // has no column of its own, matching how `set_string` skips it.
-        if width == 0 {
-            return 0;
+        if width == Width::ZERO {
+            return Width::ZERO;
         }
-        if usize::from(col) + usize::from(width) <= usize::from(self.width)
+        if self.width.fits(col, width)
             && let Some(index) = self.index(col, row)
         {
             self.cells[index] = Cell::Glyph(Glyph {
@@ -103,8 +104,8 @@ impl Buffer {
                 variation_selector,
                 style,
             });
-            for offset in 1..width {
-                if let Some(trailing) = self.index(col + offset, row) {
+            for offset in 1..width.get() {
+                if let Some(trailing) = self.index(col + Width::new(offset), row) {
                     self.cells[trailing] = Cell::Trailing;
                 }
             }
@@ -114,7 +115,7 @@ impl Buffer {
 
     /// Writes `char` at `col`, `row` with `style`. Returns the number of columns
     /// the glyph spans, so a caller laying out a line can advance past it.
-    pub fn set_glyph(&mut self, col: u16, row: u16, char: char, style: Style) -> u16 {
+    pub fn set_glyph(&mut self, col: Column, row: Row, char: char, style: Style) -> Width {
         self.place_glyph(col, row, char, None, style)
     }
 
@@ -123,7 +124,7 @@ impl Buffer {
     /// selector is kept with the glyph it follows. Returns the column just after
     /// the text, so a caller can place the next segment without measuring widths
     /// itself.
-    pub fn set_string(&mut self, col: u16, row: u16, text: &str, style: Style) -> u16 {
+    pub fn set_string(&mut self, col: Column, row: Row, text: &str, style: Style) -> Column {
         let mut cursor = col;
         let mut chars = text.chars().peekable();
         while let Some(char) = chars.next() {
@@ -134,8 +135,9 @@ impl Buffer {
             }
             let variation_selector = chars.next_if(|&next| is_variation_selector(next));
             // Stop rather than write a wide glyph past the right edge.
-            if usize::from(cursor) + usize::from(glyph_width(char, variation_selector))
-                > usize::from(self.width)
+            if !self
+                .width
+                .fits(cursor, glyph_width(char, variation_selector))
             {
                 break;
             }
@@ -146,8 +148,9 @@ impl Buffer {
 
     /// The text of a row, with empty and trailing cells shown as blanks, to
     /// read back what a frame drew without inspecting the terminal.
-    pub fn row_text(&self, row: u16) -> String {
-        (0..self.width)
+    pub fn row_text(&self, row: Row) -> String {
+        self.width
+            .columns()
             .filter_map(|col| self.index(col, row))
             .map(|index| match self.cells[index] {
                 Cell::Glyph(glyph) => glyph.char,
@@ -158,7 +161,7 @@ impl Buffer {
 
     /// The style of the glyph at `col`, `row`, or the default style for an
     /// empty or trailing cell.
-    pub fn style_at(&self, col: u16, row: u16) -> Style {
+    pub fn style_at(&self, col: Column, row: Row) -> Style {
         match self.index(col, row).map(|index| self.cells[index]) {
             Some(Cell::Glyph(glyph)) => glyph.style,
             _ => Style::PLAIN,

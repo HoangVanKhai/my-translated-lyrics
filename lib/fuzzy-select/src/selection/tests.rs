@@ -1,4 +1,4 @@
-use crate::selection::{Searchable, Selector};
+use crate::selection::{FilteredIndex, ItemIndex, Searchable, Selector};
 use pretty_assertions::assert_eq;
 
 struct Row {
@@ -11,6 +11,11 @@ impl Searchable for Row {
     fn search_keys(&self) -> Vec<&str> {
         vec![self.en, self.vi, self.zh]
     }
+}
+
+/// Each number in `indices` as the item index it names.
+fn items<const LEN: usize>(indices: [usize; LEN]) -> [ItemIndex; LEN] {
+    indices.map(ItemIndex::new)
 }
 
 // Each placeholder title says the same thing in every language:
@@ -42,8 +47,8 @@ fn sample() -> Vec<Row> {
 fn empty_query_shows_every_row() {
     let rows = sample();
     let selector = Selector::new(&rows);
-    assert_eq!(selector.filtered(), &[0, 1, 2]);
-    assert_eq!(selector.cursor(), 0);
+    assert_eq!(selector.filtered(), &items([0, 1, 2]));
+    assert_eq!(selector.cursor(), FilteredIndex::FIRST);
 }
 
 #[test]
@@ -55,8 +60,8 @@ fn typing_filters_by_substring_across_all_columns() {
     }
     // "ví" appears in the Vietnamese title of the first row only, so a
     // match comes from a column other than the English title.
-    assert_eq!(selector.filtered(), &[0]);
-    assert_eq!(selector.selected_index(), Some(0));
+    assert_eq!(selector.filtered(), &items([0]));
+    assert_eq!(selector.selected_index(), Some(ItemIndex::new(0)));
     assert_eq!(rows[0].en, "Example Song");
 }
 
@@ -68,7 +73,7 @@ fn filtering_ignores_diacritics() {
     for char in "vi du".chars() {
         selector.push_char(char);
     }
-    assert_eq!(selector.filtered(), &[0]);
+    assert_eq!(selector.filtered(), &items([0]));
 }
 
 #[test]
@@ -79,7 +84,7 @@ fn filtering_matches_a_non_english_column() {
         selector.push_char(char);
     }
     // The Vietnamese titles of the second and third rows both contain it.
-    assert_eq!(selector.filtered(), &[1, 2]);
+    assert_eq!(selector.filtered(), &items([1, 2]));
 }
 
 #[test]
@@ -89,12 +94,12 @@ fn backspacing_restores_rows() {
     for char in "example".chars() {
         selector.push_char(char);
     }
-    assert_eq!(selector.filtered(), &[0]);
+    assert_eq!(selector.filtered(), &items([0]));
     for _ in 0.."example".len() {
         selector.pop_char();
     }
     assert_eq!(selector.query(), "");
-    assert_eq!(selector.filtered(), &[0, 1, 2]);
+    assert_eq!(selector.filtered(), &items([0, 1, 2]));
 }
 
 #[test]
@@ -102,14 +107,14 @@ fn cursor_moves_within_bounds() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
     selector.move_up(); // already at the top, stays put
-    assert_eq!(selector.cursor(), 0);
+    assert_eq!(selector.cursor(), FilteredIndex::FIRST);
     selector.move_down();
     selector.move_down();
-    assert_eq!(selector.cursor(), 2);
+    assert_eq!(selector.cursor(), FilteredIndex::new(2));
     selector.move_down(); // already at the bottom, stays put
-    assert_eq!(selector.cursor(), 2);
+    assert_eq!(selector.cursor(), FilteredIndex::new(2));
     selector.move_up();
-    assert_eq!(selector.cursor(), 1);
+    assert_eq!(selector.cursor(), FilteredIndex::new(1));
 }
 
 #[test]
@@ -118,11 +123,11 @@ fn refiltering_resets_the_cursor_to_the_top() {
     let mut selector = Selector::new(&rows);
     selector.move_down();
     selector.move_down();
-    assert_eq!(selector.cursor(), 2);
+    assert_eq!(selector.cursor(), FilteredIndex::new(2));
     // Every English title contains an "e", so the rows stay visible and
     // only the cursor resets.
     selector.push_char('e');
-    assert_eq!(selector.cursor(), 0);
+    assert_eq!(selector.cursor(), FilteredIndex::FIRST);
 }
 
 #[test]
@@ -142,9 +147,9 @@ fn no_match_leaves_nothing_selected() {
 fn focusing_a_visible_item_moves_the_cursor_onto_it() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
-    selector.focus(2);
-    assert_eq!(selector.cursor(), 2);
-    assert_eq!(selector.selected_index(), Some(2));
+    selector.focus(ItemIndex::new(2));
+    assert_eq!(selector.cursor(), FilteredIndex::new(2));
+    assert_eq!(selector.selected_index(), Some(ItemIndex::new(2)));
 }
 
 /// Focusing an item that the query has filtered out leaves the cursor put.
@@ -156,8 +161,23 @@ fn focusing_a_filtered_out_item_is_a_no_op() {
         selector.push_char(char);
     }
     // Only the first row matches "ví", so row 2 cannot be focused.
-    selector.focus(2);
-    assert_eq!(selector.selected_index(), Some(0));
+    selector.focus(ItemIndex::new(2));
+    assert_eq!(selector.selected_index(), Some(ItemIndex::new(0)));
+}
+
+/// Once an order is applied, a visible row and the item it shows no longer
+/// share a number, and `item_at` is what tells the two spaces apart.
+#[test]
+fn a_visible_row_and_the_item_it_shows_diverge_under_an_order() {
+    let rows = sample();
+    let mut selector = Selector::new(&rows);
+    // Descending by English title puts the last item on the first row.
+    selector.set_order(|left, right| right.en.cmp(left.en));
+    let first = FilteredIndex::FIRST;
+    assert_eq!(selector.item_at(first), Some(ItemIndex::new(2)));
+    assert_eq!(selector.item_at(first.down_by(2)), Some(ItemIndex::new(0)));
+    // A row past the end of the filtered view shows no item at all.
+    assert_eq!(selector.item_at(first.down_by(3)), None);
 }
 
 /// Setting the whole query filters the same as typing it would.
@@ -166,7 +186,7 @@ fn setting_the_query_filters_like_typing() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
     selector.set_query("example".to_owned());
-    assert_eq!(selector.filtered(), &[0]);
+    assert_eq!(selector.filtered(), &items([0]));
 }
 
 /// Setting an order sorts the visible rows by it.
@@ -176,7 +196,7 @@ fn set_order_sorts_the_visible_rows() {
     let mut selector = Selector::new(&rows);
     // Descending by English title: "Sample Tune", "Sample Song", "Example Song".
     selector.set_order(|left, right| right.en.cmp(left.en));
-    assert_eq!(selector.filtered(), &[2, 1, 0]);
+    assert_eq!(selector.filtered(), &items([2, 1, 0]));
 }
 
 /// The order is kept when the query refilters the rows.
@@ -187,5 +207,5 @@ fn the_order_persists_across_a_refilter() {
     selector.set_order(|left, right| right.en.cmp(left.en));
     // "Sample" matches the second and third rows, which stay descending.
     selector.set_query("Sample".to_owned());
-    assert_eq!(selector.filtered(), &[2, 1]);
+    assert_eq!(selector.filtered(), &items([2, 1]));
 }
