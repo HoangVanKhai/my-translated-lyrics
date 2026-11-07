@@ -49,17 +49,18 @@ const TIMESTAMP_PREFIX_WIDTH: usize = TIMESTAMP_STR_LEN + 1;
 pub struct LineNumber(NonZeroUsize);
 
 impl LineNumber {
-    /// The `number`-th line of a file, counting the first line as line one.
-    pub const fn new(number: NonZeroUsize) -> LineNumber {
+    /// Wraps `number`, the position of a line in a file counting from one.
+    pub fn new(number: NonZeroUsize) -> LineNumber {
         LineNumber(number)
     }
 
-    /// The line `index` lines from the start of a file, counting the first
-    /// line as index zero. A file cannot hold more lines than its byte
-    /// length, so the saturation at the last line a `usize` can name is
-    /// unreachable rather than a rounding of a real line number.
-    pub const fn from_index(index: usize) -> LineNumber {
-        LineNumber(NonZeroUsize::MIN.saturating_add(index))
+    /// Converts `index`, the position of a line counting from zero, into the
+    /// number naming that same line, saturating at the last line a `usize`
+    /// can name rather than wrapping.
+    pub fn from_index(index: usize) -> LineNumber {
+        // A file holds no more lines than it has bytes, so the saturation is
+        // unreachable rather than a rounding of a real line number.
+        NonZeroUsize::MIN.saturating_add(index).pipe(LineNumber)
     }
 }
 
