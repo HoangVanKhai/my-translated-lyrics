@@ -94,7 +94,7 @@ impl From<Row> for usize {
     }
 }
 
-/// A number of columns: the width of a grid, or the span of a glyph or a run
+/// A span of columns: the width of a grid, or the extent of a glyph or a run
 /// of text.
 #[derive(Clone, Copy, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Width(u16);
@@ -177,7 +177,7 @@ impl From<Width> for usize {
     }
 }
 
-/// A number of rows: the height of a grid.
+/// A span of rows: the height of a grid, or the distance between two rows.
 #[derive(Clone, Copy, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Height(u16);
 
