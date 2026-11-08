@@ -308,8 +308,8 @@ fn bracketed_from_str_accepts_a_single_span() {
     assert_eq!(parsed.as_str(), "【label-a】");
 }
 
-/// Whatever `take` would report as `None` maps to `ShapeMismatch`
-/// for `FromStr`: empty input, no opening bracket, nested
+/// Every input that `Bracketed::take` rejects maps to
+/// `ShapeMismatch`: empty input, no opening bracket, a nested
 /// bracket before the matching close, or end of input before
 /// the close.
 #[test]
@@ -323,8 +323,7 @@ fn bracketed_from_str_rejects_shape_mismatch() {
 }
 
 /// The first character past the closing bracket is what the
-/// diagnostic reports; nothing else is needed to describe the
-/// failure.
+/// diagnostic reports.
 #[test]
 fn bracketed_from_str_rejects_unexpected_character_after_span() {
     assert_eq!(

@@ -3,9 +3,7 @@
 //! [`ParseLyricsError`] is the single error returned by the parser; it
 //! pairs the source line with a [`ParseLyricsErrorKind`], whose
 //! variants each carry whatever context the diagnostic needs beyond
-//! that line. The payloads are split out from the parsing engine in
-//! [`super`] so the engine reads as one algorithm and the vocabulary
-//! of failures sits on its own.
+//! that line.
 //!
 //! [`parse_lyrics`]: super::parse_lyrics
 
@@ -15,8 +13,7 @@ use derive_more::Display;
 use lyrics_core::line_markers_descriptor::{InvalidMarkerName, ReservedMarker};
 use lyrics_core::timestamp::{TakeTimestampError, Timestamp};
 
-/// Payload for [`ParseLyricsErrorKind::InvalidTimestamp`]. Wraps the
-/// underlying [`TakeTimestampError`].
+/// Payload for [`ParseLyricsErrorKind::InvalidTimestamp`].
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 pub struct InvalidTimestamp(pub TakeTimestampError);
 
@@ -77,8 +74,7 @@ pub struct UnopenedRegion;
 
 /// Payload for [`AdditiveRegionError::Unclosed`]. The location the
 /// parser reports for this failure is the `<additive>` line that
-/// opened the region rather than the end of the file, because that is
-/// where the author has to act.
+/// opened the region rather than the end of the file.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("unclosed `<{tag}>`", tag = TagName::Additive)]
 pub struct UnclosedRegion;
@@ -105,9 +101,7 @@ pub struct ControlMarkerInRegion {
 pub struct EmptyCueBody(pub String);
 
 /// Payload for [`ParseLyricsErrorKind::MalformedHeader`]. Raised when
-/// a column-zero line does not begin with an `MM:SS.mmm` timestamp;
-/// every column-zero line in the source format is expected to open
-/// either a fresh cue or a `clr` / `eov` control event.
+/// a column-zero line does not begin with an `MM:SS.mmm` timestamp.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("header line {_0:?} does not begin with an `MM:SS.mmm` timestamp")]
 pub struct MalformedHeader(pub String);
@@ -121,17 +115,16 @@ pub struct MalformedHeader(pub String);
 pub struct OrphanedShorthandMarker(pub String);
 
 /// Payload for [`ParseLyricsErrorKind::OrphanedAnnotation`]. Raised
-/// when an annotation line appears where no cue is open, whether
-/// before the first cue or after a `clr` has closed one.
+/// when an annotation line appears where no cue is open.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("annotation line {_0:?} appears where no cue is open")]
 pub struct OrphanedAnnotation(pub String);
 
 /// Payload for [`ParseLyricsErrorKind::MalformedIndentation`]. Lists
-/// the observed indent and the two values the parser would have
+/// the observed indent and the indents the parser would have
 /// accepted at this point in the input. `continuation_indent` is
-/// `None` when no part is currently open (so a continuation could
-/// not be valid here regardless of indent).
+/// `None` when no part is currently open, so a continuation could
+/// not be valid here regardless of indent.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct MalformedIndentation {
     pub actual: usize,
@@ -155,11 +148,7 @@ impl fmt::Display for MalformedIndentation {
 }
 
 /// Payload for [`ParseLyricsErrorKind::RepeatedTimestamp`]. Raised
-/// when two consecutive timestamped header lines share a start time;
-/// the column-`TIMESTAMP_PREFIX_WIDTH` shorthand is the canonical
-/// way to attach multiple markers to a single timestamp, and a
-/// repeated timestamp form would create two separate cues that
-/// the renderer would emit as overlapping subtitle blocks.
+/// when two consecutive timestamped header lines share a start time.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "timestamp {_0} repeats the start time of the immediately previous event; \
@@ -170,11 +159,7 @@ pub struct RepeatedTimestamp(pub Timestamp);
 /// Payload for [`ParseLyricsErrorKind::TabIndentation`].
 ///
 /// The parser requires every line's leading whitespace to consist
-/// of ASCII spaces only. Tabs would render at different visual
-/// widths under different terminal settings, which interacts
-/// poorly with the column-exact indentation rules the format
-/// uses to distinguish a continuation of the prior marker from a
-/// new marker at the same timestamp.
+/// of ASCII spaces only.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("indentation contains a tab; only ASCII spaces are allowed in leading whitespace")]
 pub struct TabIndentation;
@@ -195,8 +180,7 @@ pub struct CueTextReservedCharacter(pub char);
 /// Payload for [`ParseLyricsErrorKind::UnclosedCue`]. Carries the
 /// start timestamp of the cue that has no following event to
 /// close it. The location the parser reports for this failure is
-/// the header line that opened the cue, since the file has already
-/// ended by the time the failure is detected.
+/// the header line that opened the cue.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display("cue at {_0} has no following cue or `clr`")]
 pub struct UnclosedCue(pub Timestamp);

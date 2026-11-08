@@ -86,9 +86,8 @@ fn role_only_header_and_role_less_lines_render() {
 /// through HTML-entity escape on the cue-tag side. The WebVTT
 /// cue-text parser decodes `&amp;` back to `&`, but the CSS
 /// selector side does not, so an HTML-escaped cue tag falls
-/// out of step with its STYLE-block selector. Both sides now emit the raw
-/// `&` character verbatim; the CSS-side companion lives in
-/// `render_vtt/voice_span/tests.rs`.
+/// out of step with its STYLE-block selector. Both sides emit the raw
+/// `&` character verbatim.
 #[test]
 fn voice_name_containing_ampersand_is_emitted_verbatim_in_cue_tag() {
     let voice_name = "Alpha & Beta"

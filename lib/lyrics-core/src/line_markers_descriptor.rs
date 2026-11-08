@@ -10,13 +10,12 @@ pub const LINE_MARKERS_CONFIG_FILE_NAME: &str = "line-markers.toml";
 /// A marker whose meaning the parser fixes.
 ///
 /// A reserved marker names no rendering role, so a song must not
-/// declare it in its `line-markers.toml`; [`MarkerName`] rejects
-/// every one of them at the deserialization boundary.
+/// declare it in its `line-markers.toml`.
 #[derive(AsRefStr, Clone, Copy, Debug, strum::Display, EnumString, Eq, PartialEq, VariantArray)]
 pub enum ReservedMarker {
     /// An annotation. Lines that start with this marker carry
     /// commentary about the cue part above them. They take no
-    /// timestamp of their own and are ignored by both renderers.
+    /// timestamp of their own.
     #[strum(serialize = "ann")]
     Annotation,
     /// Cue clearing. Lines that start with this marker cause the
@@ -76,14 +75,13 @@ pub struct LineMarkersDesc {
 }
 
 impl LineMarkersDesc {
-    /// Whether `marker` opens a credit block in this song. The
-    /// argument is the plain token a parsed cue part carries.
+    /// Whether `marker` opens a credit block in this song.
     pub fn is_credit(&self, marker: &str) -> bool {
         self.credits.iter().any(|credit| credit.as_str() == marker)
     }
 }
 
-/// A marker name that a song declares in its `line-markers.toml`.
+/// A marker name that a song may use.
 ///
 /// The name must not be a [`ReservedMarker`]; no further shape is
 /// imposed.
@@ -200,14 +198,6 @@ fn is_class_name_continue(char: char) -> bool {
 /// and embedded spaces, the three categories that already appear in
 /// `sources/*/line-markers.toml`.
 ///
-/// [`VoiceName`] deliberately does not implement `Display`. The two
-/// destination contexts, the WebVTT cue tag and the CSS attribute
-/// selector, have incompatible quoting rules, and a single
-/// `Display` impl could only be correct in one of them. Rendering
-/// therefore goes through context-specific wrappers in the WebVTT
-/// renderer that name the destination grammar; each wrapper
-/// produces one of the two output shapes so the call site cannot
-/// cross them up.
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(try_from = "String", into = "String")]
 pub struct VoiceName(String);

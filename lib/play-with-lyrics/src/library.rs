@@ -94,8 +94,7 @@ pub struct VideoLookupError {
     pub kind: VideoLookupErrorKind,
 }
 
-/// The reason a video file could not be uniquely located: either no file
-/// matched, or several did.
+/// The reason a video file could not be uniquely located.
 #[derive(Debug, Display, Eq, PartialEq)]
 pub enum VideoLookupErrorKind {
     /// No file named `{video_title}.{ext}` with a known video extension

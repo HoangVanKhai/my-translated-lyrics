@@ -1,7 +1,6 @@
 //! The text attributes a cell is drawn with.
 
-/// The text attributes a cell is drawn with, as a small set of flags so a cell
-/// stays cheap to store and compare.
+/// The text attributes a cell is drawn with.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct Style(u8);
 
@@ -13,8 +12,7 @@ impl Style {
     pub const REVERSE: Style = Style(1 << 3);
     pub const ITALIC: Style = Style(1 << 4);
 
-    /// The union of two attribute sets, for combining a base style with an
-    /// extra attribute such as an underline on a matched character.
+    /// The union of two attribute sets.
     pub fn with(self, other: Style) -> Style {
         Style(self.0 | other.0)
     }

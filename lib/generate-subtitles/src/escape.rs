@@ -2,11 +2,7 @@
 //!
 //! [`Escaped`] is an HTML-style escape for characters that would
 //! otherwise terminate a WebVTT or SRT tag (`<`, `>`) or open an HTML
-//! entity reference (`&`). WebVTT formally specifies `&lt;`, `&gt;`,
-//! and `&amp;` as the only escape sequences that appear inside cue
-//! text. SRT has no formal spec, but every mainstream player accepts
-//! the same HTML entity references in practice, so one helper covers
-//! both renderers.
+//! entity reference (`&`).
 
 use core::fmt::{self, Write};
 

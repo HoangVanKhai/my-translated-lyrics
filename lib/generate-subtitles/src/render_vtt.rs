@@ -4,8 +4,8 @@
 //! `STYLE` block, followed by the cues themselves. The style block
 //! emits a rule for every voice and named class declared in the
 //! line-markers descriptor, in the order they appear in the `markers`
-//! list. The three built-in credit classes, `creditRole`,
-//! `creditName`, and `creditSpecial`, are emitted conditionally based
+//! list. The built-in credit classes `creditRole`, `creditName`, and
+//! `creditSpecial` are emitted conditionally based
 //! on what the cue bodies actually reference: songs without a credits
 //! marker omit the role and name rules, and songs whose credits do
 //! not use any bracketed highlight omit the `creditSpecial` rule.
@@ -95,16 +95,7 @@ pub fn render_vtt(
 }
 
 /// Flags that record which built-in credit classes a cue (or, when
-/// merged across cues, a whole song) actually used. Voice and class
-/// rules are always emitted for every entry in the line-markers
-/// descriptor; the credit styles are emitted conditionally because
-/// the `creditSpecial` class, in particular, appears only when a
-/// song's credits list includes a bracketed highlight (`【...】`,
-/// `[...]`, `(...)`, or `（...）`).
-///
-/// The same shape is used at two levels: each [`CueRendering`] carries
-/// the per-cue flags, and [`render_vtt`] keeps a song-level
-/// accumulator that folds the per-cue flags in via `|=`.
+/// merged across cues, a whole song) actually used.
 #[derive(BitOrAssign, Clone, Copy, Debug, Default)]
 struct Features {
     used_credit_role: bool,
@@ -330,15 +321,8 @@ fn write_style_block(
 /// `Display` wrapper that renders the CSS attribute selector
 /// `v[voice="{name}"]` for a [`VoiceName`].
 ///
-/// [`VoiceName`] does not implement `Display` on its own because the
-/// type is consumed in two contexts whose quoting rules disagree
-/// (the WebVTT cue tag and the CSS attribute selector), and a
-/// single `Display` impl could only be correct in one. This wrapper
-/// is the CSS-side helper: it produces the shape that goes inside
-/// `::cue(...)` in the STYLE block. The cue-tag side is emitted
-/// directly by [`render_cue_part`], which writes `<v {name}>...</v>`
-/// into the per-cue output buffer rather than constructing an
-/// intermediate value.
+/// The result is the shape that goes inside `::cue(...)` in the STYLE
+/// block.
 ///
 /// [`VoiceName::new`] rejects `<`, `>`, `"`, `\`, `U+2028`,
 /// `U+2029`, and any control character. Those characters are

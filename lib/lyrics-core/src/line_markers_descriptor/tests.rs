@@ -211,9 +211,7 @@ fn marker_name_rejects_every_reserved_marker() {
     }
 }
 
-/// The rule has one wording, held by the type that owns the rule, so a
-/// descriptor and the lyrics parser report a reserved marker the same
-/// way rather than each phrasing it for its own context.
+/// A reserved marker name reports the rule in one fixed wording.
 #[test]
 fn a_reserved_marker_name_states_the_rule_once() {
     assert_eq!(

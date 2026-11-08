@@ -1,8 +1,7 @@
 //! Declarative presentation palette.
 //!
 //! Every song shares a single palette for its class and voice markers.
-//! Rather than duplicate that palette in every `line-markers.toml`, or
-//! hardcode it in Rust, both subtitle renderers consult a
+//! Both subtitle renderers consult a
 //! [`StylePalette`] loaded from `styles.toml` at startup to map a class
 //! name or a voice marker to its color and text decoration.
 //!
@@ -24,7 +23,7 @@ pub const STYLE_PALETTE_FILE_NAME: &str = "styles.toml";
 #[derive(Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct StylePalette {
-    /// Colors for the three built-in credit classes.
+    /// Colors for the built-in credit classes.
     pub credit: CreditPalette,
     /// Style for each voice marker, keyed by the marker token used in
     /// the `[voices]` section of a song's `line-markers.toml`, such as
@@ -58,8 +57,8 @@ impl StylePalette {
     }
 }
 
-/// Colors for the three built-in credit classes. Unlike voice and class
-/// styles, credit cells are color-only and carry no decoration.
+/// Colors for the built-in credit classes. Credit cells are
+/// color-only and carry no decoration.
 #[derive(Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct CreditPalette {
@@ -88,9 +87,7 @@ pub struct Style {
 }
 
 impl Style {
-    /// A color-only style, with neither italics nor bold. Used to feed
-    /// the credit-cell colors through the same rendering helpers as the
-    /// voice and class styles.
+    /// A color-only style, with neither italics nor bold.
     pub(crate) fn color_only(color: Color) -> Self {
         Style {
             color: Some(color),
@@ -162,7 +159,8 @@ pub enum InvalidColor {
     ForbiddenCharacter(char),
 }
 
-/// A marker declared by a song but missing from the palette.
+/// A voice marker or class name that a song declares but the palette
+/// does not define.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum MissingStyle {

@@ -193,8 +193,7 @@ where
         .map_err(Termination::Failed)
 }
 
-/// Joins the displayed forms of `items` with commas, for an error message
-/// that lists the available choices.
+/// Joins the displayed forms of `items` with commas.
 fn join_display<Item>(items: &[Item]) -> String
 where
     Item: Display,

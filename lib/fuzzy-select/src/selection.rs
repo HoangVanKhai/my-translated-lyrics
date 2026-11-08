@@ -8,14 +8,13 @@
 use crate::fuzzy::contains_substring;
 use std::cmp::Ordering;
 
-/// A comparator that orders two items, held as a boxed closure so the selector
-/// can carry any ordering.
+/// A comparator that orders two items.
 type Comparator<'a, Item> = Box<dyn Fn(&Item, &Item) -> Ordering + 'a>;
 
 /// An item that an interactive selector can filter by a typed query.
 pub trait Searchable {
-    /// The strings the query is matched against. A row matches when any
-    /// of these contains the query as a case-insensitive substring.
+    /// The strings the query is matched against. A row matches when the
+    /// query matches any of them.
     fn search_keys(&self) -> Vec<&str>;
 }
 
@@ -80,8 +79,7 @@ where
         &self.query
     }
 
-    /// Replaces the whole query and refilters. Used to restore a previous
-    /// search; the cursor returns to the top, as after any refilter.
+    /// Replaces the whole query and refilters. The cursor returns to the top.
     pub fn set_query(&mut self, query: String) {
         self.query = query;
         self.refilter();

@@ -4,7 +4,7 @@ use core::cmp::Ordering;
 use pretty_assertions::assert_eq;
 
 /// Clicking promotes a column, inverts the leading one, and keeps the demoted
-/// columns' order and directions, following the worked example.
+/// columns' order and directions.
 #[test]
 fn clicking_headers_reorders_and_inverts() {
     let mut sort = ColumnSort::new(["en", "vi", "zh"]);
@@ -77,7 +77,7 @@ fn compare_falls_through_to_the_next_column_on_a_tie() {
     assert_eq!(identical, Ordering::Equal);
 }
 
-/// Comparison ignores case, matching the earlier sort.
+/// Comparison ignores case.
 #[test]
 fn compare_ignores_case() {
     let sort = ColumnSort::new(["en"]);

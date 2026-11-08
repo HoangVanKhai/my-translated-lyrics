@@ -22,9 +22,7 @@ pub fn select_one(title: &str, labels: &[String], start: usize) -> io::Result<Na
 }
 
 /// Drives the single-column list selector, reading events from `Sys`.
-/// Splitting this out from [`select_one`] lets a test replay scripted
-/// events and render to a buffer, exercising the loop without a terminal.
-/// `start` is the row to highlight at first, to restore a previous choice.
+/// `start` is the row to highlight at first.
 pub(crate) fn select_one_loop<Sys>(
     output: &mut impl Write,
     title: &str,
