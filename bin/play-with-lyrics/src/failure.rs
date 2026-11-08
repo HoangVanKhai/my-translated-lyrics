@@ -14,8 +14,7 @@ use play_with_lyrics::player::SubtitleFormat;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-/// A genuine error. Each variant wraps a struct whose `Display` carries the
-/// message; the `error: ` prefix is added by [`Termination::Failed`].
+/// A genuine error.
 #[derive(Debug, Display)]
 pub(crate) enum Failure {
     NoVideos(NoVideos),
@@ -77,8 +76,7 @@ pub(crate) struct NotInteractive {
     pub(crate) what: &'static str,
 }
 
-/// A non-success way the program can stop. A [`Failure`] is one of them; the
-/// others are not errors and so do not print an `error: ` message.
+/// A non-success way the program can stop.
 #[derive(Debug, Display)]
 pub(crate) enum Termination {
     /// The command failed.

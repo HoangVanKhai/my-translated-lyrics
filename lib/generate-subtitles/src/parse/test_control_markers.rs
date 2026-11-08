@@ -78,7 +78,7 @@ fn eov_between_a_cue_and_its_continuation_leaves_the_cue_open() {
         "               second line"
         "00:05.000 clr"
     };
-    // `eov` is documented as "ignored entirely": it must not reset
+    // `eov` must not reset
     // the continuation scope, so the indented `second line` after it
     // still appends to the `cre` cue opened on line 1, and the cue
     // does not close until the `clr` on line 4.
@@ -88,11 +88,9 @@ fn eov_between_a_cue_and_its_continuation_leaves_the_cue_open() {
     assert_eq!(cues[0].end, Timestamp::new(0, 5, 0).unwrap());
 }
 
-/// `eov` is documented as "ignored entirely" and pushes no
-/// event of its own; it therefore does not compete with the
-/// preceding `clr` for the same timestamp slot. This is the
-/// shape the real source files use to mark the end of the
-/// video at the moment the final cue clears.
+/// `eov` does not compete with the preceding `clr` for the same
+/// timestamp slot, so the two may share a timestamp to mark the
+/// end of the video at the moment the final cue clears.
 #[test]
 fn allows_eov_to_share_a_timestamp_with_the_preceding_clr() {
     let input = text_block_fnl! {

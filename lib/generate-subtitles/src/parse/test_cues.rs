@@ -115,8 +115,7 @@ fn an_unclosed_cue_names_the_line_that_opened_it() {
 
 /// The column-10 indent (`MM:SS.mmm `) opens a new marker that
 /// shares the start time of the cue immediately above it. The
-/// resulting `SubtitleCue` carries both markers as separate
-/// parts; the renderer joins them into one subtitle block.
+/// resulting `SubtitleCue` carries both markers as separate parts.
 #[test]
 fn shorthand_marker_attaches_a_second_part_to_the_same_cue() {
     let input = text_block_fnl! {

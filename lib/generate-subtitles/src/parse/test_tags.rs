@@ -214,7 +214,7 @@ fn closing_tag_takes_a_tag_and_returns_the_tail() {
 }
 
 /// An opening tag is not a closing one, so the two parsers cannot
-/// both match a line and the caller may try them in either order.
+/// both match the same line.
 #[test]
 fn closing_tag_rejects_anything_but_the_three_components_flush() {
     for source in [

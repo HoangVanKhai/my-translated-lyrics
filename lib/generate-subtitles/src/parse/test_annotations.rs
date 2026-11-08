@@ -175,9 +175,8 @@ fn annotations_on_one_part_may_differ_in_length() {
     );
 }
 
-/// `<` and `>` are rejected in cue text because the renderers hand
-/// that text to the WebVTT cue-tag grammar. Annotation text reaches
-/// no renderer, so the same characters are ordinary punctuation
+/// Annotation text is not cue text, so `<` and `>` are ordinary
+/// punctuation
 /// there and must survive both the opening line and a continuation.
 #[test]
 fn annotation_text_accepts_angle_brackets() {

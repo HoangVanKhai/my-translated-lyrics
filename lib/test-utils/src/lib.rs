@@ -28,10 +28,7 @@ use std::time::{Duration, SystemTime};
 pub const SEPARATED_COLLECTION: &str = "Example Collection";
 
 /// The second declared separated collection, for a test that needs two
-/// of them. Declaring a collection that most tests never write into
-/// keeps the fixture honest, because a program that assumed a single
-/// separated collection instead of reading the declared list would still
-/// pass every test that uses only [`SEPARATED_COLLECTION`].
+/// of them.
 pub const OTHER_SEPARATED_COLLECTION: &str = "Another Example Collection";
 
 /// The separated collections that [`InstallLocalLyricsEnv`] declares in
@@ -42,13 +39,6 @@ pub const SEPARATED_COLLECTIONS: &[&str] = &[SEPARATED_COLLECTION, OTHER_SEPARAT
 pub const UNIFIED_COLLECTION: &str = "Example Unified Collection";
 
 /// Absolute path to the workspace root directory.
-///
-/// This crate always lives at `lib/test-utils`, two levels below the
-/// workspace root, so the root is the grandparent of this crate's
-/// manifest directory. Tests in other crates call this helper to reach
-/// the repository data directories such as `dist/` and `sources/`,
-/// which moved away from each crate's own manifest directory when the
-/// project became a workspace.
 pub fn workspace_dir() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .ancestors()

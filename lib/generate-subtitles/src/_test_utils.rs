@@ -1,10 +1,4 @@
-//! Shared fixtures for the crate's tests: a credits descriptor, a
-//! line-markers descriptor that triggers credit rendering, a
-//! [`StylePalette`], and a constructor wrapper for each type whose
-//! own constructor is fallible. Every test module pulls the pieces it
-//! needs from here rather than defining its own copy, so a change to a
-//! shared type is made in one place instead of several that can
-//! silently drift apart.
+//! Shared fixtures for the crate's tests.
 
 use crate::parse::LineNumber;
 use crate::styles::{Color, CreditPalette, Style, StylePalette};
@@ -55,9 +49,7 @@ pub(crate) fn color(value: String) -> Color {
 }
 
 /// A style palette carrying the standard credit colors together with
-/// the given voice table. The credit colors and the empty class table
-/// are identical across both renderers; each renderer's test module
-/// supplies whatever voice entries it needs.
+/// the given voice table and an empty class table.
 pub(crate) fn style_palette(voices: BTreeMap<MarkerName, Style>) -> StylePalette {
     StylePalette {
         credit: CreditPalette {

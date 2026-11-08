@@ -1,12 +1,11 @@
 //! SubRip renderer.
 //!
-//! SRT has no concept of voices or classes, so presentation metadata
-//! is expressed as inline HTML-like tags. For each cue this renderer
-//! looks up the marker's style in the [`StylePalette`] and wraps the
-//! text in `<font color="...">`, `<i>`, and/or `<b>` tags as required.
-//! Credit lines go through the same role-driven parser as the VTT
-//! renderer and emit each role and name with the palette's credit
-//! colors, repeated inline because SRT has no central style definition.
+//! Presentation metadata is expressed as inline HTML-like tags. For
+//! each cue this renderer looks up the marker's style in the
+//! [`StylePalette`] and wraps the text in `<font color="...">`, `<i>`,
+//! and/or `<b>` tags as required. Credit lines go through the
+//! role-driven credit parser and emit each lead and name with the
+//! palette's credit colors, repeated inline on every cue.
 //! The lead-to-name separator follows [`CreditPair::separator_style`]:
 //! a full-width colon sits uncolored between the two spans, an ASCII
 //! colon rides inside the lead's `<font>` before a single space, and a
@@ -102,8 +101,7 @@ fn render_cue_part(
     Ok(())
 }
 
-/// Looks up the SRT style for a marker by consulting the palette's voice
-/// table first and then its class table. A marker declared as a voice or
+/// Resolves the style for a marker. A marker declared as a voice or
 /// a class but missing from the palette is a [`MissingStyle`] error;
 /// markers that the descriptor registers as neither render as plain text.
 fn resolve_style<'a>(

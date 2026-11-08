@@ -1,8 +1,6 @@
 //! Command-line argument parsing.
 //!
-//! The flag value enums are defined here as binary-local types so the
-//! library crates do not depend on clap. Each one converts to the
-//! corresponding domain type.
+//! Each flag value enum converts to the corresponding domain type.
 
 use clap::{Parser, ValueEnum};
 use lyrics_core::video_descriptor::Language;
@@ -20,8 +18,8 @@ pub(crate) struct Args {
     /// subtitles, the same directory install-local-lyrics writes to.
     pub(crate) target: PathBuf,
 
-    /// Pre-select the video by fuzzily matching its English, Vietnamese,
-    /// Chinese, or raw video title. Must match exactly one video.
+    /// Pre-select the video by fuzzily matching any of its titles. Must
+    /// match exactly one video.
     #[clap(long, short = 't')]
     pub(crate) title: Option<String>,
 

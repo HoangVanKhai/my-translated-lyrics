@@ -104,8 +104,7 @@ fn rejects_a_control_marker_inside_a_region() {
 }
 
 /// The diagnostic for an unclosed region names the opening tag
-/// rather than the end of the file, because that is the line the
-/// author has to revisit.
+/// rather than the end of the file.
 #[test]
 fn rejects_a_region_that_is_never_closed() {
     let input = text_block_fnl! {

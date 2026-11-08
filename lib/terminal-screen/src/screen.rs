@@ -64,8 +64,7 @@ impl Screen {
 /// Writes the cells of `back` that differ from `front` to the terminal.
 ///
 /// Each row is scanned for runs of changed cells. A run is drawn with one
-/// cursor move to its start followed by its characters, so an unchanged region
-/// costs nothing and a changed region costs one move rather than one per cell.
+/// cursor move to its start followed by its characters.
 fn diff(front: &Buffer, back: &Buffer, output: &mut impl Write) -> io::Result<()> {
     let width = back.width;
     let mut current = Style::PLAIN;
@@ -107,8 +106,7 @@ fn diff(front: &Buffer, back: &Buffer, output: &mut impl Write) -> io::Result<()
 }
 
 /// Switches the terminal's active attributes to `target` when they differ from
-/// `current`, by resetting and re-applying, which keeps the logic the same for
-/// every attribute combination.
+/// `current`.
 fn set_style(output: &mut impl Write, current: &mut Style, target: Style) -> io::Result<()> {
     if *current == target {
         return Ok(());

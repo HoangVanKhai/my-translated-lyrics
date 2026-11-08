@@ -2,42 +2,27 @@ use core::fmt;
 use core::str::FromStr;
 use derive_more::{Display, From, Into};
 
-/// Milliseconds in one second. The inner `u64` of [`Timestamp`] and
-/// the format widths of the `MM:SS.mmm` and `HH:MM:SS.mmm` shapes
-/// are all expressed in multiples of this unit.
+/// Milliseconds in one second.
 const MILLISECONDS_PER_SECOND: u64 = 1_000;
-/// Milliseconds in one minute, derived from [`MILLISECONDS_PER_SECOND`]
-/// so the relationship between the units is visible at the definition.
+/// Milliseconds in one minute.
 const MILLISECONDS_PER_MINUTE: u64 = 60 * MILLISECONDS_PER_SECOND;
-/// Milliseconds in one hour, derived from [`MILLISECONDS_PER_MINUTE`]
-/// for the same reason.
+/// Milliseconds in one hour.
 const MILLISECONDS_PER_HOUR: u64 = 60 * MILLISECONDS_PER_MINUTE;
 
 /// Byte length of a rendered `MM:SS.mmm` timestamp. Two ASCII
 /// digits, a colon, two ASCII digits, a dot, and three ASCII
 /// digits add up to nine. Every cap-respecting [`Timestamp`]
-/// renders to exactly this many bytes; the
-/// `rendered_length_matches_timestamp_str_len` test in
-/// `tests.rs` and the `[..TIMESTAMP_STR_LEN]` slices below
-/// keep the constant honest.
+/// renders to exactly this many bytes.
 pub const TIMESTAMP_STR_LEN: usize = 9;
 
 /// A point in time inside the video, measured as milliseconds from
-/// `00:00.000`. Cues use it for start and end positions and for
-/// ordering comparisons. The millisecond resolution is an internal
-/// implementation detail; callers compose and destructure via the
-/// minute / second / millisecond API surface.
+/// `00:00.000`.
 ///
 /// The type carries an upper bound: every [`Timestamp`] represents a
 /// point strictly earlier than `01:00:00.000`, i.e. less than one
-/// hour from video start. The `MM:SS.mmm` source format does not
-/// have an hour field, and no song in this repository is long
-/// enough to need one; enforcing the bound at construction keeps
-/// that invariant visible at every call site.
+/// hour from video start.
 ///
-/// Renders through `Display` in the `MM:SS.mmm` source format. Error
-/// messages that quote a timestamp use this implementation so the
-/// output matches the form the source file used.
+/// Renders through `Display` in the `MM:SS.mmm` source format.
 #[derive(Clone, Copy, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[display(
     "{minutes:02}:{seconds:02}.{milliseconds:03}",
@@ -189,9 +174,8 @@ impl Timestamp {
     }
 }
 
-/// `Debug` reuses `Display` so panic messages and assertion failures
-/// quote timestamps in the same `MM:SS.mmm` shape as the rest of the
-/// pipeline.
+/// `Debug` renders a timestamp in the same `MM:SS.mmm` shape as
+/// `Display`.
 impl fmt::Debug for Timestamp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self, f)
@@ -295,12 +279,6 @@ impl FromStr for Timestamp {
 
 /// Reasons [`Timestamp::take`] can fail.
 ///
-/// Kept distinct from [`ParseTimestampError`] so that each type can
-/// accumulate its own variants over time: [`ParseTimestampError`]
-/// describes ways an `MM:SS.mmm` string fails to denote a valid
-/// timestamp value (used by any future `FromStr`-style parser),
-/// while [`TakeTimestampError`] describes ways the `take` combinator
-/// fails to produce a [`Timestamp`] from the start of its input.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum TakeTimestampError {

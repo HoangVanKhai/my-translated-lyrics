@@ -30,9 +30,8 @@ pub(crate) struct Glyph {
     pub(crate) style: Style,
 }
 
-/// The display width of a glyph. A variation selector can widen a symbol to its
-/// emoji form, but terminals keep the base width even for a text-form selector
-/// (they change the color, not the width), so the wider of the two is used.
+/// The display width of a glyph, which is never narrower than `char` alone,
+/// even when `variation_selector` selects a narrow text form.
 pub(crate) fn glyph_width(char: char, variation_selector: Option<char>) -> Width {
     let base = Width::new(char.width().unwrap_or(0) as u16);
     match variation_selector {
@@ -46,8 +45,7 @@ pub(crate) fn glyph_width(char: char, variation_selector: Option<char>) -> Width
     }
 }
 
-/// Whether `char` is a variation selector (U+FE00..=U+FE0F), which adjusts the
-/// presentation of the preceding character rather than standing on its own.
+/// Whether `char` is a variation selector.
 fn is_variation_selector(char: char) -> bool {
     ('\u{FE00}'..='\u{FE0F}').contains(&char)
 }
