@@ -146,15 +146,15 @@ where
     Sys: WindowSize,
 {
     let (width, height) = Sys::window_size().unwrap_or((80, 24));
-    let columns = Width::new(width);
-    let buffer = screen.begin(columns, Height::new(height), output)?;
+    let width = Width::new(width);
+    let buffer = screen.begin(width, Height::new(height), output)?;
 
     // The top bar names the page; a list page always follows an earlier page,
     // so going back is available.
-    render_top_bar(buffer, columns, title, true, hover);
+    render_top_bar(buffer, width, title, true, hover);
 
     for ((index, label), screen_y) in labels.iter().enumerate().zip(FIRST_LIST_ROW.downwards()) {
-        let line = fit(label, columns);
+        let line = fit(label, width);
         let style = row_style(ItemIndex::new(index) == cursor, hover, screen_y);
         buffer.set_string(Column::LEFT, screen_y, &line, style);
     }
@@ -163,7 +163,7 @@ where
     buffer.set_string(
         Column::LEFT,
         Row::new(height.saturating_sub(1)),
-        &fit(help, columns),
+        &fit(help, width),
         Style::DIM,
     );
 
