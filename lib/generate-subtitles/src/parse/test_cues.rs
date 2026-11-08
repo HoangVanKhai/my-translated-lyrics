@@ -45,10 +45,10 @@ fn comments_and_blank_lines_are_skipped() {
     assert_eq!(cues[0].parts[0].text, "Hello");
 }
 
-/// Lines are split the way [`str::lines`] splits them, so a file
-/// written with Windows line endings parses as the same file with
-/// Unix ones would. The carriage return leaves with its terminator
-/// rather than reaching a cue body, an indent, or a tag line.
+/// A file written with Windows line endings parses as the same file
+/// with Unix ones would: the carriage return leaves with its
+/// terminator rather than reaching a cue body, an indent, or a tag
+/// line.
 #[test]
 fn parses_a_file_with_carriage_return_line_endings() {
     let input = concat! {

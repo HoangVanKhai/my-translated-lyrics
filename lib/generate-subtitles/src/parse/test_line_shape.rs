@@ -87,11 +87,8 @@ fn rejects_cue_with_empty_body() {
 }
 
 /// A header whose body is a timestamp followed by nothing but spaces
-/// carries an empty cue body, and an empty cue body is reported as
-/// [`MissingMarker`] with empty content, not as [`EmptyCueBody`].
-/// [`EmptyCueBody`] names the marker whose text is missing, which a
-/// body carrying no marker cannot supply, so this case is the former.
-/// Lock that outcome so a future reader does not expect the latter.
+/// carries an empty cue body, which is reported as [`MissingMarker`]
+/// with empty content rather than as [`EmptyCueBody`].
 #[test]
 fn whitespace_only_cue_body_falls_through_to_missing_marker() {
     let input = text_block_fnl! {
