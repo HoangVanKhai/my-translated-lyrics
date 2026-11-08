@@ -141,21 +141,21 @@ where
 {
     let (width, height) = Sys::window_size().unwrap_or((80, 24));
     let buffer = screen.begin(width, height, output)?;
-    let columns = width as usize;
+    let width = width as usize;
 
     // The top bar names the page; a list page always follows an earlier page,
     // so going back is available.
-    render_top_bar(buffer, columns, title, true, hover);
+    render_top_bar(buffer, width, title, true, hover);
 
     for (index, label) in labels.iter().enumerate() {
         let screen_y = (index + LIST_ROW_OFFSET) as u16;
-        let line = fit(label, columns);
+        let line = fit(label, width);
         let style = row_style(index == cursor, hover, screen_y);
         buffer.set_string(0, screen_y, &line, style);
     }
 
     let help = "↑/↓ move · ⌫/Esc back · ⏎/␣ select · ^Q quit";
-    buffer.set_string(0, height.saturating_sub(1), &fit(help, columns), Style::DIM);
+    buffer.set_string(0, height.saturating_sub(1), &fit(help, width), Style::DIM);
 
     screen.flush(output)
 }
