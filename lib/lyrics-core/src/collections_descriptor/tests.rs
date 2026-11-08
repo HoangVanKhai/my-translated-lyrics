@@ -41,8 +41,6 @@ fn names_lists_the_separated_collections_then_the_unified_one() {
     );
 }
 
-/// An unknown key is a typo or a stale field rather than a value the
-/// manifest carries, so parsing rejects it.
 /// The `separated` field may be left out, which declares no separated
 /// collection rather than failing the parse.
 #[test]
@@ -66,6 +64,7 @@ fn manifest_defaults_unified_to_an_empty_list() {
     assert_eq!(names, ["Example Collection"]);
 }
 
+/// A manifest with an unknown key fails to parse.
 #[test]
 fn manifest_rejects_an_unknown_field() {
     let source = r#"
@@ -131,8 +130,7 @@ fn check_separated_hints_the_closest_declared_collection() {
     }
 }
 
-/// A name that resembles nothing declared gets no hint, because a
-/// suggestion nobody asked for is worse than none.
+/// A name that resembles nothing declared gets no hint.
 #[test]
 fn check_separated_omits_the_hint_when_nothing_is_close() {
     let desc = manifest();
