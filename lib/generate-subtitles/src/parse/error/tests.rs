@@ -1,8 +1,5 @@
 //! Tests for the way a [`ParseLyricsError`] renders: the location
-//! prefix, then the kind's own message and nothing else. One test
-//! per shape a kind takes: a payload with no fields, one that names
-//! another line, one that writes its own `Display`, and one that
-//! forwards to the error it wraps.
+//! prefix, then the kind's own message and nothing else.
 
 use super::{
     AdditiveRegionError, EmptyRegion, InvalidTimestamp, MalformedIndentation, ParseLyricsError,
@@ -13,8 +10,7 @@ use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 
 /// A payload with no fields of its own still renders with the
-/// location, because the location is no longer the payload's to
-/// carry.
+/// location.
 #[test]
 fn a_field_less_kind_renders_with_the_location_prefix() {
     let error = ParseLyricsError {
@@ -45,9 +41,8 @@ fn a_kind_naming_another_line_keeps_both_numbers() {
     );
 }
 
-/// [`MalformedIndentation`] writes its own `Display` rather than
-/// deriving one, so the prefix has to reach it the same way it
-/// reaches the derived kinds.
+/// [`MalformedIndentation`] writes its own `Display`, and the
+/// location prefix still reaches it.
 #[test]
 fn a_hand_written_kind_takes_the_same_prefix() {
     let error = ParseLyricsError {

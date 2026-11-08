@@ -32,7 +32,7 @@ fn voice_selector_preserves_ascii_apostrophes_inside_double_quotes() {
 /// voice name in HTML-entity escape on the CSS side, which
 /// broke the match against the cue-tag side: CSS does not
 /// decode entity references in attribute-value strings, so
-/// `[voice="X &amp; Y"]` would match the literal six-byte
+/// `[voice="X &amp; Y"]` would match a literal
 /// `&amp;` instead of the `&` that the WebVTT parser produces
 /// from the cue-tag side. Locking the selector against any
 /// future reintroduction of HTML escape on this side is the

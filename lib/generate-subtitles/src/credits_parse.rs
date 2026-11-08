@@ -12,16 +12,7 @@
 //! role-less line may instead open with a bracketed span (a
 //! [`CreditLead::Special`] highlight) that stands in for the role. A
 //! line whose first non-whitespace token is neither a known role nor a
-//! bracketed span raises [`ParseCreditError::UnknownRole`], which lets
-//! the integration tests catch a mistyped role label before it ever
-//! reaches `dist/`.
-//!
-//! Only the `credit-roles` list is consumed by this parser. The
-//! `credit-names` list on [`CreditsDesc`] is loaded and carried
-//! through the pipeline but is not cross-checked against the parsed
-//! name regions here; see the "`credits.yaml` consistency test"
-//! item in the PR description for the deferred work that would add
-//! that validation.
+//! bracketed span raises [`ParseCreditError::UnknownRole`].
 
 use crate::take::take_leading_whitespace;
 use derive_more::Display;
@@ -37,10 +28,7 @@ pub struct CreditPair<'a> {
     /// What opens the line: a role, or a role-less bracket highlight.
     pub lead: CreditLead<'a>,
     /// Raw separator text captured between the lead cell and the
-    /// name cell, preserved verbatim so the renderer can decide how
-    /// to emit it. [`CreditPair::separator_style`] reads this field
-    /// to choose between a CJK colon, a Latin colon, or a verbatim
-    /// space gutter.
+    /// name cell, preserved verbatim.
     pub separator: &'a str,
     /// Decomposed name region, with bracketed and unbracketed
     /// segments. Empty for a header line that carries no name, whether
@@ -51,19 +39,16 @@ pub struct CreditPair<'a> {
 /// What opens a credit line.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum CreditLead<'a> {
-    /// A registered role, rendered in the credit role color.
+    /// A registered role.
     Role(&'a str),
-    /// A bracketed span that opens a role-less line (a highlighted
-    /// label ahead of a contributor name), rendered in the credit
-    /// highlight color in place of a role span.
+    /// A bracketed span that opens a role-less line in place of a
+    /// role.
     Special(Bracketed<'a>),
 }
 
 impl<'a> CreditPair<'a> {
     /// Classifies this pair's separator into the layout the renderers
-    /// should produce. The choice of colon glyph in the source line
-    /// selects the layout, so the policy stays data-driven and
-    /// symmetric with the separator-tolerant parser: a full-width
+    /// should produce: a full-width
     /// colon yields [`SeparatorStyle::FullWidthColon`], a lone ASCII
     /// colon yields [`SeparatorStyle::AsciiColon`], and a colon-free
     /// separator yields [`SeparatorStyle::Spaces`].
@@ -156,16 +141,8 @@ impl<'a> Unbracketed<'a> {
     }
 }
 
-/// An item of the parsing process of [`NameSegment`]s.
-///
-/// This struct has no semantic significance, it is merely a
-/// consequence of the structure of the credit-line: The
-/// [unbracketed] segments and the [bracketed] segments are
-/// interleaving. So this struct is a pair before the final
-/// unpaired [unbracketed] segment.
-///
-/// [unbracketed]: Unbracketed
-/// [bracketed]: Bracketed
+/// A leading [`Unbracketed`] run together with the [`Bracketed`] span
+/// that follows it.
 #[derive(Clone, Copy, Debug)]
 struct NameSegmentPair<'a>(Unbracketed<'a>, Bracketed<'a>);
 
@@ -202,13 +179,10 @@ impl<'a> NameSegmentPair<'a> {
 pub struct Bracketed<'a>(&'a str);
 
 impl<'a> Bracketed<'a> {
-    /// Consumes a leading bracketed span. The four recognized
-    /// pairs are `【...】`, `[...]`, `(...)`, and the full-width
-    /// `（...）`. The bytes between the opening and closing
-    /// characters must contain none of those eight characters; if
-    /// another bracket is encountered before the matching close, no
-    /// value is produced and the caller is free to re-interpret the
-    /// input as ordinary text.
+    /// Consumes a leading bracketed span. The recognized pairs are
+    /// `【...】`, `[...]`, `(...)`, and the full-width `（...）`. No
+    /// value is produced unless the matching closing character is
+    /// reached with no other bracket character in between.
     pub fn take(input: &'a str) -> Option<(Self, &'a str)> {
         let mut chars = input.char_indices();
         let (_, open) = chars.next()?;
@@ -277,12 +251,10 @@ fn is_bracket_char(char: char) -> bool {
     matches!(char, '【' | '】' | '[' | ']' | '(' | ')' | '（' | '）')
 }
 
-/// The role set for one language, built from `credits.yaml` and
-/// reused across every credit cue in the song.
+/// The role set for one language, built from `credits.yaml`.
 ///
-/// The roles are always sorted from longest to shortest.
-///
-/// There are no duplication amongst the roles.
+/// Duplicate labels are collapsed, and where two roles share a
+/// prefix the longer one matches first.
 pub struct CreditRoles<'a>(Vec<&'a str>);
 
 impl<'a> CreditRoles<'a> {
@@ -332,7 +304,7 @@ impl<'a> CreditRoles<'a> {
 }
 
 /// Parses a credit line into ordered role-name pairs using the
-/// provided [`CreditRoles`]. See the module docs for the algorithm.
+/// provided [`CreditRoles`].
 pub fn parse_credit_line<'a>(
     line: &'a str,
     roles: &CreditRoles,
@@ -415,9 +387,9 @@ fn is_role_boundary(following: &str) -> bool {
     }
 }
 
-/// Payload for an unknown-role error. Describes a credit line
-/// whose cursor rests on text that does not match any known role
-/// from `credits.yaml`.
+/// Payload for an unknown-role error. `offset` is the byte offset in
+/// `line` where text appeared that is neither a known credit role nor
+/// a bracketed span.
 #[derive(Clone, Debug, Display, Eq, PartialEq)]
 #[display(
     "credit line {line:?} contains unrecognized text at byte offset {offset}; expected a known credit role from `credits.yaml`"

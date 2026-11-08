@@ -1,11 +1,4 @@
-//! Shared fixtures for the SRT and VTT renderer tests. Both renderers
-//! exercise the same format-agnostic scaffolding: a credits descriptor,
-//! a line-markers descriptor that triggers credit rendering, a
-//! [`MarkerName`] constructor wrapper, a [`Color`] constructor wrapper,
-//! and a [`StylePalette`]. Each renderer's test module pulls the pieces
-//! it needs from here rather than defining its own copy, so a change to
-//! a shared type is made in one place instead of two that can silently
-//! drift apart.
+//! Shared fixtures for the SRT and VTT renderer tests.
 
 use crate::styles::{Color, CreditPalette, Style, StylePalette};
 use lyrics_core::credits_descriptor::CreditsDesc;
@@ -47,9 +40,7 @@ pub(crate) fn color(value: String) -> Color {
 }
 
 /// A style palette carrying the standard credit colors together with
-/// the given voice table. The credit colors and the empty class table
-/// are identical across both renderers; each renderer's test module
-/// supplies whatever voice entries it needs.
+/// the given voice table and an empty class table.
 pub(crate) fn style_palette(voices: BTreeMap<String, Style>) -> StylePalette {
     StylePalette {
         credit: CreditPalette {

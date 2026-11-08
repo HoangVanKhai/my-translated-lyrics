@@ -10,11 +10,6 @@
 //! into cues. [`render_song`] renders each cue through the marker-aware
 //! VTT and SRT emitters and writes the result to the corresponding
 //! `dist/` directory.
-//!
-//! The credit-line parser uses the `credit-roles` list in
-//! `credits.yaml` as the recognized role set; a credit line whose
-//! first non-whitespace token is not a known role fails the render
-//! with [`credits_parse::ParseCreditError`].
 
 pub mod credits_parse;
 pub mod parse;

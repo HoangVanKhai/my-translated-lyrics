@@ -23,8 +23,7 @@ use std::time::SystemTime;
 use terminal_screen::{Buffer, Screen, Style};
 
 /// Presents the fuzzy table of titles and reports the chosen row, a request
-/// to go back, or a request to quit. This is the first page, so going back
-/// from an empty query is the way out of it.
+/// to go back, or a request to quit.
 pub fn select_video(
     videos: &[Video],
     query: &mut String,
@@ -34,9 +33,7 @@ pub fn select_video(
     select_video_loop::<Host>(&mut guard.output, videos, query, selected)
 }
 
-/// Drives the fuzzy-table selector, reading events from `Sys`. Splitting
-/// this out from [`select_video`] lets a test replay scripted events and
-/// render to a buffer, exercising the loop without a terminal. `query` seeds
+/// Drives the fuzzy-table selector, reading events from `Sys`. `query` seeds
 /// the search box and receives the final text, and `selected` is the original
 /// index to highlight at first, so a previous visit can be restored.
 pub(crate) fn select_video_loop<Sys>(

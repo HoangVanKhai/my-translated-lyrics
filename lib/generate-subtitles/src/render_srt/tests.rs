@@ -176,8 +176,8 @@ fn voice_declared_without_palette_entry_produces_style_error() {
 }
 
 /// Annotations are written for readers of the source files and must
-/// not reach the video. SubRip has no comment syntax at all, so the
-/// only correct treatment is to drop them.
+/// not reach the video, so no annotation text may appear in the
+/// rendered output.
 #[test]
 fn annotations_are_not_rendered() {
     let cues = vec![SubtitleCue {

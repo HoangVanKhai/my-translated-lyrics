@@ -10,9 +10,8 @@
 //!
 //! A line at the shorthand column whose marker is
 //! [`ReservedMarker::Annotation`] attaches commentary to the cue part
-//! above it. It carries no timestamp, opens no event, and reaches
-//! neither renderer. Each line opens one annotation, which takes
-//! continuation lines of its own.
+//! above it. It carries no timestamp and opens no event. Each line
+//! opens one annotation, which takes continuation lines of its own.
 //!
 //! Between a column-zero `<additive>` line and a `</additive>` line,
 //! cues accumulate rather than replace: each renders the parts of
@@ -33,25 +32,22 @@ use error::{
     EmptyCueBody, EmptyRegion, ExtraTextAfterControlMarker, InvalidTimestamp, MalformedHeader,
     MalformedIndentation, MalformedTagLine, MissingMarker, MissingSeparatorAfterTimestamp,
     NestedRegion, OrphanedAnnotation, OrphanedShorthandMarker, OutOfOrder, ParseLyricsError,
-    ParseLyricsErrorKind, RepeatedTimestamp, ReservedControlMarker, TabIndentation, UnclosedCue,
-    UnclosedRegion, UnopenedRegion,
+    ParseLyricsErrorKind, RepeatedTimestamp, TabIndentation, UnclosedCue, UnclosedRegion,
+    UnopenedRegion,
 };
-use lyrics_core::line_markers_descriptor::ReservedMarker;
+use lyrics_core::line_markers_descriptor::{MarkerName, ReservedMarker};
 use lyrics_core::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
 use pipe_trait::Pipe;
 use strum::EnumString;
 
 /// Indent width of a line that opens a new marker at the same start
-/// time as the cue immediately above. Equals the byte length of an
-/// `MM:SS.mmm` timestamp plus one ASCII space.
+/// time as the cue immediately above.
 const TIMESTAMP_PREFIX_WIDTH: usize = TIMESTAMP_STR_LEN + 1;
 
 /// A subtitle cue with a resolved end time, ready for rendering.
 ///
 /// A cue groups one or more [`CuePart`]s that share a start time.
-/// Each part carries its own marker and text; the renderer emits
-/// the parts as a single subtitle block whose body has one line
-/// per part.
+/// Each part carries its own marker and text.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SubtitleCue {
     /// Timestamp at which the cue begins to display. Read directly
@@ -62,22 +58,21 @@ pub struct SubtitleCue {
     /// is the next cue or a `clr` sentinel.
     pub end: Timestamp,
     /// One or more parts that share this cue's start and end times.
-    /// Each part carries its own marker and text and renders to a
-    /// separate line within the resulting SRT or VTT cue block.
+    /// Each part carries its own marker and text.
     pub parts: Vec<CuePart>,
 }
 
 /// One marker-text pair within a [`SubtitleCue`].
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CuePart {
-    /// The leading marker token that the cue-opening line declared, for
-    /// example `ttl` in `ttl: 《Song》`.
+    /// The leading marker token the line declared, for example `ttl`
+    /// in `ttl: 《Song》`.
     pub marker: String,
     /// Cue text, with line breaks preserved between the opening line
     /// and any continuation lines.
     pub text: String,
     /// Commentary attached to this part by `ann` lines beneath it,
-    /// one entry per line. Neither renderer reads it.
+    /// one entry per line.
     pub annotations: Vec<String>,
 }
 
@@ -274,13 +269,8 @@ fn is_closing_additive_tag(body: &str) -> bool {
     )
 }
 
-/// Payload of an [`Event::Cue`]. The start time is the one declared
-/// in the source file; the end time is resolved later by looking at
-/// the next event in the stream. The list of parts mirrors
-/// [`SubtitleCue::parts`]: a fresh timestamped header line opens a
-/// group with one part, a column-[`TIMESTAMP_PREFIX_WIDTH`] shorthand
-/// line appends a new part to that group, and a continuation line
-/// extends the most recent part's text.
+/// Payload of an [`Event::Cue`]: the start time declared in the
+/// source file and the parts collected under it.
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct CueGroup {
     start: Timestamp,
@@ -628,10 +618,10 @@ fn take_cue_part<'a>(
     input: Input<'a>,
 ) -> Result<(CuePart, Input<'a>), ParseLyricsError> {
     let PartHeader { marker, text } = header;
-    let indent = continuation_indent(marker);
+    let indent = continuation_indent(marker.as_str());
     let (text, input) = take_body(text.to_string(), input, indent, Continued::CueText)?;
     let part = CuePart {
-        marker: marker.to_string(),
+        marker: marker.into(),
         text,
         annotations: Vec::new(),
     };
@@ -639,9 +629,8 @@ fn take_cue_part<'a>(
 }
 
 /// Which body a run of continuation lines extends. Only cue text is
-/// checked for the reserved tag delimiters: annotation text reaches no
-/// renderer, so `<` and `>` carry no meaning there and are ordinary
-/// punctuation.
+/// checked for the reserved tag delimiters; `<` and `>` are ordinary
+/// punctuation in annotation text.
 #[derive(Clone, Copy, Eq, PartialEq)]
 enum Continued {
     CueText,
@@ -725,9 +714,8 @@ fn parse_shorthand_line(body: &str) -> Result<ShorthandLine<'_>, ParseLyricsErro
 
 /// The marker and the text that a `marker: text` line declares, which
 /// together open one [`CuePart`].
-#[derive(Clone, Copy)]
 struct PartHeader<'a> {
-    marker: &'a str,
+    marker: MarkerName,
     text: &'a str,
 }
 
@@ -748,16 +736,14 @@ impl<'a> PartHeader<'a> {
     /// A caller that split the body to learn what kind of line it was
     /// reaches the same checks through here rather than splitting the
     /// same bytes a second time.
-    fn from_parts(marker: &'a str, text: &'a str) -> Result<Self, ParseLyricsErrorKind> {
-        if let Ok(reserved) = marker.parse::<ReservedMarker>() {
-            return reserved
-                .pipe(ReservedControlMarker)
-                .pipe(ParseLyricsErrorKind::ReservedControlMarker)
-                .pipe(Err);
-        }
+    fn from_parts(marker: &str, text: &'a str) -> Result<Self, ParseLyricsErrorKind> {
+        let marker = marker
+            .to_string()
+            .pipe(MarkerName::new)
+            .map_err(ParseLyricsErrorKind::InvalidMarkerName)?;
         if text.is_empty() {
             return marker
-                .to_string()
+                .pipe(String::from)
                 .pipe(EmptyCueBody)
                 .pipe(ParseLyricsErrorKind::EmptyCueBody)
                 .pipe(Err);
@@ -848,10 +834,7 @@ fn continuation_indent(marker: &str) -> usize {
 }
 
 /// Rejects a new event whose start time matches or precedes the most
-/// recent recorded event, whose start time is `previous`. An `eov`
-/// line never reaches this check, because it pushes no event and
-/// therefore must not compete for the same start-time slot as a real
-/// cue or `clr`.
+/// recent recorded event, whose start time is `previous`.
 fn check_event_order(
     start: Timestamp,
     previous: Option<Timestamp>,
@@ -984,12 +967,8 @@ fn resolve_group(
 /// A copy of `part` for the cues below it in the same additive
 /// region.
 ///
-/// Only the rendered halves of a part repeat. An annotation documents
-/// the line its author wrote it under, so carrying it forward would
-/// attribute one note to every cue in the rest of the region; the copy
-/// therefore starts with none. Neither renderer reads annotations, so
-/// the choice is invisible in the output and matters only to a reader
-/// of the parsed cues.
+/// The copy carries the marker and text of `part` but none of its
+/// annotations.
 fn carried_part(part: &CuePart) -> CuePart {
     CuePart {
         marker: part.marker.clone(),
@@ -1007,9 +986,7 @@ fn annotation_body(body: &str) -> Option<&str> {
 
 /// Splits a line body like `marker: text` into its two halves. Returns
 /// `None` when the line has no `:` separator or when the marker half
-/// is empty; the caller reports this as [`ParseLyricsErrorKind::MissingMarker`]
-/// because every cue-opening line in the source format is expected to
-/// carry a marker.
+/// is empty.
 fn split_marker(body: &str) -> Option<(&str, &str)> {
     let (head, tail) = body.split_once(':')?;
     let marker = head.trim();
@@ -1020,9 +997,8 @@ fn split_marker(body: &str) -> Option<(&str, &str)> {
 }
 
 /// Rejects cue text containing `<` or `>`, which the WebVTT cue-tag
-/// grammar reserves as tag delimiters. The renderer escapes the cue
-/// body, so neither could reach the output as itself. Reports the
-/// first offender only.
+/// grammar reserves as tag delimiters. Reports the first offender
+/// only.
 fn reject_reserved_cue_text_characters(text: &str) -> Result<(), ParseLyricsErrorKind> {
     if let Some(character) = text.chars().find(|&c| matches!(c, '<' | '>')) {
         return character

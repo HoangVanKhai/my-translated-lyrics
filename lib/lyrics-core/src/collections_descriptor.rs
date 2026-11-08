@@ -46,8 +46,6 @@ impl CollectionsDesc {
     }
 
     /// Checks that `name` is one of the declared separated collections.
-    /// A video descriptor may only name a collection the manifest
-    /// declares, so a misspelled name fails the run.
     pub fn check_separated(&self, name: &str) -> Result<(), UndeclaredCollection> {
         if self.separated.iter().any(|declared| &**declared == name) {
             return Ok(());
@@ -65,11 +63,6 @@ impl CollectionsDesc {
     /// name may absorb a longer slip than a short one, and a name that
     /// resembles nothing declared yields nothing to suggest.
     ///
-    /// Edit distance suits the job because a manifest declares a handful
-    /// of names of a few dozen characters each, so the quadratic cost of
-    /// each comparison is negligible, and because the mistakes it
-    /// measures, a dropped letter or a swapped pair, are the mistakes a
-    /// hand-written descriptor makes.
     fn closest_separated(&self, name: &str) -> Option<&CollectionName> {
         let tolerance = (name.chars().count() / 3).max(1);
         self.separated
@@ -110,8 +103,6 @@ impl fmt::Display for UndeclaredCollection {
 /// appended to it, and rejects the rest with the
 /// [`ParseCollectionNameError`] variant that states the broken rule.
 ///
-/// Whether a name of an acceptable shape is declared anywhere is a
-/// question for [`CollectionsDesc`], not for this type.
 #[derive(AsRef, Clone, Deref, Deserialize, Display, Into, Serialize)]
 #[as_ref(forward)]
 #[deref(forward)]

@@ -2,11 +2,9 @@
 //! text each one accepts, the events each one does and does not push, and
 //! the rejection of a cue whose marker names either of them.
 
-use crate::parse::error::{
-    ExtraTextAfterControlMarker, ParseLyricsError, ParseLyricsErrorKind, ReservedControlMarker,
-};
+use crate::parse::error::{ExtraTextAfterControlMarker, ParseLyricsError, ParseLyricsErrorKind};
 use crate::parse::parse_lyrics;
-use lyrics_core::line_markers_descriptor::ReservedMarker;
+use lyrics_core::line_markers_descriptor::{InvalidMarkerName, ReservedMarker};
 use lyrics_core::timestamp::Timestamp;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
@@ -79,7 +77,7 @@ fn eov_between_a_cue_and_its_continuation_leaves_the_cue_open() {
         "               second line"
         "00:05.000 clr"
     };
-    // `eov` is documented as "ignored entirely": it must not reset
+    // `eov` must not reset
     // the continuation scope, so the indented `second line` after it
     // still appends to the `cre` cue opened on line 1, and the cue
     // does not close until the `clr` on line 4.
@@ -89,10 +87,9 @@ fn eov_between_a_cue_and_its_continuation_leaves_the_cue_open() {
     assert_eq!(cues[0].end, Timestamp::new(0, 5, 0).unwrap());
 }
 
-/// The same rule seen from the shorthand column rather than from a
-/// continuation line: an `eov` between a cue and a shorthand marker
-/// line leaves the cue open, so the marker still attaches a second
-/// part to the cue above the `eov`.
+/// An `eov` between a cue and a shorthand marker line leaves the cue
+/// open, so the shorthand marker attaches a second part to the cue
+/// above it.
 #[test]
 fn eov_between_a_cue_and_a_shorthand_marker_leaves_the_cue_open() {
     let input = text_block_fnl! {
@@ -109,11 +106,9 @@ fn eov_between_a_cue_and_a_shorthand_marker_leaves_the_cue_open() {
     assert_eq!(cues[0].end, Timestamp::new(0, 5, 0).unwrap());
 }
 
-/// `eov` is documented as "ignored entirely" and pushes no
-/// event of its own; it therefore does not compete with the
-/// preceding `clr` for the same timestamp slot. This is the
-/// shape the real source files use to mark the end of the
-/// video at the moment the final cue clears.
+/// `eov` does not compete with the preceding `clr` for the same
+/// timestamp slot, so the two may share a timestamp to mark the
+/// end of the video at the moment the final cue clears.
 #[test]
 fn allows_eov_to_share_a_timestamp_with_the_preceding_clr() {
     let input = text_block_fnl! {
@@ -137,8 +132,8 @@ fn rejects_cue_marker_that_collides_with_control_token() {
         ParseLyricsError {
             line_number: 1,
             kind: ReservedMarker::Clear
-                .pipe(ReservedControlMarker)
-                .pipe(ParseLyricsErrorKind::ReservedControlMarker),
+                .pipe(InvalidMarkerName::Reserved)
+                .pipe(ParseLyricsErrorKind::InvalidMarkerName),
         },
     );
 
@@ -151,8 +146,8 @@ fn rejects_cue_marker_that_collides_with_control_token() {
         ParseLyricsError {
             line_number: 1,
             kind: ReservedMarker::EndOfVideo
-                .pipe(ReservedControlMarker)
-                .pipe(ParseLyricsErrorKind::ReservedControlMarker),
+                .pipe(InvalidMarkerName::Reserved)
+                .pipe(ParseLyricsErrorKind::InvalidMarkerName),
         },
     );
 }

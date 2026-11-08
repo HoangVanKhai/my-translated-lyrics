@@ -7,21 +7,11 @@ use play_with_lyrics_tui::{Navigation, select_one, select_video};
 use std::io::{self, IsTerminal};
 
 /// Reports whether standard input is connected to an interactive terminal.
-///
-/// A dependency-injection seam: production consults the real standard input
-/// with [`Host`], while a test supplies a fake that returns a chosen value, so
-/// both branches of [`require_terminal`] are covered without a real terminal.
-///
-/// [`require_terminal`]: crate::resolve
 pub(crate) trait Stdin {
     fn is_terminal() -> bool;
 }
 
 /// Runs an interactive selector and reports the user's [`Navigation`].
-///
-/// A dependency-injection seam: production opens the real terminal selectors
-/// with [`Host`], while a test returns a scripted outcome, so the interactive
-/// branches of the resolvers are covered without a TTY.
 pub(crate) trait Select {
     /// Presents the fuzzy table of videos.
     fn select_video(

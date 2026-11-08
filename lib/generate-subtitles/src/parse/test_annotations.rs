@@ -5,10 +5,9 @@
 
 use crate::parse::error::{
     EmptyAnnotation, MissingMarker, OrphanedAnnotation, ParseLyricsError, ParseLyricsErrorKind,
-    ReservedControlMarker,
 };
 use crate::parse::parse_lyrics;
-use lyrics_core::line_markers_descriptor::ReservedMarker;
+use lyrics_core::line_markers_descriptor::{InvalidMarkerName, ReservedMarker};
 use lyrics_core::timestamp::Timestamp;
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
@@ -175,9 +174,8 @@ fn annotations_on_one_part_may_differ_in_length() {
     );
 }
 
-/// `<` and `>` are rejected in cue text because the renderers hand
-/// that text to the WebVTT cue-tag grammar. Annotation text reaches
-/// no renderer, so the same characters are ordinary punctuation
+/// Annotation text is not cue text, so `<` and `>` are ordinary
+/// punctuation
 /// there and must survive both the opening line and a continuation.
 #[test]
 fn annotation_text_accepts_angle_brackets() {
@@ -308,8 +306,8 @@ fn annotation_marker_cannot_name_a_cue() {
         ParseLyricsError {
             line_number: 2,
             kind: ReservedMarker::Annotation
-                .pipe(ReservedControlMarker)
-                .pipe(ParseLyricsErrorKind::ReservedControlMarker),
+                .pipe(InvalidMarkerName::Reserved)
+                .pipe(ParseLyricsErrorKind::InvalidMarkerName),
         },
     );
 }
