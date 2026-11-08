@@ -10,9 +10,8 @@
 //!
 //! A line at the shorthand column whose marker is
 //! [`ReservedMarker::Annotation`] attaches commentary to the cue part
-//! above it. It carries no timestamp, opens no event, and reaches
-//! neither renderer. Each line opens one annotation, which takes
-//! continuation lines of its own.
+//! above it. It carries no timestamp and opens no event. Each line
+//! opens one annotation, which takes continuation lines of its own.
 //!
 //! Between a column-zero `<additive>` line and a `</additive>` line,
 //! cues accumulate rather than replace: each renders the parts of
@@ -36,16 +35,13 @@ use pipe_trait::Pipe;
 use strum::EnumString;
 
 /// Indent width of a line that opens a new marker at the same start
-/// time as the cue immediately above. Equals the byte length of an
-/// `MM:SS.mmm` timestamp plus one ASCII space.
+/// time as the cue immediately above.
 const TIMESTAMP_PREFIX_WIDTH: usize = TIMESTAMP_STR_LEN + 1;
 
 /// A subtitle cue with a resolved end time, ready for rendering.
 ///
 /// A cue groups one or more [`CuePart`]s that share a start time.
-/// Each part carries its own marker and text; the renderer emits
-/// the parts as a single subtitle block whose body has one line
-/// per part.
+/// Each part carries its own marker and text.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SubtitleCue {
     /// Timestamp at which the cue begins to display. Read directly
@@ -56,22 +52,21 @@ pub struct SubtitleCue {
     /// is the next cue or a `clr` sentinel.
     pub end: Timestamp,
     /// One or more parts that share this cue's start and end times.
-    /// Each part carries its own marker and text and renders to a
-    /// separate line within the resulting SRT or VTT cue block.
+    /// Each part carries its own marker and text.
     pub parts: Vec<CuePart>,
 }
 
 /// One marker-text pair within a [`SubtitleCue`].
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CuePart {
-    /// The leading marker token that the cue-opening line declared, for
-    /// example `ttl` in `ttl: 《Song》`.
+    /// The leading marker token the line declared, for example `ttl`
+    /// in `ttl: 《Song》`.
     pub marker: String,
     /// Cue text, with line breaks preserved between the opening line
     /// and any continuation lines.
     pub text: String,
     /// Commentary attached to this part by `ann` lines beneath it,
-    /// one entry per line. Neither renderer reads it.
+    /// one entry per line.
     pub annotations: Vec<String>,
 }
 
@@ -88,8 +83,7 @@ enum ContinuationTarget {
 /// a continuation must carry.
 #[derive(Clone, Copy)]
 struct OpenMarkerLine {
-    /// Byte width of the line's `marker: ` prefix. A continuation of
-    /// it is indented by [`TIMESTAMP_PREFIX_WIDTH`] plus this width.
+    /// Byte width of the line's `marker: ` prefix.
     marker_prefix_width: usize,
     /// Where that continuation's text is appended.
     target: ContinuationTarget,
@@ -162,8 +156,7 @@ impl ClosingTag {
 
 /// Identifies one `<additive>` region within a source file.
 ///
-/// The index counts regions in the order they open, which keeps two
-/// adjacent regions distinct even though no event separates them.
+/// The index counts regions in the order they open.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct AdditiveRegionIndex(usize);
 
@@ -172,12 +165,9 @@ struct AdditiveRegionIndex(usize);
 struct OpenRegion {
     /// The index the region's cue groups carry.
     index: AdditiveRegionIndex,
-    /// Line of the `<additive>` that opened the region. Every
-    /// diagnostic that names the region points back at this line,
-    /// because that is where the author has to act.
+    /// Line of the `<additive>` that opened the region.
     opened_at: usize,
-    /// How many cue groups the region has collected so far. A region
-    /// that closes having collected none is rejected.
+    /// How many cue groups the region has collected so far.
     cue_count: usize,
 }
 
@@ -187,7 +177,7 @@ struct OpenRegion {
 struct RegionState {
     /// The region currently open, if any.
     open: Option<OpenRegion>,
-    /// How many regions have opened so far, which names the next one.
+    /// How many regions have opened so far.
     opened: usize,
 }
 
@@ -210,9 +200,8 @@ impl RegionState {
         Ok(())
     }
 
-    /// Closes the region currently open. Both rules are checked
-    /// before the region is released, so a rejected tag leaves the
-    /// state as it was rather than half closed.
+    /// Closes the region currently open. A rejected tag leaves the
+    /// state unchanged rather than half closed.
     fn close_region(&mut self) -> Result<(), AdditiveRegionError> {
         let open = self
             .open
@@ -230,13 +219,8 @@ impl RegionState {
     }
 }
 
-/// Payload of an [`Event::Cue`]. The start time is the one declared
-/// in the source file; the end time is resolved later by looking at
-/// the next event in the stream. The list of parts mirrors
-/// [`SubtitleCue::parts`]: a fresh timestamped header line opens a
-/// group with one part, a column-[`TIMESTAMP_PREFIX_WIDTH`] shorthand
-/// line appends a new part to that group, and a continuation line
-/// extends the most recent part's text.
+/// Payload of an [`Event::Cue`]: the start time declared in the
+/// source file and the parts collected under it.
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct CueGroup {
     start: Timestamp,
@@ -278,8 +262,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
     let mut last_cue_index: Option<usize> = None;
     // The marker line a continuation would extend, which is the one
     // most recently opened, whether by a cue part or by an
-    // annotation. A continuation is valid only when its indent equals
-    // `TIMESTAMP_PREFIX_WIDTH` plus that line's `marker: ` width.
+    // annotation.
     let mut open_marker_line: Option<OpenMarkerLine> = None;
     let mut regions = RegionState::default();
 
@@ -378,8 +361,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
 }
 
 /// Opens an additive region at an `<additive>` line. `opened_at` is
-/// the line that tag sits on; it travels down because [`OpenRegion`]
-/// records it, not because a diagnostic raised here needs to name it.
+/// the line that tag sits on.
 fn handle_additive_opening_tag_line(
     opened_at: usize,
     regions: &mut RegionState,
@@ -418,9 +400,7 @@ fn end_cue_scope(
 }
 
 /// Reads a column-zero header line. `opened_at` is the line that
-/// header sits on; a header that opens a cue records it in the
-/// [`CueGroup`], so that a cue the file never closes can still name
-/// the line that opened it. No diagnostic raised here reads it.
+/// header sits on.
 fn handle_header_line(
     body: &str,
     opened_at: usize,
@@ -477,12 +457,9 @@ fn handle_header_line(
             *last_cue_index = None;
             *open_marker_line = None;
         }
-        // `eov` is documented as "ignored entirely"; it pushes no
-        // event and so does not participate in the repeated- or
-        // out-of-order checks. This lets a source file note both
-        // `clr` and `eov` at the moment the video ends, since the
-        // `eov` is a documentation sentinel rather than a competing
-        // cue boundary.
+        // `eov` pushes no event, so it does not participate in the
+        // repeated- or out-of-order checks. This lets a source file
+        // note both `clr` and `eov` at the moment the video ends.
         return Ok(());
     }
 
@@ -568,8 +545,8 @@ fn handle_annotation_line(
     Ok(())
 }
 
-/// The cue group at `cue_index`, which the caller's `last_cue_index`
-/// guarantees is an [`Event::Cue`] rather than an [`Event::Clear`].
+/// The cue group at `cue_index`. Panics when the event at that index
+/// is not an [`Event::Cue`].
 fn cue_group_mut(events: &mut [Event], cue_index: usize) -> &mut CueGroup {
     let Event::Cue(group) = &mut events[cue_index] else {
         unreachable!("last_cue_index must point at a Cue event");
@@ -577,8 +554,7 @@ fn cue_group_mut(events: &mut [Event], cue_index: usize) -> &mut CueGroup {
     group
 }
 
-/// The part a continuation line or an annotation line attaches to:
-/// the most recently opened part of the cue group at `cue_index`.
+/// The most recently opened part of the cue group at `cue_index`.
 fn last_part_mut(events: &mut [Event], cue_index: usize) -> &mut CuePart {
     cue_group_mut(events, cue_index)
         .parts
@@ -595,8 +571,8 @@ fn handle_continuation_line(
     let cue_index =
         last_cue_index.expect("indent matched continuation width, so a prior cue must exist");
     // Only cue text is checked for the reserved tag delimiters.
-    // Annotation text reaches no renderer, so `<` and `>` carry no
-    // meaning there and are ordinary punctuation.
+    // Only cue text is checked for the reserved tag delimiters; `<`
+    // and `>` are ordinary punctuation in annotation text.
     if matches!(target, ContinuationTarget::PartText) {
         reject_reserved_cue_text_characters(body)?;
     }
@@ -635,16 +611,13 @@ fn parse_marker_part(body: &str) -> Result<(MarkerName, &str), ParseLyricsErrorK
 }
 
 /// Byte width of `marker: ` (the marker name, a colon, and one
-/// ASCII space). Used to compute the expected indent of a
-/// continuation line under the part it continues.
+/// ASCII space).
 fn marker_prefix_width(marker: &str) -> usize {
     marker.len() + 2
 }
 
 /// Rejects a new event whose start time matches or precedes the
-/// most recent recorded event. Skipped for `eov` lines because
-/// `eov` does not push an event and therefore should not compete
-/// for the same start-time slot as a real cue or `clr`.
+/// most recent recorded event.
 fn check_event_order(start: Timestamp, events: &[Event]) -> Result<(), ParseLyricsErrorKind> {
     let Some(previous_start) = events.last().map(Event::start) else {
         return Ok(());
@@ -712,12 +685,8 @@ fn resolve_cues(events: Vec<Event>) -> Result<Vec<SubtitleCue>, ParseLyricsError
 /// A copy of `part` for the cues below it in the same additive
 /// region.
 ///
-/// Only the rendered halves of a part repeat. An annotation documents
-/// the line its author wrote it under, so carrying it forward would
-/// attribute one note to every cue in the rest of the region; the copy
-/// therefore starts with none. Neither renderer reads annotations, so
-/// the choice is invisible in the output and matters only to a reader
-/// of the parsed cues.
+/// The copy carries the marker and text of `part` but none of its
+/// annotations.
 fn carried_part(part: &CuePart) -> CuePart {
     CuePart {
         marker: part.marker.clone(),
@@ -735,9 +704,7 @@ fn annotation_body(body: &str) -> Option<&str> {
 
 /// Splits a line body like `marker: text` into its two halves. Returns
 /// `None` when the line has no `:` separator or when the marker half
-/// is empty; the caller reports this as [`ParseLyricsErrorKind::MissingMarker`]
-/// because every cue-opening line in the source format is expected to
-/// carry a marker.
+/// is empty.
 fn split_marker(body: &str) -> Option<(&str, &str)> {
     let (head, tail) = body.split_once(':')?;
     let marker = head.trim();
@@ -748,8 +715,7 @@ fn split_marker(body: &str) -> Option<(&str, &str)> {
 }
 
 /// Rejects cue text containing `<` or `>`, which the WebVTT cue-tag
-/// grammar reserves as tag delimiters. The renderer escapes the cue
-/// body, so neither could reach the output as itself. Reports the
+/// grammar reserves as tag delimiters. Reports the
 /// first offender only.
 fn reject_reserved_cue_text_characters(text: &str) -> Result<(), ParseLyricsErrorKind> {
     if let Some(character) = text.chars().find(|&c| matches!(c, '<' | '>')) {
