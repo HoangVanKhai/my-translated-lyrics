@@ -29,12 +29,14 @@ type Comparator<'a, Item> = Box<dyn Fn(&Item, &Item) -> Ordering + 'a>;
 pub struct FilteredIndex(usize);
 
 impl FilteredIndex {
-    /// The topmost visible row.
-    pub const FIRST: FilteredIndex = FilteredIndex(0);
-
     /// The visible row `position` rows from the top of the filtered view.
     pub fn new(position: usize) -> FilteredIndex {
         FilteredIndex(position)
+    }
+
+    /// The topmost visible row.
+    pub fn first() -> FilteredIndex {
+        FilteredIndex(0)
     }
 
     /// The row's distance from the top of the filtered view.
@@ -117,7 +119,7 @@ where
             items,
             query: String::new(),
             filtered,
-            cursor: FilteredIndex::FIRST,
+            cursor: FilteredIndex::first(),
             order: None,
         }
     }
@@ -235,7 +237,7 @@ where
             })
             .collect();
         self.sort_filtered();
-        self.cursor = FilteredIndex::FIRST;
+        self.cursor = FilteredIndex::first();
     }
 }
 

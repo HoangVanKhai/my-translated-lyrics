@@ -96,7 +96,7 @@ fn scroll_offset_keeps_the_cursor_on_screen() {
     // The cursor fits within the first page, so no scrolling.
     assert_eq!(
         scroll_offset(FilteredIndex::new(2), Height::new(5)),
-        FilteredIndex::FIRST,
+        FilteredIndex::first(),
     );
     // The cursor sits past the page, so the window scrolls to show it.
     assert_eq!(

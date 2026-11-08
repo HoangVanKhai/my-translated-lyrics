@@ -48,7 +48,7 @@ fn empty_query_shows_every_row() {
     let rows = sample();
     let selector = Selector::new(&rows);
     assert_eq!(selector.filtered(), &items([0, 1, 2]));
-    assert_eq!(selector.cursor(), FilteredIndex::FIRST);
+    assert_eq!(selector.cursor(), FilteredIndex::first());
 }
 
 #[test]
@@ -107,7 +107,7 @@ fn cursor_moves_within_bounds() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
     selector.move_up(); // already at the top, stays put
-    assert_eq!(selector.cursor(), FilteredIndex::FIRST);
+    assert_eq!(selector.cursor(), FilteredIndex::first());
     selector.move_down();
     selector.move_down();
     assert_eq!(selector.cursor(), FilteredIndex::new(2));
@@ -127,7 +127,7 @@ fn refiltering_resets_the_cursor_to_the_top() {
     // Every English title contains an "e", so the rows stay visible and
     // only the cursor resets.
     selector.push_char('e');
-    assert_eq!(selector.cursor(), FilteredIndex::FIRST);
+    assert_eq!(selector.cursor(), FilteredIndex::first());
 }
 
 #[test]
@@ -173,7 +173,7 @@ fn a_visible_row_and_the_item_it_shows_diverge_under_an_order() {
     let mut selector = Selector::new(&rows);
     // Descending by English title puts the last item on the first row.
     selector.set_order(|left, right| right.en.cmp(left.en));
-    let first = FilteredIndex::FIRST;
+    let first = FilteredIndex::first();
     assert_eq!(selector.item_at(first), Some(ItemIndex::new(2)));
     assert_eq!(selector.item_at(first.down_by(2)), Some(ItemIndex::new(0)));
     // A row past the end of the filtered view shows no item at all.
