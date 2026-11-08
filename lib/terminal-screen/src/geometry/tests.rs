@@ -23,6 +23,15 @@ fn a_height_holds_the_rows_before_it() {
     assert!(!Height::ZERO.contains(Row::TOP));
 }
 
+/// The last row of a grid is one before its height, and a grid with no rows
+/// reports the top row rather than wrapping.
+#[test]
+fn a_height_names_its_last_row() {
+    assert_eq!(Height::new(2).last_row(), Row::new(1));
+    assert_eq!(Height::ONE.last_row(), Row::TOP);
+    assert_eq!(Height::ZERO.last_row(), Row::TOP);
+}
+
 /// A run fits when it ends at the right edge and not when it would cross it,
 /// which is the rule that clips a wide glyph rather than splitting it.
 #[test]

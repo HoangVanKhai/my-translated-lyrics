@@ -299,7 +299,7 @@ where
     let help = "↑/↓ move · type to search · ⌫ delete · ^⌫ back · ⏎ select · Esc/^Q quit";
     buffer.set_string(
         Column::LEFT,
-        Row::new(height.saturating_sub(1)),
+        rows.last_row(),
         &fit(help, columns),
         Style::DIM,
     );

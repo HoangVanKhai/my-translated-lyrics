@@ -204,17 +204,17 @@ impl Height {
     pub fn saturating_sub(self, other: Height) -> Height {
         Height(self.0.saturating_sub(other.0))
     }
+
+    /// The last row of a grid this tall, or the top row when the grid has no
+    /// rows at all.
+    pub fn last_row(self) -> Row {
+        Row(self.0.saturating_sub(1))
+    }
 }
 
 impl From<Height> for usize {
     fn from(height: Height) -> usize {
         usize::from(height.0)
-    }
-}
-
-impl From<Height> for u16 {
-    fn from(height: Height) -> Self {
-        height.0
     }
 }
 

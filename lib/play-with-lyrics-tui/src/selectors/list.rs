@@ -106,7 +106,7 @@ where
                                 Some(Button::Forward) => {}
                                 None => {}
                             }
-                        } else if clicked_row < Row::new(rows.saturating_sub(1))
+                        } else if clicked_row < Height::new(rows).last_row()
                             && let Some(index) = clicked_row
                                 .rows_below(FIRST_LIST_ROW)
                                 .map(|rows_down| ItemIndex::new(usize::from(rows_down)))
@@ -163,7 +163,7 @@ where
     let help = "↑/↓ move · ⌫/Esc back · ⏎/␣ select · ^Q quit";
     buffer.set_string(
         Column::LEFT,
-        height.pipe(u16::from).saturating_sub(1).pipe(Row::new),
+        height.last_row(),
         &fit(help, width),
         Style::DIM,
     );
