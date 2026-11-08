@@ -23,6 +23,13 @@ fn a_height_holds_the_rows_before_it() {
     assert!(!Height::ZERO.contains(Row::TOP));
 }
 
+/// The rows above a row are the ones before it, so the topmost row has none.
+#[test]
+fn a_row_counts_the_rows_above_it() {
+    assert_eq!(Row::new(3).rows_above(), Height::new(3));
+    assert_eq!(Row::TOP.rows_above(), Height::ZERO);
+}
+
 /// The last row of a grid is one before its height, and a grid with no rows
 /// reports the top row rather than wrapping.
 #[test]

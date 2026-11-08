@@ -76,6 +76,11 @@ impl Row {
         self.0.checked_sub(origin.0).map(Height)
     }
 
+    /// How many rows sit above this one.
+    pub fn rows_above(self) -> Height {
+        Height(self.0)
+    }
+
     /// This row and every row below it, ending at the last row a `u16` can
     /// name rather than wrapping back to the top.
     pub fn downwards(self) -> impl Iterator<Item = Row> {

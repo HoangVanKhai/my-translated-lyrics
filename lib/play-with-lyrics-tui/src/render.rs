@@ -244,14 +244,17 @@ pub(crate) fn scroll_offset(cursor: FilteredIndex, visible: Height) -> FilteredI
         .pipe(FilteredIndex::new)
 }
 
-/// The rows the table spends on chrome rather than on titles.
-const TABLE_CHROME_ROWS: Height = Height::new(4);
+/// The rows the help line occupies, below the table.
+const HELP_ROWS: Height = Height::ONE;
 
-/// The number of title rows that fit in a terminal `rows` rows tall, after
+/// The number of title rows that fit in a terminal `height` rows tall, after
 /// reserving the rows the page draws around the table. At least one row is
 /// always reported.
-pub(crate) fn visible_rows(rows: Height) -> Height {
-    rows.saturating_sub(TABLE_CHROME_ROWS).max(Height::ONE)
+pub(crate) fn visible_rows(height: Height) -> Height {
+    height
+        .saturating_sub(FIRST_DATA_ROW.rows_above())
+        .saturating_sub(HELP_ROWS)
+        .max(Height::ONE)
 }
 
 /// Draws a line of `(character, highlighted)` pairs into `buffer` at `row` over
