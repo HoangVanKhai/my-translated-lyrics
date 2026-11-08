@@ -87,6 +87,25 @@ fn eov_between_a_cue_and_its_continuation_leaves_the_cue_open() {
     assert_eq!(cues[0].end, Timestamp::new(0, 5, 0).unwrap());
 }
 
+/// An `eov` between a cue and a shorthand marker line leaves the cue
+/// open, so the shorthand marker attaches a second part to the cue
+/// above it.
+#[test]
+fn eov_between_a_cue_and_a_shorthand_marker_leaves_the_cue_open() {
+    let input = text_block_fnl! {
+        "00:00.000 ttl: title body"
+        "00:03.000 eov"
+        "          cre: credit body"
+        "00:05.000 clr"
+    };
+    let cues = parse_lyrics(input).unwrap();
+    assert_eq!(cues.len(), 1);
+    assert_eq!(cues[0].parts.len(), 2);
+    assert_eq!(cues[0].parts[1].marker, "cre");
+    assert_eq!(cues[0].parts[1].text, "credit body");
+    assert_eq!(cues[0].end, Timestamp::new(0, 5, 0).unwrap());
+}
+
 /// `eov` does not compete with the preceding `clr` for the same
 /// timestamp slot, so the two may share a timestamp to mark the
 /// end of the video at the moment the final cue clears.
