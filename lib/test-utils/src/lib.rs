@@ -248,8 +248,7 @@ pub fn video_title(title: impl Into<String>) -> VideoTitle {
 }
 
 /// A descriptor for one fixture video. Both names are taken as the types
-/// the descriptor declares, so a call that swapped the collection for the
-/// title would not compile.
+/// the descriptor declares.
 pub fn video_desc(
     collection: CollectionName,
     title: VideoTitle,

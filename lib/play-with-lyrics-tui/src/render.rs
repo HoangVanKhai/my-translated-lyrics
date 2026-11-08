@@ -2,11 +2,6 @@
 //! column budget, laying out the three-column title line, drawing a highlighted
 //! line into the frame buffer, and the small geometry helpers the pages share
 //! with the click handling.
-//!
-//! Three unrelated counts meet here and none stands in for another. Display
-//! widths and screen positions are the `terminal_screen` geometry types,
-//! indices are [`ItemIndex`], [`FilteredIndex`], and [`TitleColumn`], and row
-//! counts are [`Height`].
 
 use fuzzy_select::selection::{FilteredIndex, ItemIndex};
 use pipe_trait::Pipe;
@@ -45,7 +40,7 @@ fn char_width(character: char) -> Width {
 /// A column count narrowed to a [`Width`], saturating rather than wrapping.
 fn saturating_width(columns: usize) -> Width {
     // Text too wide for a `u16` measures as exactly `u16::MAX`, so a cell
-    // budget that wide would accept it whole. No terminal is that wide.
+    // budget that wide would accept it whole.
     u16::try_from(columns).unwrap_or(u16::MAX).pipe(Width::new)
 }
 
@@ -199,8 +194,7 @@ pub(crate) fn column_spans(total: Width) -> [ColumnSpan; 3] {
 /// then Vietnamese, then Chinese.
 ///
 /// It indexes the table's layout rather than the screen columns that layout
-/// occupies. Only [`column_at`] constructs one, so every value names a real
-/// column of the table.
+/// occupies.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) struct TitleColumn(usize);
 
@@ -250,8 +244,7 @@ pub(crate) fn scroll_offset(cursor: FilteredIndex, visible: Height) -> FilteredI
         .pipe(FilteredIndex::new)
 }
 
-/// The rows the table spends on chrome rather than on titles: the top bar, the
-/// search prompt, the column header, and the help line.
+/// The rows the table spends on chrome rather than on titles.
 const TABLE_CHROME_ROWS: Height = Height::new(4);
 
 /// The number of title rows that fit in a terminal `rows` rows tall, after

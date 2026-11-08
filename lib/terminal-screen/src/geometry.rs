@@ -1,8 +1,7 @@
 //! The coordinates and extents of the terminal grid.
 //!
 //! A cell is located by a [`Column`] and a [`Row`]; a region is measured by a
-//! [`Width`] and a [`Height`]. The four are distinct types, so none of them
-//! stands in for another.
+//! [`Width`] and a [`Height`].
 
 use std::ops::{Add, AddAssign, Sub};
 

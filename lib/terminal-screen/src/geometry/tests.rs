@@ -70,8 +70,7 @@ fn a_grid_enumerates_its_columns_and_rows_in_order() {
 }
 
 /// The rows from one downwards end at the last row a `u16` can name rather
-/// than wrapping back to the top, so a caller laying out one row per item
-/// runs out of rows instead of drawing over the rows it already filled.
+/// than wrapping back to the top.
 #[test]
 fn the_rows_downwards_from_one_end_at_the_last() {
     let first_three: Vec<Row> = Row::new(2).downwards().take(3).collect();

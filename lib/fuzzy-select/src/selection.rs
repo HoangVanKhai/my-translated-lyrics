@@ -5,9 +5,8 @@
 //! behavior can be unit tested without a TTY. A terminal front-end drives
 //! one of these while rendering and reading key events.
 //!
-//! Two index spaces meet here: [`FilteredIndex`] names a visible row and
-//! [`ItemIndex`] names an entry of the borrowed slice. [`Selector::item_at`]
-//! converts one into the other.
+//! [`FilteredIndex`] names a visible row and [`ItemIndex`] names an entry of
+//! the borrowed slice. [`Selector::item_at`] converts one into the other.
 
 use crate::fuzzy::contains_substring;
 use pipe_trait::Pipe;
@@ -22,8 +21,7 @@ type Comparator<'a, Item> = Box<dyn Fn(&Item, &Item) -> Ordering + 'a>;
 /// numbered from zero upwards without gaps, however many items the query
 /// hides between them.
 ///
-/// It is not an index into the borrowed slice of items;
-/// [`Selector::item_at`] is the only conversion between the two spaces.
+/// It is not an index into the borrowed slice of items.
 #[derive(Clone, Copy, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
 pub struct FilteredIndex(usize);
 
