@@ -33,12 +33,12 @@ impl FilteredIndex {
     pub const FIRST: FilteredIndex = FilteredIndex(0);
 
     /// The visible row `position` rows from the top of the filtered view.
-    pub const fn new(position: usize) -> FilteredIndex {
+    pub fn new(position: usize) -> FilteredIndex {
         FilteredIndex(position)
     }
 
     /// The row's distance from the top of the filtered view.
-    pub const fn get(self) -> usize {
+    pub fn get(self) -> usize {
         self.0
     }
 
@@ -55,12 +55,12 @@ pub struct ItemIndex(usize);
 
 impl ItemIndex {
     /// The item `index` places into the borrowed slice.
-    pub const fn new(index: usize) -> ItemIndex {
+    pub fn new(index: usize) -> ItemIndex {
         ItemIndex(index)
     }
 
     /// The item's position in the borrowed slice.
-    pub const fn get(self) -> usize {
+    pub fn get(self) -> usize {
         self.0
     }
 

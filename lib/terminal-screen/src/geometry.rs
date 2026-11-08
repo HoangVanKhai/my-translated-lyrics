@@ -15,12 +15,12 @@ impl Column {
     pub const LEFT: Column = Column(0);
 
     /// The column `offset` columns from the left edge.
-    pub const fn new(offset: u16) -> Column {
+    pub fn new(offset: u16) -> Column {
         Column(offset)
     }
 
     /// The column's distance from the left edge.
-    pub const fn get(self) -> u16 {
+    pub fn get(self) -> u16 {
         self.0
     }
 
@@ -67,7 +67,7 @@ impl Row {
     }
 
     /// The row's distance from the top edge.
-    pub const fn get(self) -> u16 {
+    pub fn get(self) -> u16 {
         self.0
     }
 
@@ -108,7 +108,7 @@ impl Width {
     }
 
     /// The number of columns spanned.
-    pub const fn get(self) -> u16 {
+    pub fn get(self) -> u16 {
         self.0
     }
 
