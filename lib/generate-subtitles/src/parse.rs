@@ -56,8 +56,6 @@ impl LineNumber {
 
     /// Convert a 0-based index into a line number.
     pub fn from_index(index: usize) -> LineNumber {
-        // A file holds no more lines than it has bytes, so the saturation is
-        // unreachable rather than a rounding of a real line number.
         NonZeroUsize::MIN.saturating_add(index).pipe(LineNumber)
     }
 }
