@@ -11,8 +11,7 @@ use std::time::SystemTime;
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct DeviceId(u64);
 
-/// A file's inode number within its device. Two snapshots naming the same
-/// inode on the same device name the same file.
+/// A file's inode number within its device.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct Inode(u64);
 
