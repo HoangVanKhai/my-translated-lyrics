@@ -10,6 +10,7 @@ use crate::selectors::row_style;
 use crate::terminal::TerminalGuard;
 use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers, MouseButton, MouseEventKind};
 use fuzzy_select::selection::ItemIndex;
+use pipe_trait::Pipe;
 use std::io::{self, Write};
 use std::time::SystemTime;
 use terminal_screen::{Column, Height, Row, Screen, Style, Width};
@@ -70,7 +71,7 @@ where
                 // With no text to type, Space confirms the choice like Enter.
                 KeyCode::Enter | KeyCode::Char(' ') => {
                     if !labels.is_empty() {
-                        return Ok(Navigation::Selected(cursor.get()));
+                        return cursor.get().pipe(Navigation::Selected).pipe(Ok);
                     }
                     continue;
                 }
@@ -100,7 +101,7 @@ where
                                 Some(Button::Exit) => return Ok(Navigation::Quit),
                                 Some(Button::Back) => return Ok(Navigation::Back),
                                 Some(Button::Forward) if !labels.is_empty() => {
-                                    return Ok(Navigation::Selected(cursor.get()));
+                                    return cursor.get().pipe(Navigation::Selected).pipe(Ok);
                                 }
                                 Some(Button::Forward) => {}
                                 None => {}
@@ -116,7 +117,7 @@ where
                             last_click = Some((now, index));
                             cursor = index;
                             if confirm {
-                                return Ok(Navigation::Selected(index.get()));
+                                return index.get().pipe(Navigation::Selected).pipe(Ok);
                             }
                         }
                     }
