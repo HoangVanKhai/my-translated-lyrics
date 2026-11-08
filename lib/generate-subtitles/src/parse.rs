@@ -56,7 +56,10 @@ impl LineNumber {
 
     /// Convert a 0-based index into a line number.
     pub fn from_index(index: usize) -> LineNumber {
-        NonZeroUsize::MIN.saturating_add(index).pipe(LineNumber)
+        NonZeroUsize::MIN
+            .checked_add(index)
+            .expect("a file holds no more lines than it has bytes")
+            .pipe(LineNumber)
     }
 }
 
