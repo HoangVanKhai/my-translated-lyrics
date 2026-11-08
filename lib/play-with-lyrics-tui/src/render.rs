@@ -12,22 +12,18 @@ use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 /// The screen row of the search bar, below the top bar.
 pub(crate) const SEARCH_ROW: u16 = 1;
 
-/// The screen row of the column header, below the top bar and the search
-/// prompt. The header is clickable, so the renderer and the click handling
-/// share this.
+/// The screen row of the column header.
 pub(crate) const HEADER_ROW: u16 = 2;
 
-/// The screen row of the first title in the table, below the top bar, the
-/// search prompt, and the column header. Shared by the renderer and the click
-/// handling so they agree on where the rows are.
+/// The screen row of the first title in the table.
 pub(crate) const DATA_ROW_OFFSET: usize = 3;
 
 /// The screen row of the first item in a list, directly below the top bar,
 /// whose centered title names the page.
 pub(crate) const LIST_ROW_OFFSET: usize = 1;
 
-/// How close together two clicks on the same row must be to count as a double
-/// click, which confirms the choice.
+/// How close together two clicks on the same item must be to count as a
+/// double click.
 const DOUBLE_CLICK_WINDOW: Duration = Duration::from_millis(500);
 
 /// Pads or truncates `text` to exactly `width` display columns, pairing each
@@ -106,8 +102,7 @@ pub(crate) fn columns_line(english: &str, vietnamese: &str, chinese: &str, total
 }
 
 /// The screen columns each of the three title cells spans, matching the layout
-/// of [`columns_line`]. The header renderer and the header click handling share
-/// this so they agree on where each column sits.
+/// of [`columns_line`].
 pub(crate) fn column_spans(total: usize) -> [Range<usize>; 3] {
     let separator = COLUMN_SEPARATOR.width();
     let available = total.saturating_sub(separator * 2);
@@ -155,9 +150,8 @@ pub(crate) fn scroll_offset(cursor: usize, visible: usize) -> usize {
 }
 
 /// The number of title rows that fit in a terminal `rows` rows tall, after
-/// reserving the top bar, the prompt line, the header line, and the help line.
-/// At least one row is always reported, so the table never collapses to
-/// nothing.
+/// reserving the rows the page draws around the table. At least one row is
+/// always reported.
 pub(crate) fn visible_rows(rows: usize) -> usize {
     rows.saturating_sub(4).max(1)
 }
@@ -222,8 +216,7 @@ impl Button {
 
 /// The screen columns each top-bar button spans, as half-open `[start, end)`
 /// ranges, for a bar `width` columns wide. Back and Forward sit on the left;
-/// Exit is right-aligned. The renderer and the click handling share this, so
-/// they agree on where each button sits.
+/// Exit is right-aligned.
 pub(crate) fn button_columns(width: usize) -> [(Button, Range<usize>); 3] {
     let back = 0..Button::Back.width();
     let forward_start = back.end + BUTTON_GAP;

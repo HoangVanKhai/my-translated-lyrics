@@ -27,13 +27,6 @@ pub(super) fn bilingual_video(english: &str, vietnamese: String) -> Video {
     }
 }
 
-// The interactive loops read their events through the `ReadEvent` seam, so a
-// test runs them with a fake event source instead of a terminal. Following
-// the dependency-injection pattern, each test below defines its own fake and
-// its own scripted queue inside the test body, so the tests share no state.
-// The small stateless helpers below carry no state and so stay at module
-// scope.
-
 /// A key press with no modifiers.
 pub(super) fn press(code: KeyCode) -> Event {
     Event::Key(KeyEvent::new(code, KeyModifiers::NONE))
