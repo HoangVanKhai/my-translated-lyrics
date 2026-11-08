@@ -90,12 +90,12 @@ where
                     // A single click highlights the label on the clicked row; a
                     // double click on the same item also selects it.
                     MouseEventKind::Down(MouseButton::Left) => {
-                        let (columns, rows) = Sys::window_size().unwrap_or((80, 24));
+                        let (width, height) = Sys::window_size().unwrap_or((80, 24));
                         let clicked_row = Row::new(mouse.row);
                         // A click on the top bar acts on the button under the
                         // pointer, where "Forward" matches pressing Enter.
                         if clicked_row == Row::TOP {
-                            match button_at(Width::new(columns), Column::new(mouse.column)) {
+                            match button_at(Width::new(width), Column::new(mouse.column)) {
                                 Some(Button::Exit) => return Ok(Navigation::Quit),
                                 Some(Button::Back) => return Ok(Navigation::Back),
                                 Some(Button::Forward) if !labels.is_empty() => {
@@ -104,7 +104,7 @@ where
                                 Some(Button::Forward) => {}
                                 None => {}
                             }
-                        } else if clicked_row < Height::new(rows).last_row()
+                        } else if clicked_row < Height::new(height).last_row()
                             && let Some(index) = clicked_row
                                 .rows_below(FIRST_LIST_ROW)
                                 .map(|rows_down| ItemIndex::new(usize::from(rows_down)))

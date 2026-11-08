@@ -102,8 +102,8 @@ where
                     // A single click highlights the video on the clicked row; a
                     // double click on the same item also selects it.
                     MouseEventKind::Down(MouseButton::Left) => {
-                        let (columns, rows) = Sys::window_size().unwrap_or((80, 24));
-                        let width = Width::new(columns);
+                        let (width, height) = Sys::window_size().unwrap_or((80, 24));
+                        let width = Width::new(width);
                         let clicked_row = Row::new(mouse.row);
                         let clicked_column = Column::new(mouse.column);
                         // A click on the top bar acts on the button under the
@@ -128,7 +128,7 @@ where
                                 selector.set_order(video_order(sort.clone()));
                             }
                         } else {
-                            let visible = visible_rows(Height::new(rows));
+                            let visible = visible_rows(Height::new(height));
                             let offset = scroll_offset(selector.cursor(), visible);
                             // Only the data rows are clickable; a click on the
                             // help line below them must not reach a scrolled-off
@@ -183,12 +183,12 @@ fn video_order(sort: ColumnSort<Language>) -> impl Fn(&Video, &Video) -> Orderin
 
 /// Draws the search bar at [`SEARCH_ROW`]: a dimmed magnifier, the italic
 /// "Search:" label, and the typed `query` in bold.
-pub(super) fn render_search_bar(buffer: &mut Buffer, columns: Width, query: &str) {
+pub(super) fn render_search_bar(buffer: &mut Buffer, width: Width, query: &str) {
     // Chain off each segment's end column so the layout matches the buffer's own
     // widths; measuring separately would disagree on the magnifier's width.
     let after_magnifier = buffer.set_string(Column::LEFT, SEARCH_ROW, "🔍︎", Style::DIM);
     let after_label = buffer.set_string(after_magnifier, SEARCH_ROW, " Search: ", Style::ITALIC);
-    let shown = fit(query, columns.remaining_from(after_label));
+    let shown = fit(query, width.remaining_from(after_label));
     buffer.set_string(after_label, SEARCH_ROW, &shown, Style::BOLD);
 }
 
@@ -197,7 +197,7 @@ pub(super) fn render_search_bar(buffer: &mut Buffer, columns: Width, query: &str
 /// the pointer drops the dim to read brighter.
 pub(super) fn render_header(
     buffer: &mut Buffer,
-    columns: Width,
+    width: Width,
     sort: &ColumnSort<Language>,
     hover: Option<(Column, Row)>,
 ) {
@@ -216,8 +216,8 @@ pub(super) fn render_header(
         text
     };
     let labels = COLUMN_LANGUAGES.map(label);
-    let header = columns_line(&labels[0], &labels[1], &labels[2], columns);
-    let spans = column_spans(columns);
+    let header = columns_line(&labels[0], &labels[1], &labels[2], width);
+    let spans = column_spans(width);
     // The headers are bold and dimmed.
     buffer.set_string(
         Column::LEFT,
@@ -232,7 +232,7 @@ pub(super) fn render_header(
     // The column under the pointer drops the dim.
     if let Some((hover_column, hover_row)) = hover
         && hover_row == HEADER_ROW
-        && let Some(column) = column_at(columns, hover_column)
+        && let Some(column) = column_at(width, hover_column)
     {
         let span = spans[column.position()];
         let fitted = fit(&labels[column.position()], span.width());
@@ -252,20 +252,20 @@ where
     Sys: WindowSize,
 {
     let (width, height) = Sys::window_size().unwrap_or((80, 24));
-    let columns = Width::new(width);
-    let rows = Height::new(height);
-    let buffer = screen.begin(columns, rows, output)?;
+    let width = Width::new(width);
+    let height = Height::new(height);
+    let buffer = screen.begin(width, height, output)?;
 
     // The top bar names the page; the table is the first page, so going back is
     // not available here.
-    render_top_bar(buffer, columns, "Select a Video", false, hover);
+    render_top_bar(buffer, width, "Select a Video", false, hover);
 
-    render_search_bar(buffer, columns, selector.query());
+    render_search_bar(buffer, width, selector.query());
 
-    render_header(buffer, columns, sort, hover);
+    render_header(buffer, width, sort, hover);
 
     let selected = selector.selected_index();
-    let visible = visible_rows(rows);
+    let visible = visible_rows(height);
     let offset = scroll_offset(selector.cursor(), visible);
 
     let query = selector.query();
@@ -285,7 +285,7 @@ where
                 (vietnamese, &match_mask(vietnamese, query)),
                 (chinese, &match_mask(chinese, query)),
             ],
-            columns,
+            width,
         );
         // The highlighted row is the one showing the selected item, which
         // stays correct however the window is scrolled or the table sorted.
@@ -296,8 +296,8 @@ where
     let help = "↑/↓ move · type to search · ⌫ delete · ^⌫ back · ⏎ select · Esc/^Q quit";
     buffer.set_string(
         Column::LEFT,
-        rows.last_row(),
-        &fit(help, columns),
+        height.last_row(),
+        &fit(help, width),
         Style::DIM,
     );
 
