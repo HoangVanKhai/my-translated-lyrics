@@ -1,7 +1,7 @@
 use core::fmt;
 use pipe_trait::Pipe;
 use std::cell::OnceCell;
-use std::fs::{read_to_string, symlink_metadata};
+use std::fs::{Metadata, read_to_string, symlink_metadata};
 use std::io;
 use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
@@ -11,13 +11,31 @@ use std::time::SystemTime;
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct DeviceId(u64);
 
+impl DeviceId {
+    fn from_metadata(stats: &Metadata) -> DeviceId {
+        stats.dev().pipe(DeviceId)
+    }
+}
+
 /// A file's inode number within its device.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct Inode(u64);
 
+impl Inode {
+    fn from_metadata(stats: &Metadata) -> Inode {
+        stats.ino().pipe(Inode)
+    }
+}
+
 /// A file's length in bytes.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct FileSize(u64);
+
+impl FileSize {
+    fn from_metadata(stats: &Metadata) -> FileSize {
+        stats.len().pipe(FileSize)
+    }
+}
 
 #[derive(Clone)]
 pub struct FileSnapshot {
@@ -48,9 +66,9 @@ impl FileSnapshot {
         let modified = stats.modified()?;
         Ok(FileSnapshot {
             path,
-            dev: DeviceId(stats.dev()),
-            inode: Inode(stats.ino()),
-            size: FileSize(stats.len()),
+            dev: DeviceId::from_metadata(&stats),
+            inode: Inode::from_metadata(&stats),
+            size: FileSize::from_metadata(&stats),
             modified,
             content: OnceCell::new(),
         })
