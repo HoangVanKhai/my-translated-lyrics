@@ -212,5 +212,11 @@ impl From<Height> for usize {
     }
 }
 
+impl From<Height> for u16 {
+    fn from(height: Height) -> Self {
+        height.0
+    }
+}
+
 #[cfg(test)]
 mod tests;

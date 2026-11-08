@@ -147,7 +147,8 @@ where
 {
     let (width, height) = Sys::window_size().unwrap_or((80, 24));
     let width = Width::new(width);
-    let buffer = screen.begin(width, Height::new(height), output)?;
+    let height = Height::new(height);
+    let buffer = screen.begin(width, height, output)?;
 
     // The top bar names the page; a list page always follows an earlier page,
     // so going back is available.
@@ -162,7 +163,7 @@ where
     let help = "↑/↓ move · ⌫/Esc back · ⏎/␣ select · ^Q quit";
     buffer.set_string(
         Column::LEFT,
-        Row::new(height.saturating_sub(1)),
+        height.pipe(u16::from).saturating_sub(1).pipe(Row::new),
         &fit(help, width),
         Style::DIM,
     );
