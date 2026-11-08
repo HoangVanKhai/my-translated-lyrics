@@ -7,34 +7,30 @@ use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
 use std::time::SystemTime;
 
-/// The device a file lives on, as the filesystem reports it.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-struct DeviceId(u64);
+macro_rules! file_metadata_types {
+    ($(
+        $(#[$attrs:meta])*
+        $name:ident : $inner:ty = $method:ident;
+    )+) => {$(
+        $(#[$attrs])*
+        #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+        struct $name($inner);
 
-impl DeviceId {
-    fn from_metadata(stats: &Metadata) -> DeviceId {
-        stats.dev().pipe(DeviceId)
-    }
+        impl $name {
+            fn from_metadata(stats: &Metadata) -> $name {
+                stats.$method().pipe($name)
+            }
+        }
+    )+};
 }
 
-/// A file's inode number within its device.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-struct Inode(u64);
-
-impl Inode {
-    fn from_metadata(stats: &Metadata) -> Inode {
-        stats.ino().pipe(Inode)
-    }
-}
-
-/// A file's length in bytes.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-struct FileSize(u64);
-
-impl FileSize {
-    fn from_metadata(stats: &Metadata) -> FileSize {
-        stats.len().pipe(FileSize)
-    }
+file_metadata_types! {
+    /// The device a file lives on, as the filesystem reports it.
+    DeviceId : u64 = dev;
+    /// A file's inode number within its device.
+    Inode : u64 = ino;
+    /// A file's length in bytes.
+    FileSize : u64 = len;
 }
 
 #[derive(Clone)]
