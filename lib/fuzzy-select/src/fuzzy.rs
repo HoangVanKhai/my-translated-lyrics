@@ -11,9 +11,10 @@
 //!   implements the subsequence test and [`resolve_unique`] enforces the
 //!   "exactly one" rule.
 //!
-//! Both compare characters the same way: case and diacritics are matched
-//! asymmetrically, so a generic query (uniform case, no marks) matches
-//! broadly while a specific one (mixed case, or marks) matches exactly.
+//! All of the matchers compare characters the same way: case and
+//! diacritics are matched asymmetrically, so a generic query (uniform
+//! case, no marks) matches broadly while a specific one (mixed case, or
+//! marks) matches exactly.
 
 use derive_more::Display;
 use itertools::Itertools;
@@ -23,8 +24,7 @@ use pipe_trait::Pipe;
 /// order but not necessarily contiguously. Case and diacritics are matched
 /// asymmetrically (see the module docs). An empty query matches everything.
 ///
-/// This is the "fuzzy" match used to resolve a command-line flag value to
-/// a single candidate. For example, the query `cld` matches `celluloid`.
+/// For example, the query `cld` matches `celluloid`.
 pub fn fuzzy_subsequence(query: &str, text: &str) -> bool {
     let case_insensitive = is_case_insensitive(query);
     let mut haystack = text.chars();
@@ -43,8 +43,6 @@ pub fn fuzzy_subsequence(query: &str, text: &str) -> bool {
 /// query with no spaces ignores the spacing of the text and may match across
 /// word boundaries, while a query that keeps a space requires the text to be
 /// spaced the same way.
-///
-/// This is the "contains the word" filter used by the interactive table.
 pub fn contains_substring(text: &str, query: &str) -> bool {
     let query = normalize_whitespace(query);
     if query.is_empty() {
@@ -77,9 +75,9 @@ fn normalize_whitespace(text: &str) -> String {
     text.split_whitespace().join(" ")
 }
 
-/// Reports which characters of `text` a typed `query` matches, for
-/// highlighting in the interactive table. The returned mask is aligned with
-/// `text.chars()`: `true` marks a character that is part of a match.
+/// Reports which characters of `text` a typed `query` matches. The returned
+/// mask is aligned with `text.chars()`: `true` marks a character that is part
+/// of a match.
 ///
 /// Matching follows the same rules as [`contains_substring`], so case and diacritics
 /// fold the same way and the same spacing rules apply. Occurrences are
@@ -243,8 +241,7 @@ pub enum ResolveError {
 ///
 /// The `get_keys` function yields the strings a candidate is matched against.
 /// A candidate matches when at least one of its keys fuzzily contains the
-/// query as a subsequence. The index lets the caller locate the match in the
-/// original slice without comparing pointers. The result is an error when zero
+/// query as a subsequence. The result is an error when zero
 /// candidates match ([`ResolveError::NoMatch`]) or when more than one does
 /// ([`ResolveError::Ambiguous`]).
 pub fn resolve_unique<'a, Item, GetKeys, Keys>(
