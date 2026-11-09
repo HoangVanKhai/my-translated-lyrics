@@ -125,7 +125,7 @@ where
                                 selector.set_order(video_order(sort.clone()));
                             }
                         } else {
-                            let visible = visible_rows(height);
+                            let visible = visible_rows(height as usize);
                             let offset = scroll_offset(selector.cursor(), visible);
                             // Only the data rows are clickable; a click on the
                             // help line below them must not reach a scrolled-off
@@ -257,7 +257,7 @@ where
 
     let filtered = selector.filtered();
     let cursor = selector.cursor();
-    let visible = visible_rows(height);
+    let visible = visible_rows(height as usize);
     let offset = scroll_offset(cursor, visible);
 
     let query = selector.query();

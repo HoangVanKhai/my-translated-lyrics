@@ -149,11 +149,11 @@ pub(crate) fn scroll_offset(cursor: usize, visible: usize) -> usize {
     cursor.saturating_sub(visible.saturating_sub(1))
 }
 
-/// The number of title rows that fit in a terminal `height` rows tall, after
+/// The number of title rows that fit in a terminal `rows` rows tall, after
 /// reserving the rows the page draws around the table. At least one row is
 /// always reported.
-pub(crate) fn visible_rows(height: u16) -> usize {
-    usize::from(height).saturating_sub(4).max(1)
+pub(crate) fn visible_rows(rows: usize) -> usize {
+    rows.saturating_sub(4).max(1)
 }
 
 /// Draws a line of `(character, highlighted)` pairs into `buffer` at `row` over
