@@ -26,22 +26,37 @@ pub(crate) const FIRST_LIST_ROW: Row = Row::new(1);
 /// double click.
 const DOUBLE_CLICK_WINDOW: Duration = Duration::from_millis(500);
 
-/// The display width of `text`.
-fn text_width(text: &str) -> Width {
-    text.width().pipe(saturating_width)
+/// The columns a control character occupies. The terminal draws no glyph for
+/// one, so it takes none of its own.
+const CONTROL_CHARACTER_COLUMNS: usize = 0;
+
+/// The display width of `text`, or `None` when the text is wider than
+/// `limit`.
+fn text_width_within(text: &str, limit: Width) -> Option<Width> {
+    text.width()
+        .pipe(u16::try_from)
+        .ok()
+        .map(Width::new)
+        .filter(|&width| width <= limit)
 }
 
-/// The display width of `character`, which is none for a character with no
-/// column of its own.
+/// The display width of a fixed string this module draws, such as a button
+/// label or the separator between two cells.
+fn literal_width(text: &'static str) -> Width {
+    text.width()
+        .pipe(u16::try_from)
+        .expect("a fixed string drawn here spans a few columns")
+        .pipe(Width::new)
+}
+
+/// The display width of `character`.
 fn char_width(character: char) -> Width {
-    character.width().unwrap_or(0).pipe(saturating_width)
-}
-
-/// A column count narrowed to a [`Width`], saturating rather than wrapping.
-fn saturating_width(columns: usize) -> Width {
-    // Text too wide for a `u16` measures as exactly `u16::MAX`, so a cell
-    // budget that wide would accept it whole.
-    u16::try_from(columns).unwrap_or(u16::MAX).pipe(Width::new)
+    character
+        .width()
+        .unwrap_or(CONTROL_CHARACTER_COLUMNS)
+        .pipe(u16::try_from)
+        .expect("a character spans at most two columns")
+        .pipe(Width::new)
 }
 
 /// Blanks filling `width` columns, none of them highlighted.
@@ -57,9 +72,8 @@ fn blanks(width: Width) -> impl Iterator<Item = (char, bool)> {
 /// ideograph counts as two columns.
 pub(crate) fn fit_chars(text: &str, mask: &[bool], width: Width) -> Vec<(char, bool)> {
     let characters: Vec<char> = text.chars().collect();
-    let full_width = text_width(text);
     let mut result: Vec<(char, bool)> = Vec::new();
-    if full_width <= width {
+    if let Some(full_width) = text_width_within(text, width) {
         for (index, &character) in characters.iter().enumerate() {
             result.push((character, mask.get(index).copied().unwrap_or(false)));
         }
@@ -100,7 +114,7 @@ pub(crate) const COLUMN_SEPARATOR: &str = " │ ";
 
 /// The columns the separator between two title cells occupies.
 fn separator_width() -> Width {
-    text_width(COLUMN_SEPARATOR)
+    literal_width(COLUMN_SEPARATOR)
 }
 
 /// The width of each of the three title cells in a line `total` columns wide,
@@ -306,7 +320,7 @@ impl Button {
     /// The number of columns the drawn button occupies, counting the brackets
     /// and the single space of padding on each side of the label.
     fn width(self) -> Width {
-        text_width(self.label()) + text_width("[  ]")
+        literal_width(self.label()) + literal_width("[  ]")
     }
 
     /// The button drawn as `[ label ]`.
@@ -367,12 +381,12 @@ pub(crate) fn render_top_bar(
     // truncating it there if it does not fit.
     let gap = ColumnSpan::between(buttons[1].1.end(), buttons[2].1.start());
     if gap.width() > Width::ZERO {
-        let title_width = text_width(title);
-        let (column, text) = if title_width >= gap.width() {
-            (gap.start(), fit(title, gap.width()))
-        } else {
-            let indent = Width::new((gap.width().get() - title_width.get()) / 2);
-            (gap.start() + indent, title.to_string())
+        let (column, text) = match text_width_within(title, gap.width()) {
+            Some(title_width) => {
+                let indent = Width::new((gap.width() - title_width).get() / 2);
+                (gap.start() + indent, title.to_string())
+            }
+            None => (gap.start(), fit(title, gap.width())),
         };
         buffer.set_string(column, Row::TOP, &text, Style::PLAIN);
     }
