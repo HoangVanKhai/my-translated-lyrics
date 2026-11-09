@@ -34,7 +34,11 @@ pub(crate) fn select_one_loop<Sys>(
 where
     Sys: ReadEvent + WindowSize + Clock,
 {
-    let mut cursor = ItemIndex::new(start.min(labels.len().saturating_sub(1)));
+    let mut cursor = labels
+        .len()
+        .saturating_sub(1)
+        .min(start)
+        .pipe(ItemIndex::new);
     let mut last_click: Option<(SystemTime, ItemIndex)> = None;
     let mut hover: Option<(Column, Row)> = None;
     let mut screen = Screen::new();
@@ -107,7 +111,8 @@ where
                         } else if clicked_row < height.last_row()
                             && let Some(index) = clicked_row
                                 .rows_below(FIRST_LIST_ROW)
-                                .map(|rows_down| ItemIndex::new(usize::from(rows_down)))
+                                .map(usize::from)
+                                .map(ItemIndex::new)
                                 .filter(|index| index.get() < labels.len())
                         {
                             let now = Sys::now();
