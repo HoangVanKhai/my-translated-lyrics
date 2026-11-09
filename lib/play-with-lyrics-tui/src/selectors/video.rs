@@ -104,6 +104,7 @@ where
                     MouseEventKind::Down(MouseButton::Left) => {
                         let (width, height) = Sys::window_size().unwrap_or((80, 24));
                         let width = Width::new(width);
+                        let height = Height::new(height);
                         let clicked_row = Row::new(mouse.row);
                         let clicked_column = Column::new(mouse.column);
                         // A click on the top bar acts on the button under the
@@ -128,7 +129,7 @@ where
                                 selector.set_order(video_order(sort.clone()));
                             }
                         } else {
-                            let visible = visible_rows(Height::new(height));
+                            let visible = visible_rows(height);
                             let offset = scroll_offset(selector.cursor(), visible);
                             // Only the data rows are clickable; a click on the
                             // help line below them must not reach a scrolled-off
