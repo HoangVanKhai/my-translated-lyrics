@@ -62,7 +62,7 @@ where
                     error,
                 })
             })?;
-        return index.pipe(ItemIndex::new).pipe(Resolution::Auto).pipe(Ok);
+        return index.pipe(Resolution::Auto).pipe(Ok);
     }
     require_terminal::<Sys>("a video title")?;
     let selection =
