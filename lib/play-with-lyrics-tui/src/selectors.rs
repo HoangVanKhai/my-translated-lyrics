@@ -4,7 +4,8 @@
 //! shown.
 //!
 //! The two pages live in submodules: [`video`] holds the fuzzy table and
-//! [`list`] holds the single-column list. Their shared row styling stays here.
+//! [`list`] holds the single-column list. Their shared row styling and the
+//! window size they fall back to stay here.
 
 mod list;
 mod video;
@@ -12,7 +13,10 @@ mod video;
 pub use list::select_one;
 pub use video::select_video;
 
-use terminal_screen::{Column, Row, Style};
+use terminal_screen::{Column, Height, Row, Style, Width};
+
+/// The window size the pages assume when the terminal does not report its own.
+const FALLBACK_WINDOW_SIZE: (Width, Height) = (Width::new(80), Height::new(24));
 
 /// The base style for a selectable row at screen `row`: reverse video when it
 /// is the current selection, with bold added when the pointer hovers over it.

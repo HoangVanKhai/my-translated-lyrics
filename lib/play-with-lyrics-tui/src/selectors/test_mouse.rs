@@ -14,6 +14,7 @@ use std::collections::VecDeque;
 use std::io;
 use std::sync::Mutex;
 use std::time::{Duration, SystemTime};
+use terminal_screen::{Height, Width};
 
 /// A single click highlights the clicked label without confirming, so a
 /// following Enter selects that row.
@@ -32,7 +33,7 @@ fn select_one_single_click_highlights_the_clicked_row() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -63,7 +64,7 @@ fn select_one_single_click_does_not_select() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -94,7 +95,7 @@ fn select_one_double_click_selects_the_clicked_row() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -120,7 +121,7 @@ fn select_one_scroll_moves_the_cursor() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -149,7 +150,7 @@ fn select_one_scroll_up_moves_the_cursor() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -180,7 +181,7 @@ fn select_video_scroll_up_moves_the_cursor() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -214,7 +215,7 @@ fn select_video_single_click_highlights_the_clicked_row() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -251,7 +252,7 @@ fn select_video_single_click_does_not_select() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -281,7 +282,7 @@ fn select_video_double_click_selects_the_clicked_row() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -313,7 +314,7 @@ fn select_video_click_above_the_rows_does_nothing() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -344,7 +345,7 @@ fn select_video_scroll_moves_the_cursor() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -375,7 +376,7 @@ fn clicking_below_the_visible_rows_selects_nothing() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -416,7 +417,7 @@ fn a_sort_between_clicks_is_not_a_double_click() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -453,9 +454,9 @@ fn select_one_ignores_a_click_on_the_help_line() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             // Five rows: top bar at 0, labels at 1..4, help line at row 4.
-            Ok((80, 5))
+            Ok((Width::new(80), Height::new(5)))
         }
     }
     let labels = label_list(&["alpha", "beta", "gamma", "delta"]);
@@ -486,7 +487,7 @@ fn clicking_a_column_header_re_sorts_by_that_column() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }

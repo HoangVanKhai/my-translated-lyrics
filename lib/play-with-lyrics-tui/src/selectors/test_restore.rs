@@ -11,6 +11,7 @@ use std::collections::VecDeque;
 use std::io;
 use std::sync::Mutex;
 use std::time::{Duration, SystemTime};
+use terminal_screen::{Height, Width};
 
 /// The list starts with the cursor on `start`, to restore a prior choice; an
 /// immediate Enter then confirms that row without moving.
@@ -29,7 +30,7 @@ fn select_one_starts_on_the_given_row() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -56,7 +57,7 @@ fn select_one_clamps_an_out_of_range_start() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -83,7 +84,7 @@ fn select_video_starts_on_the_selected_video() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -116,7 +117,7 @@ fn select_video_starts_with_the_given_query() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -144,7 +145,7 @@ fn select_video_writes_back_the_final_query() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }

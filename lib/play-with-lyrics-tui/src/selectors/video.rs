@@ -9,7 +9,7 @@ use crate::render::{
     column_spans, columns_line, columns_line_highlighted, draw_highlighted_line, fit,
     is_double_click, render_top_bar, scroll_offset, visible_rows,
 };
-use crate::selectors::row_style;
+use crate::selectors::{FALLBACK_WINDOW_SIZE, row_style};
 use crate::terminal::TerminalGuard;
 use column_sort::{ColumnSort, Direction};
 use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers, MouseButton, MouseEventKind};
@@ -20,7 +20,7 @@ use play_with_lyrics::catalog::{Video, language_label};
 use std::cmp::Ordering;
 use std::io::{self, Write};
 use std::time::SystemTime;
-use terminal_screen::{Buffer, Column, Height, Row, Screen, Style, Width};
+use terminal_screen::{Buffer, Column, Row, Screen, Style, Width};
 
 /// Presents the fuzzy table of titles and reports the chosen row, a request
 /// to go back, or a request to quit.
@@ -102,9 +102,7 @@ where
                     // A single click highlights the video on the clicked row; a
                     // double click on the same item also selects it.
                     MouseEventKind::Down(MouseButton::Left) => {
-                        let (width, height) = Sys::window_size().unwrap_or((80, 24));
-                        let width = Width::new(width);
-                        let height = Height::new(height);
+                        let (width, height) = Sys::window_size().unwrap_or(FALLBACK_WINDOW_SIZE);
                         let clicked_row = Row::new(mouse.row);
                         let clicked_column = Column::new(mouse.column);
                         // A click on the top bar acts on the button under the
@@ -252,9 +250,7 @@ fn render_table<Sys>(
 where
     Sys: WindowSize,
 {
-    let (width, height) = Sys::window_size().unwrap_or((80, 24));
-    let width = Width::new(width);
-    let height = Height::new(height);
+    let (width, height) = Sys::window_size().unwrap_or(FALLBACK_WINDOW_SIZE);
     let buffer = screen.begin(width, height, output)?;
 
     // The top bar names the page; the table is the first page, so going back is

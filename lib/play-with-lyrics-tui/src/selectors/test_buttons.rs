@@ -11,6 +11,7 @@ use std::collections::VecDeque;
 use std::io;
 use std::sync::Mutex;
 use std::time::{Duration, SystemTime};
+use terminal_screen::{Height, Width};
 
 /// Clicking the "Exit" top-bar button quits the list selector.
 #[test]
@@ -28,7 +29,7 @@ fn select_one_exit_button_quits() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -55,7 +56,7 @@ fn select_one_back_button_goes_back() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -83,7 +84,7 @@ fn select_one_forward_button_selects_the_highlighted_row() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -114,7 +115,7 @@ fn select_one_ignores_a_click_between_the_top_bar_buttons() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -145,7 +146,7 @@ fn select_one_forward_button_does_nothing_without_labels() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -175,7 +176,7 @@ fn select_video_exit_button_quits() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -204,7 +205,7 @@ fn select_video_back_button_is_disabled() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -236,7 +237,7 @@ fn select_video_forward_button_selects_the_highlighted_video() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -269,7 +270,7 @@ fn select_video_forward_button_does_nothing_without_a_match() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }

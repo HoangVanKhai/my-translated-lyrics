@@ -33,8 +33,8 @@ fn select_video_header_shows_native_language_names() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
-            Ok((80, 24))
+        fn window_size() -> io::Result<(Width, Height)> {
+            Ok((Width::new(80), Height::new(24)))
         }
     }
     let videos = vec![video("Alpha".to_owned())];
@@ -66,9 +66,9 @@ fn select_video_header_truncates_in_a_narrow_terminal() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             // Each of the three columns gets about six display columns.
-            Ok((24, 24))
+            Ok((Width::new(24), Height::new(24)))
         }
     }
     let videos = vec![video("Alpha".to_owned())];
@@ -98,10 +98,10 @@ fn select_video_renders_only_the_visible_window() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             // Six rows leave room for two title rows, after the prompt, header,
             // help, and button lines.
-            Ok((80, 6))
+            Ok((Width::new(80), Height::new(6)))
         }
     }
     // The names are alphabetical, so the default English sort keeps this order.
@@ -139,7 +139,7 @@ fn select_video_renders_with_a_fallback_size_when_size_is_unavailable() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             Err(io::Error::other("the terminal size is unavailable"))
         }
     }
@@ -169,7 +169,7 @@ fn select_video_underlines_matched_characters() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -202,7 +202,7 @@ fn select_video_does_not_underline_without_a_query() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -231,7 +231,7 @@ fn select_video_footer_shows_delete_and_back() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -260,7 +260,7 @@ fn select_one_shows_the_page_title_in_the_top_bar() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -289,7 +289,7 @@ fn select_one_bolds_the_label_under_the_pointer() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -322,7 +322,7 @@ fn select_one_reverses_the_button_under_the_pointer() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -404,7 +404,7 @@ fn the_search_bar_shows_a_magnifier_with_styled_parts() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }

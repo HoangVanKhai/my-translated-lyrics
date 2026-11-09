@@ -6,14 +6,14 @@
 use crate::Navigation;
 use crate::host::{Clock, Host, ReadEvent, WindowSize};
 use crate::render::{Button, FIRST_LIST_ROW, button_at, fit, is_double_click, render_top_bar};
-use crate::selectors::row_style;
+use crate::selectors::{FALLBACK_WINDOW_SIZE, row_style};
 use crate::terminal::TerminalGuard;
 use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers, MouseButton, MouseEventKind};
 use fuzzy_select::selection::ItemIndex;
 use pipe_trait::Pipe;
 use std::io::{self, Write};
 use std::time::SystemTime;
-use terminal_screen::{Column, Height, Row, Screen, Style, Width};
+use terminal_screen::{Column, Row, Screen, Style};
 
 /// Presents a simple single-column list of `labels` and reports the chosen
 /// item, a request to go back to the previous page, or a request to quit. The
@@ -90,9 +90,7 @@ where
                     // A single click highlights the label on the clicked row; a
                     // double click on the same item also selects it.
                     MouseEventKind::Down(MouseButton::Left) => {
-                        let (width, height) = Sys::window_size().unwrap_or((80, 24));
-                        let width = Width::new(width);
-                        let height = Height::new(height);
+                        let (width, height) = Sys::window_size().unwrap_or(FALLBACK_WINDOW_SIZE);
                         let clicked_row = Row::new(mouse.row);
                         // A click on the top bar acts on the button under the
                         // pointer, where "Forward" matches pressing Enter.
@@ -145,9 +143,7 @@ fn render_list<Sys>(
 where
     Sys: WindowSize,
 {
-    let (width, height) = Sys::window_size().unwrap_or((80, 24));
-    let width = Width::new(width);
-    let height = Height::new(height);
+    let (width, height) = Sys::window_size().unwrap_or(FALLBACK_WINDOW_SIZE);
     let buffer = screen.begin(width, height, output)?;
 
     // The top bar names the page; a list page always follows an earlier page,

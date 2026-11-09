@@ -8,6 +8,7 @@ use std::collections::VecDeque;
 use std::io;
 use std::sync::Mutex;
 use std::time::{Duration, SystemTime};
+use terminal_screen::{Height, Width};
 
 /// Typing narrows the table, and Enter returns the index, into the original
 /// slice, of the row that stays highlighted.
@@ -26,7 +27,7 @@ fn select_video_filters_then_selects() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -60,7 +61,7 @@ fn select_video_quits_on_ctrl_c() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -87,7 +88,7 @@ fn select_video_moves_up_with_the_arrow_key() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -120,7 +121,7 @@ fn select_video_enter_without_a_match_reads_on() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -155,7 +156,7 @@ fn select_video_ignores_unhandled_keys_and_other_events() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -189,7 +190,7 @@ fn select_video_backspace_widens_the_query() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -222,7 +223,7 @@ fn select_video_cancels_on_escape() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -249,7 +250,7 @@ fn select_video_quits_on_ctrl_q() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -277,7 +278,7 @@ fn select_video_quits_on_ctrl_q_upper_case() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -305,7 +306,7 @@ fn select_video_treats_a_bare_q_as_a_filter_character() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -338,7 +339,7 @@ fn select_video_ctrl_backspace_goes_back() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -366,7 +367,7 @@ fn select_video_plain_backspace_does_not_go_back() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
