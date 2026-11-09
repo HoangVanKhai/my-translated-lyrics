@@ -20,6 +20,7 @@ use crate::failure::{Failure, NoSubtitles, NoVideos, Termination};
 use crate::host::Host;
 use crate::resolve::{Resolution, resolve_format, resolve_language, resolve_player, resolve_video};
 use clap::Parser;
+use fuzzy_select::selection::ItemIndex;
 use lyrics_core::video_descriptor::Language;
 use play_with_lyrics::catalog::load;
 use play_with_lyrics::library::{available_subtitles, find_video_file, subtitle_path};
@@ -85,7 +86,7 @@ fn run() -> Result<(), Termination> {
     let mut stage = Stage::Video;
     let mut history: Vec<Stage> = Vec::new();
     let mut video_query = String::new();
-    let mut video_index: Option<usize> = None;
+    let mut video_index: Option<ItemIndex> = None;
     let mut available: Vec<(Language, SubtitleFormat)> = Vec::new();
     let mut language: Option<Language> = None;
     let mut format: Option<SubtitleFormat> = None;
@@ -109,8 +110,8 @@ fn run() -> Result<(), Termination> {
                 }
             }
             Stage::Language => {
-                let chosen_video =
-                    &catalog[video_index.expect("the video is resolved before the language")];
+                let chosen = video_index.expect("the video is resolved before the language");
+                let chosen_video = &catalog.as_slice()[chosen];
                 let collection_dir = args.target.join(&*chosen_video.desc.collection);
                 let video_title = &chosen_video.desc.video_title;
                 available = available_subtitles(&collection_dir, video_title);
@@ -165,7 +166,7 @@ fn run() -> Result<(), Termination> {
         }
     };
 
-    let video = &catalog[video_index.expect("the video is resolved")];
+    let video = &catalog.as_slice()[video_index.expect("the video is resolved")];
     let language = language.expect("the language is resolved");
     let format = format.expect("the format is resolved");
 

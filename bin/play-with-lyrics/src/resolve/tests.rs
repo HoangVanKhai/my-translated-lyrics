@@ -6,6 +6,7 @@ use crate::cli::Args;
 use crate::failure::{Failure, NotInteractive, Termination};
 use crate::host::{Select, Stdin};
 use clap::Parser;
+use fuzzy_select::selection::ItemIndex;
 use lyrics_core::video_descriptor::Language;
 use play_with_lyrics::catalog::Video;
 use play_with_lyrics::player::{Player, SubtitleFormat};
@@ -16,7 +17,9 @@ use std::io;
 /// index to the resolved value.
 #[test]
 fn from_selection_maps_a_choice_to_chosen() {
-    let resolution = from_selection(Navigation::Selected(2), |index| index * 10);
+    let resolution = from_selection(Navigation::Selected(ItemIndex::new(2)), |index| {
+        index.get() * 10
+    });
     assert!(matches!(resolution, Ok(Resolution::Chosen(20))));
 }
 
@@ -78,16 +81,23 @@ fn resolve_video_uses_the_interactive_table() {
         }
     }
     impl Select for Pick {
-        fn select_video(_: &[Video], _: &mut String, _: Option<usize>) -> io::Result<Navigation> {
-            Ok(Navigation::Selected(2))
+        fn select_video(
+            _: &[Video],
+            _: &mut String,
+            _: Option<ItemIndex>,
+        ) -> io::Result<Navigation> {
+            Ok(Navigation::Selected(ItemIndex::new(2)))
         }
-        fn select_one(_: &str, _: &[String], _: usize) -> io::Result<Navigation> {
+        fn select_one(_: &str, _: &[String], _: ItemIndex) -> io::Result<Navigation> {
             unreachable!("the video page uses the table, not the list")
         }
     }
     let args = Args::parse_from(["play-with-lyrics", "src", "tgt"]);
     let resolution = resolve_video::<Pick>(&args, &[], &mut String::new(), None);
-    assert!(matches!(resolution, Ok(Resolution::Chosen(2))));
+    assert!(matches!(
+        resolution,
+        Ok(Resolution::Chosen(index)) if index == ItemIndex::new(2)
+    ));
 }
 
 /// With more than one language and no `--language`, the language is chosen
@@ -101,11 +111,15 @@ fn resolve_language_uses_the_interactive_list() {
         }
     }
     impl Select for Pick {
-        fn select_video(_: &[Video], _: &mut String, _: Option<usize>) -> io::Result<Navigation> {
+        fn select_video(
+            _: &[Video],
+            _: &mut String,
+            _: Option<ItemIndex>,
+        ) -> io::Result<Navigation> {
             unreachable!("the language page uses the list, not the table")
         }
-        fn select_one(_: &str, _: &[String], _: usize) -> io::Result<Navigation> {
-            Ok(Navigation::Selected(0))
+        fn select_one(_: &str, _: &[String], _: ItemIndex) -> io::Result<Navigation> {
+            Ok(Navigation::Selected(ItemIndex::new(0)))
         }
     }
     let args = Args::parse_from(["play-with-lyrics", "src", "tgt"]);
@@ -130,11 +144,15 @@ fn resolve_language_starts_at_the_top_without_a_previous() {
         }
     }
     impl Select for Pick {
-        fn select_video(_: &[Video], _: &mut String, _: Option<usize>) -> io::Result<Navigation> {
+        fn select_video(
+            _: &[Video],
+            _: &mut String,
+            _: Option<ItemIndex>,
+        ) -> io::Result<Navigation> {
             unreachable!("the language page uses the list, not the table")
         }
-        fn select_one(_: &str, _: &[String], _: usize) -> io::Result<Navigation> {
-            Ok(Navigation::Selected(1))
+        fn select_one(_: &str, _: &[String], _: ItemIndex) -> io::Result<Navigation> {
+            Ok(Navigation::Selected(ItemIndex::new(1)))
         }
     }
     let args = Args::parse_from(["play-with-lyrics", "src", "tgt"]);
@@ -160,11 +178,15 @@ fn resolve_format_uses_the_interactive_list() {
         }
     }
     impl Select for Pick {
-        fn select_video(_: &[Video], _: &mut String, _: Option<usize>) -> io::Result<Navigation> {
+        fn select_video(
+            _: &[Video],
+            _: &mut String,
+            _: Option<ItemIndex>,
+        ) -> io::Result<Navigation> {
             unreachable!("the format page uses the list, not the table")
         }
-        fn select_one(_: &str, _: &[String], _: usize) -> io::Result<Navigation> {
-            Ok(Navigation::Selected(0))
+        fn select_one(_: &str, _: &[String], _: ItemIndex) -> io::Result<Navigation> {
+            Ok(Navigation::Selected(ItemIndex::new(0)))
         }
     }
     let args = Args::parse_from(["play-with-lyrics", "src", "tgt"]);
@@ -191,11 +213,15 @@ fn resolve_format_starts_at_the_top_without_a_previous() {
         }
     }
     impl Select for Pick {
-        fn select_video(_: &[Video], _: &mut String, _: Option<usize>) -> io::Result<Navigation> {
+        fn select_video(
+            _: &[Video],
+            _: &mut String,
+            _: Option<ItemIndex>,
+        ) -> io::Result<Navigation> {
             unreachable!("the format page uses the list, not the table")
         }
-        fn select_one(_: &str, _: &[String], _: usize) -> io::Result<Navigation> {
-            Ok(Navigation::Selected(1))
+        fn select_one(_: &str, _: &[String], _: ItemIndex) -> io::Result<Navigation> {
+            Ok(Navigation::Selected(ItemIndex::new(1)))
         }
     }
     let args = Args::parse_from(["play-with-lyrics", "src", "tgt"]);
@@ -217,11 +243,15 @@ fn resolve_player_uses_the_interactive_list() {
         }
     }
     impl Select for Pick {
-        fn select_video(_: &[Video], _: &mut String, _: Option<usize>) -> io::Result<Navigation> {
+        fn select_video(
+            _: &[Video],
+            _: &mut String,
+            _: Option<ItemIndex>,
+        ) -> io::Result<Navigation> {
             unreachable!("the player page uses the list, not the table")
         }
-        fn select_one(_: &str, _: &[String], _: usize) -> io::Result<Navigation> {
-            Ok(Navigation::Selected(0))
+        fn select_one(_: &str, _: &[String], _: ItemIndex) -> io::Result<Navigation> {
+            Ok(Navigation::Selected(ItemIndex::new(0)))
         }
     }
     let args = Args::parse_from(["play-with-lyrics", "src", "tgt"]);

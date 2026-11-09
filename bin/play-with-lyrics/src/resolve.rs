@@ -7,7 +7,7 @@ use crate::failure::{
 };
 use crate::host::{Select, Stdin};
 use fuzzy_select::fuzzy::resolve_unique;
-use fuzzy_select::selection::Searchable;
+use fuzzy_select::selection::{ItemIndex, Searchable};
 use into_deduped::IntoDeduped;
 use itertools::Itertools;
 use lyrics_core::video_descriptor::Language;
@@ -34,7 +34,7 @@ pub(crate) enum Resolution<Value> {
 /// to quit becomes [`Termination::Cancelled`].
 fn from_selection<Value>(
     selection: Navigation,
-    to_value: impl FnOnce(usize) -> Value,
+    to_value: impl FnOnce(ItemIndex) -> Value,
 ) -> Result<Resolution<Value>, Termination> {
     match selection {
         Navigation::Selected(index) => index.pipe(to_value).pipe(Resolution::Chosen).pipe(Ok),
@@ -49,8 +49,8 @@ pub(crate) fn resolve_video<Sys>(
     args: &Args,
     catalog: &[Video],
     query: &mut String,
-    previous: Option<usize>,
-) -> Result<Resolution<usize>, Termination>
+    previous: Option<ItemIndex>,
+) -> Result<Resolution<ItemIndex>, Termination>
 where
     Sys: Stdin + Select,
 {
@@ -62,7 +62,7 @@ where
                     error,
                 })
             })?;
-        return index.pipe(Resolution::Auto).pipe(Ok);
+        return index.pipe(ItemIndex::new).pipe(Resolution::Auto).pipe(Ok);
     }
     require_terminal::<Sys>("a video title")?;
     let selection =
@@ -111,10 +111,11 @@ where
         .collect();
     let start = previous
         .and_then(|previous| languages.iter().position(|&language| language == previous))
-        .unwrap_or(0);
+        .unwrap_or(0)
+        .pipe(ItemIndex::new);
     let selection =
         Sys::select_one("Select a Language", &labels, start).expect("interactive selection failed");
-    from_selection(selection, |index| languages[index])
+    from_selection(selection, |index| languages.as_slice()[index])
 }
 
 /// Resolves the subtitle format from `--format`, automatically when only
@@ -154,7 +155,8 @@ where
         .collect();
     let start = previous
         .and_then(|previous| formats.iter().position(|&format| format == previous))
-        .unwrap_or(0);
+        .unwrap_or(0)
+        .pipe(ItemIndex::new);
     let selection = Sys::select_one("Select a Subtitle Format", &labels, start)
         .expect("interactive selection failed");
     from_selection(selection, |index| formats[index])
@@ -174,8 +176,8 @@ where
     let labels: Vec<String> = Player::VARIANTS.iter().map(ToString::to_string).collect();
     // The player is the last page, so it is never returned to and starts at the
     // top each time.
-    let selection =
-        Sys::select_one("Select a Media Player", &labels, 0).expect("interactive selection failed");
+    let selection = Sys::select_one("Select a Media Player", &labels, ItemIndex::new(0))
+        .expect("interactive selection failed");
     from_selection(selection, |index| Player::VARIANTS[index])
 }
 

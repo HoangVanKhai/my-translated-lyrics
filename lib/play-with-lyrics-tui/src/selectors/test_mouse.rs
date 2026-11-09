@@ -8,6 +8,7 @@ use crate::selectors::_test_utils::{
 use crate::selectors::list::select_one_loop;
 use crate::selectors::video::select_video_loop;
 use crossterm::event::{Event, KeyCode};
+use fuzzy_select::selection::ItemIndex;
 use play_with_lyrics::catalog::Video;
 use pretty_assertions::assert_eq;
 use std::collections::VecDeque;
@@ -44,8 +45,9 @@ fn select_one_single_click_highlights_the_clicked_row() {
         .lock()
         .unwrap()
         .extend([click(2), press(KeyCode::Enter)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
-    assert_eq!(chosen, Navigation::Selected(1));
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
 /// A single click on its own does not select; it only moves the highlight.
@@ -73,7 +75,8 @@ fn select_one_single_click_does_not_select() {
         .lock()
         .unwrap()
         .extend([click(2), press(KeyCode::Esc)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
     // The single click only moved the highlight; the following Escape ends the
     // loop by going back.
     assert_eq!(chosen, Navigation::Back);
@@ -101,8 +104,9 @@ fn select_one_double_click_selects_the_clicked_row() {
     }
     let labels = label_list(&["alpha", "beta", "gamma"]);
     EVENTS.lock().unwrap().extend([click(2), click(2)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
-    assert_eq!(chosen, Navigation::Selected(1));
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
 /// The scroll wheel moves the list cursor.
@@ -130,8 +134,9 @@ fn select_one_scroll_moves_the_cursor() {
         .lock()
         .unwrap()
         .extend([scroll_down(), press(KeyCode::Enter)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
-    assert_eq!(chosen, Navigation::Selected(1));
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
 /// Scrolling the wheel up moves the cursor toward the top of the list.
@@ -160,8 +165,9 @@ fn select_one_scroll_up_moves_the_cursor() {
         .lock()
         .unwrap()
         .extend([scroll_up(), press(KeyCode::Enter)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 1).unwrap();
-    assert_eq!(chosen, Navigation::Selected(0));
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(1)).unwrap();
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(0)));
 }
 
 /// Scrolling up moves the table cursor toward the top, and a pointer movement
@@ -192,10 +198,14 @@ fn select_video_scroll_up_moves_the_cursor() {
         .lock()
         .unwrap()
         .extend([hover_at(10, 5), scroll_up(), press(KeyCode::Enter)]);
-    let chosen =
-        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), Some(1))
-            .unwrap();
-    assert_eq!(chosen, Navigation::Selected(0));
+    let chosen = select_video_loop::<Scripted>(
+        &mut Vec::new(),
+        &videos,
+        &mut String::new(),
+        Some(ItemIndex::new(1)),
+    )
+    .unwrap();
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(0)));
 }
 
 /// A single click highlights the clicked video without confirming, so a
@@ -232,7 +242,7 @@ fn select_video_single_click_highlights_the_clicked_row() {
         .extend([click(4), press(KeyCode::Enter)]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
-    assert_eq!(chosen, Navigation::Selected(1));
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
 /// A single click on its own does not select a video; it only moves the
@@ -294,7 +304,7 @@ fn select_video_double_click_selects_the_clicked_row() {
     EVENTS.lock().unwrap().extend([click(4), click(4)]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
-    assert_eq!(chosen, Navigation::Selected(1));
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
 /// A click above the first title, on the prompt or header, selects nothing.
@@ -356,7 +366,7 @@ fn select_video_scroll_moves_the_cursor() {
         .extend([scroll_down(), press(KeyCode::Enter)]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
-    assert_eq!(chosen, Navigation::Selected(1));
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
 /// A click on the help line below a full window of rows selects nothing, not
@@ -393,7 +403,7 @@ fn clicking_below_the_visible_rows_selects_nothing() {
         .extend([click(23), press(KeyCode::Enter)]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
-    assert_eq!(chosen, Navigation::Selected(0));
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(0)));
 }
 
 /// A sort between two clicks on the same row is not a double click, because the
@@ -466,7 +476,8 @@ fn select_one_ignores_a_click_on_the_help_line() {
         .lock()
         .unwrap()
         .extend([click(4), click(4), control(KeyCode::Char('q'))]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
@@ -507,5 +518,5 @@ fn clicking_a_column_header_re_sorts_by_that_column() {
     ]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
-    assert_eq!(chosen, Navigation::Selected(2));
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(2)));
 }

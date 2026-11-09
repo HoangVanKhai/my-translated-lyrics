@@ -6,6 +6,7 @@ use crate::selectors::_test_utils::{
 use crate::selectors::list::select_one_loop;
 use crate::selectors::video::select_video_loop;
 use crossterm::event::{Event, KeyCode};
+use fuzzy_select::selection::ItemIndex;
 use pretty_assertions::assert_eq;
 use std::collections::VecDeque;
 use std::io;
@@ -36,7 +37,8 @@ fn select_one_exit_button_quits() {
     let labels = label_list(&["alpha", "beta"]);
     // The top bar is row 0; column 75 falls on the right-aligned "Exit".
     EVENTS.lock().unwrap().extend([click_at(75, 0)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
@@ -63,7 +65,8 @@ fn select_one_back_button_goes_back() {
     let labels = label_list(&["alpha", "beta"]);
     // Column 5 falls on "Go back", at the left of the top bar.
     EVENTS.lock().unwrap().extend([click_at(5, 0)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
     assert_eq!(chosen, Navigation::Back);
 }
 
@@ -94,8 +97,9 @@ fn select_one_forward_button_selects_the_highlighted_row() {
         .lock()
         .unwrap()
         .extend([press(KeyCode::Down), click_at(20, 0)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
-    assert_eq!(chosen, Navigation::Selected(1));
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
 /// Clicking the top bar between the buttons lands on no button, so the click is
@@ -125,7 +129,8 @@ fn select_one_ignores_a_click_between_the_top_bar_buttons() {
         .lock()
         .unwrap()
         .extend([click_at(45, 0), press(KeyCode::Esc)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
     assert_eq!(chosen, Navigation::Back);
 }
 
@@ -156,7 +161,8 @@ fn select_one_forward_button_does_nothing_without_labels() {
         .lock()
         .unwrap()
         .extend([click_at(20, 0), press(KeyCode::Esc)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
     assert_eq!(chosen, Navigation::Back);
 }
 
@@ -250,7 +256,7 @@ fn select_video_forward_button_selects_the_highlighted_video() {
         .extend([press(KeyCode::Down), click_at(20, 0)]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
-    assert_eq!(chosen, Navigation::Selected(1));
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
 /// Clicking "Forward" with no row matching the query selects nothing, so the

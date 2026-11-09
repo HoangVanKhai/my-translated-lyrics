@@ -5,6 +5,7 @@ use crate::selectors::_test_utils::{
 };
 use crate::selectors::list::select_one_loop;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
+use fuzzy_select::selection::ItemIndex;
 use pretty_assertions::assert_eq;
 use std::collections::VecDeque;
 use std::io;
@@ -38,8 +39,9 @@ fn select_one_returns_the_highlighted_row() {
         press(KeyCode::Down),
         press(KeyCode::Enter),
     ]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
-    assert_eq!(chosen, Navigation::Selected(2));
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(2)));
 }
 
 /// An unhandled key and a resize only prompt a redraw, so the loop reads on
@@ -70,7 +72,8 @@ fn select_one_ignores_unhandled_keys_and_resizes() {
         Event::Resize(100, 30),
         press(KeyCode::Esc),
     ]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
     assert_eq!(chosen, Navigation::Back);
 }
 
@@ -96,7 +99,8 @@ fn select_one_goes_back_on_escape() {
     }
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([press(KeyCode::Esc)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
     assert_eq!(chosen, Navigation::Back);
 }
 
@@ -122,7 +126,8 @@ fn select_one_cancels_on_ctrl_c() {
     }
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('c'))]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
@@ -155,8 +160,9 @@ fn select_one_keeps_the_cursor_within_bounds() {
         press(KeyCode::Down),
         press(KeyCode::Enter),
     ]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
-    assert_eq!(chosen, Navigation::Selected(1));
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
 /// Events that are not key presses, such as key releases, are ignored.
@@ -190,8 +196,9 @@ fn select_one_ignores_non_press_events() {
         .lock()
         .unwrap()
         .extend([release, press(KeyCode::Down), press(KeyCode::Enter)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
-    assert_eq!(chosen, Navigation::Selected(1));
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
 /// Enter does nothing while the list is empty, so the loop keeps reading.
@@ -219,7 +226,8 @@ fn select_one_enter_is_a_no_op_for_an_empty_list() {
         .lock()
         .unwrap()
         .extend([press(KeyCode::Enter), press(KeyCode::Esc)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
     // The empty Enter did not select; the following Escape ends the loop by
     // going back.
     assert_eq!(chosen, Navigation::Back);
@@ -247,7 +255,8 @@ fn select_one_quits_on_q() {
     }
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([press(KeyCode::Char('q'))]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
@@ -273,7 +282,8 @@ fn select_one_quits_on_shift_q() {
     }
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([shift(KeyCode::Char('Q'))]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
@@ -299,7 +309,8 @@ fn select_one_quits_on_ctrl_q() {
     }
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([control(KeyCode::Char('q'))]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
@@ -329,8 +340,9 @@ fn select_one_selects_on_space() {
         .lock()
         .unwrap()
         .extend([press(KeyCode::Down), press(KeyCode::Char(' '))]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
-    assert_eq!(chosen, Navigation::Selected(1));
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
 /// On a non-typing list page, Backspace goes back to the previous page.
@@ -355,7 +367,8 @@ fn select_one_backspace_goes_back() {
     }
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([press(KeyCode::Backspace)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
     assert_eq!(chosen, Navigation::Back);
 }
 
@@ -381,6 +394,7 @@ fn select_one_ctrl_backspace_goes_back() {
     }
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([control(KeyCode::Backspace)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
     assert_eq!(chosen, Navigation::Back);
 }

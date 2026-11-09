@@ -3,6 +3,7 @@ use crate::host::{Clock, ReadEvent, WindowSize};
 use crate::selectors::_test_utils::{control, pop_scripted, press, standard_size, video};
 use crate::selectors::video::select_video_loop;
 use crossterm::event::{Event, KeyCode};
+use fuzzy_select::selection::ItemIndex;
 use pretty_assertions::assert_eq;
 use std::collections::VecDeque;
 use std::io;
@@ -42,7 +43,7 @@ fn select_video_filters_then_selects() {
     ]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
-    assert_eq!(chosen, Navigation::Selected(1));
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
 /// Ctrl-C quits the table.
@@ -98,10 +99,14 @@ fn select_video_moves_up_with_the_arrow_key() {
         .lock()
         .unwrap()
         .extend([press(KeyCode::Up), press(KeyCode::Enter)]);
-    let chosen =
-        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), Some(1))
-            .unwrap();
-    assert_eq!(chosen, Navigation::Selected(0));
+    let chosen = select_video_loop::<Scripted>(
+        &mut Vec::new(),
+        &videos,
+        &mut String::new(),
+        Some(ItemIndex::new(1)),
+    )
+    .unwrap();
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(0)));
 }
 
 /// Pressing Enter when the query matches nothing selects nothing, so the loop
@@ -204,7 +209,7 @@ fn select_video_backspace_widens_the_query() {
     ]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
-    assert_eq!(chosen, Navigation::Selected(1));
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
 /// Escape cancels the table without choosing a row.
@@ -319,7 +324,7 @@ fn select_video_treats_a_bare_q_as_a_filter_character() {
         .extend([press(KeyCode::Char('q')), press(KeyCode::Enter)]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
-    assert_eq!(chosen, Navigation::Selected(0));
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(0)));
 }
 
 /// On the song page, Ctrl-Backspace goes back, which on this first page is

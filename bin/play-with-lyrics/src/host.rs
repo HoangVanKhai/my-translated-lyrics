@@ -2,6 +2,7 @@
 //! interactive selectors through, and the production provider that backs them
 //! with the real terminal.
 
+use fuzzy_select::selection::ItemIndex;
 use play_with_lyrics::catalog::Video;
 use play_with_lyrics_tui::{Navigation, select_one, select_video};
 use std::io::{self, IsTerminal};
@@ -17,11 +18,11 @@ pub(crate) trait Select {
     fn select_video(
         videos: &[Video],
         query: &mut String,
-        selected: Option<usize>,
+        selected: Option<ItemIndex>,
     ) -> io::Result<Navigation>;
 
     /// Presents a single-column list of `labels` under `title`.
-    fn select_one(title: &str, labels: &[String], start: usize) -> io::Result<Navigation>;
+    fn select_one(title: &str, labels: &[String], start: ItemIndex) -> io::Result<Navigation>;
 }
 
 /// The production provider: it reads the real standard input and opens the real
@@ -38,12 +39,12 @@ impl Select for Host {
     fn select_video(
         videos: &[Video],
         query: &mut String,
-        selected: Option<usize>,
+        selected: Option<ItemIndex>,
     ) -> io::Result<Navigation> {
         select_video(videos, query, selected)
     }
 
-    fn select_one(title: &str, labels: &[String], start: usize) -> io::Result<Navigation> {
+    fn select_one(title: &str, labels: &[String], start: ItemIndex) -> io::Result<Navigation> {
         select_one(title, labels, start)
     }
 }

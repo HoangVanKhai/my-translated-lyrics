@@ -27,7 +27,7 @@ use terminal_screen::{Buffer, Column, Row, Screen, Style, Width};
 pub fn select_video(
     videos: &[Video],
     query: &mut String,
-    selected: Option<usize>,
+    selected: Option<ItemIndex>,
 ) -> io::Result<Navigation> {
     let mut guard = TerminalGuard::enter()?;
     select_video_loop::<Host>(&mut guard.output, videos, query, selected)
@@ -40,7 +40,7 @@ pub(crate) fn select_video_loop<Sys>(
     output: &mut impl Write,
     videos: &[Video],
     query: &mut String,
-    selected: Option<usize>,
+    selected: Option<ItemIndex>,
 ) -> io::Result<Navigation>
 where
     Sys: ReadEvent + WindowSize + Clock,
@@ -52,7 +52,7 @@ where
     let mut sort = ColumnSort::new([Language::English, Language::Vietnamese, Language::Chinese]);
     selector.set_order(video_order(sort.clone()));
     if let Some(index) = selected {
-        selector.focus(ItemIndex::new(index));
+        selector.focus(index);
     }
     let mut last_click: Option<(SystemTime, ItemIndex)> = None;
     let mut hover: Option<(Column, Row)> = None;
@@ -87,7 +87,7 @@ where
                 KeyCode::Backspace => selector.pop_char(),
                 KeyCode::Char(char) => selector.push_char(char),
                 KeyCode::Enter => match selector.selected_index() {
-                    Some(index) => break Navigation::Selected(index.get()),
+                    Some(index) => break Navigation::Selected(index),
                     None => continue,
                 },
                 _ => continue,
@@ -114,7 +114,7 @@ where
                                 Some(Button::Back) | None => {}
                                 Some(Button::Forward) => {
                                     if let Some(index) = selector.selected_index() {
-                                        break Navigation::Selected(index.get());
+                                        break Navigation::Selected(index);
                                     }
                                 }
                             }
@@ -144,7 +144,7 @@ where
                                 last_click = Some((now, index));
                                 selector.focus(index);
                                 if confirm {
-                                    break Navigation::Selected(index.get());
+                                    break Navigation::Selected(index);
                                 }
                             }
                         }

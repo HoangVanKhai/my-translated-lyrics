@@ -18,18 +18,18 @@ use terminal_screen::{Column, Row, Screen, Style};
 /// Presents a simple single-column list of `labels` and reports the chosen
 /// item, a request to go back to the previous page, or a request to quit. The
 /// `title` names the page in the top bar.
-pub fn select_one(title: &str, labels: &[String], start: usize) -> io::Result<Navigation> {
+pub fn select_one(title: &str, labels: &[String], start: ItemIndex) -> io::Result<Navigation> {
     let mut guard = TerminalGuard::enter()?;
     select_one_loop::<Host>(&mut guard.output, title, labels, start)
 }
 
 /// Drives the single-column list selector, reading events from `Sys`.
-/// `start` is the row to highlight at first.
+/// `start` is the item to highlight at first.
 pub(crate) fn select_one_loop<Sys>(
     output: &mut impl Write,
     title: &str,
     labels: &[String],
-    start: usize,
+    start: ItemIndex,
 ) -> io::Result<Navigation>
 where
     Sys: ReadEvent + WindowSize + Clock,
@@ -37,8 +37,8 @@ where
     let mut cursor = labels
         .len()
         .saturating_sub(1)
-        .min(start)
-        .pipe(ItemIndex::new);
+        .pipe(ItemIndex::new)
+        .min(start);
     let mut last_click: Option<(SystemTime, ItemIndex)> = None;
     let mut hover: Option<(Column, Row)> = None;
     let mut screen = Screen::new();
@@ -73,7 +73,7 @@ where
                 // With no text to type, Space confirms the choice like Enter.
                 KeyCode::Enter | KeyCode::Char(' ') => {
                     if !labels.is_empty() {
-                        return cursor.get().pipe(Navigation::Selected).pipe(Ok);
+                        return cursor.pipe(Navigation::Selected).pipe(Ok);
                     }
                     continue;
                 }
@@ -103,7 +103,7 @@ where
                                 Some(Button::Exit) => return Ok(Navigation::Quit),
                                 Some(Button::Back) => return Ok(Navigation::Back),
                                 Some(Button::Forward) if !labels.is_empty() => {
-                                    return cursor.get().pipe(Navigation::Selected).pipe(Ok);
+                                    return cursor.pipe(Navigation::Selected).pipe(Ok);
                                 }
                                 Some(Button::Forward) => {}
                                 None => {}
@@ -120,7 +120,7 @@ where
                             last_click = Some((now, index));
                             cursor = index;
                             if confirm {
-                                return index.get().pipe(Navigation::Selected).pipe(Ok);
+                                return index.pipe(Navigation::Selected).pipe(Ok);
                             }
                         }
                     }
