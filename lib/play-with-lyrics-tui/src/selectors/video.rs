@@ -287,8 +287,6 @@ where
             ],
             width,
         );
-        // The highlighted row is the one showing the selected item, which
-        // stays correct however the window is scrolled or the table sorted.
         let base = row_style(Some(item) == selected, hover, screen_y);
         draw_highlighted_line(buffer, screen_y, &line, base);
     }

@@ -199,6 +199,21 @@ fn set_order_sorts_the_visible_rows() {
     assert_eq!(selector.filtered(), &items([2, 1, 0]));
 }
 
+/// The selection names an item rather than a row, so an order that moves the
+/// item onto another row leaves it selected.
+#[test]
+fn an_order_keeps_the_selection_on_the_same_item() {
+    let rows = sample();
+    let mut selector = Selector::new(&rows);
+    selector.move_down();
+    selector.move_down();
+    assert_eq!(selector.selected_index(), Some(ItemIndex::new(2)));
+    // Descending by English title moves the third item onto the first row.
+    selector.set_order(|left, right| right.en.cmp(left.en));
+    assert_eq!(selector.selected_index(), Some(ItemIndex::new(2)));
+    assert_eq!(selector.cursor(), FilteredIndex::first());
+}
+
 /// The order is kept when the query refilters the rows.
 #[test]
 fn the_order_persists_across_a_refilter() {
