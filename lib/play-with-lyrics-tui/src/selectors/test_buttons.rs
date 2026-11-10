@@ -119,13 +119,16 @@ fn select_one_ignores_a_click_between_the_top_bar_buttons() {
         }
     }
     let labels = label_list(&["alpha", "beta"]);
-    // Column 45 falls in the gap between "Forward" and "Exit".
+    // Column 45 falls in the gap between "Forward" and "Exit". Ctrl-C ends
+    // the loop with `Quit`, which a gap click mapped onto a button could
+    // not produce: ending on Escape returned `Back`, and so would a gap
+    // click wrongly treated as the "Go back" button.
     EVENTS
         .lock()
         .unwrap()
-        .extend([click_at(45, 0), press(KeyCode::Esc)]);
+        .extend([click_at(45, 0), control(KeyCode::Char('c'))]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
-    assert_eq!(chosen, Navigation::Back);
+    assert_eq!(chosen, Navigation::Quit);
 }
 
 /// Clicking "Forward" with no items to choose from selects nothing, so the loop
