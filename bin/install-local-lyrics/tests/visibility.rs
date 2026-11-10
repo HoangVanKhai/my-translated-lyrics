@@ -88,6 +88,10 @@ fn manual_visibility_preserves_existing_files() {
     write_file(&separated, manual_content).unwrap();
     write_file(&unified, manual_content).unwrap();
 
+    // A file in the same collection that the manual video does not own.
+    let unrelated = env.target_path(collection, "Another Example Song.vi.srt");
+    write_file(&unrelated, "content of an unrelated subtitle").unwrap();
+
     env.add_source_entry(
         "SongWhoseSubtitlesAreManuallyManaged",
         &desc,
@@ -97,9 +101,10 @@ fn manual_visibility_preserves_existing_files() {
     let output = env.run(["--execute"]);
     assert_eq!(separated.pipe_ref(read_to_string).unwrap(), manual_content);
     assert_eq!(unified.pipe_ref(read_to_string).unwrap(), manual_content);
+    assert!(!unrelated.exists(), "{unrelated:?} should be gone");
     assert_eq!(
         output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
-        expected_stderr(2, &[], &[], &[], &[], false),
+        expected_stderr(3, &[unrelated], &[], &[], &[], false),
     );
 }
 
@@ -120,6 +125,10 @@ fn dry_run_manual_visibility_preserves_existing_files() {
     write_file(&separated, manual_content).unwrap();
     write_file(&unified, manual_content).unwrap();
 
+    // A file in the same collection that the manual video does not own.
+    let unrelated = env.target_path(collection, "Another Example Song.vi.srt");
+    write_file(&unrelated, "content of an unrelated subtitle").unwrap();
+
     env.add_source_entry(
         "SongWhoseSubtitlesAreManuallyManaged",
         &desc,
@@ -129,8 +138,9 @@ fn dry_run_manual_visibility_preserves_existing_files() {
     let output = env.run([]);
     assert_eq!(separated.pipe_ref(read_to_string).unwrap(), manual_content);
     assert_eq!(unified.pipe_ref(read_to_string).unwrap(), manual_content);
+    assert!(unrelated.exists(), "a dry run removes nothing");
     assert_eq!(
         output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
-        expected_stderr(2, &[], &[], &[], &[], true),
+        expected_stderr(3, &[unrelated], &[], &[], &[], true),
     );
 }

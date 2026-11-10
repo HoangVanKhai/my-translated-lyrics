@@ -1,6 +1,7 @@
 use super::{CollectionName, CollectionsDesc, ParseCollectionNameError};
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
+use text_block_macros::text_block_fnl;
 
 /// Wraps a collection name that the fixtures know to be of a valid shape.
 fn collection_name(name: impl Into<String>) -> CollectionName {
@@ -115,13 +116,26 @@ fn check_separated_rejects_an_undeclared_collection() {
 }
 
 /// A name that a declared one is a few edits away from reads as a typo,
-/// so the message points at the declared name.
+/// so the message points at the nearest declared name.
 #[test]
 fn check_separated_hints_the_closest_declared_collection() {
-    let desc = manifest();
+    // A near-duplicate of `Example Collection`, so that every case has
+    // two candidates inside the tolerance. The shared fixture declares
+    // no two names close enough for one typo to resemble both.
+    let desc = text_block_fnl! {
+        "separated = ["
+        r#"  "Example Collection","#
+        r#"  "Example Collections","#
+        r#"  "Example Group/Another Example Collection","#
+        "]"
+    }
+    .pipe(toml::from_str::<CollectionsDesc>)
+    .unwrap();
     let cases = [
         ("example collection", "Example Collection"),
         ("ExampleCollection", "Example Collection"),
+        // The plural is the nearer candidate here.
+        ("example collections", "Example Collections"),
         (
             "Example Group/Another Example Collections",
             "Example Group/Another Example Collection",

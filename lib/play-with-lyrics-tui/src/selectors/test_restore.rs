@@ -63,15 +63,18 @@ fn select_one_clamps_an_out_of_range_start() {
             standard_size()
         }
     }
-    let labels = label_list(&["alpha", "beta"]);
+    // Three rows, so clamping and wrapping disagree: 9 clamps to the last
+    // row, 2, while `9 % 3` would wrap to the first.
+    let labels = label_list(&["alpha", "beta", "gamma"]);
     EVENTS.lock().unwrap().extend([press(KeyCode::Enter)]);
     let chosen =
         select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(9)).unwrap();
-    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(2)));
 }
 
 /// The table starts with the cursor on the given video, to restore a prior
-/// choice; an immediate Enter then confirms it.
+/// choice; an immediate Enter then confirms it. `selected` names an item in
+/// the slice, not a row on screen, and the two differ here.
 #[test]
 fn select_video_starts_on_the_selected_video() {
     static EVENTS: Mutex<VecDeque<Event>> = Mutex::new(VecDeque::new());
@@ -91,10 +94,12 @@ fn select_video_starts_on_the_selected_video() {
             standard_size()
         }
     }
+    // Listed in reverse of the order the English sort displays them, so an
+    // item's place in the slice is not its row: `First` is item 2 and row 0.
     let videos = vec![
-        english_video("First"),
-        english_video("Second"),
         english_video("Third"),
+        english_video("Second"),
+        english_video("First"),
     ];
     EVENTS.lock().unwrap().extend([press(KeyCode::Enter)]);
     let chosen = select_video_loop::<Scripted>(

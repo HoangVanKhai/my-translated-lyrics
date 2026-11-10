@@ -1,3 +1,4 @@
+use crate::fuzzy::contains_substring;
 use crate::selection::{FilteredIndex, ItemIndex, Searchable, Selector};
 use pretty_assertions::assert_eq;
 
@@ -62,7 +63,10 @@ fn typing_filters_by_substring_across_all_columns() {
     // match comes from a column other than the English title.
     assert_eq!(selector.filtered(), &items([0]));
     assert_eq!(selector.selected_index(), Some(ItemIndex::new(0)));
-    assert_eq!(rows[0].en, "Example Song");
+    assert!(
+        !contains_substring(rows[0].en, "ví"),
+        "the English title must not be what matched",
+    );
 }
 
 /// The Vietnamese title "Bài Hát Ví Dụ" may be typed without its marks.
@@ -152,17 +156,23 @@ fn focusing_a_visible_item_moves_the_cursor_onto_it() {
     assert_eq!(selector.selected_index(), Some(ItemIndex::new(2)));
 }
 
-/// Focusing an item that the query has filtered out leaves the cursor put.
+/// Focusing an item that the query has filtered out leaves the cursor put,
+/// rather than resetting it to the top.
 #[test]
 fn focusing_a_filtered_out_item_is_a_no_op() {
     let rows = sample();
     let mut selector = Selector::new(&rows);
-    for char in "ví".chars() {
+    for char in "mẫu".chars() {
         selector.push_char(char);
     }
-    // Only the first row matches "ví", so row 2 cannot be focused.
-    selector.focus(ItemIndex::new(2));
-    assert_eq!(selector.selected_index(), Some(ItemIndex::new(0)));
+    // Rows 1 and 2 match "mẫu", and the cursor is then moved off the first
+    // of them, so leaving it put differs from resetting it to the top.
+    assert_eq!(selector.filtered(), &items([1, 2]));
+    selector.move_down();
+    // Row 0 is filtered out, so it cannot be focused.
+    selector.focus(ItemIndex::new(0));
+    assert_eq!(selector.cursor(), FilteredIndex::new(1));
+    assert_eq!(selector.selected_index(), Some(ItemIndex::new(2)));
 }
 
 /// Once an order is applied, a visible row and the item it shows no longer

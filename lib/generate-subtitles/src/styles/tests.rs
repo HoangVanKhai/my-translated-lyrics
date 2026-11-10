@@ -6,12 +6,14 @@ use pretty_assertions::assert_eq;
 use std::collections::BTreeMap;
 use text_block_macros::text_block_fnl;
 
+/// Each form is accepted and kept verbatim, interior spaces included.
 #[test]
 fn accepts_hex_keyword_and_functional_colors() {
     for value in ["#FFD966", "white", "rgb(0, 0, 0)"] {
-        assert!(
-            Color::new(value.to_string()).is_ok(),
-            "{value:?} should be accepted",
+        assert_eq!(
+            Color::new(value.to_string()).as_ref().map(Color::as_str),
+            Ok(value),
+            "{value:?} should be accepted verbatim",
         );
     }
 }

@@ -13,9 +13,9 @@ fn the_first_frame_clears_and_draws() {
         .set_string(Column::LEFT, Row::TOP, "hello", Style::PLAIN);
     screen.flush(&mut output).unwrap();
     let rendered = String::from_utf8(output).unwrap();
-    // The clear-screen sequence precedes the drawn text.
-    assert!(rendered.contains("\u{1b}[2J"), "{rendered:?}");
-    assert!(rendered.contains("hello"), "{rendered:?}");
+    // Compared whole, so that the clear precedes the drawn text.
+    let expected = concat!("\u{1b}[2J", "\u{1b}[1;1H", "hello");
+    assert_eq!(rendered, expected, "{rendered:?}");
 }
 
 /// The default screen is an empty one, so its first frame clears and draws
@@ -54,11 +54,9 @@ fn a_later_frame_sends_only_the_changed_cells() {
         .set_string(Column::LEFT, Row::TOP, "would", Style::PLAIN);
     screen.flush(&mut output).unwrap();
     let rendered = String::from_utf8(output).unwrap();
-    // Only the changed character is sent, so the unchanged text is not redrawn
-    // and the screen is not cleared.
-    assert!(!rendered.contains("\u{1b}[2J"), "{rendered:?}");
-    assert!(!rendered.contains("world"), "{rendered:?}");
-    assert!(rendered.contains('u'), "{rendered:?}");
+    // One cursor move to the third column and the one changed character,
+    // and nothing else: no clear, and none of the unchanged text around it.
+    assert_eq!(rendered, "\u{1b}[1;3Hu", "{rendered:?}");
 }
 
 /// Erasing a character writes a blank over it rather than leaving it on screen.
@@ -80,8 +78,8 @@ fn clearing_a_cell_overwrites_it_with_a_blank() {
         .set_string(Column::LEFT, Row::TOP, "a", Style::PLAIN);
     screen.flush(&mut output).unwrap();
     let rendered = String::from_utf8(output).unwrap();
-    assert!(rendered.contains(' '), "{rendered:?}");
-    assert!(!rendered.contains('b'), "{rendered:?}");
+    // The cursor moves to the erased cell before the blank is printed.
+    assert_eq!(rendered, "\u{1b}[1;2H ", "{rendered:?}");
 }
 
 /// A variation selector is sent to the terminal along with its glyph, so a

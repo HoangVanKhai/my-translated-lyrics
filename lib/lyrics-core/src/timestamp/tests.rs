@@ -1,6 +1,6 @@
 use super::{
-    MinutesOutOfRange, ParseTimestampError, SecondsOutOfRange, SrtTime, TIMESTAMP_STR_LEN,
-    TakeTimestampError, Timestamp, VttTime,
+    MILLISECONDS_PER_MINUTE, MinutesOutOfRange, ParseTimestampError, SecondsOutOfRange, SrtTime,
+    TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp, VttTime,
 };
 use pretty_assertions::assert_eq;
 
@@ -21,8 +21,8 @@ fn takes_timestamp_at_exact_length() {
 #[test]
 fn new_composes_weighted_components() {
     assert_eq!(
-        Timestamp::new(0, 0, 1).unwrap(),
-        Timestamp::new(0, 0, 1).unwrap(),
+        Timestamp::new(0, 0, 61_000).unwrap(),
+        Timestamp::new(1, 1, 0).unwrap(),
     );
     assert_eq!(
         Timestamp::new(0, 1, 0).unwrap(),
@@ -110,10 +110,14 @@ fn new_rejects_arithmetic_overflow_before_the_cap_check() {
     assert_eq!(Timestamp::new(u64::MAX, u64::MAX, u64::MAX), None);
     // The largest `minutes` that can multiply by
     // `MILLISECONDS_PER_MINUTE` without overflowing is
-    // `u64::MAX / MILLISECONDS_PER_MINUTE`. Adding any non-zero
-    // milliseconds to that product overflows the subsequent add.
-    let max_safe_minutes = u64::MAX / 60_000;
+    // `u64::MAX / MILLISECONDS_PER_MINUTE`. That product leaves
+    // 51_615 milliseconds of headroom.
+    let max_safe_minutes = u64::MAX / MILLISECONDS_PER_MINUTE;
     assert_eq!(Timestamp::new(max_safe_minutes, 0, u64::MAX), None);
+    // One minute beyond that product overshoots `u64::MAX` by
+    // 8_384, so a wrapped total would land below
+    // `MILLISECONDS_PER_HOUR` rather than above it.
+    assert_eq!(Timestamp::new(max_safe_minutes + 1, 0, 0), None);
 }
 
 /// Every composition whose weighted total lands at exactly one

@@ -118,7 +118,12 @@ fn resolve_language_uses_the_interactive_list() {
         ) -> io::Result<Navigation> {
             unreachable!("the language page uses the list, not the table")
         }
-        fn select_one(_: &str, _: &[String], _: ItemIndex) -> io::Result<Navigation> {
+        fn select_one(_: &str, _: &[String], start: ItemIndex) -> io::Result<Navigation> {
+            assert_eq!(
+                start,
+                ItemIndex::new(1),
+                "the previous language seeds the starting row",
+            );
             Ok(Navigation::Selected(ItemIndex::new(0)))
         }
     }
@@ -151,7 +156,8 @@ fn resolve_language_starts_at_the_top_without_a_previous() {
         ) -> io::Result<Navigation> {
             unreachable!("the language page uses the list, not the table")
         }
-        fn select_one(_: &str, _: &[String], _: ItemIndex) -> io::Result<Navigation> {
+        fn select_one(_: &str, _: &[String], start: ItemIndex) -> io::Result<Navigation> {
+            assert_eq!(start, ItemIndex::first(), "the list starts at the top");
             Ok(Navigation::Selected(ItemIndex::new(1)))
         }
     }
@@ -185,7 +191,12 @@ fn resolve_format_uses_the_interactive_list() {
         ) -> io::Result<Navigation> {
             unreachable!("the format page uses the list, not the table")
         }
-        fn select_one(_: &str, _: &[String], _: ItemIndex) -> io::Result<Navigation> {
+        fn select_one(_: &str, _: &[String], start: ItemIndex) -> io::Result<Navigation> {
+            assert_eq!(
+                start,
+                ItemIndex::new(1),
+                "the previous format seeds the starting row",
+            );
             Ok(Navigation::Selected(ItemIndex::new(0)))
         }
     }
@@ -220,7 +231,8 @@ fn resolve_format_starts_at_the_top_without_a_previous() {
         ) -> io::Result<Navigation> {
             unreachable!("the format page uses the list, not the table")
         }
-        fn select_one(_: &str, _: &[String], _: ItemIndex) -> io::Result<Navigation> {
+        fn select_one(_: &str, _: &[String], start: ItemIndex) -> io::Result<Navigation> {
+            assert_eq!(start, ItemIndex::first(), "the list starts at the top");
             Ok(Navigation::Selected(ItemIndex::new(1)))
         }
     }
@@ -234,6 +246,8 @@ fn resolve_format_starts_at_the_top_without_a_previous() {
 }
 
 /// Without `--player`, the player is chosen through the interactive list.
+/// The chosen row is the second, which maps to a player other than the
+/// first.
 #[test]
 fn resolve_player_uses_the_interactive_list() {
     struct Pick;
@@ -250,11 +264,19 @@ fn resolve_player_uses_the_interactive_list() {
         ) -> io::Result<Navigation> {
             unreachable!("the player page uses the list, not the table")
         }
-        fn select_one(_: &str, _: &[String], _: ItemIndex) -> io::Result<Navigation> {
-            Ok(Navigation::Selected(ItemIndex::new(0)))
+        fn select_one(_: &str, _: &[String], start: ItemIndex) -> io::Result<Navigation> {
+            assert_eq!(
+                start,
+                ItemIndex::first(),
+                "the player list starts at the top",
+            );
+            Ok(Navigation::Selected(ItemIndex::new(1)))
         }
     }
     let args = Args::parse_from(["play-with-lyrics", "src", "tgt"]);
     let resolution = resolve_player::<Pick>(&args);
-    assert!(matches!(resolution, Ok(Resolution::Chosen(Player::Mpv))));
+    assert!(matches!(
+        resolution,
+        Ok(Resolution::Chosen(Player::Celluloid))
+    ));
 }
