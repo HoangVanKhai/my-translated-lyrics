@@ -268,8 +268,13 @@ fn select_one_shows_the_page_title_in_the_top_bar() {
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([press(KeyCode::Esc)]);
     let mut buffer = Vec::new();
-    select_one_loop::<Scripted>(&mut buffer, "Select a Language", &labels, ItemIndex::new(0))
-        .unwrap();
+    select_one_loop::<Scripted>(
+        &mut buffer,
+        "Select a Language",
+        &labels,
+        ItemIndex::first(),
+    )
+    .unwrap();
     let rendered = str::from_utf8(&buffer).unwrap();
     assert!(rendered.contains("Select a Language"), "{rendered}");
 }
@@ -303,8 +308,13 @@ fn select_one_bolds_the_label_under_the_pointer() {
         .unwrap()
         .extend([hover_at(0, 2), press(KeyCode::Esc)]);
     let mut buffer = Vec::new();
-    select_one_loop::<Scripted>(&mut buffer, "Select a Language", &labels, ItemIndex::new(0))
-        .unwrap();
+    select_one_loop::<Scripted>(
+        &mut buffer,
+        "Select a Language",
+        &labels,
+        ItemIndex::first(),
+    )
+    .unwrap();
     let rendered = str::from_utf8(&buffer).unwrap();
     assert!(rendered.contains("\u{1b}[1m"), "{rendered:?}");
 }
@@ -337,8 +347,13 @@ fn select_one_reverses_the_button_under_the_pointer() {
         .unwrap()
         .extend([hover_at(5, 0), control(KeyCode::Char('c'))]);
     let mut buffer = Vec::new();
-    select_one_loop::<Scripted>(&mut buffer, "Select a Language", &labels, ItemIndex::new(0))
-        .unwrap();
+    select_one_loop::<Scripted>(
+        &mut buffer,
+        "Select a Language",
+        &labels,
+        ItemIndex::first(),
+    )
+    .unwrap();
     let rendered = str::from_utf8(&buffer).unwrap();
     assert!(rendered.contains("\u{1b}[7m"), "{rendered:?}");
 }

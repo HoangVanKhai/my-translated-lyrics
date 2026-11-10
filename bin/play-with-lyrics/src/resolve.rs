@@ -111,8 +111,8 @@ where
         .collect();
     let start = previous
         .and_then(|previous| languages.iter().position(|&language| language == previous))
-        .unwrap_or(0)
-        .pipe(ItemIndex::new);
+        .map(ItemIndex::new)
+        .unwrap_or_else(ItemIndex::first);
     let selection =
         Sys::select_one("Select a Language", &labels, start).expect("interactive selection failed");
     from_selection(selection, |index| languages.as_slice()[index])
@@ -155,8 +155,8 @@ where
         .collect();
     let start = previous
         .and_then(|previous| formats.iter().position(|&format| format == previous))
-        .unwrap_or(0)
-        .pipe(ItemIndex::new);
+        .map(ItemIndex::new)
+        .unwrap_or_else(ItemIndex::first);
     let selection = Sys::select_one("Select a Subtitle Format", &labels, start)
         .expect("interactive selection failed");
     from_selection(selection, |index| formats[index])
@@ -176,7 +176,7 @@ where
     let labels: Vec<String> = Player::VARIANTS.iter().map(ToString::to_string).collect();
     // The player is the last page, so it is never returned to and starts at the
     // top each time.
-    let selection = Sys::select_one("Select a Media Player", &labels, ItemIndex::new(0))
+    let selection = Sys::select_one("Select a Media Player", &labels, ItemIndex::first())
         .expect("interactive selection failed");
     from_selection(selection, |index| Player::VARIANTS[index])
 }

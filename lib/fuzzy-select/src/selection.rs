@@ -58,6 +58,11 @@ impl ItemIndex {
         ItemIndex(index)
     }
 
+    /// The first item of the borrowed slice.
+    pub fn first() -> ItemIndex {
+        ItemIndex(0)
+    }
+
     /// The item's position in the borrowed slice.
     pub fn get(self) -> usize {
         self.0

@@ -46,7 +46,7 @@ fn select_one_single_click_highlights_the_clicked_row() {
         .unwrap()
         .extend([click(2), press(KeyCode::Enter)]);
     let chosen =
-        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::first()).unwrap();
     assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
@@ -76,7 +76,7 @@ fn select_one_single_click_does_not_select() {
         .unwrap()
         .extend([click(2), press(KeyCode::Esc)]);
     let chosen =
-        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::first()).unwrap();
     // The single click only moved the highlight; the following Escape ends the
     // loop by going back.
     assert_eq!(chosen, Navigation::Back);
@@ -105,7 +105,7 @@ fn select_one_double_click_selects_the_clicked_row() {
     let labels = label_list(&["alpha", "beta", "gamma"]);
     EVENTS.lock().unwrap().extend([click(2), click(2)]);
     let chosen =
-        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::first()).unwrap();
     assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
@@ -135,7 +135,7 @@ fn select_one_scroll_moves_the_cursor() {
         .unwrap()
         .extend([scroll_down(), press(KeyCode::Enter)]);
     let chosen =
-        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::first()).unwrap();
     assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
@@ -477,7 +477,7 @@ fn select_one_ignores_a_click_on_the_help_line() {
         .unwrap()
         .extend([click(4), click(4), control(KeyCode::Char('q'))]);
     let chosen =
-        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(0)).unwrap();
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::first()).unwrap();
     assert_eq!(chosen, Navigation::Quit);
 }
 
