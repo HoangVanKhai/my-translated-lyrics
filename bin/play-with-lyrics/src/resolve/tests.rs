@@ -12,26 +12,27 @@ use play_with_lyrics::player::{Player, SubtitleFormat};
 use play_with_lyrics_tui::Navigation;
 use std::io;
 
-/// A chosen row becomes [`Resolution::Chosen`], with the closure mapping the
-/// index to the resolved value.
+/// A chosen item becomes [`Resolution::Chosen`], carrying what the closure
+/// resolved from it.
 #[test]
 fn from_selection_maps_a_choice_to_chosen() {
-    let resolution = from_selection(Navigation::Selected(2), |index| index * 10);
-    assert!(matches!(resolution, Ok(Resolution::Chosen(20))));
+    let values = ["first", "second", "third"];
+    let resolution = from_selection(Navigation::Selected(2), |index| values[index]);
+    assert!(matches!(resolution, Ok(Resolution::Chosen("third"))));
 }
 
 /// A request to go back becomes [`Resolution::Back`], so the caller can return
-/// to the previous page.
+/// to the previous page. No item was chosen, so nothing is resolved from one.
 #[test]
 fn from_selection_maps_back() {
-    let resolution = from_selection(Navigation::Back, |index| index);
+    let resolution = from_selection(Navigation::Back, |_| unreachable!("no item is chosen"));
     assert!(matches!(resolution, Ok(Resolution::Back)));
 }
 
-/// A request to quit becomes [`Termination::Cancelled`].
+/// A request to quit becomes [`Termination::Cancelled`], resolving nothing.
 #[test]
 fn from_selection_maps_quit_to_cancelled() {
-    let resolution = from_selection(Navigation::Quit, |index| index);
+    let resolution = from_selection(Navigation::Quit, |_| unreachable!("no item is chosen"));
     assert!(matches!(resolution, Err(Termination::Cancelled)));
 }
 
