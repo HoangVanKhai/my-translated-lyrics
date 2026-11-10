@@ -309,7 +309,9 @@ fn select_video_treats_a_bare_q_as_a_filter_character() {
             standard_size()
         }
     }
-    let videos = vec![video("Quartz".to_owned()), video("Beta".to_owned())];
+    // The matching title is second, so the filter has to move the choice
+    // off the row an unfiltered list would rest on.
+    let videos = vec![video("Beta".to_owned()), video("Quartz".to_owned())];
     // "q" filters down to the only title that contains it, then Enter picks
     // it; the loop does not treat the "q" as a quit.
     EVENTS
@@ -318,7 +320,7 @@ fn select_video_treats_a_bare_q_as_a_filter_character() {
         .extend([press(KeyCode::Char('q')), press(KeyCode::Enter)]);
     let chosen =
         select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), None).unwrap();
-    assert_eq!(chosen, Navigation::Selected(0));
+    assert_eq!(chosen, Navigation::Selected(1));
 }
 
 /// On the song page, Ctrl-Backspace goes back, which on this first page is

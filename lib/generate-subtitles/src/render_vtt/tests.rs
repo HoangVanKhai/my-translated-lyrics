@@ -1,7 +1,8 @@
-use super::{RenderVttError, render_vtt};
+use super::{RenderVttError, RenderVttErrorCreditsPayload, render_vtt};
 use crate::_test_utils::{
     color, credits_with_one_role, marker_name, markers_with_credit_trigger, style_palette,
 };
+use crate::credits_parse::{ParseCreditError, UnknownRole};
 use crate::parse::{CuePart, SubtitleCue};
 use crate::styles::{MissingStyle, Style, StylePalette};
 use lyrics_core::credits_descriptor::CreditsDesc;
@@ -132,11 +133,14 @@ fn voice_name_containing_ampersand_is_emitted_verbatim_in_cue_tag() {
     );
 }
 
+/// The error names the cue the credit line failed in, along with the
+/// parse error underneath it.
 #[test]
 fn unknown_role_in_credit_line_produces_credits_error() {
+    let start = Timestamp::new(1, 23, 456).unwrap();
     let cues = vec![SubtitleCue {
-        start: Timestamp::new(0, 0, 0).unwrap(),
-        end: Timestamp::new(0, 5, 0).unwrap(),
+        start,
+        end: Timestamp::new(1, 28, 0).unwrap(),
         parts: vec![CuePart {
             marker: "cre".to_string(),
             text: "unknown-role name-a".to_string(),
@@ -151,12 +155,16 @@ fn unknown_role_in_credit_line_produces_credits_error() {
         &Language::Vietnamese,
     )
     .unwrap_err();
-    match err {
-        RenderVttError::Credits(payload) => {
-            assert_eq!(payload.start, Timestamp::new(0, 0, 0).unwrap());
-        }
-        other => panic!("expected a credits error, got {other:?}"),
-    }
+    assert_eq!(
+        err,
+        RenderVttError::Credits(RenderVttErrorCreditsPayload {
+            start,
+            cause: ParseCreditError::UnknownRole(UnknownRole {
+                line: "unknown-role name-a".to_string(),
+                offset: 0,
+            }),
+        }),
+    );
 }
 
 #[test]

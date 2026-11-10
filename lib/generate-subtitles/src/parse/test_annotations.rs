@@ -69,22 +69,26 @@ fn a_part_continues_above_its_annotations() {
     assert_eq!(cues[0].parts[0].annotations, ["a note about the credits"]);
 }
 
-/// The part's continuation width is unaffected by an intervening
-/// annotation. `chorus: ` is 8 bytes, so its continuation indent is
-/// 18 and differs from the 15 an `ann: ` prefix would imply; the
-/// part's own width is the one that stays in force.
+/// An annotation opens a continuation target of its own, so a
+/// continuation after it carries the annotation's width rather than the
+/// part's. `chorus: ` implies an indent of 18 and `ann: ` implies 15,
+/// so the fixture carries one continuation at each width.
 #[test]
-fn annotations_do_not_disturb_the_part_continuation_width() {
+fn an_annotation_governs_the_continuation_width_after_it() {
     let input = text_block_fnl! {
         "00:00.000 chorus: part opener"
         "                  part continuation"
         "          ann: a note"
+        "               a note continuation"
         "00:04.000 clr"
     };
     let cues = parse_lyrics(input).unwrap();
     assert_eq!(cues[0].parts.len(), 1);
     assert_eq!(cues[0].parts[0].text, "part opener\npart continuation");
-    assert_eq!(cues[0].parts[0].annotations, ["a note"]);
+    assert_eq!(
+        cues[0].parts[0].annotations,
+        ["a note\na note continuation"],
+    );
 }
 
 /// A shorthand marker line after an annotation opens a fresh part
@@ -193,19 +197,19 @@ fn annotation_text_accepts_angle_brackets() {
 }
 
 /// Continuation text is arbitrary prose and is never inspected for a
-/// marker. A continuation that happens to read like an annotation is
-/// cue text, exactly as any other continuation line would be, and the
-/// indent alone decides where it goes.
+/// marker. A continuation that reads exactly like an annotation, marker
+/// and colon included, is still cue text, and the indent alone decides
+/// where it goes.
 #[test]
 fn a_continuation_is_never_read_as_an_annotation() {
     let input = text_block_fnl! {
         "00:00.000 cre: role-a name-a"
-        "               ann, my dear"
+        "               ann: my dear"
         "          ann: a note about the credits"
         "00:04.000 clr"
     };
     let cues = parse_lyrics(input).unwrap();
-    assert_eq!(cues[0].parts[0].text, "role-a name-a\nann, my dear");
+    assert_eq!(cues[0].parts[0].text, "role-a name-a\nann: my dear");
     assert_eq!(cues[0].parts[0].annotations, ["a note about the credits"]);
 }
 
