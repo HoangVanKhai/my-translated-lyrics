@@ -1,6 +1,7 @@
 use crate::fuzzy::{
     ResolveError, contains_substring, fuzzy_subsequence, match_mask, resolve_unique,
 };
+use crate::selection::ItemIndex;
 use pretty_assertions::assert_eq;
 
 /// The indices a highlight mask marks, for readable assertions.
@@ -115,7 +116,7 @@ fn match_mask_trims_trailing_whitespace_in_the_text() {
 fn resolve_unique_returns_the_single_match() {
     let items = ["mpv", "celluloid"];
     let (index, value) = resolve_unique("cell", &items, |item| vec![*item]).unwrap();
-    assert_eq!(index, 1);
+    assert_eq!(index, ItemIndex::new(1));
     assert_eq!(*value, "celluloid");
 }
 

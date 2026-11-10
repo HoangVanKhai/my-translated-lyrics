@@ -21,6 +21,7 @@
 
 pub mod error;
 
+use derive_more::Display;
 use error::{
     AdditiveRegionError, ControlMarkerInRegion, CueTextReservedCharacter, EmptyAnnotation,
     EmptyCueBody, EmptyRegion, ExtraTextAfterControlMarker, InvalidTimestamp, MalformedHeader,
@@ -32,11 +33,33 @@ use error::{
 use lyrics_core::line_markers_descriptor::{MarkerName, ReservedMarker};
 use lyrics_core::timestamp::{TIMESTAMP_STR_LEN, TakeTimestampError, Timestamp};
 use pipe_trait::Pipe;
+use std::num::NonZeroUsize;
 use strum::EnumString;
 
 /// Indent width of a line that opens a new marker at the same start
 /// time as the cue immediately above.
 const TIMESTAMP_PREFIX_WIDTH: usize = TIMESTAMP_STR_LEN + 1;
+
+/// A one-based line number in a source file. It counts lines rather than
+/// characters, so it is not one of the indents or column widths the parser's
+/// diagnostics carry beside it.
+#[derive(Clone, Copy, Debug, Display, Eq, PartialEq)]
+pub struct LineNumber(NonZeroUsize);
+
+impl LineNumber {
+    /// Wraps `number`, the position of a line in a file counting from one.
+    pub fn new(number: NonZeroUsize) -> LineNumber {
+        LineNumber(number)
+    }
+
+    /// Convert a 0-based index into a line number.
+    pub fn from_index(index: usize) -> LineNumber {
+        NonZeroUsize::MIN
+            .checked_add(index)
+            .expect("a file holds no more lines than it has bytes")
+            .pipe(LineNumber)
+    }
+}
 
 /// A subtitle cue with a resolved end time, ready for rendering.
 ///
@@ -59,9 +82,9 @@ pub struct SubtitleCue {
 /// One marker-text pair within a [`SubtitleCue`].
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CuePart {
-    /// The leading marker token the line declared, for example `ttl`
-    /// in `ttl: 《Song》`.
-    pub marker: String,
+    /// The marker the line declared, for example `ttl` in
+    /// `ttl: 《Song》`.
+    pub marker: MarkerName,
     /// Cue text, with line breaks preserved between the opening line
     /// and any continuation lines.
     pub text: String,
@@ -166,7 +189,7 @@ struct OpenRegion {
     /// The index the region's cue groups carry.
     index: AdditiveRegionIndex,
     /// Line of the `<additive>` that opened the region.
-    opened_at: usize,
+    opened_at: LineNumber,
     /// How many cue groups the region has collected so far.
     cue_count: usize,
 }
@@ -183,7 +206,7 @@ struct RegionState {
 
 impl RegionState {
     /// Opens a region whose `<additive>` sits on line `opened_at`.
-    fn open_region(&mut self, opened_at: usize) -> Result<(), AdditiveRegionError> {
+    fn open_region(&mut self, opened_at: LineNumber) -> Result<(), AdditiveRegionError> {
         if let Some(open) = self.open {
             return open
                 .opened_at
@@ -224,7 +247,7 @@ impl RegionState {
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct CueGroup {
     start: Timestamp,
-    opened_at: usize,
+    opened_at: LineNumber,
     region: Option<AdditiveRegionIndex>,
     parts: Vec<CuePart>,
 }
@@ -253,7 +276,7 @@ pub fn parse_lyrics(content: &str) -> Result<Vec<SubtitleCue>, ParseLyricsError>
 }
 
 /// Locates a [`ParseLyricsErrorKind`] at `line_number`.
-fn at_line(line_number: usize) -> impl Fn(ParseLyricsErrorKind) -> ParseLyricsError {
+fn at_line(line_number: LineNumber) -> impl Fn(ParseLyricsErrorKind) -> ParseLyricsError {
     move |kind| ParseLyricsError { line_number, kind }
 }
 
@@ -267,7 +290,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
     let mut regions = RegionState::default();
 
     for (line_index, raw_line) in content.lines().enumerate() {
-        let line_number = line_index + 1;
+        let line_number = LineNumber::from_index(line_index);
         if raw_line.trim().is_empty() || raw_line.trim_start().starts_with('#') {
             continue;
         }
@@ -363,7 +386,7 @@ fn collect_events(content: &str) -> Result<Vec<Event>, ParseLyricsError> {
 /// Opens an additive region at an `<additive>` line. `opened_at` is
 /// the line that tag sits on.
 fn handle_additive_opening_tag_line(
-    opened_at: usize,
+    opened_at: LineNumber,
     regions: &mut RegionState,
     last_cue_index: &mut Option<usize>,
     open_marker_line: &mut Option<OpenMarkerLine>,
@@ -403,7 +426,7 @@ fn end_cue_scope(
 /// header sits on.
 fn handle_header_line(
     body: &str,
-    opened_at: usize,
+    opened_at: LineNumber,
     events: &mut Vec<Event>,
     last_cue_index: &mut Option<usize>,
     open_marker_line: &mut Option<OpenMarkerLine>,
@@ -475,7 +498,7 @@ fn handle_header_line(
         opened_at,
         region,
         parts: vec![CuePart {
-            marker: marker.into(),
+            marker,
             text: text.to_string(),
             annotations: Vec::new(),
         }],
@@ -511,7 +534,7 @@ fn handle_shorthand_marker_line(
     let (marker, text) = parse_marker_part(body)?;
     let prefix_width = marker_prefix_width(marker.as_str());
     cue_group_mut(events, cue_index).parts.push(CuePart {
-        marker: marker.into(),
+        marker,
         text: text.to_string(),
         annotations: Vec::new(),
     });
@@ -602,7 +625,6 @@ fn parse_marker_part(body: &str) -> Result<(MarkerName, &str), ParseLyricsErrorK
         .map_err(ParseLyricsErrorKind::InvalidMarkerName)?;
     if text.is_empty() {
         return marker
-            .pipe(String::from)
             .pipe(EmptyCueBody)
             .pipe(ParseLyricsErrorKind::EmptyCueBody)
             .pipe(Err);
@@ -737,6 +759,8 @@ mod test_control_markers;
 mod test_cues;
 #[cfg(test)]
 mod test_event_order;
+#[cfg(test)]
+mod test_line_number;
 #[cfg(test)]
 mod test_line_shape;
 #[cfg(test)]

@@ -22,11 +22,13 @@ mod terminal;
 
 pub use selectors::{select_one, select_video};
 
+use fuzzy_select::selection::ItemIndex;
+
 /// The outcome of an interactive selector.
 #[derive(Debug, Eq, PartialEq)]
 pub enum Navigation {
     /// The user chose the item at this index.
-    Selected(usize),
+    Selected(ItemIndex),
     /// The user asked to return to the previous page.
     Back,
     /// The user asked to quit the program.

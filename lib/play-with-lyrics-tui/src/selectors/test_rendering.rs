@@ -7,13 +7,14 @@ use crate::selectors::list::select_one_loop;
 use crate::selectors::video::{render_header, render_search_bar, select_video_loop};
 use column_sort::ColumnSort;
 use crossterm::event::{Event, KeyCode};
+use fuzzy_select::selection::ItemIndex;
 use lyrics_core::video_descriptor::Language;
 use pretty_assertions::assert_eq;
 use std::collections::VecDeque;
 use std::io;
 use std::sync::Mutex;
 use std::time::{Duration, SystemTime};
-use terminal_screen::{Buffer, Style};
+use terminal_screen::{Buffer, Column, Height, Style, Width};
 
 /// The table header labels each column with its language's own name. Driving
 /// the loop with an injected size makes the rendered output deterministic.
@@ -33,8 +34,8 @@ fn select_video_header_shows_native_language_names() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
-            Ok((80, 24))
+        fn window_size() -> io::Result<(Width, Height)> {
+            Ok((Width::new(80), Height::new(24)))
         }
     }
     let videos = vec![video("Alpha".to_owned())];
@@ -66,9 +67,9 @@ fn select_video_header_truncates_in_a_narrow_terminal() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             // Each of the three columns gets about six display columns.
-            Ok((24, 24))
+            Ok((Width::new(24), Height::new(24)))
         }
     }
     let videos = vec![video("Alpha".to_owned())];
@@ -98,10 +99,10 @@ fn select_video_renders_only_the_visible_window() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             // Six rows leave room for two title rows, after the prompt, header,
             // help, and button lines.
-            Ok((80, 6))
+            Ok((Width::new(80), Height::new(6)))
         }
     }
     // The names are alphabetical, so the default English sort keeps this order.
@@ -139,7 +140,7 @@ fn select_video_renders_with_a_fallback_size_when_size_is_unavailable() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             Err(io::Error::other("the terminal size is unavailable"))
         }
     }
@@ -169,7 +170,7 @@ fn select_video_underlines_matched_characters() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -202,7 +203,7 @@ fn select_video_does_not_underline_without_a_query() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -231,7 +232,7 @@ fn select_video_footer_shows_delete_and_back() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -260,14 +261,20 @@ fn select_one_shows_the_page_title_in_the_top_bar() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
     let labels = label_list(&["alpha", "beta"]);
     EVENTS.lock().unwrap().extend([press(KeyCode::Esc)]);
     let mut buffer = Vec::new();
-    select_one_loop::<Scripted>(&mut buffer, "Select a Language", &labels, 0).unwrap();
+    select_one_loop::<Scripted>(
+        &mut buffer,
+        "Select a Language",
+        &labels,
+        ItemIndex::first(),
+    )
+    .unwrap();
     let rendered = str::from_utf8(&buffer).unwrap();
     assert!(rendered.contains("Select a Language"), "{rendered}");
 }
@@ -289,7 +296,7 @@ fn select_one_bolds_the_label_under_the_pointer() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -301,7 +308,13 @@ fn select_one_bolds_the_label_under_the_pointer() {
         .unwrap()
         .extend([hover_at(0, 2), press(KeyCode::Esc)]);
     let mut buffer = Vec::new();
-    select_one_loop::<Scripted>(&mut buffer, "Select a Language", &labels, 0).unwrap();
+    select_one_loop::<Scripted>(
+        &mut buffer,
+        "Select a Language",
+        &labels,
+        ItemIndex::first(),
+    )
+    .unwrap();
     let rendered = str::from_utf8(&buffer).unwrap();
     assert!(rendered.contains("\u{1b}[1m"), "{rendered:?}");
 }
@@ -322,7 +335,7 @@ fn select_one_reverses_the_button_under_the_pointer() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -334,7 +347,13 @@ fn select_one_reverses_the_button_under_the_pointer() {
         .unwrap()
         .extend([hover_at(5, 0), control(KeyCode::Char('c'))]);
     let mut buffer = Vec::new();
-    select_one_loop::<Scripted>(&mut buffer, "Select a Language", &labels, 0).unwrap();
+    select_one_loop::<Scripted>(
+        &mut buffer,
+        "Select a Language",
+        &labels,
+        ItemIndex::first(),
+    )
+    .unwrap();
     let rendered = str::from_utf8(&buffer).unwrap();
     assert!(rendered.contains("\u{1b}[7m"), "{rendered:?}");
 }
@@ -344,22 +363,27 @@ fn select_one_reverses_the_button_under_the_pointer() {
 #[test]
 fn render_header_marks_the_sorted_and_hovered_columns() {
     let sort = ColumnSort::new([Language::English, Language::Vietnamese, Language::Chinese]);
-    let mut buffer = Buffer::new(80, 3);
+    let mut buffer = Buffer::new(Width::new(80), Height::new(3));
     // Hover the English header, at column 5 on the header row.
-    render_header(&mut buffer, 80, &sort, Some((5, HEADER_ROW)));
+    render_header(
+        &mut buffer,
+        Width::new(80),
+        &sort,
+        Some((Column::new(5), HEADER_ROW)),
+    );
     let header = buffer.row_text(HEADER_ROW);
     // English is the default sort column, ascending, so it carries the ▲ arrow.
     assert!(header.contains("English ▲"), "{header}");
     // The hovered English header is bold without the dim.
-    assert_eq!(buffer.style_at(0, HEADER_ROW), Style::BOLD);
+    assert_eq!(buffer.style_at(Column::LEFT, HEADER_ROW), Style::BOLD);
     // A column the pointer is not over is bold and dimmed.
-    let vietnamese_start = column_spans(80)[1].start as u16;
+    let vietnamese_start = column_spans(Width::new(80))[1].start();
     assert_eq!(
         buffer.style_at(vietnamese_start, HEADER_ROW),
         Style::BOLD.with(Style::DIM),
     );
     // The separator bar between the headers is bold but not dimmed.
-    let separator_bar = column_spans(80)[0].end as u16 + 1;
+    let separator_bar = column_spans(Width::new(80))[0].end() + Width::ONE;
     assert_eq!(buffer.style_at(separator_bar, HEADER_ROW), Style::BOLD);
 }
 
@@ -367,19 +391,19 @@ fn render_header_marks_the_sorted_and_hovered_columns() {
 /// the typed query.
 #[test]
 fn render_search_bar_styles_the_magnifier_label_and_query() {
-    let mut buffer = Buffer::new(40, 2);
-    render_search_bar(&mut buffer, 40, "abc");
+    let mut buffer = Buffer::new(Width::new(40), Height::new(2));
+    render_search_bar(&mut buffer, Width::new(40), "abc");
     let row = buffer.row_text(SEARCH_ROW);
     assert!(row.contains("Search:"), "{row}");
     assert!(row.contains("abc"), "{row}");
     // The magnifier is dimmed, not italic.
-    assert_eq!(buffer.style_at(0, SEARCH_ROW), Style::DIM);
+    assert_eq!(buffer.style_at(Column::LEFT, SEARCH_ROW), Style::DIM);
     // The "Search:" label is italic. The magnifier spans columns 0-1 and column
     // 2 is the label's leading space, so column 3 is its first letter.
-    assert_eq!(buffer.style_at(3, SEARCH_ROW), Style::ITALIC);
+    assert_eq!(buffer.style_at(Column::new(3), SEARCH_ROW), Style::ITALIC);
     // The typed query is bold. The magnifier (2) and " Search: " (9) take eleven
     // columns, so the query begins at column 11.
-    assert_eq!(buffer.style_at(11, SEARCH_ROW), Style::BOLD);
+    assert_eq!(buffer.style_at(Column::new(11), SEARCH_ROW), Style::BOLD);
 }
 
 /// The search bar shows a magnifier with the italic "Search:" label and the
@@ -399,7 +423,7 @@ fn the_search_bar_shows_a_magnifier_with_styled_parts() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }

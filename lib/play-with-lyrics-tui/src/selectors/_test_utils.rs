@@ -9,7 +9,8 @@ use play_with_lyrics::catalog::Video;
 use std::collections::{HashMap, VecDeque};
 use std::io;
 use std::sync::Mutex;
-use test_utils::{SEPARATED_COLLECTION, video_desc};
+use terminal_screen::{Height, Width};
+use test_utils::{SEPARATED_COLLECTION, collection_name, video_desc, video_title};
 
 /// A video with both an English and a Vietnamese title, so the table can be
 /// sorted by either column to a different order.
@@ -104,7 +105,11 @@ pub(super) fn label_list(values: &[&str]) -> Vec<String> {
 
 pub(super) fn video(title: String) -> Video {
     Video {
-        desc: video_desc(SEPARATED_COLLECTION.to_owned(), title, Visibility::Visible),
+        desc: video_desc(
+            collection_name(SEPARATED_COLLECTION),
+            video_title(title),
+            Visibility::Visible,
+        ),
     }
 }
 
@@ -124,6 +129,6 @@ pub(super) fn english_video(title: &str) -> Video {
 
 /// The terminal size a size-agnostic test renders at: wide and tall enough
 /// that neither truncation nor scrolling occurs.
-pub(super) fn standard_size() -> io::Result<(u16, u16)> {
-    Ok((80, 24))
+pub(super) fn standard_size() -> io::Result<(Width, Height)> {
+    Ok((Width::new(80), Height::new(24)))
 }

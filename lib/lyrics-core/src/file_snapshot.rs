@@ -1,18 +1,48 @@
 use core::fmt;
 use pipe_trait::Pipe;
 use std::cell::OnceCell;
-use std::fs::{read_to_string, symlink_metadata};
+use std::fs::{Metadata, read_to_string, symlink_metadata};
 use std::io;
 use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
 use std::time::SystemTime;
 
+/// The device a file lives on, as the filesystem reports it.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct DeviceId(u64);
+
+impl DeviceId {
+    fn from_metadata(stats: &Metadata) -> DeviceId {
+        stats.dev().pipe(DeviceId)
+    }
+}
+
+/// A file's inode number within its device.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct Inode(u64);
+
+impl Inode {
+    fn from_metadata(stats: &Metadata) -> Inode {
+        stats.ino().pipe(Inode)
+    }
+}
+
+/// A file's length in bytes.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct FileSize(u64);
+
+impl FileSize {
+    fn from_metadata(stats: &Metadata) -> FileSize {
+        stats.len().pipe(FileSize)
+    }
+}
+
 #[derive(Clone)]
 pub struct FileSnapshot {
     path: PathBuf,
-    dev: u64,
-    inode: u64,
-    size: u64,
+    dev: DeviceId,
+    inode: Inode,
+    size: FileSize,
     modified: SystemTime,
     content: OnceCell<String>,
 }
@@ -36,9 +66,9 @@ impl FileSnapshot {
         let modified = stats.modified()?;
         Ok(FileSnapshot {
             path,
-            dev: stats.dev(),
-            inode: stats.ino(),
-            size: stats.len(),
+            dev: DeviceId::from_metadata(&stats),
+            inode: Inode::from_metadata(&stats),
+            size: FileSize::from_metadata(&stats),
             modified,
             content: OnceCell::new(),
         })
@@ -73,7 +103,7 @@ impl FileSnapshot {
     }
 
     pub fn content_eq_str(&self, other: &str) -> bool {
-        if self.size != other.len() as u64 {
+        if self.size != FileSize(other.len() as u64) {
             return false;
         }
         match self.load() {

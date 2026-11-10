@@ -46,13 +46,13 @@ impl CollectionsDesc {
     }
 
     /// Checks that `name` is one of the declared separated collections.
-    pub fn check_separated(&self, name: &str) -> Result<(), UndeclaredCollection> {
-        if self.separated.iter().any(|declared| &**declared == name) {
+    pub fn check_separated(&self, name: &CollectionName) -> Result<(), UndeclaredCollection> {
+        if self.separated.contains(name) {
             return Ok(());
         }
         Err(UndeclaredCollection {
-            name: name.to_string(),
-            closest: self.closest_separated(name).map(ToString::to_string),
+            name: name.clone(),
+            closest: self.closest_separated(name).cloned(),
         })
     }
 
@@ -63,7 +63,7 @@ impl CollectionsDesc {
     /// name may absorb a longer slip than a short one, and a name that
     /// resembles nothing declared yields nothing to suggest.
     ///
-    fn closest_separated(&self, name: &str) -> Option<&CollectionName> {
+    fn closest_separated(&self, name: &CollectionName) -> Option<&CollectionName> {
         let tolerance = (name.chars().count() / 3).max(1);
         self.separated
             .iter()
@@ -79,18 +79,18 @@ impl CollectionsDesc {
 #[derive(Debug)]
 pub struct UndeclaredCollection {
     /// The name that was looked up.
-    name: String,
+    name: CollectionName,
     /// The declared name closest to it, when one is close enough to be
     /// worth suggesting.
-    closest: Option<String>,
+    closest: Option<CollectionName>,
 }
 
 impl fmt::Display for UndeclaredCollection {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let UndeclaredCollection { name, closest } = self;
-        write!(formatter, "unknown collection: {name:?}")?;
+        write!(formatter, "unknown collection: {:?}", &**name)?;
         match closest {
-            Some(closest) => write!(formatter, ", did you mean {closest:?}?"),
+            Some(closest) => write!(formatter, ", did you mean {:?}?", &**closest),
             None => Ok(()),
         }
     }
@@ -103,7 +103,7 @@ impl fmt::Display for UndeclaredCollection {
 /// appended to it, and rejects the rest with the
 /// [`ParseCollectionNameError`] variant that states the broken rule.
 ///
-#[derive(AsRef, Clone, Deref, Deserialize, Display, Into, Serialize)]
+#[derive(AsRef, Clone, Debug, Deref, Deserialize, Display, Eq, Into, PartialEq, Serialize)]
 #[as_ref(forward)]
 #[deref(forward)]
 #[serde(try_from = "String", into = "String")]
