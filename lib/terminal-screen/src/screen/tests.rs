@@ -15,7 +15,8 @@ fn the_first_frame_clears_and_draws() {
     // Compared whole, so that the clear-screen sequence is required to
     // precede the drawn text. Two `contains` checks would also pass for
     // a frame that drew the text and then wiped it.
-    assert_eq!(rendered, "\u{1b}[2J\u{1b}[1;1Hhello", "{rendered:?}");
+    let expected = concat!("\u{1b}[2J", "\u{1b}[1;1H", "hello");
+    assert_eq!(rendered, expected, "{rendered:?}");
 }
 
 /// The default screen is an empty one, so its first frame clears and draws

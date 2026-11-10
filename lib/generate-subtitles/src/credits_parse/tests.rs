@@ -26,7 +26,7 @@ fn make_roles(descriptor: &CreditsDesc) -> CreditRoles<'_> {
 ///   * `作詞` and `long-role` each appear twice, so the duplicates
 ///     have to be collapsed. The sort runs before the dedup and
 ///     brings equal entries together, so a dedup that only
-///     compares neighbours is enough here.
+///     compares adjacent entries is enough here.
 ///   * `abc` and `mid` are both 3 bytes long, so the ascending
 ///     lexicographic tiebreak is observable.
 ///   * `作詞` is 6 bytes (two CJK code points) and ranks above the
