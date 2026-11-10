@@ -17,10 +17,17 @@ fn source_credits_descriptors() {
     );
 
     let entries = sources_dir
+        .as_path()
         .pipe(read_dir)
         .unwrap()
         .map(Result::<DirEntry, _>::unwrap)
         .sorted_by_key(DirEntry::file_name);
+
+    // Each song may omit the file, so the walk skips what it does not
+    // find. Count what it did parse: without this the test reports
+    // success over an empty `sources/`, or over a
+    // `CREDITS_CONFIG_FILE_NAME` that matches nothing on disk.
+    let mut parsed = 0_usize;
 
     for entry in entries {
         let song_dir = entry.path();
@@ -53,5 +60,19 @@ fn source_credits_descriptors() {
             desc.credit_names.clone().into_sorted(),
             "credit-names in {song_name:?} are not in sorted order",
         );
+
+        // A descriptor that parsed into nothing orders trivially, so the
+        // two assertions above only mean something once a role is read.
+        assert!(
+            !desc.credit_roles.is_empty(),
+            "credit-roles in {song_name:?} are empty",
+        );
+        parsed += 1;
     }
+
+    assert!(
+        parsed > 0,
+        "no {CREDITS_CONFIG_FILE_NAME} found under {}",
+        sources_dir.display(),
+    );
 }

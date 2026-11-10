@@ -14,10 +14,17 @@ fn source_line_markers_descriptors() {
     );
 
     let entries = sources_dir
+        .as_path()
         .pipe(read_dir)
         .unwrap()
         .map(Result::<DirEntry, _>::unwrap)
         .sorted_by_key(DirEntry::file_name);
+
+    // Each song may omit the file, so the walk skips what it does not
+    // find. Count what it did parse: without this the test reports
+    // success over an empty `sources/`, or over a
+    // `LINE_MARKERS_CONFIG_FILE_NAME` that matches nothing on disk.
+    let mut parsed = 0_usize;
 
     for entry in entries {
         let song_dir = entry.path();
@@ -37,5 +44,12 @@ fn source_line_markers_descriptors() {
             .pipe_as_ref(toml::from_str::<LineMarkersDesc>)
             .unwrap()
             .pipe(drop::<LineMarkersDesc>);
+        parsed += 1;
     }
+
+    assert!(
+        parsed > 0,
+        "no {LINE_MARKERS_CONFIG_FILE_NAME} found under {}",
+        sources_dir.display(),
+    );
 }

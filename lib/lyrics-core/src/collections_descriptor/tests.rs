@@ -1,6 +1,7 @@
 use super::{CollectionName, CollectionsDesc, ParseCollectionNameError};
 use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
+use text_block_macros::text_block_fnl;
 
 /// A manifest in the shape of a real `collections.toml`, with a nested
 /// separated collection alongside a plain one.
@@ -108,13 +109,31 @@ fn check_separated_rejects_an_undeclared_collection() {
 }
 
 /// A name that a declared one is a few edits away from reads as a typo,
-/// so the message points at the declared name.
+/// so the message points at the nearest declared name rather than at
+/// whichever one the tolerance happens to admit.
 #[test]
 fn check_separated_hints_the_closest_declared_collection() {
-    let desc = manifest();
+    // The shared fixture declares no two names close enough for a typo
+    // to resemble both, so a hint drawn from it has a single candidate
+    // in range and names the nearest one however the search orders them.
+    // This manifest adds a near-duplicate of `Example Collection`, so
+    // each case below has two candidates in range and the hint is wrong
+    // unless the nearer one wins.
+    let desc = text_block_fnl! {
+        "separated = ["
+        r#"  "Example Collection","#
+        r#"  "Example Collections","#
+        r#"  "Example Group/Another Example Collection","#
+        "]"
+    }
+    .pipe(toml::from_str::<CollectionsDesc>)
+    .unwrap();
     let cases = [
         ("example collection", "Example Collection"),
         ("ExampleCollection", "Example Collection"),
+        // The plural is the nearer of the two candidates here, so this
+        // case fails if the hint simply reports the first in range.
+        ("example collections", "Example Collections"),
         (
             "Example Group/Another Example Collections",
             "Example Group/Another Example Collection",
