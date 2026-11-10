@@ -23,16 +23,17 @@ fn make_roles(descriptor: &CreditsDesc) -> CreditRoles<'_> {
 }
 
 /// The input exercises three contractual properties at once:
-///   * `作詞` and `long-role` each appear twice with other entries
-///     between them, so a refactor that relies on `Vec::dedup` or
-///     `Itertools::dedup` leaves the duplicates in.
+///   * `作詞` and `long-role` each appear twice, so the duplicates
+///     have to be collapsed. The sort runs before the dedup and
+///     brings equal entries together, so a dedup that only
+///     compares neighbours is enough here.
 ///   * `abc` and `mid` are both 3 bytes long, so the ascending
 ///     lexicographic tiebreak is observable.
 ///   * `作詞` is 6 bytes (two CJK code points) and ranks above the
 ///     3-byte ASCII entries, making byte length, not character
 ///     count, the load-bearing measure.
 #[test]
-fn from_descriptor_deduplicates_non_adjacent_entries_and_orders_longest_first() {
+fn from_descriptor_deduplicates_and_orders_longest_first() {
     let descriptor = make_descriptor(&[
         "作詞",
         "long-role",
@@ -97,13 +98,21 @@ fn tolerates_runs_wider_than_two_spaces() {
     );
 }
 
+/// Two registered roles share a prefix, and the longer one continues
+/// past the shorter with a separator rather than with ordinary name
+/// text. The boundary check alone therefore accepts the shorter role,
+/// and only the longest-first order picks the whole `role a`.
 #[test]
 fn longer_role_wins_over_shorter_prefix() {
-    let descriptor = make_descriptor(&["role", "role-a"]);
+    let descriptor = make_descriptor(&["role", "role a"]);
     let roles = make_roles(&descriptor);
-    let parsed = parse_credit_line("role-a  name-a", &roles).unwrap();
+    let parsed = parse_credit_line("role a: name-a", &roles).unwrap();
     assert_eq!(parsed.len(), 1);
-    assert_eq!(parsed[0].lead, CreditLead::Role("role-a"));
+    assert_eq!(parsed[0].lead, CreditLead::Role("role a"));
+    assert_eq!(
+        parsed[0].name_segments,
+        [NameSegment::Unbracketed(Unbracketed("name-a"))],
+    );
 }
 
 /// The name `name-role-a` ends with the registered role token
@@ -172,15 +181,19 @@ fn role_only_header_line_has_no_name() {
     assert!(parsed[0].name_segments.is_empty());
 }
 
+/// The reported offset is where the unrecognized text begins, which
+/// is past any leading whitespace. The fixture carries some, so the
+/// offset is a position rather than the zero that any line without
+/// indentation would also report.
 #[test]
 fn unknown_leading_text_errors() {
     let descriptor = make_descriptor(&["role-a"]);
     let roles = make_roles(&descriptor);
     assert_eq!(
-        parse_credit_line("unknown  name-a", &roles).unwrap_err(),
+        parse_credit_line("  unknown  name-a", &roles).unwrap_err(),
         ParseCreditError::UnknownRole(UnknownRole {
-            line: "unknown  name-a".to_string(),
-            offset: 0,
+            line: "  unknown  name-a".to_string(),
+            offset: 2,
         }),
     );
 }

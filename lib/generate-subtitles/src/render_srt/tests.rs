@@ -1,7 +1,8 @@
-use super::{RenderSrtError, render_srt};
+use super::{RenderSrtError, RenderSrtErrorCreditsPayload, render_srt};
 use crate::_test_utils::{
     credits_with_one_role, marker_name, markers_with_credit_trigger, style_palette,
 };
+use crate::credits_parse::{ParseCreditError, UnknownRole};
 use crate::parse::{CuePart, SubtitleCue};
 use crate::styles::{MissingStyle, StylePalette};
 use lyrics_core::credits_descriptor::CreditsDesc;
@@ -78,11 +79,16 @@ fn role_only_header_and_role_less_lines_render() {
     );
 }
 
+/// The error names the cue the credit line failed in, along with the
+/// parse error underneath it. The cue starts away from zero, so the
+/// reported start is read from the cue rather than being the smallest
+/// timestamp a renderer could report for any cue at all.
 #[test]
 fn unknown_role_in_credit_line_produces_credits_error() {
+    let start = Timestamp::new(1, 23, 456).unwrap();
     let cues = vec![SubtitleCue {
-        start: Timestamp::new(0, 0, 0).unwrap(),
-        end: Timestamp::new(0, 5, 0).unwrap(),
+        start,
+        end: Timestamp::new(1, 28, 0).unwrap(),
         parts: vec![CuePart {
             marker: "cre".to_string(),
             text: "unknown-role name-a".to_string(),
@@ -97,12 +103,16 @@ fn unknown_role_in_credit_line_produces_credits_error() {
         &Language::Vietnamese,
     )
     .unwrap_err();
-    match err {
-        RenderSrtError::Credits(payload) => {
-            assert_eq!(payload.start, Timestamp::new(0, 0, 0).unwrap());
-        }
-        other => panic!("expected a credits error, got {other:?}"),
-    }
+    assert_eq!(
+        err,
+        RenderSrtError::Credits(RenderSrtErrorCreditsPayload {
+            start,
+            cause: ParseCreditError::UnknownRole(UnknownRole {
+                line: "unknown-role name-a".to_string(),
+                offset: 0,
+            }),
+        }),
+    );
 }
 
 #[test]
