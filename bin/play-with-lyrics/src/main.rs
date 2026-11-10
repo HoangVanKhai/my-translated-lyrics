@@ -196,6 +196,7 @@ fn launch(mut command: Command, player: Player) -> Result<(), Termination> {
 #[cfg(test)]
 mod tests {
     use super::{Stage, step_back};
+    use crate::failure::Termination;
     use lyrics_core::video_descriptor::Language;
     use play_with_lyrics::player::SubtitleFormat;
 
@@ -231,6 +232,13 @@ mod tests {
         let mut history: Vec<Stage> = Vec::new();
         let mut language = Some(Language::Vietnamese);
         let mut format = Some(SubtitleFormat::SubRip);
-        assert!(step_back(&mut history, &mut language, &mut format).is_err());
+        // `Stage` is not `Debug`, so the `Result` is matched in place
+        // rather than unwrapped. Cancellation carries an exit code and a
+        // message of its own, which `is_err` cannot tell apart from the
+        // other terminations.
+        assert!(matches!(
+            step_back(&mut history, &mut language, &mut format),
+            Err(Termination::Cancelled),
+        ));
     }
 }
