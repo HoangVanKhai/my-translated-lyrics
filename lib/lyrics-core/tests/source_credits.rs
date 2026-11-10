@@ -24,9 +24,7 @@ fn source_credits_descriptors() {
         .sorted_by_key(DirEntry::file_name);
 
     // Each song may omit the file, so the walk skips what it does not
-    // find. Count what it did parse: without this the test reports
-    // success over an empty `sources/`, or over a
-    // `CREDITS_CONFIG_FILE_NAME` that matches nothing on disk.
+    // find and counts what it parsed.
     let mut parsed = 0_usize;
 
     for entry in entries {
@@ -61,8 +59,7 @@ fn source_credits_descriptors() {
             "credit-names in {song_name:?} are not in sorted order",
         );
 
-        // A descriptor that parsed into nothing orders trivially, so the
-        // two assertions above only mean something once a role is read.
+        // A descriptor that parsed into nothing orders trivially.
         assert!(
             !desc.credit_roles.is_empty(),
             "credit-roles in {song_name:?} are empty",

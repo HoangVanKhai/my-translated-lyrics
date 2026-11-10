@@ -161,8 +161,7 @@ fn focusing_a_filtered_out_item_is_a_no_op() {
         selector.push_char(char);
     }
     // Rows 1 and 2 match "mẫu", and the cursor is then moved off the first
-    // of them. Leaving it put therefore differs from resetting it to the
-    // top, which a query matching the first row alone could not show.
+    // of them, so leaving it put differs from resetting it to the top.
     assert_eq!(selector.filtered(), &[1, 2]);
     selector.move_down();
     // Row 0 is filtered out, so it cannot be focused.

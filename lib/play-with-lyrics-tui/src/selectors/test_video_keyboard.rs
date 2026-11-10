@@ -310,8 +310,7 @@ fn select_video_treats_a_bare_q_as_a_filter_character() {
         }
     }
     // The matching title is second, so the filter has to move the choice
-    // off the row an unfiltered list would rest on. With it first, a "q"
-    // that never reached the query resolved to the same video.
+    // off the row an unfiltered list would rest on.
     let videos = vec![video("Beta".to_owned()), video("Quartz".to_owned())];
     // "q" filters down to the only title that contains it, then Enter picks
     // it; the loop does not treat the "q" as a quit.

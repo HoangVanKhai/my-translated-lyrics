@@ -146,8 +146,7 @@ fn select_one_keeps_the_cursor_within_bounds() {
         }
     }
     // Three rows, so the row a wrap-around would reach is not the row the
-    // bottom clamp holds. On two rows the two readings agree and neither
-    // bound is pinned. Each bound needs its own run, since the loop
+    // bottom clamp holds. Each bound needs its own run, since the loop
     // reports only where the cursor ended.
     let labels = label_list(&["alpha", "beta", "gamma"]);
     // Up at the top holds the first row, so one Down from there lands on
@@ -191,9 +190,7 @@ fn select_one_ignores_non_press_events() {
             standard_size()
         }
     }
-    // Three rows, so a release honoured as a press would move the cursor
-    // to a third row rather than being swallowed by the bottom clamp of
-    // a shorter list.
+    // Three rows, so a release honoured as a press would reach a third row.
     let labels = label_list(&["alpha", "beta", "gamma"]);
     let release = Event::Key(KeyEvent::new_with_kind(
         KeyCode::Down,

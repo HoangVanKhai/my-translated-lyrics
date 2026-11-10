@@ -21,9 +21,7 @@ fn source_line_markers_descriptors() {
         .sorted_by_key(DirEntry::file_name);
 
     // Each song may omit the file, so the walk skips what it does not
-    // find. Count what it did parse: without this the test reports
-    // success over an empty `sources/`, or over a
-    // `LINE_MARKERS_CONFIG_FILE_NAME` that matches nothing on disk.
+    // find and counts what it parsed.
     let mut parsed = 0_usize;
 
     for entry in entries {

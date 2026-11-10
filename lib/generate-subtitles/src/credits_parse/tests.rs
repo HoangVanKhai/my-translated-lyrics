@@ -24,9 +24,7 @@ fn make_roles(descriptor: &CreditsDesc) -> CreditRoles<'_> {
 
 /// The input exercises three contractual properties at once:
 ///   * `作詞` and `long-role` each appear twice, so the duplicates
-///     have to be collapsed. The sort runs before the dedup and
-///     brings equal entries together, so a dedup that only
-///     compares adjacent entries is enough here.
+///     have to be collapsed.
 ///   * `abc` and `mid` are both 3 bytes long, so the ascending
 ///     lexicographic tiebreak is observable.
 ///   * `作詞` is 6 bytes (two CJK code points) and ranks above the
@@ -99,9 +97,8 @@ fn tolerates_runs_wider_than_two_spaces() {
 }
 
 /// Two registered roles share a prefix, and the longer one continues
-/// past the shorter with a separator rather than with ordinary name
-/// text. The boundary check alone therefore accepts the shorter role,
-/// and only the longest-first order picks the whole `role a`.
+/// past the shorter with a separator rather than with name text, so
+/// only the longest-first order picks the whole `role a`.
 #[test]
 fn longer_role_wins_over_shorter_prefix() {
     let descriptor = make_descriptor(&["role", "role a"]);
@@ -182,9 +179,7 @@ fn role_only_header_line_has_no_name() {
 }
 
 /// The reported offset is where the unrecognized text begins, which
-/// is past any leading whitespace. The fixture carries some, so the
-/// offset is a position rather than the zero that any line without
-/// indentation would also report.
+/// is past the line's leading whitespace.
 #[test]
 fn unknown_leading_text_errors() {
     let descriptor = make_descriptor(&["role-a"]);

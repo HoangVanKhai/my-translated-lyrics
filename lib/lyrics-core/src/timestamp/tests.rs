@@ -111,16 +111,12 @@ fn new_rejects_arithmetic_overflow_before_the_cap_check() {
     // The largest `minutes` that can multiply by
     // `MILLISECONDS_PER_MINUTE` without overflowing is
     // `u64::MAX / MILLISECONDS_PER_MINUTE`. That product leaves
-    // 51_615 milliseconds of headroom, so `u64::MAX` milliseconds
-    // overflows the subsequent add while a smaller addend need not.
+    // 51_615 milliseconds of headroom.
     let max_safe_minutes = u64::MAX / MILLISECONDS_PER_MINUTE;
     assert_eq!(Timestamp::new(max_safe_minutes, 0, u64::MAX), None);
-    // One minute beyond that product is the witness the cap check
-    // cannot stand in for: the true total exceeds `u64::MAX` by
-    // 8_384, so a wrapping multiplication would land below
-    // `MILLISECONDS_PER_HOUR` and yield `Some(00:08.384)` from
-    // nonsense input. Every other case here wraps to a value far
-    // above the cap, which the cap check rejects on its own.
+    // One minute beyond that product overshoots `u64::MAX` by
+    // 8_384, so a wrapped total would land below
+    // `MILLISECONDS_PER_HOUR` rather than above it.
     assert_eq!(Timestamp::new(max_safe_minutes + 1, 0, 0), None);
 }
 

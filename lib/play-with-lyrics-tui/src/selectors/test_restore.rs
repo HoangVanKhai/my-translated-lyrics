@@ -61,8 +61,7 @@ fn select_one_clamps_an_out_of_range_start() {
         }
     }
     // Three rows, so clamping and wrapping disagree: 9 clamps to the last
-    // row, 2, while `9 % 3` would wrap to the first. On two rows both
-    // readings give row 1 and the word "clamped" pins nothing.
+    // row, 2, while `9 % 3` would wrap to the first.
     let labels = label_list(&["alpha", "beta", "gamma"]);
     EVENTS.lock().unwrap().extend([press(KeyCode::Enter)]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 9).unwrap();
@@ -92,9 +91,7 @@ fn select_video_starts_on_the_selected_video() {
         }
     }
     // Listed in reverse of the order the English sort displays them, so an
-    // item's place in the slice is not its row: `First` is item 2 and row
-    // 0. Listed in display order the two coincide, and reading `selected`
-    // as a row gave the same answer as reading it as an item.
+    // item's place in the slice is not its row: `First` is item 2 and row 0.
     let videos = vec![
         english_video("Third"),
         english_video("Second"),

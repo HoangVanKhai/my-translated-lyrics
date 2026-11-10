@@ -12,9 +12,7 @@ fn the_first_frame_clears_and_draws() {
         .set_string(0, 0, "hello", Style::PLAIN);
     screen.flush(&mut output).unwrap();
     let rendered = String::from_utf8(output).unwrap();
-    // Compared whole, so that the clear-screen sequence is required to
-    // precede the drawn text. Two `contains` checks would also pass for
-    // a frame that drew the text and then wiped it.
+    // Compared whole, so that the clear precedes the drawn text.
     let expected = concat!("\u{1b}[2J", "\u{1b}[1;1H", "hello");
     assert_eq!(rendered, expected, "{rendered:?}");
 }
@@ -56,10 +54,7 @@ fn a_later_frame_sends_only_the_changed_cells() {
     screen.flush(&mut output).unwrap();
     let rendered = String::from_utf8(output).unwrap();
     // One cursor move to the third column and the one changed character,
-    // and nothing else: no clear, and none of the unchanged text around
-    // it. The previous frame's `world` never appears in a repaint of
-    // this frame, so looking for its absence passed however much of
-    // `would` was redrawn.
+    // and nothing else: no clear, and none of the unchanged text around it.
     assert_eq!(rendered, "\u{1b}[1;3Hu", "{rendered:?}");
 }
 
@@ -83,7 +78,6 @@ fn clearing_a_cell_overwrites_it_with_a_blank() {
     screen.flush(&mut output).unwrap();
     let rendered = String::from_utf8(output).unwrap();
     // The cursor moves to the erased cell before the blank is printed.
-    // A bare search for a space says nothing about where it landed.
     assert_eq!(rendered, "\u{1b}[1;2H ", "{rendered:?}");
 }
 

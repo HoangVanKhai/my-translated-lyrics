@@ -213,8 +213,8 @@ fn resolve_format_starts_at_the_top_without_a_previous() {
 }
 
 /// Without `--player`, the player is chosen through the interactive list.
-/// The chosen row is the second one, which `Player::VARIANTS` maps to a
-/// player other than the first, so the choice is read from the row.
+/// The chosen row is the second, which maps to a player other than the
+/// first.
 #[test]
 fn resolve_player_uses_the_interactive_list() {
     struct Pick;

@@ -233,9 +233,7 @@ mod tests {
         let mut language = Some(Language::Vietnamese);
         let mut format = Some(SubtitleFormat::SubRip);
         // `Stage` is not `Debug`, so the `Result` is matched in place
-        // rather than unwrapped. Cancellation carries an exit code and a
-        // message of its own, which `is_err` cannot tell apart from the
-        // other terminations.
+        // rather than unwrapped.
         assert!(matches!(
             step_back(&mut history, &mut language, &mut format),
             Err(Termination::Cancelled),

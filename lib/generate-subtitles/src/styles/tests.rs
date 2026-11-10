@@ -1,9 +1,7 @@
 use super::{Color, InvalidColor};
 use pretty_assertions::assert_eq;
 
-/// Each form is accepted and kept verbatim. The functional notation
-/// carries interior spaces, which only a comparison of the stored text
-/// can show are preserved.
+/// Each form is accepted and kept verbatim, interior spaces included.
 #[test]
 fn accepts_hex_keyword_and_functional_colors() {
     for value in ["#FFD966", "white", "rgb(0, 0, 0)"] {

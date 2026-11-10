@@ -109,16 +109,12 @@ fn check_separated_rejects_an_undeclared_collection() {
 }
 
 /// A name that a declared one is a few edits away from reads as a typo,
-/// so the message points at the nearest declared name rather than at
-/// whichever one the tolerance happens to admit.
+/// so the message points at the nearest declared name.
 #[test]
 fn check_separated_hints_the_closest_declared_collection() {
-    // The shared fixture declares no two names close enough for a typo
-    // to resemble both, so a hint drawn from it has a single candidate
-    // in range and names the nearest one however the search orders them.
-    // This manifest adds a near-duplicate of `Example Collection`, so
-    // each case below has two candidates in range and the hint is wrong
-    // unless the nearer one wins.
+    // A near-duplicate of `Example Collection`, so that every case has
+    // two candidates inside the tolerance. The shared fixture declares
+    // no two names close enough for one typo to resemble both.
     let desc = text_block_fnl! {
         "separated = ["
         r#"  "Example Collection","#
@@ -131,8 +127,7 @@ fn check_separated_hints_the_closest_declared_collection() {
     let cases = [
         ("example collection", "Example Collection"),
         ("ExampleCollection", "Example Collection"),
-        // The plural is the nearer of the two candidates here, so this
-        // case fails if the hint simply reports the first in range.
+        // The plural is the nearer candidate here.
         ("example collections", "Example Collections"),
         (
             "Example Group/Another Example Collections",

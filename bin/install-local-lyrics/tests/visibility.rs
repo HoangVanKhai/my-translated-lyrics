@@ -89,9 +89,6 @@ fn manual_visibility_preserves_existing_files() {
     write_file(&unified, manual_content).unwrap();
 
     // A file in the same collection that the manual video does not own.
-    // Without it every target file in these directories belongs to the
-    // manual video, so protecting all of them and protecting only that
-    // video's own produce the same result.
     let unrelated = env.target_path(collection_name, "Another Example Song.vi.srt");
     write_file(&unrelated, "content of an unrelated subtitle").unwrap();
 
@@ -130,9 +127,6 @@ fn dry_run_manual_visibility_preserves_existing_files() {
     write_file(&unified, manual_content).unwrap();
 
     // A file in the same collection that the manual video does not own.
-    // Without it every target file in these directories belongs to the
-    // manual video, so protecting all of them and protecting only that
-    // video's own produce the same result.
     let unrelated = env.target_path(collection_name, "Another Example Song.vi.srt");
     write_file(&unrelated, "content of an unrelated subtitle").unwrap();
 

@@ -80,9 +80,7 @@ fn role_only_header_and_role_less_lines_render() {
 }
 
 /// The error names the cue the credit line failed in, along with the
-/// parse error underneath it. The cue starts away from zero, so the
-/// reported start is read from the cue rather than being the smallest
-/// timestamp a renderer could report for any cue at all.
+/// parse error underneath it.
 #[test]
 fn unknown_role_in_credit_line_produces_credits_error() {
     let start = Timestamp::new(1, 23, 456).unwrap();
