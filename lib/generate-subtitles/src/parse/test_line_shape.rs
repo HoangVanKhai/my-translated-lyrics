@@ -116,14 +116,19 @@ fn whitespace_only_cue_body_falls_through_to_missing_marker() {
 
 /// Indentation must be ASCII spaces only. A tab in the leading
 /// whitespace produces a focused diagnostic at the line that
-/// contains it. Tabs that appear after the first non-whitespace
-/// character are not rejected by this rule, since the
-/// restriction only governs the indentation column.
+/// contains it, wherever in the indentation run the tab falls.
+/// Tabs that appear after the first non-whitespace character are
+/// not rejected by this rule, since the restriction only governs
+/// the indentation column, so the title line below is accepted
+/// and the error names the line after it.
 #[test]
 fn rejects_tab_in_leading_whitespace() {
     let input = text_block_fnl! {
-        "00:00.000 ttl: Hello"
-        "\t            cre: tabbed indent"
+        "00:00.000 ttl: Hello\tworld"
+        // The tab sits behind the spaces rather than at column
+        // zero, so the diagnostic rests on skipping the leading
+        // spaces before looking for it.
+        "          \tcre: tabbed indent"
         "00:05.000 clr"
     };
     assert_eq!(

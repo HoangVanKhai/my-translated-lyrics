@@ -69,22 +69,28 @@ fn a_part_continues_above_its_annotations() {
     assert_eq!(cues[0].parts[0].annotations, ["a note about the credits"]);
 }
 
-/// The part's continuation width is unaffected by an intervening
-/// annotation. `chorus: ` is 8 bytes, so its continuation indent is
-/// 18 and differs from the 15 an `ann: ` prefix would imply; the
-/// part's own width is the one that stays in force.
+/// An annotation opens a continuation target of its own, so the width
+/// a continuation after it must carry is the annotation's own rather
+/// than the part's. `chorus: ` is 8 bytes and implies a continuation
+/// indent of 18, while `ann: ` implies 15. A continuation at 18 above
+/// the annotation extends the part and one at 15 below it extends the
+/// annotation, so the two widths are told apart.
 #[test]
-fn annotations_do_not_disturb_the_part_continuation_width() {
+fn an_annotation_governs_the_continuation_width_after_it() {
     let input = text_block_fnl! {
         "00:00.000 chorus: part opener"
         "                  part continuation"
         "          ann: a note"
+        "               a note continuation"
         "00:04.000 clr"
     };
     let cues = parse_lyrics(input).unwrap();
     assert_eq!(cues[0].parts.len(), 1);
     assert_eq!(cues[0].parts[0].text, "part opener\npart continuation");
-    assert_eq!(cues[0].parts[0].annotations, ["a note"]);
+    assert_eq!(
+        cues[0].parts[0].annotations,
+        ["a note\na note continuation"],
+    );
 }
 
 /// A shorthand marker line after an annotation opens a fresh part
@@ -193,19 +199,20 @@ fn annotation_text_accepts_angle_brackets() {
 }
 
 /// Continuation text is arbitrary prose and is never inspected for a
-/// marker. A continuation that happens to read like an annotation is
-/// cue text, exactly as any other continuation line would be, and the
-/// indent alone decides where it goes.
+/// marker. A continuation that reads exactly like an annotation, marker
+/// and colon included, is still cue text, and the indent alone decides
+/// where it goes. The annotation below it differs only in its indent,
+/// and that is the line read as an annotation.
 #[test]
 fn a_continuation_is_never_read_as_an_annotation() {
     let input = text_block_fnl! {
         "00:00.000 cre: role-a name-a"
-        "               ann, my dear"
+        "               ann: my dear"
         "          ann: a note about the credits"
         "00:04.000 clr"
     };
     let cues = parse_lyrics(input).unwrap();
-    assert_eq!(cues[0].parts[0].text, "role-a name-a\nann, my dear");
+    assert_eq!(cues[0].parts[0].text, "role-a name-a\nann: my dear");
     assert_eq!(cues[0].parts[0].annotations, ["a note about the credits"]);
 }
 
