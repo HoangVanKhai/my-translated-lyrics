@@ -22,7 +22,7 @@ use std::io::{self, Write};
 use std::time::SystemTime;
 use terminal_screen::{Buffer, Column, Row, Screen, Style, Width};
 
-/// Presents the fuzzy table of titles and reports the chosen row, a request
+/// Presents the fuzzy table of titles and reports the chosen item, a request
 /// to go back, or a request to quit.
 pub fn select_video(
     videos: &[Video],

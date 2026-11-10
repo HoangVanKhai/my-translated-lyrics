@@ -71,7 +71,7 @@ fn require_terminal_rejects_a_non_terminal() {
 }
 
 /// Without `--title`, the video is chosen through the interactive table, and
-/// the chosen row becomes the resolved index.
+/// the chosen item becomes the resolved index.
 #[test]
 fn resolve_video_uses_the_interactive_table() {
     struct Pick;
