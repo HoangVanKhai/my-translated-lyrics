@@ -122,7 +122,7 @@ where
                             // A click on a column header re-sorts the table by
                             // that column.
                             if let Some(column) = column_at(width, clicked_column) {
-                                let language = COLUMN_LANGUAGES[column.position()];
+                                let language = COLUMN_LANGUAGES[column];
                                 sort.click(language);
                                 selector.set_order(video_order(sort.clone()));
                             }
@@ -233,8 +233,8 @@ pub(super) fn render_header(
         && hover_row == HEADER_ROW
         && let Some(column) = column_at(width, hover_column)
     {
-        let span = spans[column.position()];
-        let fitted = fit(&labels[column.position()], span.width());
+        let span = spans[column];
+        let fitted = fit(&labels[column], span.width());
         buffer.set_string(span.start(), HEADER_ROW, &fitted, Style::BOLD);
     }
 }

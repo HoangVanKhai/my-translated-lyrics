@@ -220,10 +220,10 @@ fn top_bar_keeps_the_disabled_button_dimmed_under_the_pointer() {
 fn column_at_maps_a_screen_column_to_its_title_column() {
     let total = Width::new(80);
     let [english, vietnamese, chinese] = column_spans(total);
-    let hit = |column| column_at(total, column).map(TitleColumn::position);
-    assert_eq!(hit(english.start()), Some(0));
-    assert_eq!(hit(vietnamese.start()), Some(1));
-    assert_eq!(hit(chinese.start()), Some(2));
+    let hit = |column| column_at(total, column);
+    assert_eq!(hit(english.start()), Some(TitleColumn::new(0)));
+    assert_eq!(hit(vietnamese.start()), Some(TitleColumn::new(1)));
+    assert_eq!(hit(chinese.start()), Some(TitleColumn::new(2)));
     // The separator drawn between two cells belongs to neither of them.
     assert_eq!(hit(english.end()), None);
     // Nothing is drawn past the last cell.

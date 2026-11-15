@@ -1,3 +1,5 @@
+use std::ops::Index;
+
 /// Which of the three title columns is meant, counting from the left.
 ///
 /// It indexes the table's layout rather than the screen columns that layout
@@ -10,9 +12,14 @@ impl TitleColumn {
     pub(super) fn new(position: usize) -> TitleColumn {
         TitleColumn(position)
     }
+}
 
-    /// The column's place among the three.
-    pub(crate) fn position(self) -> usize {
-        self.0
+/// Reads the entry a [`TitleColumn`] names, panicking past the end of the
+/// slice as indexing by a number does.
+impl<Item> Index<TitleColumn> for [Item] {
+    type Output = Item;
+
+    fn index(&self, column: TitleColumn) -> &Item {
+        &self[column.0]
     }
 }
