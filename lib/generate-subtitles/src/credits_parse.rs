@@ -14,6 +14,7 @@
 //! line whose first non-whitespace token is neither a known role nor a
 //! bracketed span raises [`ParseCreditError::UnknownRole`].
 
+use crate::take::take_leading_whitespace;
 use derive_more::Display;
 use into_deduped::IntoDeduped;
 use into_sorted::IntoSorted;
@@ -354,15 +355,6 @@ fn parse_name_region(region: &str) -> Vec<NameSegment<'_>> {
         segments.push(NameSegment::Unbracketed(Unbracketed(rest)));
     }
     segments
-}
-
-fn take_leading_whitespace(input: &str) -> (&str, &str) {
-    let cursor = input
-        .char_indices()
-        .find(|(_, char)| !char.is_whitespace())
-        .map(|(offset, _)| offset)
-        .unwrap_or(input.len());
-    input.split_at(cursor)
 }
 
 fn take_cell_separator(input: &str) -> (&str, &str) {
