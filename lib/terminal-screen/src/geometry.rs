@@ -3,6 +3,7 @@
 //! A cell is located by a [`Column`] and a [`Row`]; a region is measured by a
 //! [`Width`] and a [`Height`].
 
+use pipe_trait::Pipe;
 use std::ops::{Add, AddAssign, Sub};
 
 /// A zero-based column, counted from the left edge of the grid.
@@ -36,7 +37,7 @@ impl Add<Width> for Column {
     type Output = Column;
 
     fn add(self, width: Width) -> Column {
-        Column(self.0.saturating_add(width.0))
+        self.0.saturating_add(width.0).pipe(Column)
     }
 }
 
@@ -135,13 +136,13 @@ impl Width {
     /// How much of a grid this wide is left from `column` rightwards. A column
     /// at or past the right edge leaves no room.
     pub fn remaining_from(self, column: Column) -> Width {
-        Width(self.0.saturating_sub(column.0))
+        self.0.saturating_sub(column.0).pipe(Width)
     }
 
     /// This width less `other`, or no columns at all when `other` is the
     /// wider of the two.
     pub fn saturating_sub(self, other: Width) -> Width {
-        Width(self.0.saturating_sub(other.0))
+        self.0.saturating_sub(other.0).pipe(Width)
     }
 }
 
@@ -151,7 +152,7 @@ impl Add for Width {
     type Output = Width;
 
     fn add(self, other: Width) -> Width {
-        Width(self.0.saturating_add(other.0))
+        self.0.saturating_add(other.0).pipe(Width)
     }
 }
 
@@ -206,13 +207,13 @@ impl Height {
     /// This height less `other`, or no rows at all when `other` is the taller
     /// of the two.
     pub fn saturating_sub(self, other: Height) -> Height {
-        Height(self.0.saturating_sub(other.0))
+        self.0.saturating_sub(other.0).pipe(Height)
     }
 
     /// The last row of a grid this tall, or the top row when the grid has no
     /// rows at all.
     pub fn last_row(self) -> Row {
-        Row(self.0.saturating_sub(1))
+        self.0.saturating_sub(1).pipe(Row)
     }
 }
 

@@ -989,6 +989,7 @@ name = "terminal-screen"
 version = "0.0.0"
 dependencies = [
  "crossterm",
+ "pipe-trait",
  "pretty_assertions",
  "unicode-width",
 ]
