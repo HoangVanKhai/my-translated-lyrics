@@ -5,8 +5,8 @@
 use crate::Navigation;
 use crate::host::{Clock, Host, ReadEvent, WindowSize};
 use crate::render::{
-    Button, COLUMN_SEPARATOR, DATA_ROW_OFFSET, HEADER_ROW, SEARCH_ROW, button_at, column_at,
-    column_spans, columns_line, columns_line_highlighted, draw_highlighted_line, fit,
+    Button, COLUMN_LANGUAGES, COLUMN_SEPARATOR, DATA_ROW_OFFSET, HEADER_ROW, SEARCH_ROW, button_at,
+    column_at, column_spans, columns_line, columns_line_highlighted, draw_highlighted_line, fit,
     is_double_click, render_top_bar, scroll_offset, visible_rows,
 };
 use crate::selectors::row_style;
@@ -47,9 +47,9 @@ where
 {
     let mut selector = Selector::new(videos);
     selector.set_query(query.clone());
-    // The table sorts by English title first, then Vietnamese, then Chinese.
-    // Clicking a column header changes the priority and direction.
-    let mut sort = ColumnSort::new([Language::English, Language::Vietnamese, Language::Chinese]);
+    // The priority starts in the columns' own order; clicking a column header
+    // changes the priority and direction.
+    let mut sort = ColumnSort::new(COLUMN_LANGUAGES);
     selector.set_order(video_order(sort.clone()));
     if let Some(index) = selected {
         selector.focus(index);
@@ -162,10 +162,6 @@ where
     *query = selector.query().to_string();
     Ok(outcome)
 }
-
-/// The table columns, left to right, naming the language each one shows.
-const COLUMN_LANGUAGES: [Language; 3] =
-    [Language::English, Language::Vietnamese, Language::Chinese];
 
 /// A comparator over videos for the given column sort, reading each video's
 /// title in the column's language.

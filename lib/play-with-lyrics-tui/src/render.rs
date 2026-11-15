@@ -3,6 +3,7 @@
 //! line into the frame buffer, and the small geometry helpers the pages share
 //! with the click handling.
 
+use lyrics_core::video_descriptor::Language;
 use pipe_trait::Pipe;
 use std::ops::Range;
 use std::time::{Duration, SystemTime};
@@ -70,6 +71,13 @@ pub(crate) fn fit(text: &str, width: usize) -> String {
         .collect()
 }
 
+/// The table columns, left to right, naming the language each one shows.
+pub(crate) const COLUMN_LANGUAGES: [Language; 3] =
+    [Language::English, Language::Vietnamese, Language::Chinese];
+
+/// How many title cells a line holds: one for each language the table shows.
+pub(crate) const TITLE_CELLS: usize = COLUMN_LANGUAGES.len();
+
 /// The separator drawn between the three title cells.
 pub(crate) const COLUMN_SEPARATOR: &str = " │ ";
 
@@ -77,11 +85,11 @@ pub(crate) const COLUMN_SEPARATOR: &str = " │ ";
 /// each character with whether it is highlighted. Separators and padding are
 /// never highlighted.
 pub(crate) fn columns_line_highlighted(
-    cells: [(&str, &[bool]); 3],
+    cells: [(&str, &[bool]); TITLE_CELLS],
     total: usize,
 ) -> Vec<(char, bool)> {
     let available = total.saturating_sub(COLUMN_SEPARATOR.width() * 2);
-    let each = (available / 3).max(1);
+    let each = (available / TITLE_CELLS).max(1);
     let mut line: Vec<(char, bool)> = Vec::new();
     for (index, (text, mask)) in cells.into_iter().enumerate() {
         if index > 0 {
@@ -102,10 +110,10 @@ pub(crate) fn columns_line(english: &str, vietnamese: &str, chinese: &str, total
 
 /// The screen columns each of the three title cells spans, matching the layout
 /// of [`columns_line`].
-pub(crate) fn column_spans(total: usize) -> [Range<usize>; 3] {
+pub(crate) fn column_spans(total: usize) -> [Range<usize>; TITLE_CELLS] {
     let separator = COLUMN_SEPARATOR.width();
     let available = total.saturating_sub(separator * 2);
-    let each = (available / 3).max(1);
+    let each = (available / TITLE_CELLS).max(1);
     [
         0..each,
         (each + separator)..(2 * each + separator),
