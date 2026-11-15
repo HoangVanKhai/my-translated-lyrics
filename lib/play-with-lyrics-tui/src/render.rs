@@ -3,6 +3,12 @@
 //! line into the frame buffer, and the small geometry helpers the pages share
 //! with the click handling.
 
+mod column_span;
+mod title_column;
+
+pub(crate) use column_span::ColumnSpan;
+pub(crate) use title_column::TitleColumn;
+
 use fuzzy_select::selection::{FilteredIndex, ItemIndex};
 use pipe_trait::Pipe;
 use std::time::{Duration, SystemTime};
@@ -150,46 +156,6 @@ pub(crate) fn columns_line(english: &str, vietnamese: &str, chinese: &str, total
         .collect()
 }
 
-/// A run of screen columns: where it begins and how wide it is.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) struct ColumnSpan {
-    start: Column,
-    width: Width,
-}
-
-impl ColumnSpan {
-    /// The run of `width` columns beginning at `start`.
-    pub(crate) fn new(start: Column, width: Width) -> ColumnSpan {
-        ColumnSpan { start, width }
-    }
-
-    /// The run from `start` up to but not including `end`, which is empty when
-    /// `end` is not past `start`.
-    fn between(start: Column, end: Column) -> ColumnSpan {
-        ColumnSpan::new(start, end.columns_after(start).unwrap_or(Width::ZERO))
-    }
-
-    /// The run's leftmost column.
-    pub(crate) fn start(self) -> Column {
-        self.start
-    }
-
-    /// The column just past the run's rightmost one.
-    pub(crate) fn end(self) -> Column {
-        self.start + self.width
-    }
-
-    /// How many columns the run spans.
-    pub(crate) fn width(self) -> Width {
-        self.width
-    }
-
-    /// Whether `column` falls inside the run.
-    pub(crate) fn contains(self, column: Column) -> bool {
-        self.start <= column && column < self.end()
-    }
-}
-
 /// The screen columns each of the three title cells spans, matching the layout
 /// of [`columns_line`].
 pub(crate) fn column_spans(total: Width) -> [ColumnSpan; 3] {
@@ -202,20 +168,6 @@ pub(crate) fn column_spans(total: Width) -> [ColumnSpan; 3] {
     ]
 }
 
-/// Which of the three title columns is meant, counting from the left.
-///
-/// It indexes the table's layout rather than the screen columns that layout
-/// occupies.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) struct TitleColumn(usize);
-
-impl TitleColumn {
-    /// The column's place among the three.
-    pub(crate) fn position(self) -> usize {
-        self.0
-    }
-}
-
 /// The title column at screen `column`, for a header `total` columns wide, or
 /// `None` for a click on a separator or past the columns.
 pub(crate) fn column_at(total: Width, column: Column) -> Option<TitleColumn> {
@@ -223,7 +175,7 @@ pub(crate) fn column_at(total: Width, column: Column) -> Option<TitleColumn> {
         .pipe(column_spans)
         .iter()
         .position(|span| span.contains(column))
-        .map(TitleColumn)
+        .map(TitleColumn::new)
 }
 
 /// Whether a left click on the item at `index` at time `now` completes a double
