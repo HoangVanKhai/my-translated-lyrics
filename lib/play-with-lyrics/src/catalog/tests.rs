@@ -3,15 +3,15 @@ use lyrics_core::video_descriptor::{VIDEO_CONFIG_FILE_NAME, Visibility};
 use pretty_assertions::assert_eq;
 use std::fs::{create_dir_all, write as write_file};
 use std::path::Path;
-use test_utils::{SEPARATED_COLLECTION, Temp, video_desc};
+use test_utils::{SEPARATED_COLLECTION, Temp, collection_name, video_desc, video_title};
 
 /// Writes a `video.toml` for `video_title` in its own subdirectory of `source`.
-fn add_video(source: &Path, dir_name: &str, video_title: String) {
+fn add_video(source: &Path, dir_name: &str, title: String) {
     let video_dir = source.join(dir_name);
     create_dir_all(&video_dir).unwrap();
     let descriptor = video_desc(
-        SEPARATED_COLLECTION.to_owned(),
-        video_title,
+        collection_name(SEPARATED_COLLECTION),
+        video_title(title),
         Visibility::Visible,
     );
     let contents = toml::to_string(&descriptor).unwrap();
