@@ -1,4 +1,4 @@
-use super::{ColumnSpan, TITLE_CELLS};
+use super::ColumnSpan;
 use lyrics_core::video_descriptor::Language;
 use std::ops::Index;
 
@@ -17,7 +17,7 @@ impl TitleColumn {
 }
 
 /// Reads the language a `TitleColumn` names.
-impl Index<TitleColumn> for [Language; TITLE_CELLS] {
+impl Index<TitleColumn> for [Language] {
     type Output = Language;
 
     fn index(&self, column: TitleColumn) -> &Language {
@@ -26,7 +26,7 @@ impl Index<TitleColumn> for [Language; TITLE_CELLS] {
 }
 
 /// Reads the screen columns a `TitleColumn` names.
-impl Index<TitleColumn> for [ColumnSpan; TITLE_CELLS] {
+impl Index<TitleColumn> for [ColumnSpan] {
     type Output = ColumnSpan;
 
     fn index(&self, column: TitleColumn) -> &ColumnSpan {
@@ -35,7 +35,7 @@ impl Index<TitleColumn> for [ColumnSpan; TITLE_CELLS] {
 }
 
 /// Reads the header label a `TitleColumn` names.
-impl Index<TitleColumn> for [String; TITLE_CELLS] {
+impl Index<TitleColumn> for [String] {
     type Output = String;
 
     fn index(&self, column: TitleColumn) -> &String {
