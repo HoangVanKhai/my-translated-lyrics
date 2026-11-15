@@ -200,8 +200,7 @@ impl RegionState {
         Ok(())
     }
 
-    /// Closes the region currently open. A rejected tag leaves the
-    /// state unchanged rather than half closed.
+    /// Closes the region currently open.
     fn close_region(&mut self) -> Result<(), AdditiveRegionError> {
         let open = self
             .open
