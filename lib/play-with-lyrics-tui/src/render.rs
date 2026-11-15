@@ -10,6 +10,7 @@ pub(crate) use column_span::ColumnSpan;
 pub(crate) use title_column::TitleColumn;
 
 use fuzzy_select::selection::{FilteredIndex, ItemIndex};
+use lyrics_core::video_descriptor::Language;
 use pipe_trait::Pipe;
 use std::time::{Duration, SystemTime};
 use terminal_screen::{Buffer, Column, Height, Row, Style, Width};
@@ -114,8 +115,12 @@ pub(crate) fn fit(text: &str, width: Width) -> String {
         .collect()
 }
 
+/// The table columns, left to right, naming the language each one shows.
+pub(crate) const COLUMN_LANGUAGES: [Language; 3] =
+    [Language::English, Language::Vietnamese, Language::Chinese];
+
 /// How many title cells a line holds: one for each language the table shows.
-pub(crate) const TITLE_CELLS: usize = 3;
+pub(crate) const TITLE_CELLS: usize = COLUMN_LANGUAGES.len();
 
 /// The separator drawn between two title cells.
 pub(crate) const COLUMN_SEPARATOR: &str = " │ ";
