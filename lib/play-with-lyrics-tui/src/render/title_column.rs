@@ -1,3 +1,4 @@
+use super::TITLE_CELLS;
 use std::ops::Index;
 
 /// Which of the title columns is meant, counting from the left.
@@ -14,9 +15,10 @@ impl TitleColumn {
     }
 }
 
-/// Reads the entry a [`TitleColumn`] names, panicking past the end of the
-/// slice as indexing by a number does.
-impl<Item> Index<TitleColumn> for [Item] {
+/// Reads the entry a [`TitleColumn`] names from a list that holds one entry
+/// per title cell. A list of any other length is not one of these columns to
+/// index, so it cannot be indexed by one.
+impl<Item> Index<TitleColumn> for [Item; TITLE_CELLS] {
     type Output = Item;
 
     fn index(&self, column: TitleColumn) -> &Item {
