@@ -114,7 +114,10 @@ pub(crate) fn fit(text: &str, width: Width) -> String {
         .collect()
 }
 
-/// The separator drawn between the three title cells.
+/// How many title cells a line holds: one for each language the table shows.
+pub(crate) const TITLE_CELLS: usize = 3;
+
+/// The separator drawn between two title cells.
 pub(crate) const COLUMN_SEPARATOR: &str = " │ ";
 
 /// The columns the separator between two title cells occupies.
@@ -122,19 +125,19 @@ fn separator_width() -> Width {
     literal_width(COLUMN_SEPARATOR)
 }
 
-/// The width of each of the three title cells in a line `total` columns wide.
+/// The width of each title cell in a line `total` columns wide.
 /// A cell always keeps at least one column.
 fn cell_width(total: Width) -> Width {
     let separator = separator_width();
     let available = total.saturating_sub(separator + separator);
-    Width::new((available.get() / 3).max(1))
+    Width::new((available.get() / TITLE_CELLS as u16).max(1))
 }
 
-/// Lays out three highlighted cells into one line of `total` columns, pairing
+/// Lays out the highlighted cells into one line of `total` columns, pairing
 /// each character with whether it is highlighted. Separators and padding are
 /// never highlighted.
 pub(crate) fn columns_line_highlighted(
-    cells: [(&str, &[bool]); 3],
+    cells: [(&str, &[bool]); TITLE_CELLS],
     total: Width,
 ) -> Vec<(char, bool)> {
     let each = cell_width(total);
@@ -156,9 +159,9 @@ pub(crate) fn columns_line(english: &str, vietnamese: &str, chinese: &str, total
         .collect()
 }
 
-/// The screen columns each of the three title cells spans, matching the layout
-/// of [`columns_line`].
-pub(crate) fn column_spans(total: Width) -> [ColumnSpan; 3] {
+/// The screen columns each title cell spans, matching the layout of
+/// [`columns_line`].
+pub(crate) fn column_spans(total: Width) -> [ColumnSpan; TITLE_CELLS] {
     let each = cell_width(total);
     let step = each + separator_width();
     [
@@ -253,6 +256,9 @@ pub(crate) enum Button {
     Forward,
 }
 
+/// How many buttons the top bar draws.
+const TOP_BAR_BUTTONS: usize = 3;
+
 /// The gap, in columns, between the Back and Forward buttons on the left.
 const BUTTON_GAP: Width = Width::new(2);
 
@@ -280,7 +286,7 @@ impl Button {
 
 /// The screen columns each top-bar button spans, for a bar `width` columns
 /// wide. Back and Forward sit on the left; Exit is right-aligned.
-pub(crate) fn button_columns(width: Width) -> [(Button, ColumnSpan); 3] {
+pub(crate) fn button_columns(width: Width) -> [(Button, ColumnSpan); TOP_BAR_BUTTONS] {
     let back = ColumnSpan::new(Column::LEFT, Button::Back.width());
     let forward = ColumnSpan::new(back.end() + BUTTON_GAP, Button::Forward.width());
     let right_edge = Column::LEFT + width;

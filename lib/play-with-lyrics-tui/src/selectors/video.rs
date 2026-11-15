@@ -5,8 +5,8 @@
 use crate::Navigation;
 use crate::host::{Clock, Host, ReadEvent, WindowSize};
 use crate::render::{
-    Button, COLUMN_SEPARATOR, FIRST_DATA_ROW, HEADER_ROW, SEARCH_ROW, button_at, column_at,
-    column_spans, columns_line, columns_line_highlighted, draw_highlighted_line, fit,
+    Button, COLUMN_SEPARATOR, FIRST_DATA_ROW, HEADER_ROW, SEARCH_ROW, TITLE_CELLS, button_at,
+    column_at, column_spans, columns_line, columns_line_highlighted, draw_highlighted_line, fit,
     is_double_click, render_top_bar, scroll_offset, visible_rows,
 };
 use crate::selectors::{FALLBACK_WINDOW_SIZE, row_style};
@@ -166,7 +166,7 @@ where
 }
 
 /// The table columns, left to right, naming the language each one shows.
-const COLUMN_LANGUAGES: [Language; 3] =
+const COLUMN_LANGUAGES: [Language; TITLE_CELLS] =
     [Language::English, Language::Vietnamese, Language::Chinese];
 
 /// A comparator over videos for the given column sort, reading each video's
