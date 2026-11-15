@@ -135,9 +135,9 @@ where
                             let clicked = clicked_row
                                 .rows_below(FIRST_DATA_ROW)
                                 .filter(|&rows_down| rows_down < visible)
-                                .and_then(|rows_down| {
-                                    selector.item_at(offset.down_by(usize::from(rows_down)))
-                                });
+                                .map(usize::from)
+                                .map(|rows_down| offset.down_by(rows_down))
+                                .and_then(|visible_row| selector.item_at(visible_row));
                             if let Some(index) = clicked {
                                 let now = Sys::now();
                                 let confirm = is_double_click(last_click, now, index);
