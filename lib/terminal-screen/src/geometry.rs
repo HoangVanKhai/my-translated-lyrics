@@ -49,7 +49,7 @@ impl AddAssign<Width> for Column {
 
 impl From<Column> for usize {
     fn from(column: Column) -> usize {
-        usize::from(column.0)
+        column.0.into()
     }
 }
 
@@ -91,7 +91,7 @@ impl Row {
 
 impl From<Row> for usize {
     fn from(row: Row) -> usize {
-        usize::from(row.0)
+        row.0.into()
     }
 }
 
@@ -174,7 +174,7 @@ impl Sub for Width {
 
 impl From<Width> for usize {
     fn from(width: Width) -> usize {
-        usize::from(width.0)
+        width.0.into()
     }
 }
 
@@ -219,7 +219,7 @@ impl Height {
 
 impl From<Height> for usize {
     fn from(height: Height) -> usize {
-        usize::from(height.0)
+        height.0.into()
     }
 }
 

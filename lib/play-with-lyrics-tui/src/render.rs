@@ -60,7 +60,7 @@ fn char_width(character: char) -> Width {
 
 /// Blanks filling `width` columns, none of them highlighted.
 fn blanks(width: Width) -> impl Iterator<Item = (char, bool)> {
-    std::iter::repeat_n((' ', false), usize::from(width))
+    std::iter::repeat_n((' ', false), width.into())
 }
 
 /// Pads or truncates `text` to exactly `width` display columns, pairing each

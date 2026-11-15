@@ -270,7 +270,7 @@ where
         .filtered()
         .iter()
         .skip(offset.get())
-        .take(usize::from(visible));
+        .take(visible.into());
     for (screen_y, &item) in FIRST_DATA_ROW.downwards().zip(window) {
         let video = &videos[item];
         let english = video.title(Language::English).unwrap_or("");
