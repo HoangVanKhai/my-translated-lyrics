@@ -176,8 +176,7 @@ where
         self.refilter();
     }
 
-    /// Moves the highlight one row towards the top, never above the topmost
-    /// visible row.
+    /// Moves the highlight one row towards the top.
     pub fn move_up(&mut self) {
         self.cursor = self.cursor.0.saturating_sub(1).pipe(FilteredIndex);
     }
