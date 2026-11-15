@@ -45,6 +45,11 @@ impl FilteredIndex {
     pub fn down_by(self, rows: usize) -> FilteredIndex {
         FilteredIndex(self.0 + rows)
     }
+
+    /// Perform an operation on the inner value and save.
+    fn replace_inner(&mut self, f: impl FnOnce(usize) -> usize) {
+        self.0 = f(self.0);
+    }
 }
 
 /// An index into the borrowed slice of items, which neither a query nor an
@@ -178,14 +183,14 @@ where
 
     /// Moves the highlight one row towards the top.
     pub fn move_up(&mut self) {
-        self.cursor = self.cursor.0.saturating_sub(1).pipe(FilteredIndex);
+        self.cursor.replace_inner(|cursor| cursor.saturating_sub(1));
     }
 
     /// Moves the highlight one row towards the bottom, never past the last
     /// visible row.
     pub fn move_down(&mut self) {
         if self.cursor.0 + 1 < self.filtered.len() {
-            self.cursor = FilteredIndex(self.cursor.0 + 1);
+            self.cursor.replace_inner(|cursor| cursor + 1);
         }
     }
 
