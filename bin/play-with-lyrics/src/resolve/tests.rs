@@ -12,26 +12,27 @@ use play_with_lyrics::player::{Player, SubtitleFormat};
 use play_with_lyrics_tui::Navigation;
 use std::io;
 
-/// A chosen row becomes [`Resolution::Chosen`], with the closure mapping the
-/// index to the resolved value.
+/// A chosen item becomes [`Resolution::Chosen`], carrying what the closure
+/// resolved from it.
 #[test]
 fn from_selection_maps_a_choice_to_chosen() {
-    let resolution = from_selection(Navigation::Selected(2), |index| index * 10);
-    assert!(matches!(resolution, Ok(Resolution::Chosen(20))));
+    let values = ["first", "second", "third"];
+    let resolution = from_selection(Navigation::Selected(2), |index| values[index]);
+    assert!(matches!(resolution, Ok(Resolution::Chosen("third"))));
 }
 
 /// A request to go back becomes [`Resolution::Back`], so the caller can return
-/// to the previous page.
+/// to the previous page. No item was chosen, so nothing is resolved from one.
 #[test]
 fn from_selection_maps_back() {
-    let resolution = from_selection(Navigation::Back, |index| index);
+    let resolution = from_selection(Navigation::Back, |_| unreachable!("no item is chosen"));
     assert!(matches!(resolution, Ok(Resolution::Back)));
 }
 
-/// A request to quit becomes [`Termination::Cancelled`].
+/// A request to quit becomes [`Termination::Cancelled`], resolving nothing.
 #[test]
 fn from_selection_maps_quit_to_cancelled() {
-    let resolution = from_selection(Navigation::Quit, |index| index);
+    let resolution = from_selection(Navigation::Quit, |_| unreachable!("no item is chosen"));
     assert!(matches!(resolution, Err(Termination::Cancelled)));
 }
 
@@ -104,7 +105,8 @@ fn resolve_language_uses_the_interactive_list() {
         fn select_video(_: &[Video], _: &mut String, _: Option<usize>) -> io::Result<Navigation> {
             unreachable!("the language page uses the list, not the table")
         }
-        fn select_one(_: &str, _: &[String], _: usize) -> io::Result<Navigation> {
+        fn select_one(_: &str, _: &[String], start: usize) -> io::Result<Navigation> {
+            assert_eq!(start, 1, "the previous language seeds the starting row");
             Ok(Navigation::Selected(0))
         }
     }
@@ -133,7 +135,8 @@ fn resolve_language_starts_at_the_top_without_a_previous() {
         fn select_video(_: &[Video], _: &mut String, _: Option<usize>) -> io::Result<Navigation> {
             unreachable!("the language page uses the list, not the table")
         }
-        fn select_one(_: &str, _: &[String], _: usize) -> io::Result<Navigation> {
+        fn select_one(_: &str, _: &[String], start: usize) -> io::Result<Navigation> {
+            assert_eq!(start, 0, "the list starts at the top");
             Ok(Navigation::Selected(1))
         }
     }
@@ -163,7 +166,8 @@ fn resolve_format_uses_the_interactive_list() {
         fn select_video(_: &[Video], _: &mut String, _: Option<usize>) -> io::Result<Navigation> {
             unreachable!("the format page uses the list, not the table")
         }
-        fn select_one(_: &str, _: &[String], _: usize) -> io::Result<Navigation> {
+        fn select_one(_: &str, _: &[String], start: usize) -> io::Result<Navigation> {
+            assert_eq!(start, 1, "the previous format seeds the starting row");
             Ok(Navigation::Selected(0))
         }
     }
@@ -194,7 +198,8 @@ fn resolve_format_starts_at_the_top_without_a_previous() {
         fn select_video(_: &[Video], _: &mut String, _: Option<usize>) -> io::Result<Navigation> {
             unreachable!("the format page uses the list, not the table")
         }
-        fn select_one(_: &str, _: &[String], _: usize) -> io::Result<Navigation> {
+        fn select_one(_: &str, _: &[String], start: usize) -> io::Result<Navigation> {
+            assert_eq!(start, 0, "the list starts at the top");
             Ok(Navigation::Selected(1))
         }
     }
@@ -208,6 +213,8 @@ fn resolve_format_starts_at_the_top_without_a_previous() {
 }
 
 /// Without `--player`, the player is chosen through the interactive list.
+/// The chosen row is the second, which maps to a player other than the
+/// first.
 #[test]
 fn resolve_player_uses_the_interactive_list() {
     struct Pick;
@@ -220,11 +227,15 @@ fn resolve_player_uses_the_interactive_list() {
         fn select_video(_: &[Video], _: &mut String, _: Option<usize>) -> io::Result<Navigation> {
             unreachable!("the player page uses the list, not the table")
         }
-        fn select_one(_: &str, _: &[String], _: usize) -> io::Result<Navigation> {
-            Ok(Navigation::Selected(0))
+        fn select_one(_: &str, _: &[String], start: usize) -> io::Result<Navigation> {
+            assert_eq!(start, 0, "the player list starts at the top");
+            Ok(Navigation::Selected(1))
         }
     }
     let args = Args::parse_from(["play-with-lyrics", "src", "tgt"]);
     let resolution = resolve_player::<Pick>(&args);
-    assert!(matches!(resolution, Ok(Resolution::Chosen(Player::Mpv))));
+    assert!(matches!(
+        resolution,
+        Ok(Resolution::Chosen(Player::Celluloid))
+    ));
 }

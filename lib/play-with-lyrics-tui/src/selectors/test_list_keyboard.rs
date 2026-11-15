@@ -145,17 +145,29 @@ fn select_one_keeps_the_cursor_within_bounds() {
             standard_size()
         }
     }
-    let labels = label_list(&["alpha", "beta"]);
-    // Up at the top holds the first row; three Downs cannot pass the last.
+    // Three rows, so the row a wrap-around would reach is not the row the
+    // bottom clamp holds. Each bound needs its own run, since the loop
+    // reports only where the cursor ended.
+    let labels = label_list(&["alpha", "beta", "gamma"]);
+    // Up at the top holds the first row, so one Down from there lands on
+    // the second. A wrap would reach the last row instead.
     EVENTS.lock().unwrap().extend([
         press(KeyCode::Up),
+        press(KeyCode::Down),
+        press(KeyCode::Enter),
+    ]);
+    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
+    assert_eq!(chosen, Navigation::Selected(1));
+
+    // Three Downs cannot pass the last row.
+    EVENTS.lock().unwrap().extend([
         press(KeyCode::Down),
         press(KeyCode::Down),
         press(KeyCode::Down),
         press(KeyCode::Enter),
     ]);
     let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 0).unwrap();
-    assert_eq!(chosen, Navigation::Selected(1));
+    assert_eq!(chosen, Navigation::Selected(2));
 }
 
 /// Events that are not key presses, such as key releases, are ignored.
@@ -178,7 +190,8 @@ fn select_one_ignores_non_press_events() {
             standard_size()
         }
     }
-    let labels = label_list(&["alpha", "beta"]);
+    // Three rows, so a release honoured as a press would reach a third row.
+    let labels = label_list(&["alpha", "beta", "gamma"]);
     let release = Event::Key(KeyEvent::new_with_kind(
         KeyCode::Down,
         KeyModifiers::NONE,
