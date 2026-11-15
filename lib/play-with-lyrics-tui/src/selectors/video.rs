@@ -122,7 +122,7 @@ where
                             // A click on a column header re-sorts the table by
                             // that column.
                             if let Some(column) = column_at(width, clicked_column) {
-                                let language = COLUMN_LANGUAGES[column];
+                                let language = column.language();
                                 sort.click(language);
                                 selector.set_order(video_order(sort.clone()));
                             }
@@ -212,7 +212,6 @@ pub(super) fn render_header(
     };
     let labels = COLUMN_LANGUAGES.map(label);
     let header = columns_line(&labels[0], &labels[1], &labels[2], width);
-    let spans = column_spans(width);
     // The headers are bold and dimmed.
     buffer.set_string(
         Column::LEFT,
@@ -221,7 +220,7 @@ pub(super) fn render_header(
         Style::BOLD.with(Style::DIM),
     );
     // The separators between the headers are bold but not dimmed.
-    for span in &spans[..2] {
+    for span in &column_spans(width)[..2] {
         buffer.set_string(span.end(), HEADER_ROW, COLUMN_SEPARATOR, Style::BOLD);
     }
     // The column under the pointer drops the dim.
@@ -229,8 +228,8 @@ pub(super) fn render_header(
         && hover_row == HEADER_ROW
         && let Some(column) = column_at(width, hover_column)
     {
-        let span = spans[column];
-        let fitted = fit(&labels[column], span.width());
+        let span = column.span(width);
+        let fitted = fit(&label(column.language()), span.width());
         buffer.set_string(span.start(), HEADER_ROW, &fitted, Style::BOLD);
     }
 }
