@@ -18,8 +18,7 @@ pub(crate) const HEADER_ROW: Row = Row::new(2);
 /// The screen row of the first title in the table.
 pub(crate) const FIRST_DATA_ROW: Row = Row::new(3);
 
-/// The screen row of the first item in a list, directly below the top bar,
-/// whose centered title names the page.
+/// The screen row of the first item in a list.
 pub(crate) const FIRST_LIST_ROW: Row = Row::new(1);
 
 /// How close together two clicks on the same item must be to count as a

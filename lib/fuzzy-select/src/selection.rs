@@ -186,8 +186,7 @@ where
         self.cursor.replace_inner(|cursor| cursor.saturating_sub(1));
     }
 
-    /// Moves the highlight one row towards the bottom, never past the last
-    /// visible row.
+    /// Moves the highlight one row towards the bottom.
     pub fn move_down(&mut self) {
         if self.cursor.0 + 1 < self.filtered.len() {
             self.cursor.replace_inner(|cursor| cursor + 1);
