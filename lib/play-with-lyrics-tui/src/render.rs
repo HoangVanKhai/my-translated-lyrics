@@ -116,9 +116,8 @@ fn separator_width() -> Width {
     literal_width(COLUMN_SEPARATOR)
 }
 
-/// The width of each of the three title cells in a line `total` columns wide,
-/// once the two separators have taken their share. A cell always keeps at
-/// least one column.
+/// The width of each of the three title cells in a line `total` columns wide.
+/// A cell always keeps at least one column.
 fn cell_width(total: Width) -> Width {
     let separator = separator_width();
     let available = total.saturating_sub(separator + separator);
@@ -203,8 +202,7 @@ pub(crate) fn column_spans(total: Width) -> [ColumnSpan; 3] {
     ]
 }
 
-/// Which of the three title columns is meant, counting from the left: English,
-/// then Vietnamese, then Chinese.
+/// Which of the three title columns is meant, counting from the left.
 ///
 /// It indexes the table's layout rather than the screen columns that layout
 /// occupies.
