@@ -253,8 +253,8 @@ fn is_opening_additive_tag(body: &str) -> bool {
     )
 }
 
-/// Whether `body` is a `</additive>` line, under the same rule as
-/// [`is_opening_additive_tag`].
+/// Whether `body` is a `</additive>` line. Nothing but trailing
+/// whitespace may follow the tag.
 fn is_closing_additive_tag(body: &str) -> bool {
     matches!(
         ClosingTag::take(body),
@@ -602,10 +602,9 @@ enum Continued {
     AnnotationText,
 }
 
-/// Reads the body of a part or an annotation: the `opening` text, then
-/// the continuation lines indented by `indent` beneath it, each
-/// appended to the opening under a newline. Returns that text with the
-/// unconsumed tail.
+/// Consumes the continuation lines indented by `indent` beneath the
+/// `opening` text, returning the body with the unconsumed tail. Each
+/// continuation is appended to the opening under a newline.
 ///
 /// The first line carrying another indent opens something else, so it
 /// must stand at column zero, where a header or a tag line does, or at
@@ -644,7 +643,7 @@ enum ShorthandLine<'a> {
     /// An `ann` line, carrying the note it attaches to the part above
     /// it.
     Annotation(&'a str),
-    /// A marker line, opening a part of its own.
+    /// A marker line, carrying the header of the part it opens.
     Part(PartHeader<'a>),
 }
 
@@ -712,8 +711,7 @@ impl<'a> PartHeader<'a> {
 enum Header<'a> {
     /// A control marker standing alone on the line.
     Control(ReservedMarker),
-    /// The body of a line that opens a cue, handed on unparsed for
-    /// the caller to read as a [`PartHeader`].
+    /// The body of a line that opens a cue.
     Cue(&'a str),
 }
 
