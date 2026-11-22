@@ -267,7 +267,7 @@ where
         .skip(offset.get())
         .take(visible.into());
     for (screen_y, &item) in FIRST_DATA_ROW.downwards().zip(window) {
-        let video = &videos[item];
+        let video = &videos[item.get()];
         let english = video.title(Language::English).unwrap_or("");
         let vietnamese = video.title(Language::Vietnamese).unwrap_or("");
         let chinese = video.title(Language::Chinese).unwrap_or("");
