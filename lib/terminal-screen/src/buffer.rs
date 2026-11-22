@@ -2,6 +2,7 @@
 
 use crate::geometry::{Column, Height, Row, Width};
 use crate::style::Style;
+use pipe_trait::Pipe;
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 /// One character cell of the screen: an empty cell, a styled glyph, or a column
@@ -33,13 +34,24 @@ pub(crate) struct Glyph {
 /// The display width of a glyph, which is never narrower than `char` alone,
 /// even when `variation_selector` selects a narrow text form.
 pub(crate) fn glyph_width(char: char, variation_selector: Option<char>) -> Width {
-    let base = Width::new(char.width().unwrap_or(0) as u16);
+    let base = char
+        .width()
+        .unwrap_or(0)
+        .pipe(u16::try_from)
+        .expect("a character spans at most two columns")
+        .pipe(Width::new);
     match variation_selector {
         Some(selector) => {
             let mut grapheme = String::with_capacity(char.len_utf8() + selector.len_utf8());
             grapheme.push(char);
             grapheme.push(selector);
-            base.max(Width::new(grapheme.width() as u16))
+            base.max(
+                grapheme
+                    .width()
+                    .pipe(u16::try_from)
+                    .expect("a character and its variation selector span a few columns")
+                    .pipe(Width::new),
+            )
         }
         None => base,
     }

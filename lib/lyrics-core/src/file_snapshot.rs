@@ -103,7 +103,12 @@ impl FileSnapshot {
     }
 
     pub fn content_eq_str(&self, other: &str) -> bool {
-        if self.size != FileSize(other.len() as u64) {
+        let other_size = other
+            .len()
+            .pipe(u64::try_from)
+            .expect("a string's byte count fits in u64")
+            .pipe(FileSize);
+        if self.size != other_size {
             return false;
         }
         match self.load() {

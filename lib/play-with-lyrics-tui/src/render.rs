@@ -135,7 +135,8 @@ fn separator_width() -> Width {
 fn cell_width(total: Width) -> Width {
     let separator = separator_width();
     let available = total.saturating_sub(separator + separator);
-    Width::new((available.get() / TITLE_CELLS as u16).max(1))
+    let cells = u16::try_from(TITLE_CELLS).expect("the table has a few title cells");
+    Width::new((available.get() / cells).max(1))
 }
 
 /// Lays out the highlighted cells into one line of `total` columns, pairing
