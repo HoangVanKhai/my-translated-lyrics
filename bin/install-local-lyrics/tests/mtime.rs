@@ -5,7 +5,8 @@ use std::fs::{OpenOptions, read_to_string, write as write_file};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 use test_utils::{
-    InstallLocalLyricsEnv, SEPARATED_COLLECTION, UNIFIED_COLLECTION, expected_stderr, video_desc,
+    InstallLocalLyricsEnv, SEPARATED_COLLECTION, UNIFIED_COLLECTION, collection_name,
+    expected_stderr, video_desc, video_title,
 };
 
 const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
@@ -30,20 +31,20 @@ fn set_mtime(path: &Path, seconds_since_epoch: u64) {
 /// sets modification times to exercise the newer-than comparison.
 fn prepare_conflicting_files(
     env: &InstallLocalLyricsEnv,
-    collection_name: &str,
-    video_title: &str,
+    collection: &str,
+    title: &str,
     source_content: &str,
     target_content: &str,
 ) -> (PathBuf, PathBuf, PathBuf) {
     let desc = video_desc(
-        collection_name.to_owned(),
-        video_title.to_owned(),
+        collection_name(collection),
+        video_title(title),
         Visibility::default(),
     );
     env.add_source_entry("ExampleSong", &desc, &[("lyrics.vi.srt", source_content)]);
 
-    let separated = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
-    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
+    let separated = env.target_path(collection, &format!("{title}.vi.srt"));
+    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{title}.vi.srt"));
     write_file(&separated, target_content).unwrap();
     write_file(&unified, target_content).unwrap();
 
@@ -54,18 +55,13 @@ fn prepare_conflicting_files(
 #[test]
 fn keeps_target_files_newer_than_source() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
-    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let collection = SEPARATED_COLLECTION;
+    let title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let source_content = "source content";
     let target_content = "newer target content";
 
-    let (source_file, separated, unified) = prepare_conflicting_files(
-        &env,
-        collection_name,
-        video_title,
-        source_content,
-        target_content,
-    );
+    let (source_file, separated, unified) =
+        prepare_conflicting_files(&env, collection, title, source_content, target_content);
     set_mtime(&source_file, 1_000_000);
     set_mtime(&separated, 2_000_000);
     set_mtime(&unified, 2_000_000);
@@ -94,18 +90,13 @@ fn keeps_target_files_newer_than_source() {
 #[test]
 fn dry_run_keeps_target_files_newer_than_source() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
-    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let collection = SEPARATED_COLLECTION;
+    let title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let source_content = "source content";
     let target_content = "newer target content";
 
-    let (source_file, separated, unified) = prepare_conflicting_files(
-        &env,
-        collection_name,
-        video_title,
-        source_content,
-        target_content,
-    );
+    let (source_file, separated, unified) =
+        prepare_conflicting_files(&env, collection, title, source_content, target_content);
     set_mtime(&source_file, 1_000_000);
     set_mtime(&separated, 2_000_000);
     set_mtime(&unified, 2_000_000);
@@ -133,18 +124,13 @@ fn dry_run_keeps_target_files_newer_than_source() {
 #[test]
 fn force_overwrites_target_files_newer_than_source() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
-    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let collection = SEPARATED_COLLECTION;
+    let title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let source_content = "source content";
     let target_content = "newer target content";
 
-    let (source_file, separated, unified) = prepare_conflicting_files(
-        &env,
-        collection_name,
-        video_title,
-        source_content,
-        target_content,
-    );
+    let (source_file, separated, unified) =
+        prepare_conflicting_files(&env, collection, title, source_content, target_content);
     set_mtime(&source_file, 1_000_000);
     set_mtime(&separated, 2_000_000);
     set_mtime(&unified, 2_000_000);
@@ -173,18 +159,13 @@ fn force_overwrites_target_files_newer_than_source() {
 #[test]
 fn updates_target_files_older_than_source() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
-    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let collection = SEPARATED_COLLECTION;
+    let title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let source_content = "newer source content";
     let target_content = "older target content";
 
-    let (source_file, separated, unified) = prepare_conflicting_files(
-        &env,
-        collection_name,
-        video_title,
-        source_content,
-        target_content,
-    );
+    let (source_file, separated, unified) =
+        prepare_conflicting_files(&env, collection, title, source_content, target_content);
     set_mtime(&separated, 1_000_000);
     set_mtime(&unified, 1_000_000);
     set_mtime(&source_file, 2_000_000);

@@ -16,6 +16,7 @@
 //! case, no marks) matches broadly while a specific one (mixed case, or
 //! marks) matches exactly.
 
+use crate::selection::ItemIndex;
 use derive_more::Display;
 use itertools::Itertools;
 use pipe_trait::Pipe;
@@ -248,12 +249,12 @@ pub fn resolve_unique<'a, Item, GetKeys, Keys>(
     query: &str,
     items: &'a [Item],
     get_keys: GetKeys,
-) -> Result<(usize, &'a Item), ResolveError>
+) -> Result<(ItemIndex, &'a Item), ResolveError>
 where
     GetKeys: Fn(&'a Item) -> Keys,
     Keys: IntoIterator<Item = &'a str>,
 {
-    let mut found: Option<(usize, &'a Item)> = None;
+    let mut found: Option<(ItemIndex, &'a Item)> = None;
     for (index, item) in items.iter().enumerate() {
         let matched = item
             .pipe(&get_keys)
@@ -263,7 +264,7 @@ where
             if found.is_some() {
                 return Err(ResolveError::Ambiguous);
             }
-            found = Some((index, item));
+            found = Some((ItemIndex::new(index), item));
         }
     }
     found.ok_or(ResolveError::NoMatch)

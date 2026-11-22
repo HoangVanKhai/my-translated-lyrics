@@ -6,11 +6,13 @@ use crate::selectors::_test_utils::{
 use crate::selectors::list::select_one_loop;
 use crate::selectors::video::select_video_loop;
 use crossterm::event::{Event, KeyCode};
+use fuzzy_select::selection::ItemIndex;
 use pretty_assertions::assert_eq;
 use std::collections::VecDeque;
 use std::io;
 use std::sync::Mutex;
 use std::time::{Duration, SystemTime};
+use terminal_screen::{Height, Width};
 
 /// The list starts with the cursor on `start`, to restore a prior choice; an
 /// immediate Enter then confirms that row without moving.
@@ -29,14 +31,15 @@ fn select_one_starts_on_the_given_row() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
     let labels = label_list(&["alpha", "beta", "gamma"]);
     EVENTS.lock().unwrap().extend([press(KeyCode::Enter)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 1).unwrap();
-    assert_eq!(chosen, Navigation::Selected(1));
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(1)).unwrap();
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
 /// A `start` past the last row is clamped rather than leaving an unselectable
@@ -56,7 +59,7 @@ fn select_one_clamps_an_out_of_range_start() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -64,8 +67,9 @@ fn select_one_clamps_an_out_of_range_start() {
     // row, 2, while `9 % 3` would wrap to the first.
     let labels = label_list(&["alpha", "beta", "gamma"]);
     EVENTS.lock().unwrap().extend([press(KeyCode::Enter)]);
-    let chosen = select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, 9).unwrap();
-    assert_eq!(chosen, Navigation::Selected(2));
+    let chosen =
+        select_one_loop::<Scripted>(&mut Vec::new(), "pick", &labels, ItemIndex::new(9)).unwrap();
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(2)));
 }
 
 /// The table starts with the cursor on the given video, to restore a prior
@@ -86,7 +90,7 @@ fn select_video_starts_on_the_selected_video() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -98,10 +102,14 @@ fn select_video_starts_on_the_selected_video() {
         english_video("First"),
     ];
     EVENTS.lock().unwrap().extend([press(KeyCode::Enter)]);
-    let chosen =
-        select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut String::new(), Some(2))
-            .unwrap();
-    assert_eq!(chosen, Navigation::Selected(2));
+    let chosen = select_video_loop::<Scripted>(
+        &mut Vec::new(),
+        &videos,
+        &mut String::new(),
+        Some(ItemIndex::new(2)),
+    )
+    .unwrap();
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(2)));
 }
 
 /// The table starts with the given query already applied, to restore a prior
@@ -121,7 +129,7 @@ fn select_video_starts_with_the_given_query() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }
@@ -130,7 +138,7 @@ fn select_video_starts_with_the_given_query() {
     let mut query = String::from("beta");
     EVENTS.lock().unwrap().extend([press(KeyCode::Enter)]);
     let chosen = select_video_loop::<Scripted>(&mut Vec::new(), &videos, &mut query, None).unwrap();
-    assert_eq!(chosen, Navigation::Selected(1));
+    assert_eq!(chosen, Navigation::Selected(ItemIndex::new(1)));
 }
 
 /// The final query is written back, so the caller can restore it next time.
@@ -149,7 +157,7 @@ fn select_video_writes_back_the_final_query() {
         }
     }
     impl WindowSize for Scripted {
-        fn window_size() -> io::Result<(u16, u16)> {
+        fn window_size() -> io::Result<(Width, Height)> {
             standard_size()
         }
     }

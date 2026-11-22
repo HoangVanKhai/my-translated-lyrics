@@ -2,8 +2,8 @@ use lyrics_core::video_descriptor::Visibility;
 use pretty_assertions::assert_eq;
 use std::fs::{read_to_string, remove_file, write as write_file};
 use test_utils::{
-    InstallLocalLyricsEnv, SEPARATED_COLLECTION, UNIFIED_COLLECTION, prepare_outdated, run_git,
-    set_mtime, video_desc,
+    InstallLocalLyricsEnv, SEPARATED_COLLECTION, UNIFIED_COLLECTION, collection_name,
+    prepare_outdated, run_git, set_mtime, video_desc, video_title,
 };
 
 const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
@@ -11,11 +11,11 @@ const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
 #[test]
 fn diff_includes_targets_newer_than_source_only_with_force() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
-    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let collection = SEPARATED_COLLECTION;
+    let title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let desc = video_desc(
-        collection_name.to_owned(),
-        video_title.to_owned(),
+        collection_name(collection),
+        video_title(title),
         Visibility::default(),
     );
     env.add_source_entry(
@@ -24,8 +24,8 @@ fn diff_includes_targets_newer_than_source_only_with_force() {
         &[("lyrics.vi.srt", "source content\n")],
     );
 
-    let separated = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
-    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
+    let separated = env.target_path(collection, &format!("{title}.vi.srt"));
+    let unified = env.target_path(UNIFIED_COLLECTION, &format!("{title}.vi.srt"));
     write_file(&separated, "target content\n").unwrap();
     write_file(&unified, "target content\n").unwrap();
 
@@ -46,7 +46,7 @@ fn diff_includes_targets_newer_than_source_only_with_force() {
     // With --force the newer target becomes an update and is diffed.
     let forced = env.run(["--diff", "--force"]);
     let patch_text = str::from_utf8(&forced.stdout).unwrap();
-    let separated_rel = format!("{collection_name}/{video_title}.vi.srt");
+    let separated_rel = format!("{collection}/{title}.vi.srt");
     assert!(
         patch_text.contains(&format!("diff --git a/{separated_rel} b/{separated_rel}")),
         "the newer target is missing from the --force patch:\n{patch_text}",
@@ -60,11 +60,11 @@ fn diff_includes_targets_newer_than_source_only_with_force() {
 #[test]
 fn diff_excludes_newly_installed_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
-    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let collection = SEPARATED_COLLECTION;
+    let title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let desc = video_desc(
-        collection_name.to_owned(),
-        video_title.to_owned(),
+        collection_name(collection),
+        video_title(title),
         Visibility::default(),
     );
     // A source with no existing target files: these are new installs.
@@ -93,17 +93,17 @@ fn diff_excludes_newly_installed_files() {
 #[test]
 fn diff_excludes_removals_by_default() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
+    let collection = SEPARATED_COLLECTION;
     let (separated, unified) = prepare_outdated(
         &env,
-        collection_name,
+        collection,
         "【示例表演者】《示例歌曲》Example Song [ExampleID]",
         "new content\n",
         "old content\n",
     );
     // A target file with no matching source would be removed by the sync.
     let orphan = env.target_path(
-        collection_name,
+        collection,
         "【示例表演者】《示例歌曲》Orphan [RemovedID].vi.srt",
     );
     write_file(&orphan, "to be removed\n").unwrap();
@@ -130,10 +130,9 @@ fn diff_excludes_removals_by_default() {
 #[test]
 fn include_removals_shows_removed_files_as_deletions() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
+    let collection = SEPARATED_COLLECTION;
     // A target file with no matching source: the sync would remove it.
-    let removed_rel =
-        format!("{collection_name}/【示例表演者】《示例歌曲》Removed [RemovedID].vi.srt");
+    let removed_rel = format!("{collection}/【示例表演者】《示例歌曲》Removed [RemovedID].vi.srt");
     let removed = env.target.join(&removed_rel);
     write_file(&removed, "line one\nline two\n").unwrap();
 
@@ -182,17 +181,16 @@ fn include_removals_requires_diff() {
 #[test]
 fn include_removals_shows_updates_and_removals_together() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
+    let collection = SEPARATED_COLLECTION;
     let (separated, unified) = prepare_outdated(
         &env,
-        collection_name,
+        collection,
         "【示例表演者】《示例歌曲》Example Song [ExampleID]",
         "new content\n",
         "old content\n",
     );
     // A target file with no matching source: the sync would remove it.
-    let removed_rel =
-        format!("{collection_name}/【示例表演者】《示例歌曲》Removed [RemovedID].vi.srt");
+    let removed_rel = format!("{collection}/【示例表演者】《示例歌曲》Removed [RemovedID].vi.srt");
     let removed = env.target.join(&removed_rel);
     write_file(&removed, "line one\nline two\n").unwrap();
 

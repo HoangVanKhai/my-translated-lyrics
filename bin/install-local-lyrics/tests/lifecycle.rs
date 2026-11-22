@@ -3,7 +3,8 @@ use pipe_trait::Pipe;
 use pretty_assertions::assert_eq;
 use std::fs::{remove_file, write as write_file};
 use test_utils::{
-    InstallLocalLyricsEnv, SEPARATED_COLLECTION, UNIFIED_COLLECTION, expected_stderr, video_desc,
+    InstallLocalLyricsEnv, SEPARATED_COLLECTION, UNIFIED_COLLECTION, collection_name,
+    expected_stderr, video_desc, video_title,
 };
 use text_block_macros::text_block_fnl;
 
@@ -12,11 +13,11 @@ const INSTALL_LOCAL_LYRICS: &str = env!("CARGO_BIN_EXE_install-local-lyrics");
 #[test]
 fn installs_subtitles_to_separated_and_unified_collections() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
-    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let collection = SEPARATED_COLLECTION;
+    let title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let desc = video_desc(
-        collection_name.to_owned(),
-        video_title.to_owned(),
+        collection_name(collection),
+        video_title(title),
         Visibility::default(),
     );
     let srt_content = text_block_fnl! {
@@ -44,10 +45,10 @@ fn installs_subtitles_to_separated_and_unified_collections() {
 
     let source_srt = env.source.join("ExampleSong").join("lyrics.vi.srt");
     let source_vtt = env.source.join("ExampleSong").join("lyrics.zh.vtt");
-    let sep_srt = env.target_path(collection_name, &format!("{video_title}.vi.srt"));
-    let sep_vtt = env.target_path(collection_name, &format!("{video_title}.zh.vtt"));
-    let uni_srt = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt"));
-    let uni_vtt = env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.zh.vtt"));
+    let sep_srt = env.target_path(collection, &format!("{title}.vi.srt"));
+    let sep_vtt = env.target_path(collection, &format!("{title}.zh.vtt"));
+    let uni_srt = env.target_path(UNIFIED_COLLECTION, &format!("{title}.vi.srt"));
+    let uni_vtt = env.target_path(UNIFIED_COLLECTION, &format!("{title}.zh.vtt"));
     assert_eq!(
         output.stderr.pipe_as_ref(str::from_utf8).unwrap(),
         expected_stderr(
@@ -66,27 +67,27 @@ fn installs_subtitles_to_separated_and_unified_collections() {
     );
 
     let expected = vec![
-        format!("{collection_name}/{video_title}.vi.srt"),
-        format!("{collection_name}/{video_title}.zh.vtt"),
-        format!("{UNIFIED_COLLECTION}/{video_title}.vi.srt"),
-        format!("{UNIFIED_COLLECTION}/{video_title}.zh.vtt"),
+        format!("{collection}/{title}.vi.srt"),
+        format!("{collection}/{title}.zh.vtt"),
+        format!("{UNIFIED_COLLECTION}/{title}.vi.srt"),
+        format!("{UNIFIED_COLLECTION}/{title}.zh.vtt"),
     ];
     assert_eq!(env.target_subtitle_files(), expected);
 
     assert_eq!(
-        env.read_target(collection_name, &format!("{video_title}.vi.srt")),
+        env.read_target(collection, &format!("{title}.vi.srt")),
         srt_content,
     );
     assert_eq!(
-        env.read_target(collection_name, &format!("{video_title}.zh.vtt")),
+        env.read_target(collection, &format!("{title}.zh.vtt")),
         vtt_content,
     );
     assert_eq!(
-        env.read_target(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
+        env.read_target(UNIFIED_COLLECTION, &format!("{title}.vi.srt")),
         srt_content,
     );
     assert_eq!(
-        env.read_target(UNIFIED_COLLECTION, &format!("{video_title}.zh.vtt")),
+        env.read_target(UNIFIED_COLLECTION, &format!("{title}.zh.vtt")),
         vtt_content,
     );
 }
@@ -94,11 +95,11 @@ fn installs_subtitles_to_separated_and_unified_collections() {
 #[test]
 fn dry_run_does_not_install_subtitles() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
-    let video_title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
+    let collection = SEPARATED_COLLECTION;
+    let title = "【示例表演者】《示例歌曲》Example Song [ExampleID]";
     let desc = video_desc(
-        collection_name.to_owned(),
-        video_title.to_owned(),
+        collection_name(collection),
+        video_title(title),
         Visibility::default(),
     );
     env.add_source_entry(
@@ -125,11 +126,11 @@ fn dry_run_does_not_install_subtitles() {
             &[
                 (
                     source_srt.clone(),
-                    env.target_path(collection_name, &format!("{video_title}.vi.srt")),
+                    env.target_path(collection, &format!("{title}.vi.srt")),
                 ),
                 (
                     source_srt,
-                    env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
+                    env.target_path(UNIFIED_COLLECTION, &format!("{title}.vi.srt")),
                 ),
             ],
             &[],
@@ -144,8 +145,8 @@ fn dry_run_does_not_install_subtitles() {
 fn skips_up_to_date_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
     let desc = video_desc(
-        SEPARATED_COLLECTION.to_owned(),
-        "【示例表演者】《示例歌曲》Example Song [ExampleID]".to_owned(),
+        collection_name(SEPARATED_COLLECTION),
+        video_title("【示例表演者】《示例歌曲》Example Song [ExampleID]"),
         Visibility::default(),
     );
     env.add_source_entry(
@@ -173,11 +174,11 @@ fn skips_up_to_date_files() {
 #[test]
 fn updates_modified_source_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
-    let video_title = "【示例表演者】示例歌(Example Song)——“示例歌词”【示例标签】 [ExampleID]";
+    let collection = SEPARATED_COLLECTION;
+    let title = "【示例表演者】示例歌(Example Song)——“示例歌词”【示例标签】 [ExampleID]";
     let desc = video_desc(
-        collection_name.to_owned(),
-        video_title.to_owned(),
+        collection_name(collection),
+        video_title(title),
         Visibility::default(),
     );
     let original = text_block_fnl! {
@@ -217,11 +218,11 @@ fn updates_modified_source_files() {
             &[
                 (
                     source_file.clone(),
-                    env.target_path(collection_name, &format!("{video_title}.vi.srt")),
+                    env.target_path(collection, &format!("{title}.vi.srt")),
                 ),
                 (
                     source_file,
-                    env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
+                    env.target_path(UNIFIED_COLLECTION, &format!("{title}.vi.srt")),
                 ),
             ],
             &[],
@@ -229,11 +230,11 @@ fn updates_modified_source_files() {
         ),
     );
     assert_eq!(
-        env.read_target(collection_name, &format!("{video_title}.vi.srt")),
+        env.read_target(collection, &format!("{title}.vi.srt")),
         updated,
     );
     assert_eq!(
-        env.read_target(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
+        env.read_target(UNIFIED_COLLECTION, &format!("{title}.vi.srt")),
         updated,
     );
 }
@@ -241,11 +242,11 @@ fn updates_modified_source_files() {
 #[test]
 fn dry_run_does_not_update_modified_source_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
-    let video_title = "【示例表演者】示例歌(Example Song)——“示例歌词”【示例标签】 [ExampleID]";
+    let collection = SEPARATED_COLLECTION;
+    let title = "【示例表演者】示例歌(Example Song)——“示例歌词”【示例标签】 [ExampleID]";
     let desc = video_desc(
-        collection_name.to_owned(),
-        video_title.to_owned(),
+        collection_name(collection),
+        video_title(title),
         Visibility::default(),
     );
     let original = text_block_fnl! {
@@ -285,11 +286,11 @@ fn dry_run_does_not_update_modified_source_files() {
             &[
                 (
                     source_file.clone(),
-                    env.target_path(collection_name, &format!("{video_title}.vi.srt")),
+                    env.target_path(collection, &format!("{title}.vi.srt")),
                 ),
                 (
                     source_file,
-                    env.target_path(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
+                    env.target_path(UNIFIED_COLLECTION, &format!("{title}.vi.srt")),
                 ),
             ],
             &[],
@@ -297,11 +298,11 @@ fn dry_run_does_not_update_modified_source_files() {
         ),
     );
     assert_eq!(
-        env.read_target(collection_name, &format!("{video_title}.vi.srt")),
+        env.read_target(collection, &format!("{title}.vi.srt")),
         original,
     );
     assert_eq!(
-        env.read_target(UNIFIED_COLLECTION, &format!("{video_title}.vi.srt")),
+        env.read_target(UNIFIED_COLLECTION, &format!("{title}.vi.srt")),
         original,
     );
 }
@@ -309,9 +310,9 @@ fn dry_run_does_not_update_modified_source_files() {
 #[test]
 fn removes_orphaned_target_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
+    let collection = SEPARATED_COLLECTION;
 
-    let orphaned = env.target_path(collection_name, "Orphaned.vi.srt");
+    let orphaned = env.target_path(collection, "Orphaned.vi.srt");
     write_file(&orphaned, "orphaned content").unwrap();
 
     let output = env.run(["--execute"]);
@@ -325,9 +326,9 @@ fn removes_orphaned_target_files() {
 #[test]
 fn dry_run_does_not_remove_orphaned_target_files() {
     let env = InstallLocalLyricsEnv::prepare(INSTALL_LOCAL_LYRICS);
-    let collection_name = SEPARATED_COLLECTION;
+    let collection = SEPARATED_COLLECTION;
 
-    let orphaned = env.target_path(collection_name, "Orphaned.vi.srt");
+    let orphaned = env.target_path(collection, "Orphaned.vi.srt");
     write_file(&orphaned, "orphaned content").unwrap();
 
     let output = env.run([]);

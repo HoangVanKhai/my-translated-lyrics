@@ -5,15 +5,16 @@ use crossterm::event::{Event, read};
 use crossterm::terminal::size;
 use std::io;
 use std::time::SystemTime;
+use terminal_screen::{Height, Width};
 
 /// Reads the next input event from the terminal.
 pub(crate) trait ReadEvent {
     fn read_event() -> io::Result<Event>;
 }
 
-/// Reports the terminal size as `(columns, rows)`.
+/// Reports the terminal size.
 pub(crate) trait WindowSize {
-    fn window_size() -> io::Result<(u16, u16)>;
+    fn window_size() -> io::Result<(Width, Height)>;
 }
 
 /// Reports the current time.
@@ -31,8 +32,9 @@ impl ReadEvent for Host {
 }
 
 impl WindowSize for Host {
-    fn window_size() -> io::Result<(u16, u16)> {
-        size()
+    fn window_size() -> io::Result<(Width, Height)> {
+        let (width, height) = size()?;
+        Ok((Width::new(width), Height::new(height)))
     }
 }
 
