@@ -45,13 +45,12 @@ pub(crate) fn glyph_width(char: char, variation_selector: Option<char>) -> Width
             let mut grapheme = String::with_capacity(char.len_utf8() + selector.len_utf8());
             grapheme.push(char);
             grapheme.push(selector);
-            base.max(
-                grapheme
-                    .width()
-                    .pipe(u16::try_from)
-                    .expect("a character and its variation selector span a few columns")
-                    .pipe(Width::new),
-            )
+            grapheme
+                .width()
+                .pipe(u16::try_from)
+                .expect("a character and its variation selector span a few columns")
+                .pipe(Width::new)
+                .max(base)
         }
         None => base,
     }
