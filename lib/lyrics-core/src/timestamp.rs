@@ -97,11 +97,7 @@ impl Timestamp {
     /// the cue format requires whitespace between the timestamp and
     /// the body, the caller inspects `tail` for it.
     pub fn take(input: &str) -> Result<(Self, &str), TakeTimestampError> {
-        // The closure body cannot become eager (`.then_some(next as
-        // u8 - b'0')`) because `next as u8` truncates non-ASCII
-        // chars to their low byte, and the subtraction would
-        // overflow before `is_ascii_digit()` filters the value out.
-        let digit = |next: char| next.is_ascii_digit().then(|| next as u8 - b'0');
+        let digit = |next: char| next.to_digit(10);
 
         let mut chars = input.chars();
 
