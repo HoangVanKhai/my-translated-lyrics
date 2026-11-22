@@ -4,8 +4,8 @@ use terminal_screen::Width;
 
 /// Which of the title columns is meant, counting from the left.
 ///
-/// It indexes the table's layout rather than the screen columns that layout
-/// occupies.
+/// It names a place in the table's layout rather than a screen column.
+/// `span` converts it to the screen columns that place occupies.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) struct TitleColumn(usize);
 
