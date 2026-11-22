@@ -19,7 +19,7 @@ use std::io;
 fn from_selection_maps_a_choice_to_chosen() {
     let values = ["first", "second", "third"];
     let chosen = Navigation::Selected(ItemIndex::new(2));
-    let resolution = from_selection(chosen, |index| values[index.get()]);
+    let resolution = from_selection(chosen, |index| values[index]);
     assert!(matches!(resolution, Ok(Resolution::Chosen("third"))));
 }
 

@@ -111,7 +111,7 @@ fn run() -> Result<(), Termination> {
             }
             Stage::Language => {
                 let chosen = video_index.expect("the video is resolved before the language");
-                let chosen_video = &catalog[chosen.get()];
+                let chosen_video = &catalog.as_slice()[chosen];
                 let collection_dir = args.target.join(&*chosen_video.desc.collection);
                 let video_title = &chosen_video.desc.video_title;
                 available = available_subtitles(&collection_dir, video_title);
@@ -166,7 +166,7 @@ fn run() -> Result<(), Termination> {
         }
     };
 
-    let video = &catalog[video_index.expect("the video is resolved").get()];
+    let video = &catalog.as_slice()[video_index.expect("the video is resolved")];
     let language = language.expect("the language is resolved");
     let format = format.expect("the format is resolved");
 

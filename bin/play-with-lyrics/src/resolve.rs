@@ -115,7 +115,7 @@ where
         .unwrap_or_else(ItemIndex::first);
     let selection =
         Sys::select_one("Select a Language", &labels, start).expect("interactive selection failed");
-    from_selection(selection, |index| languages[index.get()])
+    from_selection(selection, |index| languages.as_slice()[index])
 }
 
 /// Resolves the subtitle format from `--format`, automatically when only
@@ -159,7 +159,7 @@ where
         .unwrap_or_else(ItemIndex::first);
     let selection = Sys::select_one("Select a Subtitle Format", &labels, start)
         .expect("interactive selection failed");
-    from_selection(selection, |index| formats[index.get()])
+    from_selection(selection, |index| formats[index])
 }
 
 /// Resolves the media player from `--player` or through an interactive
@@ -178,7 +178,7 @@ where
     // top each time.
     let selection = Sys::select_one("Select a Media Player", &labels, ItemIndex::first())
         .expect("interactive selection failed");
-    from_selection(selection, |index| Player::VARIANTS[index.get()])
+    from_selection(selection, |index| Player::VARIANTS[index])
 }
 
 /// Returns a [`Failure::NotInteractive`] when an interactive selection is
